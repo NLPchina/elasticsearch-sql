@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
@@ -12,6 +14,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
+import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
 import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
@@ -129,7 +132,7 @@ public class SqlParser {
 	private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
 		Object[] value = new Object[targetList.size()];
 		for (int i = 0; i < targetList.size(); i++) {
-			value[i] = parseValue(targetList.get(i)) ; 
+			value[i] = parseValue(targetList.get(i));
 		}
 		return value;
 	}
@@ -139,11 +142,11 @@ public class SqlParser {
 			return ((SQLNumericLiteralExpr) expr).getNumber();
 		} else if (expr instanceof SQLCharExpr) {
 			return ((SQLCharExpr) expr).getText();
-		}else if (expr instanceof SQLMethodInvokeExpr) {
-			return expr ;
+		} else if (expr instanceof SQLMethodInvokeExpr) {
+			return expr;
 		} else if (expr instanceof SQLNullExpr) {
 			return null;
-		}  else {
+		} else {
 			throw new SqlParseException("i can not know value type " + expr.getClass() + " , value is : " + expr);
 		}
 	}
@@ -155,13 +158,15 @@ public class SqlParser {
 		for (SQLSelectItem sqlSelectItem : selectList) {
 			expr = sqlSelectItem.getExpr();
 			if (expr instanceof SQLIdentifierExpr) {
-				select.addField(expr.toString(), sqlSelectItem.getAlias(), 0);
-			} else if (expr instanceof SQLMethodInvokeExpr) {
-				select.addField(expr.toString(), sqlSelectItem.getAlias(), 1);
+				select.addField(expr.toString(), sqlSelectItem.getAlias());
 			} else if (expr instanceof SQLQueryExpr) {
-				select.addField(expr.toString(), sqlSelectItem.getAlias(), 2);
+				throw new SqlParseException("unknow field name : " + sqlSelectItem);
 			} else if (expr instanceof SQLAllColumnExpr) {
 
+			} else if (expr instanceof SQLMethodInvokeExpr) {
+				throw new SqlParseException("unknow field name : " + sqlSelectItem);
+			} else if (expr instanceof SQLAggregateExpr) {
+				select.addField(((SQLAggregateExpr) expr).getMethodName(), ((SQLAggregateExpr) expr).getArguments(), sqlSelectItem.getAlias());
 			} else {
 				throw new SqlParseException("unknow field name : " + sqlSelectItem);
 			}
@@ -181,7 +186,7 @@ public class SqlParser {
 		}
 	}
 
-	private void findOrderBy(MySqlSelectQueryBlock query, Select select) {
+	private void findOrderBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
 		SQLOrderBy orderBy = query.getOrderBy();
 
 		if (orderBy == null) {
@@ -193,7 +198,19 @@ public class SqlParser {
 		List<String> lists = new ArrayList<>();
 
 		for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
-			lists.add(sqlSelectOrderByItem.getExpr().toString());
+
+			SQLExpr expr = sqlSelectOrderByItem.getExpr();
+			if (expr instanceof SQLIdentifierExpr) {
+				lists.add(expr.toString());
+			} else if (expr instanceof SQLMethodInvokeExpr) {
+				SQLMethodInvokeExpr aggExpr = ((SQLMethodInvokeExpr) expr);
+				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getParameters(), null).toString());
+			} else if (expr instanceof SQLAggregateExpr) {
+				SQLAggregateExpr aggExpr = ((SQLAggregateExpr) expr);
+				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getArguments(), null).toString());
+			} else {
+				throw new SqlParseException("unknow order by name : " + expr);
+			}
 
 			if (sqlSelectOrderByItem.getType() != null) {
 				String type = sqlSelectOrderByItem.getType().toString();
@@ -227,14 +244,6 @@ public class SqlParser {
 		for (String string : split) {
 			select.addIndexAndType(string.trim());
 		}
-	}
-
-	public static void main(String[] args) throws SqlParseException {
-		String query = "select title,crawlid from doc " + "where "
-				+ "(crawlid=1596 and title='中') OR ((crawlid=1596 and title='中2' OR  (crawlid=1596 and title='中1')))  " + "limit 10";
-
-		new SqlParser().parseSelect(query);
-
 	}
 
 }

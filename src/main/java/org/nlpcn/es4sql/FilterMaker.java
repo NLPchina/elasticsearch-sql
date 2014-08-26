@@ -3,13 +3,10 @@ package org.nlpcn.es4sql;
 import org.elasticsearch.index.query.BaseFilterBuilder;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 
 public class FilterMaker extends Maker {
 

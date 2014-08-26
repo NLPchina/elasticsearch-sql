@@ -2,24 +2,18 @@ package org.nlpcn.es4sql;
 
 import java.io.IOException;
 
-import org.apache.lucene.queryparser.xml.builders.SpanQueryBuilderFactory;
-import org.apache.lucene.search.spans.SpanTermQuery;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.SpanTermQueryBuilder;
-import org.elasticsearch.search.sort.SortOrder;
-import org.nlpcn.es4sql.domain.Order;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.nlpcn.es4sql.domain.SearchResult;
 import org.nlpcn.es4sql.domain.Select;
-import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.AggregationQuery;
+import org.nlpcn.es4sql.query.DefaultQuery;
+import org.nlpcn.es4sql.query.Query;
 
 public class SearchDao {
 
@@ -39,7 +33,22 @@ public class SearchDao {
 	 * @throws SqlParseException
 	 */
 	public SearchResult selectAsResult(String sql) throws IOException, SqlParseException {
-		return new SearchResult(select(sql));
+		Select select = new SqlParser().parseSelect(sql);
+
+		Query query = select2Query(select);
+
+		SearchResponse resp = query.explan().execute().actionGet();
+
+		if (query instanceof DefaultQuery) {
+			return new SearchResult(resp);
+		} else if (query instanceof AggregationQuery) {
+			for (Aggregation agg : resp.getAggregations().asList()) {
+				System.out.println(agg);
+			}
+			return new SearchResult(resp);
+		}
+		return null;
+
 	}
 
 	/**
@@ -54,59 +63,21 @@ public class SearchDao {
 
 		Select select = new SqlParser().parseSelect(sql);
 
-		// set index
-		SearchRequestBuilder request = client.prepareSearch(select.getIndexArr());
+		Query query = select2Query(select);
 
-		// set type
-		String[] typeArr = select.getTypeArr();
-		if (typeArr != null) {
-			request.setTypes(typeArr);
-		}
-
-		// set where
-		Where where = select.getWhere();
-		if (where != null) {
-			if (select.isQuery) {
-				BoolQueryBuilder boolQuery = QueryMaker.explan(where);
-				request.setQuery(boolQuery);
-			} else {
-				BoolFilterBuilder boolFilter = FilterMaker.explan(where);
-				request.setPostFilter(boolFilter);
-			}
-		}
-
-		
-
-		request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-
-		request.setFrom(select.getOffset());
-
-		if (select.getRowCount() > -1) {
-			request.setSize(select.getRowCount());
-		}
-
-		if (select.getFields().size() > 0) {
-			request.addFields(select.getFieldArr());
-		}
-
-		// add order
-		for (Order order : select.getOrderBys()) {
-			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
-		}
-		
-		
-		System.out.println(request);
-		
-		return request.execute().actionGet();
+		return query.explan().execute().actionGet();
 	}
 
-	public static void main(String[] args) throws IOException, SqlParseException {
-		// SearchDao searchDao = new SearchDao("192.168.200.63", 9300);
-		SearchDao searchDao = new SearchDao("localhost", 9300);
-		String query = "select title,crawlid from doc " + "where " + "( title = matchPhraseQuery('中国','default',100)) order by _score desc " + " limit 3";
-		SearchResponse searchByQuery = searchDao.select(query);
+	private Query select2Query(Select select) throws SqlParseException {
 
-		System.out.println(new SearchResult(searchByQuery));
-		System.out.println(searchByQuery);
+		Query query = null;
+
+		if (select.isGroupBy) {
+			query = new AggregationQuery(client, select);
+		} else {
+			query = new DefaultQuery(client, select);
+		}
+		return query;
 	}
+
 }

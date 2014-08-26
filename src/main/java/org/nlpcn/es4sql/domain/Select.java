@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.nlpcn.commons.lang.util.StringUtil;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+
 /**
  * 将sql语句转换为select 对象
  * 
@@ -22,6 +25,8 @@ public class Select {
 	private int rowCount = Integer.MAX_VALUE;
 
 	public boolean isQuery = false;
+
+	public boolean isGroupBy = false;
 
 	public Select() {
 	}
@@ -51,6 +56,7 @@ public class Select {
 
 	public void addGroupBy(String field) {
 		if (StringUtil.isNotBlank(field)) {
+			isGroupBy = true;
 			this.groupBys.add(field);
 		}
 	}
@@ -110,18 +116,16 @@ public class Select {
 		return list.toArray(new String[list.size()]);
 	}
 
-	public String[] getFieldArr() {
-		List<String> lists = new ArrayList<>();
-		for (Field field : fields) {
-			lists.add(field.getName());
-		}
-		return lists.toArray(new String[fields.size()]);
-	}
-
-	public void addField(String name, String alias, int type) {
+	public void addField(String name, String alias) {
 		if ("*".equals(name) || StringUtil.isBlank(name)) {
 			return;
 		}
-		fields.add(new Field(name, alias, type));
+		fields.add(new Field(name, alias));
 	}
+
+	public void addField(String name, List<SQLExpr> arguments, String alias) {
+		fields.add(MethodField.makeField(name, arguments, alias));
+	}
+
+
 }
