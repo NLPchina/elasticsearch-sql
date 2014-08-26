@@ -26,7 +26,7 @@ public class Select {
 
 	public boolean isQuery = false;
 
-	public boolean isGroupBy = false;
+	public boolean isAgg = false;
 
 	public Select() {
 	}
@@ -56,7 +56,7 @@ public class Select {
 
 	public void addGroupBy(String field) {
 		if (StringUtil.isNotBlank(field)) {
-			isGroupBy = true;
+			isAgg = true;
 			this.groupBys.add(field);
 		}
 	}
@@ -124,6 +124,7 @@ public class Select {
 	}
 
 	public void addField(String name, List<SQLExpr> arguments, String alias) {
+		isAgg = true ;
 		fields.add(MethodField.makeField(name, arguments, alias));
 	}
 

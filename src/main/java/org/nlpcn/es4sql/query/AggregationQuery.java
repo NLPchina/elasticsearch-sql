@@ -56,7 +56,7 @@ public class AggregationQuery extends Query {
 			explanFields(request, select.getFields(), groupByAgg);
 		}
 
-		request.setSize(0) ;
+		request.setSize(1000) ;
 		request.setSearchType(SearchType.DEFAULT);
 
 

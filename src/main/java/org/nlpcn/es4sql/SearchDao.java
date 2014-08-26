@@ -42,9 +42,6 @@ public class SearchDao {
 		if (query instanceof DefaultQuery) {
 			return new SearchResult(resp);
 		} else if (query instanceof AggregationQuery) {
-			for (Aggregation agg : resp.getAggregations().asList()) {
-				System.out.println(agg);
-			}
 			return new SearchResult(resp);
 		}
 		return null;
@@ -72,7 +69,7 @@ public class SearchDao {
 
 		Query query = null;
 
-		if (select.isGroupBy) {
+		if (select.isAgg) {
 			query = new AggregationQuery(client, select);
 		} else {
 			query = new DefaultQuery(client, select);

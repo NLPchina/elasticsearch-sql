@@ -32,7 +32,7 @@ public class DefaultQuery extends Query {
 		Where where = select.getWhere();
 
 		if (where != null) {
-			if (select.isQuery && !select.isGroupBy) {
+			if (select.isQuery) {
 				BoolQueryBuilder boolQuery = QueryMaker.explan(where);
 				request.setQuery(boolQuery);
 			} else {
