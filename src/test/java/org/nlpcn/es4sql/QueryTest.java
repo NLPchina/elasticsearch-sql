@@ -15,20 +15,20 @@ public class QueryTest {
 	
 	@Test
 	public void sumTest() throws IOException, SqlParseException{
-		SearchResult select = searchDao.selectAsResult("select age from bank limit 10");
+		SearchResponse select = searchDao.select("select age from bank where age between 20 and 21 limit 3");
 		
-		System.out.println(JSONObject.toJSONString(select));
+		System.out.println(select);
 	}
 	
 	@Test
 	public void maxTest() throws IOException, SqlParseException{
-		SearchResponse select = searchDao.select("select max(age),sum(account_number) from bank group by gender limit 10");
+		SearchResponse select = searchDao.select("select age from bank where age not between 20 and 21 limit 3");
 		System.out.println(select);
 	}
 	
 	@Test
 	public void minTest() throws IOException, SqlParseException{
-		SearchResponse select = searchDao.select("select min(age),sum(account_number) from bank group by gender limit 10");
+		SearchResponse select = searchDao.select("select age from bank where age  in (20,21) limit 3");
 		System.out.println(select);
 	}
 }

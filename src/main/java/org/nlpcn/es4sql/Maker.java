@@ -21,7 +21,7 @@ import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 
 public abstract class Maker {
 
-	private static final Set<OPEAR> NOT_OPEAR_SET = Sets.newHashSet(OPEAR.N, OPEAR.NIN, OPEAR.ISN);
+	private static final Set<OPEAR> NOT_OPEAR_SET = Sets.newHashSet(OPEAR.N, OPEAR.NIN, OPEAR.ISN , OPEAR.NBETWEEN);
 
 	private boolean isQuery = false;
 
@@ -153,7 +153,13 @@ public abstract class Maker {
 				x = QueryBuilders.inQuery(name, (Object[]) value);
 			else
 				x = FilterBuilders.inFilter(name, (Object[]) value);
-
+		case BETWEEN:
+		case NBETWEEN:
+			if (isQuery)
+				x = QueryBuilders.rangeQuery(name).gte(((Object[]) value)[0]).lte(((Object[]) value)[1]);
+			else
+				x = FilterBuilders.rangeFilter(name).gte(((Object[]) value)[0]).lte(((Object[]) value)[1]);
+			break ;
 		default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}

@@ -16,6 +16,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
 import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
 import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
+import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
@@ -122,7 +123,11 @@ public class SqlParser {
 			where.addWhere(condition);
 		} else if (expr instanceof SQLInListExpr) {
 			SQLInListExpr siExpr = (SQLInListExpr) expr;
-			Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), "IN", parseValue(siExpr.getTargetList()));
+			Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), siExpr.isNot()?"NOT IN":"IN", parseValue(siExpr.getTargetList()));
+			where.addWhere(condition);
+		} else if (expr instanceof SQLBetweenExpr) {
+			SQLBetweenExpr between = ((SQLBetweenExpr) expr) ;
+			Condition condition = new Condition(CONN.valueOf(opear), between.getTestExpr().toString(),between.isNot()?"NOT BETWEEN":"BETWEEN" , new Object[]{parseValue(between.beginExpr),parseValue(between.endExpr)});
 			where.addWhere(condition);
 		} else {
 			throw new SqlParseException("err find condition " + expr.getClass());

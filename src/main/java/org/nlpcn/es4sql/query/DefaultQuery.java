@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.nlpcn.es4sql.FilterMaker;
 import org.nlpcn.es4sql.QueryMaker;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.MethodField;
@@ -27,7 +28,6 @@ public class DefaultQuery extends Query {
 	@Override
 	protected SearchRequestBuilder _explan() throws SqlParseException {
 
-		BoolFilterBuilder boolFilter = null;
 		// set where
 		Where where = select.getWhere();
 
@@ -36,10 +36,10 @@ public class DefaultQuery extends Query {
 				BoolQueryBuilder boolQuery = QueryMaker.explan(where);
 				request.setQuery(boolQuery);
 			} else {
+				BoolFilterBuilder boolFilter = FilterMaker.explan(where);
 				request.setPostFilter(boolFilter);
 			}
 		}
-
 
 		// add field
 		if (select.getFields().size() > 0) {
@@ -58,11 +58,10 @@ public class DefaultQuery extends Query {
 		for (Order order : select.getOrderBys()) {
 			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
 		}
-		
-		return request ;
+
+		return request;
 	}
 
-	
 	private void explanFields(SearchRequestBuilder request, List<Field> fields, TermsBuilder groupByAgg) throws SqlParseException {
 		for (Field field : fields) {
 			if (field instanceof MethodField) {
