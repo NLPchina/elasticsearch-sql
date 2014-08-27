@@ -7,6 +7,7 @@ import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
@@ -39,7 +40,9 @@ public class Util {
 			value = ((SQLCharExpr) expr).getText();
 		} else if (expr instanceof SQLIdentifierExpr) {
 			value = expr.toString();
-		} else {
+		} else if(expr instanceof SQLAllColumnExpr){
+			value = "*";
+		}else {
 			throw new SqlParseException("can not support this type " + expr.getClass());
 		}
 		return value;

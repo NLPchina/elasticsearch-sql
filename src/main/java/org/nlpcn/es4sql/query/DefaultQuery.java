@@ -66,7 +66,6 @@ public class DefaultQuery extends Query {
 	private void explanFields(SearchRequestBuilder request, List<Field> fields, TermsBuilder groupByAgg) throws SqlParseException {
 		for (Field field : fields) {
 			if (field instanceof MethodField) {
-				//TODO: it will be do with you 
 				throw new SqlParseException("it did not support this field method " + field);
 			} else if (field instanceof Field) {
 				request.addField(field.getName());

@@ -9,6 +9,7 @@ import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -37,21 +38,36 @@ public class AggregationQuery extends Query {
 		TermsBuilder groupByAgg = null;
 		FilterAggregationBuilder filter = null;
 
-		if (select.getGroupBys().size() > 0) {
-			groupByAgg = AggregationBuilders.terms("group by");
-			for (String field : select.getGroupBys()) {
-				groupByAgg.field(field);
-			}
-		}
 
+		if (select.getGroupBys().size() > 0) {
+			String field = select.getGroupBys().get(0) ;
+			groupByAgg = AggregationBuilders.terms(field).field(select.getGroupBys().get(0));
+		}
 		if (where != null) {
 			boolFilter = FilterMaker.explan(where);
 			filter = AggregationBuilders.filter("filter").filter(boolFilter);
 			if (groupByAgg != null) {
 				filter.subAggregation(groupByAgg);
 			}
+			request.addAggregation(filter) ;
+		}else if(groupByAgg!=null){
+			request.addAggregation(groupByAgg) ;
 		}
-
+		
+		
+		
+		if (select.getGroupBys().size() > 0) {
+			String field = null ;
+			for (int i = 1; i < select.getGroupBys().size(); i++) {
+				field = select.getGroupBys().get(i) ;
+				TermsBuilder subAgg = AggregationBuilders.terms(field).field(field) ;
+				groupByAgg.subAggregation(subAgg) ;
+				groupByAgg = subAgg ;
+			}
+			
+			groupByAgg.order(Terms.Order.count(false)) ;
+		}
+		
 		// add field
 		if (select.getFields().size() > 0) {
 			explanFields(request, select.getFields(), groupByAgg, filter);
@@ -60,12 +76,7 @@ public class AggregationQuery extends Query {
 		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
 
-		if (filter != null) {
-			request.addAggregation(filter);
-		} else if (groupByAgg != null) {
-			request.addAggregation(groupByAgg);
-		}
-
+System.out.println(request);
 		return request;
 	}
 
@@ -100,19 +111,24 @@ public class AggregationQuery extends Query {
 	 * @throws SqlParseException
 	 */
 	private AbstractAggregationBuilder makeAgg(MethodField field) throws SqlParseException {
-		switch (field.getName()) {
+		switch (field.getName().toUpperCase()) {
 		case "SUM":
 			return AggregationBuilders.sum(field.getAlias()).field(field.getParams().get(0).toString());
 		case "MAX":
 			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
 		case "MIN":
 			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
-		case "topHits":
+		case "TOPHITS":
 			return makeTopHitsAgg(field);
-
+		case "COUNT":
+			return makeCountAgg(field);
 		default:
 			throw new SqlParseException("the agg function not to define !");
 		}
+	}
+
+	private AbstractAggregationBuilder makeCountAgg(MethodField field) {
+		return AggregationBuilders.count(field.getAlias()) ;
 	}
 
 	private AbstractAggregationBuilder makeTopHitsAgg(MethodField field) {
