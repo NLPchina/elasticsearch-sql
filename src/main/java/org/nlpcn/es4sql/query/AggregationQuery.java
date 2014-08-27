@@ -65,7 +65,9 @@ public class AggregationQuery extends Query {
 				groupByAgg = subAgg ;
 			}
 			
-			groupByAgg.order(Terms.Order.count(false)) ;
+			if(select.getOrderBys().size()==0){
+				groupByAgg.size(select.getRowCount()) ;
+			}
 		}
 		
 		// add field
@@ -76,7 +78,6 @@ public class AggregationQuery extends Query {
 		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
 
-System.out.println(request);
 		return request;
 	}
 
@@ -128,6 +129,9 @@ System.out.println(request);
 	}
 
 	private AbstractAggregationBuilder makeCountAgg(MethodField field) {
+		if("DISTINCT".equals(field.getOption())){
+			return AggregationBuilders.cardinality(field.getAlias()).field(field.getParams().get(0).value.toString()) ;
+		}
 		return AggregationBuilders.count(field.getAlias()) ;
 	}
 

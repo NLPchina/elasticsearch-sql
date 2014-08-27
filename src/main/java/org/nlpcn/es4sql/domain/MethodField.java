@@ -18,10 +18,13 @@ import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
  */
 public class MethodField extends Field {
 	private List<KVValue> params = null;
+	private String option ;
+	
 
-	public MethodField(String name, List<KVValue> params, String alias) {
+	public MethodField(String name, List<KVValue> params, String option, String alias) {
 		super(name, alias);
 		this.params = params;
+		this.option = option ;
 		if (StringUtil.isBlank(alias)) {
 			this.setAlias(this.toString());
 		}
@@ -37,10 +40,23 @@ public class MethodField extends Field {
 
 	@Override
 	public String toString() {
+		if(option!=null){
+			return this.name + "(" + option+" "+Util.joiner(params, ",") + ")";
+		}
 		return this.name + "(" + Util.joiner(params, ",") + ")";
 	}
+	
+	
 
-	public static Field makeField(String name, List<SQLExpr> arguments, String alias) throws SqlParseException {
+	public String getOption() {
+		return option;
+	}
+
+	public void setOption(String option) {
+		this.option = option;
+	}
+
+	public static Field makeField(String name, List<SQLExpr> arguments, String option, String alias) throws SqlParseException {
 		List<KVValue> paramers = new ArrayList<>();
 		for (SQLExpr object : arguments) {
 			if (object instanceof SQLBinaryOpExpr) {
@@ -52,7 +68,7 @@ public class MethodField extends Field {
 			}
 
 		}
-		return new MethodField(name, paramers, alias);
+		return new MethodField(name, paramers, option,alias);
 	}
 
 }

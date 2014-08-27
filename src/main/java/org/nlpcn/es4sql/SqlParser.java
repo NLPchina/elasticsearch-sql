@@ -165,7 +165,7 @@ public class SqlParser {
 			} else if (expr instanceof SQLMethodInvokeExpr) {
 				select.addField(((SQLMethodInvokeExpr) expr).getMethodName(), ((SQLMethodInvokeExpr) expr).getParameters(), sqlSelectItem.getAlias());
 			} else if (expr instanceof SQLAggregateExpr) {
-				select.addField(((SQLAggregateExpr) expr).getMethodName(), ((SQLAggregateExpr) expr).getArguments(), sqlSelectItem.getAlias());
+				select.addField(((SQLAggregateExpr) expr).getMethodName(), ((SQLAggregateExpr) expr).getArguments(), ((SQLAggregateExpr) expr).getOption(), sqlSelectItem.getAlias());
 			} else {
 				throw new SqlParseException("unknow field name : " + sqlSelectItem);
 			}
@@ -203,10 +203,11 @@ public class SqlParser {
 				lists.add(expr.toString());
 			} else if (expr instanceof SQLMethodInvokeExpr) {
 				SQLMethodInvokeExpr aggExpr = ((SQLMethodInvokeExpr) expr);
-				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getParameters(), null).toString());
+				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getParameters(), null, null).toString());
 			} else if (expr instanceof SQLAggregateExpr) {
 				SQLAggregateExpr aggExpr = ((SQLAggregateExpr) expr);
-				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getArguments(), null).toString());
+				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getArguments(), ((SQLAggregateExpr) expr).getOption() == null ? null : ((SQLAggregateExpr) expr).getOption().name(),
+						null).toString());
 			} else {
 				throw new SqlParseException("unknow order by name : " + expr);
 			}

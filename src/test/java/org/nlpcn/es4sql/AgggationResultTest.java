@@ -16,7 +16,7 @@ public class AgggationResultTest {
 	@Test
 	public void sumTest() throws IOException, SqlParseException{
 		try {
-			SearchResponse select = searchDao.select("select sum(age),count(*),sum(account_number) from bank where age<30  group by gender order by count(age) asc ");
+			SearchResponse select = searchDao.select("select sum(age),count(*),count(distinct age) from bank where age<30  group by gender order by count(age) asc ");
 			System.out.println(select);
 //			System.out.println(select);
 		} catch (Exception e) {

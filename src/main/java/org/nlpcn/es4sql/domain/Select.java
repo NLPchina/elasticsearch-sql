@@ -8,6 +8,7 @@ import org.nlpcn.commons.lang.util.StringUtil;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr.Option;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 
 /**
@@ -126,7 +127,12 @@ public class Select {
 
 	public void addField(String name, List<SQLExpr> arguments, String alias) throws SqlParseException {
 		isAgg = true ;
-		fields.add(MethodField.makeField(name, arguments, alias));
+		fields.add(MethodField.makeField(name, arguments, null,alias));
+	}
+	
+	public void addField(String name, List<SQLExpr> arguments, Option option ,String alias) throws SqlParseException {
+		isAgg = true ;
+		fields.add(MethodField.makeField(name, arguments, option==null?null:option.name(),alias));
 	}
 
 
