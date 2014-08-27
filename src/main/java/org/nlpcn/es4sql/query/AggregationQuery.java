@@ -42,6 +42,7 @@ public class AggregationQuery extends Query {
 		if (select.getGroupBys().size() > 0) {
 			String field = select.getGroupBys().get(0) ;
 			groupByAgg = AggregationBuilders.terms(field).field(select.getGroupBys().get(0));
+		
 		}
 		if (where != null) {
 			boolFilter = FilterMaker.explan(where);
@@ -55,7 +56,6 @@ public class AggregationQuery extends Query {
 		}
 		
 		
-		
 		if (select.getGroupBys().size() > 0) {
 			String field = null ;
 			for (int i = 1; i < select.getGroupBys().size(); i++) {
@@ -64,7 +64,6 @@ public class AggregationQuery extends Query {
 				groupByAgg.subAggregation(subAgg) ;
 				groupByAgg = subAgg ;
 			}
-			
 			if(select.getOrderBys().size()==0){
 				groupByAgg.size(select.getRowCount()) ;
 			}
@@ -77,7 +76,7 @@ public class AggregationQuery extends Query {
 
 		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
-
+System.out.println(request);
 		return request;
 	}
 
