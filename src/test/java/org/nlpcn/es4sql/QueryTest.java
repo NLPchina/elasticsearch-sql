@@ -1,10 +1,6 @@
 package org.nlpcn.es4sql;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Test;
@@ -19,20 +15,9 @@ public class QueryTest {
 	
 	@Test
 	public void sumTest() throws IOException, SqlParseException{
-		SearchResult select = searchDao.selectAsResult("select * from bank ");
+		SearchResult select = searchDao.selectAsResult("select age from bank limit 10");
 		
-		Set<String> sets = new HashSet<>() ;
-		
-		 List<Map<String, Object>> results = select.getResults() ;
-		
-		for (Map<String, Object> map : results) {
-			System.out.println(map);
-			sets.add(map.get("city").toString());
-		}
-		
-		System.out.println(sets.size());
-		System.out.println(sets);
-		
+		System.out.println(JSONObject.toJSONString(select));
 	}
 	
 	@Test

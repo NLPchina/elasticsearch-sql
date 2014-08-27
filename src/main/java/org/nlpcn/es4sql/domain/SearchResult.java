@@ -1,21 +1,30 @@
 package org.nlpcn.es4sql.domain;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.internal.InternalSearchHit;
-
-import com.alibaba.fastjson.JSONObject;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
+import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
+import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits;
+import org.nlpcn.es4sql.exception.SqlParseException;
 
 public class SearchResult {
 	/**
 	 * 查询结果
 	 */
-	private List<Map<String,Object>> results;
+	private List<Map<String, Object>> results;
 
 	private long total;
 
@@ -25,22 +34,99 @@ public class SearchResult {
 		SearchHits hits = resp.getHits();
 		this.total = hits.getTotalHits();
 		results = new ArrayList<>(hits.getHits().length);
-		Map<String,Object> entry = null ;
 		for (SearchHit searchHit : hits.getHits()) {
-			System.out.println(searchHit.getSource());
-			results.add(searchHit.getSource());
+			if (searchHit.getSource() != null) {
+				results.add(searchHit.getSource());
+			} else if (searchHit.getFields() != null) {
+				Map<String, SearchHitField> fields = searchHit.getFields();
+				results.add(toFieldsMap(fields));
+			}
+
 		}
 	}
 
-	public List<Map<String,Object>> getResults() {
+	public SearchResult(SearchResponse resp, Select select) throws SqlParseException {
+		Aggregations aggs = resp.getAggregations();
+		if (aggs.get("filter") != null) {
+			InternalFilter inf = aggs.get("filter");
+			aggs = inf.getAggregations();
+		}
+		if (aggs.get("group by") != null) {
+			StringTerms stringTerms = aggs.get("group by");
+			Collection<Bucket> buckets = stringTerms.getBuckets();
+			this.total = buckets.size();
+			results = new ArrayList<>(buckets.size());
+			for (Bucket bucket : buckets) {
+				results.add(toAggsMap(bucket.getAggregations().getAsMap()));
+			}
+		} else {
+			results = new ArrayList<>(1);
+			this.total = 1;
+			Map<String, Object> map = new HashMap<>();
+			for (Aggregation aggregation : aggs) {
+				map.put(aggregation.getName(), covenValue(aggregation));
+			}
+			results.add(map);
+		}
+
+	}
+
+	/**
+	 * 讲es的field域转换为你Object
+	 * 
+	 * @param fields
+	 * @return
+	 */
+	private Map<String, Object> toFieldsMap(Map<String, SearchHitField> fields) {
+		Map<String, Object> result = new HashMap<>();
+		for (Entry<String, SearchHitField> entry : fields.entrySet()) {
+			if (entry.getValue().values().size() > 1) {
+				result.put(entry.getKey(), entry.getValue().values());
+			} else {
+				result.put(entry.getKey(), entry.getValue().value());
+			}
+
+		}
+		return result;
+	}
+
+	/**
+	 * 讲es的field域转换为你Object
+	 * 
+	 * @param fields
+	 * @return
+	 * @throws SqlParseException
+	 */
+	private Map<String, Object> toAggsMap(Map<String, Aggregation> fields) throws SqlParseException {
+		Map<String, Object> result = new HashMap<>();
+		Aggregation value = null;
+		for (Entry<String, Aggregation> entry : fields.entrySet()) {
+			value = entry.getValue();
+			double covenValue = (double) covenValue(value);
+			result.put(entry.getKey(), covenValue);
+
+		}
+		return result;
+	}
+
+	private Object covenValue(Aggregation value) throws SqlParseException {
+		System.out.println(value.getClass());
+		if (value instanceof InternalNumericMetricsAggregation.SingleValue) {
+			return ((InternalNumericMetricsAggregation.SingleValue) value).value();
+		} else if (value instanceof InternalTopHits) {
+			return ((InternalTopHits) value);
+		} else {
+			throw new SqlParseException("unknow this agg type " + value.getClass());
+		}
+	}
+
+	public List<Map<String, Object>> getResults() {
 		return results;
 	}
 
-
-	public void setResults(List<Map<String,Object>> results) {
+	public void setResults(List<Map<String, Object>> results) {
 		this.results = results;
 	}
-
 
 	public long getTotal() {
 		return total;

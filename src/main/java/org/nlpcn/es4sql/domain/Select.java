@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.nlpcn.commons.lang.util.StringUtil;
+import org.nlpcn.es4sql.exception.SqlParseException;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
@@ -123,7 +124,7 @@ public class Select {
 		fields.add(new Field(name, alias));
 	}
 
-	public void addField(String name, List<SQLExpr> arguments, String alias) {
+	public void addField(String name, List<SQLExpr> arguments, String alias) throws SqlParseException {
 		isAgg = true ;
 		fields.add(MethodField.makeField(name, arguments, alias));
 	}

@@ -162,9 +162,8 @@ public class SqlParser {
 			} else if (expr instanceof SQLQueryExpr) {
 				throw new SqlParseException("unknow field name : " + sqlSelectItem);
 			} else if (expr instanceof SQLAllColumnExpr) {
-
 			} else if (expr instanceof SQLMethodInvokeExpr) {
-				throw new SqlParseException("unknow field name : " + sqlSelectItem);
+				select.addField(((SQLMethodInvokeExpr) expr).getMethodName(), ((SQLMethodInvokeExpr) expr).getParameters(), sqlSelectItem.getAlias());
 			} else if (expr instanceof SQLAggregateExpr) {
 				select.addField(((SQLAggregateExpr) expr).getMethodName(), ((SQLAggregateExpr) expr).getArguments(), sqlSelectItem.getAlias());
 			} else {

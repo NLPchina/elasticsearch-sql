@@ -14,6 +14,7 @@ import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.FilterMaker;
 import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
@@ -50,15 +51,14 @@ public class AggregationQuery extends Query {
 				filter.subAggregation(groupByAgg);
 			}
 		}
-		
+
 		// add field
 		if (select.getFields().size() > 0) {
-			explanFields(request, select.getFields(), groupByAgg);
+			explanFields(request, select.getFields(), groupByAgg, filter);
 		}
 
-		request.setSize(1000) ;
+		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
-
 
 		if (filter != null) {
 			request.addAggregation(filter);
@@ -68,17 +68,19 @@ public class AggregationQuery extends Query {
 
 		return request;
 	}
-	
-	public void toResult(){
-		
+
+	public void toResult() {
+
 	}
-	
-	private void explanFields(SearchRequestBuilder request, List<Field> fields, TermsBuilder groupByAgg) throws SqlParseException {
+
+	private void explanFields(SearchRequestBuilder request, List<Field> fields, TermsBuilder groupByAgg, FilterAggregationBuilder filter) throws SqlParseException {
 		for (Field field : fields) {
 			if (field instanceof MethodField) {
 				AbstractAggregationBuilder makeAgg = makeAgg((MethodField) field);
 				if (groupByAgg != null) {
 					groupByAgg.subAggregation(makeAgg);
+				} else if (filter != null) {
+					filter.subAggregation(makeAgg);
 				} else {
 					request.addAggregation(makeAgg);
 				}
@@ -89,14 +91,15 @@ public class AggregationQuery extends Query {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * 将Field 转换为agg
+	 * 
 	 * @param field
 	 * @return
+	 * @throws SqlParseException
 	 */
-	private AbstractAggregationBuilder makeAgg(MethodField field) {
+	private AbstractAggregationBuilder makeAgg(MethodField field) throws SqlParseException {
 		switch (field.getName()) {
 		case "SUM":
 			return AggregationBuilders.sum(field.getAlias()).field(field.getParams().get(0).toString());
@@ -104,10 +107,31 @@ public class AggregationQuery extends Query {
 			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
 		case "MIN":
 			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
+		case "topHits":
+			return makeTopHitsAgg(field);
+
 		default:
-			break;
+			throw new SqlParseException("the agg function not to define !");
 		}
-		return null;
+	}
+
+	private AbstractAggregationBuilder makeTopHitsAgg(MethodField field) {
+		TopHitsBuilder topHits = AggregationBuilders.topHits(field.getAlias());
+		List<KVValue> params = field.getParams();
+		for (KVValue kv : params) {
+			switch (kv.key) {
+			case "from":
+				topHits.setFrom((int) kv.value);
+				break;
+			case "size":
+				topHits.setSize((int) kv.value);
+				break;
+			default:
+				topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
+				break;
+			}
+		}
+		return topHits;
 	}
 
 }

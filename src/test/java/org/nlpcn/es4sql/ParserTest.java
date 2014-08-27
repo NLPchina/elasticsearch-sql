@@ -2,7 +2,17 @@ package org.nlpcn.es4sql;
 
 import java.io.IOException;
 
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.WildcardQueryBuilder;
 import org.junit.Test;
+import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import com.alibaba.druid.sql.SQLUtils;
@@ -12,12 +22,18 @@ public class ParserTest {
 	
 	@Test
 	public void parser() throws IOException, SqlParseException{
-		String sql = "(select        *,sum "
-				+ "(   id   ),a.id,b.ic,fuck    (   sdfss) from (JAVA.*,bb.kk) filter bb <> c and  bb> =c and  sdfsd in (1,2,3,4,5,5) and sdfsd = analysis(sdfsdfsd) and  cc not like '%sdf%' and   (id <4) and ((id>4) or (a in (1,3) and b =323 and b =323 and b =323 and b =323 and b =323))  OR  ds ='s33' group by id,aa,df,sdf,sdf order by cc,dd desc,kk asc limit 3,10);";
-
-		String formatMySql = SQLUtils.formatMySql(sql) ;
+		SearchDao searchDao = new SearchDao("127.0.0.1", 9300) ;
 		
-		System.out.println(formatMySql);
+//	case "query":
+//	case "matchQuery":
+//	case "scoreQuery":
+//	case "wildcardQuery":
+//	case "matchPhraseQuery":
 		
+		SearchResponse select = searchDao.select("select age,account_number from bank where account_number>10 and age > 20 limit 10") ;
+		
+		
+		
+		System.out.println(select);
 	}
 }

@@ -42,7 +42,7 @@ public class SearchDao {
 		if (query instanceof DefaultQuery) {
 			return new SearchResult(resp);
 		} else if (query instanceof AggregationQuery) {
-			return new SearchResult(resp);
+			return new SearchResult(resp,select);
 		}
 		return null;
 

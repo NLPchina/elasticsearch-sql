@@ -1,15 +1,8 @@
 package org.nlpcn.es4sql;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -31,8 +24,6 @@ public class AgggationTest {
 		if(parseObject.containsKey("filter")){
 			parseObject = parseObject.getJSONObject("filter") ;
 		}
-		
-		
 		
 		if(parseObject.containsKey("group by")){
 			parseObject = parseObject.getJSONObject("group by") ;
