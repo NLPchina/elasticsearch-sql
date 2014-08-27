@@ -10,14 +10,14 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.nlpcn.es4sql.FilterMaker;
-import org.nlpcn.es4sql.QueryMaker;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.wmaker.FilterMaker;
+import org.nlpcn.es4sql.wmaker.QueryMaker;
 
 public class DefaultQuery extends Query {
 
