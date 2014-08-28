@@ -15,6 +15,7 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.terms.InternalTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.LongTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
@@ -117,7 +118,9 @@ public class SearchResult {
 			return ((InternalValueCount) value).getValue()  ;
 		}else if (value instanceof InternalTopHits) {
 			return ((InternalTopHits) value);
-		} else {
+		} else if (value instanceof LongTerms){
+			return value ;
+		}else {
 			throw new SqlParseException("unknow this agg type " + value.getClass());
 		}
 	}

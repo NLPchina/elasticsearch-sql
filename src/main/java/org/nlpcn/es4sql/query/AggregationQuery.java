@@ -1,6 +1,8 @@
 package org.nlpcn.es4sql.query;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
@@ -24,6 +26,11 @@ import org.nlpcn.es4sql.wmaker.FilterMaker;
 
 public class AggregationQuery extends Query {
 
+	/**
+	 * 用来记录count字段.因为es的count是不支持排序的.tmd tell me why?
+	 */
+	private Map<String, Object> sortMap = new HashMap<String, Object>();
+
 	public AggregationQuery(Client client, Select select) {
 		super(client, select);
 	}
@@ -38,45 +45,57 @@ public class AggregationQuery extends Query {
 		TermsBuilder groupByAgg = null;
 		FilterAggregationBuilder filter = null;
 
-
 		if (select.getGroupBys().size() > 0) {
-			String field = select.getGroupBys().get(0) ;
+			String field = select.getGroupBys().get(0);
 			groupByAgg = AggregationBuilders.terms(field).field(select.getGroupBys().get(0));
-		
 		}
+
 		if (where != null) {
 			boolFilter = FilterMaker.explan(where);
 			filter = AggregationBuilders.filter("filter").filter(boolFilter);
 			if (groupByAgg != null) {
 				filter.subAggregation(groupByAgg);
 			}
-			request.addAggregation(filter) ;
-		}else if(groupByAgg!=null){
-			request.addAggregation(groupByAgg) ;
+			request.addAggregation(filter);
+		} else if (groupByAgg != null) {
+			request.addAggregation(groupByAgg);
 		}
-		
-		
+
+		// 增加gourp by
 		if (select.getGroupBys().size() > 0) {
-			String field = null ;
+			String field = null;
 			for (int i = 1; i < select.getGroupBys().size(); i++) {
-				field = select.getGroupBys().get(i) ;
-				TermsBuilder subAgg = AggregationBuilders.terms(field).field(field) ;
-				groupByAgg.subAggregation(subAgg) ;
-				groupByAgg = subAgg ;
-			}
-			if(select.getOrderBys().size()==0){
-				groupByAgg.size(select.getRowCount()) ;
+				field = select.getGroupBys().get(i);
+				TermsBuilder subAgg = AggregationBuilders.terms(field).field(field);
+				groupByAgg.subAggregation(subAgg);
+				groupByAgg = subAgg;
+				sortMap.put(field, subAgg);
 			}
 		}
-		
+
 		// add field
 		if (select.getFields().size() > 0) {
 			explanFields(request, select.getFields(), groupByAgg, filter);
 		}
 
+		// add order
+		if (groupByAgg != null && select.getOrderBys().size() > 0) {
+			for (Order order : select.getOrderBys()) {
+				if (sortMap.containsKey(order.getName())) {
+					if ("COUNT".equals(sortMap.get(order.getName()))) {
+						groupByAgg.order(Terms.Order.count("ASC".equals(order.getType())));
+					} else {
+						((TermsBuilder) sortMap.get(order.getName())).order(Terms.Order.term("ASC".equals(order.getType())));
+					}
+				} else {
+					groupByAgg.order(Terms.Order.aggregation(order.getName(), "ASC".equals(order.getType())));
+				}
+			}
+		}
+
 		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
-System.out.println(request);
+		System.out.println(request);
 		return request;
 	}
 
@@ -128,10 +147,11 @@ System.out.println(request);
 	}
 
 	private AbstractAggregationBuilder makeCountAgg(MethodField field) {
-		if("DISTINCT".equals(field.getOption())){
-			return AggregationBuilders.cardinality(field.getAlias()).field(field.getParams().get(0).value.toString()) ;
+		if ("DISTINCT".equals(field.getOption())) {
+			return AggregationBuilders.cardinality(field.getAlias()).field(field.getParams().get(0).value.toString());
 		}
-		return AggregationBuilders.count(field.getAlias()) ;
+		sortMap.put(field.getAlias(), "COUNT");
+		return AggregationBuilders.count(field.getAlias());
 	}
 
 	private AbstractAggregationBuilder makeTopHitsAgg(MethodField field) {
