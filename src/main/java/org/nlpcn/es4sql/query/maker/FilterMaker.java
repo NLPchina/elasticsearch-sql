@@ -1,4 +1,4 @@
-package org.nlpcn.es4sql.wmaker;
+package org.nlpcn.es4sql.query.maker;
 
 import org.elasticsearch.index.query.BaseFilterBuilder;
 import org.elasticsearch.index.query.BoolFilterBuilder;

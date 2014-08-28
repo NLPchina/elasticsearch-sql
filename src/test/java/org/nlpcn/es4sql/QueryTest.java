@@ -4,10 +4,7 @@ import java.io.IOException;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Test;
-import org.nlpcn.es4sql.domain.SearchResult;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
-import com.alibaba.fastjson.JSONObject;
 
 public class QueryTest {
 	
@@ -16,7 +13,6 @@ public class QueryTest {
 	@Test
 	public void betweenTest() throws IOException, SqlParseException{
 		SearchResponse select = searchDao.select("select age from bank where age between 20 and 21 limit 3");
-		
 		System.out.println(select);
 	}
 	
@@ -37,4 +33,5 @@ public class QueryTest {
 		SearchResponse select = searchDao.select("select age from bank where age  in (20,21) limit 3");
 		System.out.println(select);
 	}
+	
 }

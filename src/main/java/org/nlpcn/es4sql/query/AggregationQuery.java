@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.wmaker.FilterMaker;
+import org.nlpcn.es4sql.query.maker.FilterMaker;
 
 public class AggregationQuery extends Query {
 
@@ -45,6 +46,7 @@ public class AggregationQuery extends Query {
 		TermsBuilder groupByAgg = null;
 		FilterAggregationBuilder filter = null;
 
+		//
 		if (select.getGroupBys().size() > 0) {
 			String field = select.getGroupBys().get(0);
 			groupByAgg = AggregationBuilders.terms(field).field(select.getGroupBys().get(0));
@@ -136,7 +138,9 @@ public class AggregationQuery extends Query {
 		case "MAX":
 			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
 		case "MIN":
-			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
+			return AggregationBuilders.min(field.getAlias()).field(field.getParams().get(0).toString());
+		case "AVG":
+			return AggregationBuilders.avg(field.getAlias()).field(field.getParams().get(0).toString()) ;
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
 		case "COUNT":
@@ -172,5 +176,5 @@ public class AggregationQuery extends Query {
 		}
 		return topHits;
 	}
-
+	
 }

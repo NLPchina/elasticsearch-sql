@@ -1,4 +1,4 @@
-package org.nlpcn.es4sql.wmaker;
+package org.nlpcn.es4sql.query.maker;
 
 import java.util.Set;
 

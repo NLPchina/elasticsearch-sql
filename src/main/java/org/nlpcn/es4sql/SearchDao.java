@@ -61,7 +61,7 @@ public class SearchDao {
 		Select select = new SqlParser().parseSelect(sql);
 
 		Query query = select2Query(select);
-
+System.out.println(query.explan());
 		return query.explan().execute().actionGet();
 	}
 

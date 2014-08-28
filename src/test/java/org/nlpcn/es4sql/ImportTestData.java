@@ -13,17 +13,17 @@ import org.nlpcn.commons.lang.util.FileFinder;
 
 import com.alibaba.fastjson.JSONObject;
 
-public class InsertTest {
+public class ImportTestData {
 	public static void main(String[] args) throws ElasticsearchException, IOException {
-	    System.out.println(123213);
+		System.out.println(123213);
 		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(FileFinder.find("accounts.json"))));
 		String temp = null;
 		int i = 0;
 		while ((temp = br.readLine()) != null) {
-			JSONObject id = JSONObject.parseObject(temp) ;
-			JSONObject job = JSONObject.parseObject(br.readLine()) ;
-			
+			JSONObject id = JSONObject.parseObject(temp);
+			JSONObject job = JSONObject.parseObject(br.readLine());
+
 			try {
 				client.prepareIndex().setIndex("bank").setType("accounts").setId(id.getJSONObject("index").getString("_id")).setSource(job).execute().actionGet();
 			} catch (Exception e) {

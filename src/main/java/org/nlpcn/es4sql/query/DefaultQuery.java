@@ -16,8 +16,8 @@ import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.wmaker.FilterMaker;
-import org.nlpcn.es4sql.wmaker.QueryMaker;
+import org.nlpcn.es4sql.query.maker.FilterMaker;
+import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 public class DefaultQuery extends Query {
 
