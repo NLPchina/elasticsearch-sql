@@ -73,6 +73,7 @@ public class AggregationQuery extends Query {
 				groupByAgg = subAgg;
 				sortMap.put(field, subAgg);
 			}
+			groupByAgg.size(select.getRowCount()) ;
 		}
 
 		// add field

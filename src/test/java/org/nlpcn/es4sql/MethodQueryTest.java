@@ -6,6 +6,11 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
+/**
+ * 定製方法查詢．
+ * @author ansj
+ *
+ */
 public class MethodQueryTest {
 	private SearchDao searchDao = new SearchDao("localhost", 9300);
 
