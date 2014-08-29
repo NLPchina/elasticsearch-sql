@@ -63,4 +63,11 @@ public class QueryTest {
 		SearchResponse select = searchDao.select("select insert_time from online where insert_time is not miss limit 10");
 		System.out.println(select);
 	}
+	
+
+	@Test
+	public void boolQuerySearch() throws IOException, SqlParseException{
+		SearchResponse select = searchDao.select("select * from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not miss order by age desc limit 10 ");
+		System.out.println(select);
+	}
 }

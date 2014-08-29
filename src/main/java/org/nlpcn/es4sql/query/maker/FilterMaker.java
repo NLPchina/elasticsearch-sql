@@ -28,6 +28,9 @@ public class FilterMaker extends Maker {
 	}
 
 	private void explanWhere(BoolFilterBuilder boolFilter, Where where) throws SqlParseException {
+		while (where.getWheres().size() == 1) {
+			where = where.getWheres().getFirst();
+		}
 		if (where instanceof Condition) {
 			addSubFilter(boolFilter, where, (BaseFilterBuilder) make((Condition) where));
 		} else {

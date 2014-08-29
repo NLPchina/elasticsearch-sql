@@ -63,7 +63,9 @@ System.out.println(request);
 
 	private void explanFields(SearchRequestBuilder request, List<Field> fields, TermsBuilder groupByAgg) throws SqlParseException {
 		for (Field field : fields) {
-			if (field instanceof MethodField) {
+			if(field == null){
+				
+			}else if (field instanceof MethodField) {
 				throw new SqlParseException("it did not support this field method " + field);
 			} else if (field instanceof Field) {
 				request.addField(field.getName());
