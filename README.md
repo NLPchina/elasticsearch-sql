@@ -21,84 +21,105 @@ elasticsearch-sql旨在将elasticsearch索引库兼容关系型数据库sql查�
 
 * Query
 
-		select * from blank where age >30 and gender ="m" ;
+    	select * from blank where age >30 and gender ="m" ;
 
 * Aggregation
 
-    select count(*),sum(age),min(age) as m,max(age),avg(age) from bank group by gender order by sum(age),m desc
+        select count(*),sum(age),min(age) as m,max(age),avg(age) from bank group by gender order by sum(age),m desc
 
 > ###beyond sql
 
 * Search
 
-  select address from bank where address= matchQuery('880 Holmes Lane') order by _score desc limit 3 
+        select address from bank where address= matchQuery('880 Holmes Lane') order by _score desc limit 3 
+        
 
+* expand Aggregation Range
 
+<pre><code>
+/**
+* 区段group 聚合
+ * 
+ * http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-range-aggregation.html
+ * 
+ * @throws IOException
+ * @throws SqlParseException
+ */
+@Test
+public void countGroupByRange() throws IOException, SqlParseException {
+	SearchResponse result = searchDao.select("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
+	System.out.println(result);
+}
 
+</code></pre>
 
+<code><pre>
+
+/**
+* 时间 聚合 , 每天按照天聚合 参数说明:
+ * 
+ * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html</a>
+ * 
+ * @throws IOException
+ * @throws SqlParseException
+ */
+@Test
+public void countGroupByDateTest() throws IOException, SqlParseException {
+	SearchResponse result = searchDao.select("select online from online  group by date_histogram(field='insert_time','interval'='1d') ");
+	System.out.println(result);
+        	}
+
+</code></pre>
+
+<code><pre>
+/**
+* 时间范围聚合
+ * 
+ * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-daterange-aggregation.html</a>
+ * 
+ * @throws IOException
+ * @throws SqlParseException
+ */
+@Test
+public void countDateRangeTest() throws IOException, SqlParseException {
+	SearchResponse result = searchDao
+			.select("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+	System.out.println(result);
+}
+</code></pre>
 
 
 
 # NOW
+
 > 列出已经实现的功能
-
-* sum
-* max
-
-# FEATURE
-> 列出打算将要做的功能
+*  ES TopHits
+*  ES MISS
 *  SQL select
-*  SQL distinct
+*  SQL COUNT distinct
 *  SQL where
 *  SQL AND & OR
 *  SQL Order By
-*  SQL insert
-*  SQL update
-*  SQL delete
-*  SQL Top
-*  SQL Like
 *  SQL 通配符
 *  SQL In
 *  SQL Between
 *  SQL Aliases
-*  SQL Join
-*  SQL Inner Join
-*  SQL Left Join
-*  SQL Right Join
-*  SQL Full Join
-*  SQL Union
-*  SQL Select Into
-*  SQL Create DB
-*  SQL Create Table
-*  SQL Constraints
 *  SQL Not Null
-*  SQL Unique
-*  SQL Primary Key
-*  SQL Foreign Key
-*  SQL Check
-*  SQL Default
-*  SQL Create Index
-*  SQL Drop
-*  SQL Alter
-*  SQL Increment
-*  SQL View
-*  SQL Date
-*  SQL Nulls
-*  SQL isnull()
-*  SQL functions
+*  SQL(ES) Date
 *  SQL avg()
 *  SQL count()
-*  SQL first()
 *  SQL last()
 *  SQL max()
 *  SQL min()
 *  SQL sum()
+*  SQL Nulls
+*  SQL isnull()
 *  SQL Group By
-*  SQL Having
-*  SQL ucase()
-*  SQL lcase()
-*  SQL mid()
-*  SQL len()
-*  SQL round()
 *  SQL now()
-*  SQL format()
+
+# FEATURE
+
+*  SQL insert
+*  SQL update
+*  SQL delete
+*  ES functions
