@@ -11,22 +11,27 @@ elasticsearch-sql旨在将elasticsearch索引库兼容关系型数据库sql查�
 * down jar
   > 还木有
 
+
+
 # Simple Case
 
-> you can use it like database and beyond sql .
-> 
-> * Query
-> 
-> 	select * from blank where age >30 and gender ="m" ;
-> 	
->
-> * Aggregation
-> 
-> 	select count(*),sum(age),min(age) as m,max(age),avg(age) from bank group by gender order by sum(age),m desc
+==================
 
+> ###you can use it like database and beyond sql .
 
+* Query
 
+		select * from blank where age >30 and gender ="m" ;
 
+* Aggregation
+
+    select count(*),sum(age),min(age) as m,max(age),avg(age) from bank group by gender order by sum(age),m desc
+
+> ###beyond sql
+
+* Search
+
+  select address from bank where address= matchQuery('880 Holmes Lane') order by _score desc limit 3 
 
 
 
