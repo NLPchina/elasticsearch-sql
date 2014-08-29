@@ -16,12 +16,12 @@ import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 
 public abstract class Maker {
 
-	private static final Set<OPEAR> NOT_OPEAR_SET = Sets.newHashSet(OPEAR.N, OPEAR.NIN, OPEAR.ISN , OPEAR.NBETWEEN);
+	private static final Set<OPEAR> NOT_OPEAR_SET = Sets.newHashSet(OPEAR.N, OPEAR.NIN, OPEAR.ISN, OPEAR.NBETWEEN);
 
 	private boolean isQuery = false;
 
@@ -56,7 +56,7 @@ public abstract class Maker {
 	private ToXContent make(Condition cond, String name, SQLMethodInvokeExpr value) throws SqlParseException {
 		ToXContent bqb = null;
 		Paramer paramer = null;
-		switch (value.getMethodName()) {
+		switch (value.getMethodName().toLowerCase()) {
 		case "query":
 			paramer = Paramer.parseParamer(value);
 			QueryStringQueryBuilder queryString = QueryBuilders.queryString(paramer.value);
@@ -66,7 +66,8 @@ public abstract class Maker {
 			}
 			bqb = fixNot(cond, bqb);
 			break;
-		case "matchQuery":
+		case "matchquery":
+		case "match_query":
 			paramer = Paramer.parseParamer(value);
 			MatchQueryBuilder matchQuery = QueryBuilders.matchQuery(name, paramer.value);
 			bqb = Paramer.fullParamer(matchQuery, paramer);
@@ -75,8 +76,9 @@ public abstract class Maker {
 			}
 			bqb = fixNot(cond, bqb);
 			break;
-
-		case "scoreQuery":
+		case "score":
+		case "scorequery":
+		case "score_query":
 			Float boost = Float.parseFloat(value.getParameters().get(1).toString());
 			Condition subCond = new Condition(cond.getConn(), cond.getName(), cond.getOpear(), value.getParameters().get(0));
 			if (isQuery) {
@@ -86,7 +88,8 @@ public abstract class Maker {
 				bqb = FilterBuilders.queryFilter((QueryBuilder) bqb);
 			}
 			break;
-		case "wildcardQuery":
+		case "wildcardquery":
+		case "wildcard_query":
 			paramer = Paramer.parseParamer(value);
 			WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(name, paramer.value);
 			bqb = Paramer.fullParamer(wildcardQuery, paramer);
@@ -95,7 +98,9 @@ public abstract class Maker {
 			}
 			break;
 
-		case "matchPhraseQuery":
+		case "matchphrasequery":
+		case "match_phrase":
+		case "matchphrase":
 			paramer = Paramer.parseParamer(value);
 			MatchQueryBuilder matchPhraseQuery = QueryBuilders.matchPhraseQuery(name, paramer.value);
 			bqb = Paramer.fullParamer(matchPhraseQuery, paramer);
@@ -114,13 +119,24 @@ public abstract class Maker {
 	private ToXContent make(Condition cond, String name, Object value) throws SqlParseException {
 		ToXContent x = null;
 		switch (cond.getOpear()) {
+		case ISN:
 		case IS:
+		case N:
 		case EQ:
-			if (isQuery)
-				x = QueryBuilders.termQuery(name, value);
-			else
-				x = FilterBuilders.termFilter(name, value);
-			break;
+
+			if (value instanceof SQLIdentifierExpr) {
+				x = FilterBuilders.missingFilter(name);
+				if (isQuery) {
+					x = QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.missingFilter(name));
+				}
+				break;
+			} else {
+				if (isQuery)
+					x = QueryBuilders.termQuery(name, value);
+				else
+					x = FilterBuilders.termFilter(name, value);
+				break;
+			}
 		case GT:
 			if (isQuery)
 				x = QueryBuilders.rangeQuery(name).gt(value);
@@ -159,7 +175,7 @@ public abstract class Maker {
 				x = QueryBuilders.rangeQuery(name).gte(((Object[]) value)[0]).lte(((Object[]) value)[1]);
 			else
 				x = FilterBuilders.rangeFilter(name).gte(((Object[]) value)[0]).lte(((Object[]) value)[1]);
-			break ;
+			break;
 		default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}

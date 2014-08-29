@@ -5,11 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.nlpcn.commons.lang.util.StringUtil;
-import org.nlpcn.es4sql.exception.SqlParseException;
-
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr.Option;
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 
 /**
  * 将sql语句转换为select 对象
@@ -21,7 +16,7 @@ public class Select {
 	private List<Index> indexs = new LinkedList<>();
 	private List<Field> fields = new LinkedList<>();
 	private Where where = null;
-	private List<String> groupBys = new LinkedList<>();
+	private List<Field> groupBys = new LinkedList<>();
 	private List<Order> orderBys = new LinkedList<>();
 	private int offset;
 	private int rowCount = Integer.MAX_VALUE;
@@ -56,11 +51,9 @@ public class Select {
 		indexs.add(new Index(from));
 	}
 
-	public void addGroupBy(String field) {
-		if (StringUtil.isNotBlank(field)) {
-			isAgg = true;
-			this.groupBys.add(field);
-		}
+	public void addGroupBy(Field field) {
+		isAgg = true;
+		this.groupBys.add(field);
 	}
 
 	public Where getWhere() {
@@ -71,7 +64,7 @@ public class Select {
 		this.where = where;
 	}
 
-	public List<String> getGroupBys() {
+	public List<Field> getGroupBys() {
 		return groupBys;
 	}
 
@@ -118,22 +111,8 @@ public class Select {
 		return list.toArray(new String[list.size()]);
 	}
 
-	public void addField(String name, String alias) {
-		if ("*".equals(name) || StringUtil.isBlank(name)) {
-			return;
-		}
-		fields.add(new Field(name, alias));
+	public void addField(Field field) {
+		fields.add(field);
 	}
-
-	public void addField(String name, List<SQLExpr> arguments, String alias) throws SqlParseException {
-		isAgg = true ;
-		fields.add(MethodField.makeField(name, arguments, null,alias));
-	}
-	
-	public void addField(String name, List<SQLExpr> arguments, Option option ,String alias) throws SqlParseException {
-		isAgg = true ;
-		fields.add(MethodField.makeField(name, arguments, option==null?null:option.name(),alias));
-	}
-
 
 }

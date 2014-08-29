@@ -11,6 +11,7 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.nlpcn.es4sql.domain.SearchResult;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.AggregationQuery;
 import org.nlpcn.es4sql.query.DefaultQuery;
 import org.nlpcn.es4sql.query.Query;
@@ -61,7 +62,7 @@ public class SearchDao {
 		Select select = new SqlParser().parseSelect(sql);
 
 		Query query = select2Query(select);
-System.out.println(query.explan());
+		
 		return query.explan().execute().actionGet();
 	}
 

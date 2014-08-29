@@ -7,7 +7,7 @@ package org.nlpcn.es4sql.domain;
  *
  */
 public class Field {
-	
+
 	protected String name;
 	private String alias;
 
@@ -32,4 +32,8 @@ public class Field {
 		this.alias = alias;
 	}
 
+	@Override
+	public String toString() {
+		return this.name;
+	}
 }

@@ -34,4 +34,33 @@ public class QueryTest {
 		System.out.println(select);
 	}
 	
+	
+	@Test
+	public void dateSearch() throws IOException, SqlParseException{
+		SearchResponse select = searchDao.select("select insert_time from online where insert_time<'2014-08-18' limit 3");
+		System.out.println(select);
+	}
+	
+	@Test
+	public void dateBetweenSearch() throws IOException, SqlParseException{
+		SearchResponse select = searchDao.select("select insert_time from online where insert_time between '2014-08-18' and '2014-08-21' limit 3");
+		System.out.println(select);
+	}
+	
+	/**
+	 * 是否存在查询
+	 * @throws IOException
+	 * @throws SqlParseException
+	 */
+	@Test
+	public void missFilterSearch() throws IOException, SqlParseException{
+		SearchResponse select = searchDao.select("select insert_time from online where insert_time is not miss order by _score desc limit 10");
+		System.out.println(select);
+	}
+	
+	@Test
+	public void missQuerySearch() throws IOException, SqlParseException{
+		SearchResponse select = searchDao.select("select insert_time from online where insert_time is not miss limit 10");
+		System.out.println(select);
+	}
 }

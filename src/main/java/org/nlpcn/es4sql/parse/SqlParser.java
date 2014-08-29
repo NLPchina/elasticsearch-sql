@@ -1,11 +1,9 @@
-package org.nlpcn.es4sql;
+package org.nlpcn.es4sql.parse;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.nlpcn.es4sql.domain.Condition;
-import org.nlpcn.es4sql.domain.Field;
-import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
@@ -14,8 +12,6 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
-import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
-import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
@@ -123,11 +119,12 @@ public class SqlParser {
 			where.addWhere(condition);
 		} else if (expr instanceof SQLInListExpr) {
 			SQLInListExpr siExpr = (SQLInListExpr) expr;
-			Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), siExpr.isNot()?"NOT IN":"IN", parseValue(siExpr.getTargetList()));
+			Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()));
 			where.addWhere(condition);
 		} else if (expr instanceof SQLBetweenExpr) {
-			SQLBetweenExpr between = ((SQLBetweenExpr) expr) ;
-			Condition condition = new Condition(CONN.valueOf(opear), between.getTestExpr().toString(),between.isNot()?"NOT BETWEEN":"BETWEEN" , new Object[]{parseValue(between.beginExpr),parseValue(between.endExpr)});
+			SQLBetweenExpr between = ((SQLBetweenExpr) expr);
+			Condition condition = new Condition(CONN.valueOf(opear), between.getTestExpr().toString(), between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[] { parseValue(between.beginExpr),
+					parseValue(between.endExpr) });
 			where.addWhere(condition);
 		} else {
 			throw new SqlParseException("err find condition " + expr.getClass());
@@ -151,6 +148,8 @@ public class SqlParser {
 			return expr;
 		} else if (expr instanceof SQLNullExpr) {
 			return null;
+		} else if (expr instanceof SQLIdentifierExpr && "miss".equalsIgnoreCase(expr.toString())) {
+			return expr;
 		} else {
 			throw new SqlParseException("i can not know value type " + expr.getClass() + " , value is : " + expr);
 		}
@@ -158,35 +157,20 @@ public class SqlParser {
 
 	private void findSelect(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
 		List<SQLSelectItem> selectList = query.getSelectList();
-
-		SQLExpr expr = null;
 		for (SQLSelectItem sqlSelectItem : selectList) {
-			expr = sqlSelectItem.getExpr();
-			if (expr instanceof SQLIdentifierExpr) {
-				select.addField(expr.toString(), sqlSelectItem.getAlias());
-			} else if (expr instanceof SQLQueryExpr) {
-				throw new SqlParseException("unknow field name : " + sqlSelectItem);
-			} else if (expr instanceof SQLAllColumnExpr) {
-			} else if (expr instanceof SQLMethodInvokeExpr) {
-				select.addField(((SQLMethodInvokeExpr) expr).getMethodName(), ((SQLMethodInvokeExpr) expr).getParameters(), sqlSelectItem.getAlias());
-			} else if (expr instanceof SQLAggregateExpr) {
-				select.addField(((SQLAggregateExpr) expr).getMethodName(), ((SQLAggregateExpr) expr).getArguments(), ((SQLAggregateExpr) expr).getOption(), sqlSelectItem.getAlias());
-			} else {
-				throw new SqlParseException("unknow field name : " + sqlSelectItem);
-			}
+			select.addField(FieldMaker.makeField(sqlSelectItem.getExpr(), sqlSelectItem.getAlias()));
 		}
-
 	}
 
-	private void findGroupBy(MySqlSelectQueryBlock query, Select select) {
+	private void findGroupBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
 		SQLSelectGroupByClause groupBy = query.getGroupBy();
 		if (groupBy == null) {
 			return;
 		}
 		List<SQLExpr> items = groupBy.getItems();
-
 		for (SQLExpr sqlExpr : items) {
-			select.addGroupBy(sqlExpr.toString());
+			System.out.println(sqlExpr.getClass());
+			select.addGroupBy(FieldMaker.makeField(sqlExpr, null));
 		}
 	}
 
@@ -196,27 +180,11 @@ public class SqlParser {
 		if (orderBy == null) {
 			return;
 		}
-
 		List<SQLSelectOrderByItem> items = orderBy.getItems();
-
 		List<String> lists = new ArrayList<>();
-
 		for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
-
 			SQLExpr expr = sqlSelectOrderByItem.getExpr();
-			if (expr instanceof SQLIdentifierExpr) {
-				lists.add(expr.toString());
-			} else if (expr instanceof SQLMethodInvokeExpr) {
-				SQLMethodInvokeExpr aggExpr = ((SQLMethodInvokeExpr) expr);
-				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getParameters(), null, null).toString());
-			} else if (expr instanceof SQLAggregateExpr) {
-				SQLAggregateExpr aggExpr = ((SQLAggregateExpr) expr);
-				lists.add(MethodField.makeField(aggExpr.getMethodName(), aggExpr.getArguments(), ((SQLAggregateExpr) expr).getOption() == null ? null : ((SQLAggregateExpr) expr).getOption().name(),
-						null).toString());
-			} else {
-				throw new SqlParseException("unknow order by name : " + expr);
-			}
-
+			lists.add(FieldMaker.makeField(expr, null).toString());
 			if (sqlSelectOrderByItem.getType() != null) {
 				String type = sqlSelectOrderByItem.getType().toString();
 				for (String name : lists) {

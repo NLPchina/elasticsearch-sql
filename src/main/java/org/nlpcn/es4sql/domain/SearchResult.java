@@ -16,7 +16,6 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.terms.InternalTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.LongTerms;
-import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits;
@@ -60,8 +59,8 @@ public class SearchResult {
 			this.total = buckets.size();
 			results = new ArrayList<>(buckets.size());
 			for (Bucket bucket : buckets) {
-				Map<String, Object> aggsMap = toAggsMap(bucket.getAggregations().getAsMap()); 
-				aggsMap.put("docCount", bucket.getDocCount()) ;
+				Map<String, Object> aggsMap = toAggsMap(bucket.getAggregations().getAsMap());
+				aggsMap.put("docCount", bucket.getDocCount());
 				results.add(aggsMap);
 			}
 		} else {
@@ -104,7 +103,6 @@ public class SearchResult {
 	 */
 	private Map<String, Object> toAggsMap(Map<String, Aggregation> fields) throws SqlParseException {
 		Map<String, Object> result = new HashMap<>();
-		Aggregation value = null;
 		for (Entry<String, Aggregation> entry : fields.entrySet()) {
 			result.put(entry.getKey(), covenValue(entry.getValue()));
 		}
@@ -114,13 +112,13 @@ public class SearchResult {
 	private Object covenValue(Aggregation value) throws SqlParseException {
 		if (value instanceof InternalNumericMetricsAggregation.SingleValue) {
 			return ((InternalNumericMetricsAggregation.SingleValue) value).value();
-		} else if(value instanceof InternalValueCount){
-			return ((InternalValueCount) value).getValue()  ;
-		}else if (value instanceof InternalTopHits) {
+		} else if (value instanceof InternalValueCount) {
+			return ((InternalValueCount) value).getValue();
+		} else if (value instanceof InternalTopHits) {
 			return ((InternalTopHits) value);
-		} else if (value instanceof LongTerms){
-			return value ;
-		}else {
+		} else if (value instanceof LongTerms) {
+			return value;
+		} else {
 			throw new SqlParseException("unknow this agg type " + value.getClass());
 		}
 	}
