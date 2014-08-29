@@ -2,7 +2,7 @@ elasticsearch-sql
 =================
 
 > use elasticsearch like sql , and use es function in sql .  
-> ###thanks by @温少 and @elasticsearc
+> ###thanks by @温少 and @elasticsearch
 
 
 # SETUP 
