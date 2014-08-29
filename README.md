@@ -1,7 +1,8 @@
 elasticsearch-sql
 =================
 
-elasticsearch-sql旨在将elasticsearch索引库兼容关系型数据库sql查询，开发这个项目的初衷是由于elasticsearch的学习成本比较高，并且文档较少，这个项目开发成功后可以降低初学者的学习成本。
+> use elasticsearch like sql , and use es function in sql .  
+> ###thanks by @温少 and @elasticsearc
 
 
 # SETUP 
