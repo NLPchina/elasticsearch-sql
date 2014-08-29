@@ -18,7 +18,7 @@ elasticsearch-sql
 
 ==================
 
-> ###you can use it like database and beyond sql .
+> ###you can use it by sql .
 
 * Query
 
