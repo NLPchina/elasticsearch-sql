@@ -36,57 +36,12 @@ elasticsearch-sql旨在将elasticsearch索引库兼容关系型数据库sql查�
 
 * expand Aggregation Range
 
-<pre><code>
-/**
-* 区段group 聚合
- * 
- * http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-range-aggregation.html
- * 
- * @throws IOException
- * @throws SqlParseException
- */
-@Test
-public void countGroupByRange() throws IOException, SqlParseException {
-	SearchResponse result = searchDao.select("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
-	System.out.println(result);
-}
+	select count(age) from bank  group by range(age, 20,25,30,35,40) 
 
-</code></pre>
 
-<code><pre>
+	select online from online  group by date_histogram(field='insert_time','interval'='1d') 
 
-/**
-* 时间 聚合 , 每天按照天聚合 参数说明:
- * 
- * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html</a>
- * 
- * @throws IOException
- * @throws SqlParseException
- */
-@Test
-public void countGroupByDateTest() throws IOException, SqlParseException {
-	SearchResponse result = searchDao.select("select online from online  group by date_histogram(field='insert_time','interval'='1d') ");
-	System.out.println(result);
-        	}
-
-</code></pre>
-
-<code><pre>
-/**
-* 时间范围聚合
- * 
- * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-daterange-aggregation.html</a>
- * 
- * @throws IOException
- * @throws SqlParseException
- */
-@Test
-public void countDateRangeTest() throws IOException, SqlParseException {
-	SearchResponse result = searchDao
-			.select("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
-	System.out.println(result);
-}
-</code></pre>
+	select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now')
 
 
 
