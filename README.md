@@ -35,12 +35,18 @@ elasticsearch-sql旨在将elasticsearch索引库兼容关系型数据库sql查�
         
 
 * expand Aggregation Range
+	
+	+ range 20-25,25-30,30-35,35-40
 
-	select count(age) from bank  group by range(age, 20,25,30,35,40) 
+		select count(age) from bank  group by range(age, 20,25,30,35,40) 
 
 
+	+ range date one day 
+	
 	select online from online  group by date_histogram(field='insert_time','interval'='1d') 
 
+	+ range date by your config
+	
 	select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now')
 
 
