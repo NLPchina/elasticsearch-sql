@@ -67,7 +67,7 @@ public class QueryTest {
 
 	@Test
 	public void boolQuerySearch() throws IOException, SqlParseException{
-		SearchResponse select = searchDao.select("select * from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not miss order by age desc limit 10 ");
+		SearchResponse select = searchDao.select("select * from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not miss order by age,_score desc limit 10 ");
 		System.out.println(select);
 	}
 }
