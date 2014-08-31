@@ -48,6 +48,29 @@ public class SearchDao {
 		return null;
 
 	}
+	
+	/**
+	 * 把sql解析成es的查询
+	 * @param sql
+	 * @return 
+	 * @throws SqlParseException 
+	 */
+	public static SearchRequestBuilder explan(String sql) throws SqlParseException{
+		Select select = new SqlParser().parseSelect(sql);
+
+		Query query = null;
+		
+		Client client = new TransportClient() ;
+
+		if (select.isAgg) {
+			query = new AggregationQuery(client, select);
+		} else {
+			query = new DefaultQuery(client, select);
+		}
+
+		return query.explan() ;
+	}
+	
 
 	/**
 	 * 查询返回es的查询结果

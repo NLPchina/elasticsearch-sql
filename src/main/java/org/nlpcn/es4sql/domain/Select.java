@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.nlpcn.commons.lang.util.StringUtil;
+import com.alibaba.druid.util.StringUtils;
 
 /**
  * 将sql语句转换为select 对象
@@ -45,7 +45,7 @@ public class Select {
 	}
 
 	public void addIndexAndType(String from) {
-		if (StringUtil.isBlank(from)) {
+		if (StringUtils.isEmpty(from)) {
 			return;
 		}
 		indexs.add(new Index(from));

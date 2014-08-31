@@ -25,7 +25,6 @@ public class Paramer {
 		SQLExpr sqlExpr = null;
 		for (int i = 1; i < parameters.size(); i++) {
 			sqlExpr = parameters.get(i);
-			System.out.println(sqlExpr.getClass());
 			if (sqlExpr instanceof SQLCharExpr) {
 				instance.analysis = ((SQLCharExpr) sqlExpr).getText();
 			} else {

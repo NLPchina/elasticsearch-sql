@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,15 +13,13 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.nlpcn.commons.lang.util.FileFinder;
 
 import com.alibaba.fastjson.JSONObject;
 
-@SuppressWarnings(value = { "all" })
 public class ImportTestData {
 	public static void main(String[] args) throws ElasticsearchException, IOException, ParseException {
 		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
-		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(FileFinder.find("accounts.json"))));
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File("src/test/java/resource/accounts.json"))));
 		String temp = null;
 
 		while ((temp = br.readLine()) != null) {
@@ -34,7 +33,7 @@ public class ImportTestData {
 			}
 		}
 
-		br = new BufferedReader(new InputStreamReader(new FileInputStream(FileFinder.find("online_info.json"))));
+		br = new BufferedReader(new InputStreamReader(new FileInputStream(new File("src/test/java/resource/online_info.json"))));
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		while ((temp = br.readLine()) != null) {
 			JSONObject job = JSONObject.parseObject(temp);

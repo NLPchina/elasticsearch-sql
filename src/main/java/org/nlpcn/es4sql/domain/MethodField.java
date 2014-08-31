@@ -2,8 +2,9 @@ package org.nlpcn.es4sql.domain;
 
 import java.util.List;
 
-import org.nlpcn.commons.lang.util.StringUtil;
 import org.nlpcn.es4sql.Util;
+
+import com.alibaba.druid.util.StringUtils;
 
 /**
  * 搜索域
@@ -19,7 +20,7 @@ public class MethodField extends Field {
 		super(name, alias);
 		this.params = params;
 		this.option = option;
-		if (StringUtil.isBlank(alias)) {
+		if (StringUtils.isEmpty(alias)) {
 			this.setAlias(this.toString());
 		}
 	}

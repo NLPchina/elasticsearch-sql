@@ -57,7 +57,6 @@ public class DefaultQuery extends Query {
 		for (Order order : select.getOrderBys()) {
 			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
 		}
-System.out.println(request);		
 		return request;
 	}
 

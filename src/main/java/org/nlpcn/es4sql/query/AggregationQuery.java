@@ -98,7 +98,6 @@ public class AggregationQuery extends Query {
 		}
 		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
-		System.out.println(request);
 		return request;
 	}
 

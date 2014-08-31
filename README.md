@@ -1,17 +1,41 @@
 elasticsearch-sql
 =================
 
-> use elasticsearch like sql , and use es function in sql .  
-> ###thanks by @温少 and @elasticsearch
+> use elasticsearch like sql , and use es function in sql .
+>  
+> it dev on elasticsearch 1.3.2 jdk 1.7
+> 
+> run on elasticsearch 1.x jdk7
+>
+> can run client or plugin on server
+> 
+> ###thanks by @温少 and @elasticsearch @Medcl 
 
 
 # SETUP 
 
-* maven
-  > 还木有
-* down jar
-  > 还木有
+* plug
 
+````
+
+./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/0.1/elasticsearch-sql-0.1.jar --install sql 
+
+````
+
+* search by search
+
+````
+
+http://localhost:9200/_sql?sql=select * from * limit 10
+
+````
+
+* explain sql to es script
+
+````
+http://localhost:9200/_sql/_explain?sql=select * from * limit 10
+
+```` 
 
 
 # Simple Case

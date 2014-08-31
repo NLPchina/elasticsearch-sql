@@ -169,7 +169,6 @@ public class SqlParser {
 		}
 		List<SQLExpr> items = groupBy.getItems();
 		for (SQLExpr sqlExpr : items) {
-			System.out.println(sqlExpr.getClass());
 			select.addGroupBy(FieldMaker.makeField(sqlExpr, null));
 		}
 	}
