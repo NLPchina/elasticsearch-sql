@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+
 import com.alibaba.druid.util.StringUtils;
 
 /**
@@ -112,6 +114,22 @@ public class Select {
 	}
 
 	public void addField(Field field) {
+		//如果查詢＊　那麼放棄
+		if(field == null){
+			return ;
+		}
+		
+		if (field instanceof MethodField) {
+			switch (field.getName()) {
+			case "SUM":
+			case "MAX":
+			case "MIN":
+			case "AVG":
+			case "TOPHITS":
+			case "COUNT":
+				isAgg = true;
+			}
+		}
 		fields.add(field);
 	}
 

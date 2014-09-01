@@ -6,6 +6,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.nlpcn.es4sql.domain.SearchResult;
@@ -23,6 +25,13 @@ public class SearchDao {
 	@SuppressWarnings("resource")
 	public SearchDao(String ip, int port) {
 		this.client = new TransportClient().addTransportAddress(new InetSocketTransportAddress(ip, port));
+	}
+	
+	@SuppressWarnings("resource")
+	public SearchDao(String clusterName ,String ip, int port) {
+		Settings settings = ImmutableSettings.settingsBuilder()
+		        .put("cluster.name", clusterName).build();
+		this.client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(ip, port));
 	}
 
 	/**
@@ -85,6 +94,8 @@ public class SearchDao {
 		Select select = new SqlParser().parseSelect(sql);
 
 		Query query = select2Query(select);
+		
+		System.out.println(query.explan());
 		
 		return query.explan().execute().actionGet();
 	}
