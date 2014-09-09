@@ -195,7 +195,7 @@ public class AggMaker {
 		if ("DISTINCT".equals(field.getOption())) {
 			return AggregationBuilders.cardinality(field.getAlias()).field(field.getParams().get(0).value.toString());
 		}
-		return AggregationBuilders.count(field.getAlias());
+		return AggregationBuilders.count(field.getAlias()).field(field.getParams().get(0).value.toString());
 	}
 
 	/**
