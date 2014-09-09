@@ -21,7 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 public class Test {
 	public static void main(String[] args) throws IOException, SqlParseException, ParseException {
 		SearchDao searchDao = new SearchDao("test", "192.168.200.19", 9300);
-		String sql = "select count(_id) from user_feature";
+		String sql = "select count(_id) from user_feature gourp by ";
 		SearchResponse select = searchDao.select(sql);
 		System.out.println(select);
 	}
