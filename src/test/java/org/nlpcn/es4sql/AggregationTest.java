@@ -47,7 +47,7 @@ public class AggregationTest {
 	}
 
 	@Test
-	public void countTest() throws IOException, SqlParseException {
+	public void countGroupByTest() throws IOException, SqlParseException {
 		SearchResponse result = searchDao.select("select count(*) from bank  group by gender ");
 		System.out.println(result);
 	}
@@ -92,6 +92,21 @@ public class AggregationTest {
 	public void countDateRangeTest() throws IOException, SqlParseException {
 		SearchResponse result = searchDao
 				.select("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+		System.out.println(result);
+	}
+	
+	/**
+	 * 时间范围聚合
+	 * 
+	 * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-daterange-aggregation.html</a>
+	 * 
+	 * @throws IOException
+	 * @throws SqlParseException
+	 */
+	@Test
+	public void countTest() throws IOException, SqlParseException {
+		SearchResponse result = searchDao
+				.select("select count(*),sum(all_tv_clinet) from online ");
 		System.out.println(result);
 	}
 

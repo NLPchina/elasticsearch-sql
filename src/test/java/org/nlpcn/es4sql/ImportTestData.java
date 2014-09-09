@@ -33,25 +33,25 @@ public class ImportTestData {
 			}
 		}
 
-		br = new BufferedReader(new InputStreamReader(new FileInputStream(new File("src/test/java/resource/online_info.json"))));
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-		while ((temp = br.readLine()) != null) {
-			JSONObject job = JSONObject.parseObject(temp);
-
-			String time = ((JSONObject) job.get("insert_time")).getString("$date");
-
-			Date date = new Date(format.parse(time).getTime() + 8 * 3600 * 1000L);
-
-			job.put("insert_time", date);
-			job.put("date", date.getDate());
-			job.put("hours", date.getHours());
-			job.put("date_hours", date.getDate() + "_" + date.getHours());
-
-			try {
-				client.prepareIndex().setIndex("online").setType("online").setId(job.remove("_id").toString()).setSource(job).execute().actionGet();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+//		br = new BufferedReader(new InputStreamReader(new FileInputStream(new File("src/test/java/resource/online_info.json"))));
+//		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+//		while ((temp = br.readLine()) != null) {
+//			JSONObject job = JSONObject.parseObject(temp);
+//
+//			String time = ((JSONObject) job.get("insert_time")).getString("$date");
+//
+//			Date date = new Date(format.parse(time).getTime() + 8 * 3600 * 1000L);
+//
+//			job.put("insert_time", date);
+//			job.put("date", date.getDate());
+//			job.put("hours", date.getHours());
+//			job.put("date_hours", date.getDate() + "_" + date.getHours());
+//
+//			try {
+//				client.prepareIndex().setIndex("online").setType("online").setId(job.remove("_id").toString()).setSource(job).execute().actionGet();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 }

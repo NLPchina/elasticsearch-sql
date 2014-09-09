@@ -20,8 +20,8 @@ import com.alibaba.fastjson.JSONObject;
 
 public class Test {
 	public static void main(String[] args) throws IOException, SqlParseException, ParseException {
-		SearchDao searchDao = new SearchDao("test", "192.168.200.19", 9300);
-		String sql = "select count(_id) from user_feature";
+		SearchDao searchDao = new SearchDao("localhost", 9300);
+		String sql = "select count(match_all) as c  from resource_ku_video ";
 		SearchResponse select = searchDao.select(sql);
 		System.out.println(select);
 	}
