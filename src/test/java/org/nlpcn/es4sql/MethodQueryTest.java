@@ -2,7 +2,7 @@ package org.nlpcn.es4sql;
 
 import java.io.IOException;
 
-import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.ActionResponse;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -23,7 +23,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void queryTest() throws IOException, SqlParseException {
-		SearchResponse select = searchDao.select("select address from bank where q= query('880 Holmes Lane') limit 3");
+		ActionResponse select = searchDao.execute("select address from bank where q= query('880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
 
@@ -36,7 +36,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void matchQueryTest() throws IOException, SqlParseException {
-		SearchResponse select = searchDao.select("select address from bank where address= matchQuery('880 Holmes Lane') limit 3");
+		ActionResponse select = searchDao.execute("select address from bank where address= matchQuery('880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
 
@@ -52,8 +52,8 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void scoreQueryTest() throws IOException, SqlParseException {
-		SearchResponse select = searchDao
-				.select("select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3");
+		ActionResponse select = searchDao
+				.execute("select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3");
 		System.out.println(select);
 	}
 
@@ -66,7 +66,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void wildcardQueryTest() throws IOException, SqlParseException {
-		SearchResponse select = searchDao.select("select address from bank where address= wildcardQuery('l*e')  order by _score desc limit 3");
+		ActionResponse select = searchDao.execute("select address from bank where address= wildcardQuery('l*e')  order by _score desc limit 3");
 		System.out.println(select);
 	}
 	
@@ -83,7 +83,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void matchPhraseQueryTest() throws IOException, SqlParseException {
-		SearchResponse select = searchDao.select("select address from bank where address= matchPhrase('671 Bristol Street')  order by _score desc limit 3");
+		ActionResponse select = searchDao.execute("select address from bank where address= matchPhrase('671 Bristol Street')  order by _score desc limit 3");
 		System.out.println(select);
 	}
 }

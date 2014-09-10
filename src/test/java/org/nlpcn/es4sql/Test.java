@@ -6,9 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
-import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -20,9 +19,9 @@ import com.alibaba.fastjson.JSONObject;
 
 public class Test {
 	public static void main(String[] args) throws IOException, SqlParseException, ParseException {
-		SearchDao searchDao = new SearchDao("test", "192.168.200.19", 9300);
-		String sql = "select count(_id) from user_feature gourp by ";
-		SearchResponse select = searchDao.select(sql);
+		SearchDao searchDao = new SearchDao("ky_ESearch", "172.21.19.57", 9300);
+		String sql = "SELECT (COUNT(DISTINCT path)) FROM adlog group by path";
+		ActionResponse select = searchDao.execute(sql);
 		System.out.println(select);
 	}
 

@@ -1,7 +1,18 @@
 package org.nlpcn.es4sql;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
+import org.elasticsearch.action.ActionFuture;
+import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.ListenableActionFuture;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -9,14 +20,20 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.nlpcn.es4sql.domain.SearchResult;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.AggregationQuery;
 import org.nlpcn.es4sql.query.DefaultQuery;
 import org.nlpcn.es4sql.query.Query;
+
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
+import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
+import com.alibaba.druid.util.JdbcUtils;
+import com.alibaba.druid.util.StringUtils;
 
 public class SearchDao {
 
@@ -26,60 +43,67 @@ public class SearchDao {
 	public SearchDao(String ip, int port) {
 		this.client = new TransportClient().addTransportAddress(new InetSocketTransportAddress(ip, port));
 	}
-	
+
+	public SearchDao(Client client) {
+		this.client = client;
+	}
+
 	@SuppressWarnings("resource")
-	public SearchDao(String clusterName ,String ip, int port) {
-		Settings settings = ImmutableSettings.settingsBuilder()
-		        .put("cluster.name", clusterName).build();
+	public SearchDao(String clusterName, String ip, int port) {
+		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build();
 		this.client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(ip, port));
 	}
 
-	/**
-	 * 查询返回一个初步的封装结果
-	 * 
-	 * @param sql
-	 * @return
-	 * @throws IOException
-	 * @throws SqlParseException
-	 */
-	public SearchResult selectAsResult(String sql) throws IOException, SqlParseException {
-		Select select = new SqlParser().parseSelect(sql);
-
-		Query query = select2Query(select);
-
-		SearchResponse resp = query.explan().execute().actionGet();
-
-		if (query instanceof DefaultQuery) {
-			return new SearchResult(resp);
-		} else if (query instanceof AggregationQuery) {
-			return new SearchResult(resp,select);
-		}
-		return null;
-
-	}
-	
-	/**
-	 * 把sql解析成es的查询
-	 * @param sql
-	 * @return 
-	 * @throws SqlParseException 
-	 */
-	public static SearchRequestBuilder explan(String sql) throws SqlParseException{
-		Select select = new SqlParser().parseSelect(sql);
+	private SearchRequestBuilder explan(SQLQueryExpr SQLQueryExpr) throws SqlParseException {
+		Select select = new SqlParser().parseSelect(SQLQueryExpr);
 
 		Query query = null;
-		
-		Client client = new TransportClient() ;
+
+		Client client = new TransportClient();
 
 		if (select.isAgg) {
 			query = new AggregationQuery(client, select);
 		} else {
 			query = new DefaultQuery(client, select);
 		}
-
-		return query.explan() ;
+		return query.explan();
 	}
-	
+
+	/**
+	 * 把sql解析成es的查询
+	 * 
+	 * @param sql
+	 * @return
+	 * @throws SqlParseException
+	 */
+	public SearchRequestBuilder explan(String sql) throws SqlParseException {
+		return explan((SQLQueryExpr) SQLUtils.toMySqlExpr(sql));
+	}
+
+	/**
+	 * 執行一條sql
+	 * 
+	 * @param sql
+	 * @return
+	 * @throws IOException
+	 * @throws SqlParseException
+	 */
+	public SearchResponse execute(String sql) throws IOException, SqlParseException {
+		return select((SQLQueryExpr) SQLUtils.toMySqlExpr(sql));
+	}
+
+	/**
+	 * 刪除一個索引
+	 * 
+	 * @param index
+	 * @return
+	 * @throws SqlParseException
+	 */
+	public ActionResponse drop(String index) throws SqlParseException {
+		DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(index);
+		ActionFuture<DeleteIndexResponse> delete = client.admin().indices().delete(deleteIndexRequest);
+		return delete.actionGet();
+	}
 
 	/**
 	 * 查询返回es的查询结果
@@ -89,14 +113,12 @@ public class SearchDao {
 	 * @throws IOException
 	 * @throws SqlParseException
 	 */
-	public SearchResponse select(String sql) throws IOException, SqlParseException {
+	private SearchResponse select(SQLQueryExpr mySqlExpr) throws IOException, SqlParseException {
 
-		Select select = new SqlParser().parseSelect(sql);
+		Select select = new SqlParser().parseSelect(mySqlExpr);
 
 		Query query = select2Query(select);
-		
-		System.out.println(query.explan());
-		
+
 		return query.explan().execute().actionGet();
 	}
 

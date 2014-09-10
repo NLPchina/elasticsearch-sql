@@ -38,10 +38,8 @@ public class SqlParser {
 
 	public SqlParser() {
 	};
-
-	public Select parseSelect(String sql) throws SqlParseException {
-
-		SQLQueryExpr mySqlExpr = (SQLQueryExpr) SQLUtils.toMySqlExpr(sql);
+	
+	public Select parseSelect(SQLQueryExpr mySqlExpr) throws SqlParseException {
 
 		MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) mySqlExpr.getSubQuery().getQuery();
 

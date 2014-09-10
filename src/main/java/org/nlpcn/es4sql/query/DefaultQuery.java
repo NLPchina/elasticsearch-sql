@@ -62,10 +62,16 @@ public class DefaultQuery extends Query {
 
 	private void explanFields(SearchRequestBuilder request, List<Field> fields, TermsBuilder groupByAgg) throws SqlParseException {
 		for (Field field : fields) {
-			if(field == null){
-				
-			}else if (field instanceof MethodField) {
-				throw new SqlParseException("it did not support this field method " + field);
+			if (field == null) {
+
+			} else if (field instanceof MethodField) {
+				//如果是ｃｏｕｎｔ(*)這種查詢．那麼走ｅｓ默認查詢
+				if (field.getName().equals("COUNT")) {
+					select.setRowCount(0);
+				} else {
+					throw new SqlParseException("it did not support this field method " + field);
+				}
+
 			} else if (field instanceof Field) {
 				request.addField(field.getName());
 			} else {

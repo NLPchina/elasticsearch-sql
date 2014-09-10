@@ -114,11 +114,11 @@ public class Select {
 	}
 
 	public void addField(Field field) {
-		//如果查詢＊　那麼放棄
-		if(field == null){
-			return ;
+		// 如果查詢＊　那麼放棄
+		if (field == null) {
+			return;
 		}
-		
+
 		if (field instanceof MethodField) {
 			switch (field.getName()) {
 			case "SUM":
@@ -127,7 +127,9 @@ public class Select {
 			case "AVG":
 			case "TOPHITS":
 			case "COUNT":
-				isAgg = true;
+				if(!"*".equals(((MethodField) field).getParams().get(0).toString())){
+					isAgg = true;
+				}
 			}
 		}
 		fields.add(field);
