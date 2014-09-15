@@ -28,6 +28,9 @@ public class QueryMaker extends Maker {
 	}
 
 	private void explanWhere(BoolQueryBuilder boolQuery, Where where) throws SqlParseException {
+		while (where.getWheres().size() == 1) {
+			where = where.getWheres().getFirst();
+		}
 		if (where instanceof Condition) {
 			addSubQuery(boolQuery, where, (BaseQueryBuilder) make((Condition) where));
 		} else {

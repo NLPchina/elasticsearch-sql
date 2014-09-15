@@ -13,7 +13,7 @@ public class AggregationTest {
 
 	@Test
 	public void sumDistinctOrderTest() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.execute("select sum(age),count(*), count(distinct age) from bank  group by gender order by count(distinct age)  desc  limit 1");
+		ActionResponse select = searchDao.execute("select sum(age),count(*), count(distinct age) from bank  group by gender order by count(distinct age)  desc  limit 3");
 		System.out.println(select);
 	}
 
@@ -25,7 +25,7 @@ public class AggregationTest {
 
 	@Test
 	public void sumSortCount() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.execute("select sum(age),count(*), count(age)  from bank  group by gender order by count(*) desc limit 2 ");
+		ActionResponse select = searchDao.execute("select sum(age), count(age)  from bank  group by gender order by count(age) asc limit 2 ");
 		System.out.println(select);
 	}
 
@@ -77,7 +77,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByDateTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select online from online  group by date_histogram(field='insert_time','interval'='1d') ");
+		ActionResponse result = searchDao.execute("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
 		System.out.println(result);
 	}
 
@@ -95,7 +95,7 @@ public class AggregationTest {
 				.execute("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
-	
+
 	/**
 	 * 时间范围聚合
 	 * 
@@ -106,9 +106,21 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao
-				.execute("select count(*),sum(all_tv_clinet) from online ");
+		ActionResponse result = searchDao.execute("select count(*),sum(all_tv_clinet) from online group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
 
+	/**
+	 * tophits 查询
+	 * 
+	 * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-top-hits-aggregation.html</a>
+	 * 
+	 * @throws IOException
+	 * @throws SqlParseException
+	 */
+	@Test
+	public void topHitTest() throws IOException, SqlParseException {
+		ActionResponse result = searchDao.execute("select topHits('size'=3,age='desc') from bank  group by gender ");
+		System.out.println(result);
+	}
 }

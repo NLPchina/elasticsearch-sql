@@ -7,10 +7,10 @@ import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 public class DropTest {
-	private SearchDao searchDao = new SearchDao("localhost", 9300);
+	private SearchDao searchDao = new SearchDao("172.21.19.210", 9300);
 	@Test
 	public void dropIndexTest() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.drop("logstash-2014.08.29");
+		ActionResponse select = searchDao.drop("identify.log_2014-08-*");
 		System.out.println(select);
 	}
 }

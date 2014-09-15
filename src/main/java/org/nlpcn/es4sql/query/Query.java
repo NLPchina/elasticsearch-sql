@@ -1,7 +1,10 @@
 package org.nlpcn.es4sql.query;
 
+import java.lang.reflect.Method;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -49,7 +52,5 @@ public abstract class Query {
 	 * @throws SqlParseException
 	 */
 	protected abstract SearchRequestBuilder _explan() throws SqlParseException;
-
-
 
 }

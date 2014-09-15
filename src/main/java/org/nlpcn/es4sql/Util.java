@@ -3,6 +3,7 @@ package org.nlpcn.es4sql;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.index.query.QueryBuilders;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -14,6 +15,7 @@ import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
 
 public class Util {
 	public static String joiner(List<KVValue> lists, String oper) {
+		
 		if (lists.size() == 0) {
 			return null;
 		}

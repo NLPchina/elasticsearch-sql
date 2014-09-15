@@ -23,7 +23,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void queryTest() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.execute("select address from bank where q= query('880 Holmes Lane') limit 3");
+		ActionResponse select = searchDao.execute("select address from bank where q= query('address:880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
 

@@ -30,7 +30,7 @@ public class QueryTest {
 	
 	@Test
 	public void notInTest() throws IOException, SqlParseException{
-		ActionResponse select = searchDao.execute("select age from bank where age  in (20,21) limit 3");
+		ActionResponse select = searchDao.execute("select age from bank where age not in (20,21) limit 3");
 		System.out.println(select);
 	}
 	
@@ -74,7 +74,7 @@ public class QueryTest {
 
 	@Test
 	public void countSearch() throws IOException, SqlParseException{
-		ActionResponse select = searchDao.execute("select count(*) from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not miss order by age,_score desc");
+		ActionResponse select = searchDao.execute("select count(*) from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not miss");
 		System.out.println(select);
 	}
 }
