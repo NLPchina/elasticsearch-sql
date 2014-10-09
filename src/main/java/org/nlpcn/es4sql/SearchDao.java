@@ -1,18 +1,10 @@
 package org.nlpcn.es4sql;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.ActionResponse;
-import org.elasticsearch.action.ListenableActionFuture;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -28,12 +20,7 @@ import org.nlpcn.es4sql.query.DefaultQuery;
 import org.nlpcn.es4sql.query.Query;
 
 import com.alibaba.druid.sql.SQLUtils;
-import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
-import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
-import com.alibaba.druid.util.JdbcUtils;
-import com.alibaba.druid.util.StringUtils;
 
 public class SearchDao {
 

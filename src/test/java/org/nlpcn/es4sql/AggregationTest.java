@@ -3,7 +3,6 @@ package org.nlpcn.es4sql;
 import java.io.IOException;
 
 import org.elasticsearch.action.ActionResponse;
-import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -106,9 +105,11 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select count(*),sum(all_tv_clinet) from online group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+		ActionResponse result = searchDao
+				.execute("select count(*),sum(all_tv_clinet) from online group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
+
 
 	/**
 	 * tophits 查询
@@ -123,4 +124,5 @@ public class AggregationTest {
 		ActionResponse result = searchDao.execute("select topHits('size'=3,age='desc') from bank  group by gender ");
 		System.out.println(result);
 	}
+
 }
