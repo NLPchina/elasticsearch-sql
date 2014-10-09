@@ -121,4 +121,7 @@ public class SearchDao {
 		return query;
 	}
 
+	public Client getClient() {
+		return client;
+	}
 }

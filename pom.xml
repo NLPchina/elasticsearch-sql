@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>0.1</version>
+	<version>0.3</version>
 	<packaging>jar</packaging>
 	<description>elasticsearh by sql ! </description>
 	<name>elasticsearch-sql</name>
