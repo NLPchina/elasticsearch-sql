@@ -213,7 +213,7 @@ public class SqlParser {
 		String[] split = from.toString().split(",");
 
 		for (String string : split) {
-			select.addIndexAndType(string.trim());
+			select.addIndexAndType(string.replace(" ", "").trim());
 		}
 	}
 

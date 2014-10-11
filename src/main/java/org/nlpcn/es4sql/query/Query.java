@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql.query;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
@@ -33,7 +34,6 @@ public abstract class Query {
 	 * @throws SqlParseException
 	 */
 	public SearchRequestBuilder explan() throws SqlParseException {
-
 		// set index
 		request = client.prepareSearch(select.getIndexArr());
 

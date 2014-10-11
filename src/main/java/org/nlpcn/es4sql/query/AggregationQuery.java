@@ -11,6 +11,7 @@ import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.nlpcn.es4sql.domain.Field;
@@ -51,6 +52,12 @@ public class AggregationQuery extends Query {
 		if (select.getGroupBys().size() > 0) {
 			Field field = select.getGroupBys().get(0);
 			lastAgg = aggMaker.makeGroupAgg(field);
+			
+
+			if (lastAgg != null && lastAgg instanceof TermsBuilder) {
+				((TermsBuilder) lastAgg).size(select.getRowCount());
+			}
+			
 			if (filter != null) {
 				filter.subAggregation(lastAgg);
 			} else {
@@ -59,6 +66,10 @@ public class AggregationQuery extends Query {
 			for (int i = 1; i < select.getGroupBys().size(); i++) {
 				field = select.getGroupBys().get(i);
 				AggregationBuilder<?> subAgg = aggMaker.makeGroupAgg(field);
+				if(subAgg instanceof TermsBuilder){
+					((TermsBuilder)subAgg).size(0) ;
+				}
+				
 				lastAgg.subAggregation(subAgg);
 				lastAgg = subAgg;
 			}
@@ -91,10 +102,6 @@ public class AggregationQuery extends Query {
 					throw new SqlParseException(order.getName() + " can not to order");
 				}
 			}
-		}
-
-		if (lastAgg != null && lastAgg instanceof TermsBuilder) {
-			((TermsBuilder) lastAgg).size(select.getRowCount());
 		}
 		request.setSize(0);
 		request.setSearchType(SearchType.DEFAULT);
