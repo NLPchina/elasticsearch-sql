@@ -81,6 +81,8 @@ public class AggMaker {
 			return dateHistogram(field);
 		case "date_range":
 			return dateRange(field);
+		case "month":
+			return dateRange(field);
 		default:
 			throw new SqlParseException("can define this method " + field);
 		}

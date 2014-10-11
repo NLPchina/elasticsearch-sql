@@ -1,7 +1,6 @@
 package org.nlpcn.es4sql;
 
 import java.io.IOException;
-
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;

@@ -8,10 +8,12 @@ public class SqlPlug extends AbstractPlugin {
 	public SqlPlug() {
 	}
 
+	@Override
 	public String name() {
 		return "sql";
 	}
 
+	@Override
 	public String description() {
 		return "sql query by sql.";
 	}

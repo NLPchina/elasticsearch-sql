@@ -15,6 +15,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
 public class Test {
@@ -33,7 +34,7 @@ public class Test {
 		int i = 0;
 		while ((temp = br.readLine()) != null) {
 			try {
-				JSONObject job = JSONObject.parseObject(temp);
+				JSONObject job = JSON.parseObject(temp);
 				System.out.println(++i);
 				client.prepareIndex().setIndex("user_feature").setType("user_feature").setId(job.remove("_id").toString()).setSource(job).execute().actionGet();
 			} catch (Exception e) {

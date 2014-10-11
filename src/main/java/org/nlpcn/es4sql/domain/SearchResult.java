@@ -115,7 +115,7 @@ public class SearchResult {
 		} else if (value instanceof InternalValueCount) {
 			return ((InternalValueCount) value).getValue();
 		} else if (value instanceof InternalTopHits) {
-			return ((InternalTopHits) value);
+			return (value);
 		} else if (value instanceof LongTerms) {
 			return value;
 		} else {

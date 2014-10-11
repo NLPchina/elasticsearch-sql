@@ -9,7 +9,6 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
 import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
