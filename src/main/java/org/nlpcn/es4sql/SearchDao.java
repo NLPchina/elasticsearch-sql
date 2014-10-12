@@ -19,8 +19,8 @@ import org.nlpcn.es4sql.query.AggregationQuery;
 import org.nlpcn.es4sql.query.DefaultQuery;
 import org.nlpcn.es4sql.query.Query;
 
-import com.alibaba.druid.sql.SQLUtils;
-import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
+import org.durid.sql.SQLUtils;
+import org.durid.sql.ast.expr.SQLQueryExpr;
 
 public class SearchDao {
 

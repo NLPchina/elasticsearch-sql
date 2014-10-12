@@ -9,24 +9,24 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.SQLOrderBy;
-import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
-import com.alibaba.druid.sql.ast.expr.SQLInListExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNullExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
-import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
-import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
-import com.alibaba.druid.sql.ast.statement.SQLSelectGroupByClause;
-import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
-import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
-import com.alibaba.druid.sql.ast.statement.SQLTableSource;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
+import org.durid.sql.ast.SQLExpr;
+import org.durid.sql.ast.SQLOrderBy;
+import org.durid.sql.ast.expr.SQLBetweenExpr;
+import org.durid.sql.ast.expr.SQLBinaryOpExpr;
+import org.durid.sql.ast.expr.SQLCharExpr;
+import org.durid.sql.ast.expr.SQLIdentifierExpr;
+import org.durid.sql.ast.expr.SQLInListExpr;
+import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.durid.sql.ast.expr.SQLNullExpr;
+import org.durid.sql.ast.expr.SQLNumericLiteralExpr;
+import org.durid.sql.ast.expr.SQLPropertyExpr;
+import org.durid.sql.ast.expr.SQLQueryExpr;
+import org.durid.sql.ast.statement.SQLSelectGroupByClause;
+import org.durid.sql.ast.statement.SQLSelectItem;
+import org.durid.sql.ast.statement.SQLSelectOrderByItem;
+import org.durid.sql.ast.statement.SQLTableSource;
+import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
 
 /**
  * es sql support

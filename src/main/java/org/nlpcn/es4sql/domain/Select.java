@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.alibaba.druid.util.StringUtils;
-
 /**
  * 将sql语句转换为select 对象
  * 
@@ -45,7 +43,7 @@ public class Select {
 	}
 
 	public void addIndexAndType(String from) {
-		if (StringUtils.isEmpty(from)) {
+		if (from == null || from.trim().length() == 0) {
 			return;
 		}
 		indexs.add(new Index(from));
@@ -125,7 +123,7 @@ public class Select {
 			case "AVG":
 			case "TOPHITS":
 			case "COUNT":
-				if(!"*".equals(((MethodField) field).getParams().get(0).toString())){
+				if (!"*".equals(((MethodField) field).getParams().get(0).toString())) {
 					isAgg = true;
 				}
 			}

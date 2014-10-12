@@ -1,21 +1,10 @@
 package org.nlpcn.es4sql;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.bucket.terms.LongTerms;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
-import com.alibaba.druid.util.IOUtils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
 public class ErrorTest {
 

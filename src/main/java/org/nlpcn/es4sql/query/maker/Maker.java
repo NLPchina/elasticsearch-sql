@@ -16,8 +16,8 @@ import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.durid.sql.ast.expr.SQLIdentifierExpr;
+import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
 
 public abstract class Maker {
 

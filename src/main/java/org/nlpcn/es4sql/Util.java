@@ -6,12 +6,12 @@ import java.util.Map;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
-import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
+import org.durid.sql.ast.SQLExpr;
+import org.durid.sql.ast.expr.SQLAllColumnExpr;
+import org.durid.sql.ast.expr.SQLCharExpr;
+import org.durid.sql.ast.expr.SQLIdentifierExpr;
+import org.durid.sql.ast.expr.SQLNumericLiteralExpr;
+import org.durid.sql.ast.expr.SQLPropertyExpr;
 
 public class Util {
 	public static String joiner(List<KVValue> lists, String oper) {
