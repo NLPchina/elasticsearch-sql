@@ -98,10 +98,8 @@ public class Select {
 		Index index = null;
 		for (int i = 0; i < indexs.size(); i++) {
 			index = indexs.get(i);
-			if (index.getType() != null) {
+			if (index.getType() != null && index.getType().trim().length() > 0) {
 				list.add(index.getType());
-			}else{
-				list.add("_all") ;
 			}
 		}
 		if (list.size() == 0) {
