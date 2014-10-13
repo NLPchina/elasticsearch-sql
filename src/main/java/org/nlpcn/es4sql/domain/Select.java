@@ -11,11 +11,11 @@ import java.util.List;
  */
 public class Select {
 
-	private List<Index> indexs = new LinkedList<>();
-	private List<Field> fields = new LinkedList<>();
+	private List<Index> indexs = new ArrayList<>();
+	private List<Field> fields = new ArrayList<>();
 	private Where where = null;
-	private List<Field> groupBys = new LinkedList<>();
-	private List<Order> orderBys = new LinkedList<>();
+	private List<Field> groupBys = new ArrayList<>();
+	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
 	private int rowCount = Integer.MAX_VALUE;
 
@@ -98,8 +98,10 @@ public class Select {
 		Index index = null;
 		for (int i = 0; i < indexs.size(); i++) {
 			index = indexs.get(i);
-			if (index.getType() != null && !"*".equals(index.getType())) {
+			if (index.getType() != null) {
 				list.add(index.getType());
+			}else{
+				list.add("_all") ;
 			}
 		}
 		if (list.size() == 0) {

@@ -254,7 +254,6 @@ public class SQLSelectParser extends SQLParser {
             tableReference.setExpr(this.exprParser.name());
             return;
         }
-
         tableReference.setExpr(expr());
     }
 

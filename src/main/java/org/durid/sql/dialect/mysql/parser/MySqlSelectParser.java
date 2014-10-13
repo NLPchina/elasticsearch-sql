@@ -255,7 +255,7 @@ public class MySqlSelectParser extends SQLSelectParser {
         }
     }
 
-    protected SQLTableSource parseTableSourceRest(SQLTableSource tableSource) {
+	protected SQLTableSource parseTableSourceRest(SQLTableSource tableSource) {
         if (identifierEquals("USING")) {
             return tableSource;
         }

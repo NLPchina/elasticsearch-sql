@@ -72,9 +72,21 @@ public class QueryTest {
 	}
 	
 
+
 	@Test
 	public void countSearch() throws IOException, SqlParseException{
 		ActionResponse select = searchDao.execute("select count(*) from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not miss");
+		System.out.println(select);
+	}
+	
+	/**
+	 * table have '.' and type test
+	 * @throws IOException
+	 * @throws SqlParseException
+	 */
+	@Test
+	public void searchTableTest() throws IOException, SqlParseException{
+		ActionResponse select = searchDao.execute("select count(*) from doc/accounts,bank/doc limit 10");
 		System.out.println(select);
 	}
 }

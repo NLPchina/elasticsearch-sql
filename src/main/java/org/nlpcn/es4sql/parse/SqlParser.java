@@ -208,7 +208,7 @@ public class SqlParser {
 	private void findFrom(MySqlSelectQueryBlock query, Select select) {
 		SQLTableSource from = query.getFrom();
 
-		String[] split = from.toString().split(",");
+		String[] split = from.getAlias().toString().split(",");
 
 		for (String string : split) {
 			select.addIndexAndType(string.replace(" ", "").trim());
