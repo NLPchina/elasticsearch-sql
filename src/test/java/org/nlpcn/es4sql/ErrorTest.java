@@ -27,19 +27,21 @@ public class ErrorTest {
 //		SearchResponse execute = searchDao.execute("select count(*) from heartbeat|2014-10-7");
 //		
 //		System.out.println(execute);
-		
-		
-//		SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-12 where tvId <> 0 "
-//				+ "group by date_histogram(field='log_time','interval'='1m','format'='yyyy-MM-dd HH:mm:ss'),tvId");;
 //		
-//		FileOutputStream fos = new FileOutputStream("/home/ansj/下载/bucket12.json");
-//		
-//		fos.write(execute.toString().getBytes()) ;
-//		fos.flush(); 
-//		fos.close(); 
+//		for (int i = 10; i < 13; i++) {
+//			SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-"+i+" where tvId <> 0 "
+//					+ "group by date_histogram(field='log_time','interval'='1H','format'='yyyy-MM-dd HH:mm:ss'),tvId");;
+//			
+//			FileOutputStream fos = new FileOutputStream("/home/ansj/下载/bucket"+i+".json");
+//			
+//			fos.write(execute.toString().getBytes()) ;
+//			fos.flush(); 
+//			fos.close();
+//		}
+		 
 		
 		
-		SearchResponse execute = searchDao.execute("SELECT count(*) FROM activity_bj where userId=10 and userId between 0 and 1000");;
+		System.out.println(searchDao.explan("select rci, sum(costAmountOut) as cost, sum(billedamount) as billedamt, max(datadate) as maxdate, max(id) as maxid from data20141011 where rci <> 0 and rci <> 1538 and rci <> 1624 group by rci order by rci "));
 		
 //		SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-10,heartbeat/2014-10-11  where log_time between '2014-10-09T16:00:00.000Z' and '2014-10-10T23:59:59.999Z'");;
 //		

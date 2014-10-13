@@ -8,9 +8,9 @@ import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
 import org.durid.sql.ast.SQLExpr;
 import org.durid.sql.ast.SQLOrderBy;
+import org.durid.sql.ast.SQLOrderingSpecification;
 import org.durid.sql.ast.expr.SQLBetweenExpr;
 import org.durid.sql.ast.expr.SQLBinaryOpExpr;
 import org.durid.sql.ast.expr.SQLCharExpr;
@@ -180,13 +180,14 @@ public class SqlParser {
 		for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
 			SQLExpr expr = sqlSelectOrderByItem.getExpr();
 			lists.add(FieldMaker.makeField(expr, null).toString());
-			if (sqlSelectOrderByItem.getType() != null) {
-				String type = sqlSelectOrderByItem.getType().toString();
-				for (String name : lists) {
-					select.addOrderBy(name, type);
-				}
-				lists.clear();
+			if (sqlSelectOrderByItem.getType() == null) {
+				sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
 			}
+			String type = sqlSelectOrderByItem.getType().toString();
+			for (String name : lists) {
+				select.addOrderBy(name, type);
+			}
+			lists.clear();
 		}
 
 	}
