@@ -88,10 +88,8 @@ public class SqlParser {
 	private void routeCond(SQLBinaryOpExpr bExpr, SQLExpr sub, Where where) throws SqlParseException {
 		if (sub instanceof SQLBinaryOpExpr) {
 			parseWhere(bExpr, (SQLBinaryOpExpr) sub, where);
-		} else if (sub instanceof SQLInListExpr) {
-			explanCond(bExpr.operator.name, sub, where);
 		} else {
-			throw new SqlParseException("error class type sub :" + sub.getClass());
+			explanCond(bExpr.operator.name, sub, where);
 		}
 	}
 
