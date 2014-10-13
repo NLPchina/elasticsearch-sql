@@ -18,7 +18,7 @@ elasticsearch-sql
 
 ````
 
-./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/0.1/elasticsearch-sql-0.1.jar --install sql 
+./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/0.5/elasticsearch-sql-0.5.jar --install sql 
 
 ````
 
@@ -36,6 +36,7 @@ http://localhost:9200/_sql?sql=select * from * limit 10
 http://localhost:9200/_sql/_explain?sql=select * from * limit 10
 
 ```` 
+
 
 
 # Simple Case
