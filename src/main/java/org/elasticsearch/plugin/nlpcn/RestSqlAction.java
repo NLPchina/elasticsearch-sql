@@ -29,12 +29,16 @@ public class RestSqlAction extends BaseRestHandler {
 	@Override
 	protected void handleRequest(RestRequest request, RestChannel channel, final Client client) throws Exception {
 
-		final String sql = request.param("sql");
-		
-		SearchDao searchDao = new SearchDao(client) ;
+		String sql = request.param("sql");
 
-		SearchRequestBuilder explan = searchDao.explan(sql) ;
-		
+		if (sql == null) {
+			sql = request.content().toUtf8();
+		}
+
+		SearchDao searchDao = new SearchDao(client);
+
+		SearchRequestBuilder explan = searchDao.explan(sql);
+
 		if (request.path().endsWith("/_explain")) {
 			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, explan.toString());
 			channel.sendResponse(bytesRestResponse);
