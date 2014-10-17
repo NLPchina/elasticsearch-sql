@@ -25,12 +25,13 @@ public class ErrorTest {
 //		SearchResponse execute = searchDao.execute("select * from adlog where 'programDetail.id'=12536799 limit 10");
 //		SearchResponse execute = searchDao.execute("select count(distinct clientInfo.clientId) from adlog where programDetail.id=12536799 limit 10");
 //		SearchResponse execute = searchDao.execute("select count(*) from heartbeat|2014-10-7");
-//		
+		
 //		System.out.println(execute);
-//		
+		
 //		for (int i = 10; i < 13; i++) {
-//			SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-"+i+" where tvId <> 0 "
-//					+ "group by date_histogram(field='log_time','interval'='1d','format'='yyyy-MM-dd HH:mm:ss'),tvId");;
+//		int i=13 ;
+//			SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-"+i+"  "
+//					+ "group by date_histogram(field='log_time','interval'='1m','format'='yyyy-MM-dd HH:mm:ss'),tvId");;
 //			
 //			FileOutputStream fos = new FileOutputStream("/home/ansj/下载/bucket"+i+".json");
 //			
@@ -39,10 +40,19 @@ public class ErrorTest {
 //			fos.close();
 //		}
 		
-		 
+//		SearchResponse execute = searchDao.execute("select * from heartbeat/2014-10-13 group by vendorId");
+//		
+//		System.out.println(execute);
 		
+//		SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-15 "
+//				+ " group by date_histogram(field='log_time','interval'='1H','format'='yyyy-MM-dd HH:mm:ss'),"
+//				+ "range(tvId,0,1,10000)");
 		
-		System.out.println(searchDao.explan("SELECT * FROM data-2014.10.124,data-2014.10.124/dsf, 342 123dsfs/sdfdsf where a >3"));
+		SearchResponse execute = searchDao.execute("SELECT count(certificateCode) FROM heartbeat/2014-10-16") ;
+		
+		System.out.println(execute);
+		
+//		System.out.println(searchDao.explan("SELECT * FROM data-2014.10.124,data-2014.10.124/dsf, 342 123dsfs/sdfdsf where a >3"));
 		
 //		SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-10,heartbeat/2014-10-11  where log_time between '2014-10-09T16:00:00.000Z' and '2014-10-10T23:59:59.999Z'");;
 //		
