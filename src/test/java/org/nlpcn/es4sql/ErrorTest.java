@@ -18,7 +18,7 @@ import com.alibaba.fastjson.JSONObject;
 
 public class ErrorTest {
 
-	private SearchDao searchDao = new SearchDao("ky_ESearch", "172.21.19.59", 9300);
+	private SearchDao searchDao = new SearchDao("ky_ESearch", "172.21.19.57", 9300);
 
 	@Test
 	public void dayGAndL() throws IOException, SqlParseException {
@@ -44,11 +44,19 @@ public class ErrorTest {
 //		
 //		System.out.println(execute);
 		
-//		SearchResponse execute = searchDao.execute("select count(*) from heartbeat/2014-10-15 "
+//		SearchResponse execute = searchDao.execute("select count(*) from heartbeat "
 //				+ " group by date_histogram(field='log_time','interval'='1H','format'='yyyy-MM-dd HH:mm:ss'),"
 //				+ "range(tvId,0,1,10000)");
 		
-		SearchResponse execute = searchDao.execute("SELECT count(certificateCode) FROM heartbeat/2014-10-16") ;
+//		SearchResponse execute = searchDao.execute("SELECT count(certificateCode) FROM heartbeat/2014-10-16") ;
+//		
+//		System.out.println(execute);machineType
+//		System.out.println(searchDao.explan("select count(clientInfo.clientId), count(distinct clientInfo.clientId) from adlog where invoke_date_int=20141017 and adDetailInfo.advertiserId=4   group by invoke_date_int"));
+//		SearchResponse execute = searchDao.execute("select count(clientInfo.clientId), count(distinct clientInfo.clientId) from adlog where invoke_date_int=20141017 and adDetailInfo.advertiserId=4   group by invoke_date_int") ;
+//		
+//		
+//		System.out.println(execute);
+		SearchResponse execute = searchDao.execute("select count(distinct certificateCode) as total from heartbeat/2014-10-26 group by vendorId, machineType") ;
 		
 		System.out.println(execute);
 		

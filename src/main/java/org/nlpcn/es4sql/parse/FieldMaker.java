@@ -8,7 +8,6 @@ import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
 import org.durid.sql.ast.SQLExpr;
 import org.durid.sql.ast.expr.SQLAggregateExpr;
 import org.durid.sql.ast.expr.SQLAggregateExpr.Option;
@@ -16,6 +15,7 @@ import org.durid.sql.ast.expr.SQLAllColumnExpr;
 import org.durid.sql.ast.expr.SQLBinaryOpExpr;
 import org.durid.sql.ast.expr.SQLIdentifierExpr;
 import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.durid.sql.ast.expr.SQLPropertyExpr;
 import org.durid.sql.ast.expr.SQLQueryExpr;
 
 /**
@@ -26,7 +26,7 @@ import org.durid.sql.ast.expr.SQLQueryExpr;
  */
 public class FieldMaker {
 	public static Field makeField(SQLExpr expr, String alias) throws SqlParseException {
-		if (expr instanceof SQLIdentifierExpr) {
+		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr) {
 			return new Field(expr.toString(), alias);
 		} else if (expr instanceof SQLQueryExpr) {
 			throw new SqlParseException("unknow field name : " + expr);

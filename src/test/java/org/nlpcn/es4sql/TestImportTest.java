@@ -18,13 +18,15 @@ public class TestImportTest {
 		Client client = new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File("/home/ansj/temp/20140421.txt"))));
 		String temp = null;
+		
+		int a = 0  ;
 
 		while ((temp = br.readLine()) != null) {
-			
-System.out.println("in");
+if(a++%100==0)			
+System.out.println(a);
 			try {
 				JSONObject job = JSON.parseObject(br.readLine());
-				client.prepareIndex().setIndex("testdoc").setType("testdoc").setSource(job).execute().actionGet();
+				client.prepareIndex().setIndex("testdoc").setType("testdoc").setSource(job).setTimeout("10s").execute().actionGet();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
