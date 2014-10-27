@@ -26,14 +26,14 @@ elasticsearch-sql
 
 ````
 
-http://localhost:9200/_sql?sql=select * from * limit 10
+http://localhost:9200/_sql?sql=select * from indexName limit 10  //indexName是索引中的索引名字
 
 ````
 
 * explain sql to es script
 
 ````
-http://localhost:9200/_sql/_explain?sql=select * from * limit 10
+http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10  //indexName是索引中的索引名字
 
 ```` 
 
