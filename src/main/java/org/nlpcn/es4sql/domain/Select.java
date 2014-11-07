@@ -17,7 +17,7 @@ public class Select {
 	private List<Field> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
-	private int rowCount = Integer.MAX_VALUE;
+	private int rowCount = 200;
 
 	public boolean isQuery = false;
 
