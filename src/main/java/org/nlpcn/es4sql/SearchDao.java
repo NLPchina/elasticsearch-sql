@@ -60,8 +60,6 @@ public class SearchDao {
 
 		Query query = null;
 
-		Client client = new TransportClient();
-
 		if (select.isAgg) {
 			query = new AggregationQuery(client, select);
 		} else {
