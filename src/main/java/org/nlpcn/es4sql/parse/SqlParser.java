@@ -36,6 +36,9 @@ import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
  */
 public class SqlParser {
 
+    private static final int DEFAULT_ROW_COUNT = 100;
+
+
 	public SqlParser() {
 	};
 
@@ -196,13 +199,14 @@ public class SqlParser {
 		Limit limit = query.getLimit();
 
 		if (limit == null) {
-			return;
-		}
+            select.setRowCount(DEFAULT_ROW_COUNT);
+        }
+        else {
+            select.setRowCount(Integer.parseInt(limit.getRowCount().toString()));
 
-		select.setRowCount(Integer.parseInt(limit.getRowCount().toString()));
-
-		if (limit.getOffset() != null)
-			select.setOffset(Integer.parseInt(limit.getOffset().toString()));
+            if (limit.getOffset() != null)
+                select.setOffset(Integer.parseInt(limit.getOffset().toString()));
+        }
 	}
 
 	private void findFrom(MySqlSelectQueryBlock query, Select select) {
