@@ -137,6 +137,11 @@ public abstract class Maker {
 					x = FilterBuilders.termFilter(name, value);
 				break;
 			}
+		case LIKE:
+			String queryStr = ((String) value).replace('%', '*').replace('_', '?');
+			WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(name, queryStr);
+			x = isQuery ? wildcardQuery : FilterBuilders.queryFilter(wildcardQuery);
+			break;
 		case GT:
 			if (isQuery)
 				x = QueryBuilders.rangeQuery(name).gt(value);
