@@ -87,6 +87,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10  //inde
 *  SQL where
 *  SQL AND & OR
 *  SQL Order By
+*  SQL Like
 *  SQL 通配符
 *  SQL In
 *  SQL Between
