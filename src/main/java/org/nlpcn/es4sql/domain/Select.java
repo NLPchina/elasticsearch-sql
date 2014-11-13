@@ -1,7 +1,6 @@
 package org.nlpcn.es4sql.domain;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**

@@ -49,6 +49,10 @@ public class SearchDao {
 		this.client = client;
 	}
 
+	public SearchDao() {
+		this.client = new TransportClient();
+	}
+
 	@SuppressWarnings("resource")
 	public SearchDao(String clusterName, String ip, int port) {
 		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build();
@@ -81,6 +85,7 @@ public class SearchDao {
 
 	/**
 	 * 对table进行特殊处理
+	 * 
 	 * @param sql
 	 * @return
 	 */

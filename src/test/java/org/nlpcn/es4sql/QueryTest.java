@@ -9,6 +9,11 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class QueryTest {
 	
 	private SearchDao searchDao = new SearchDao("localhost", 9300) ;
+	@Test
+	public void likeTest() throws IOException, SqlParseException{
+		ActionResponse select = searchDao.execute("select email from bank where age between 20 and 21 and email like '%c%' ");
+		System.out.println(select);
+	}
 	
 	@Test
 	public void betweenTest() throws IOException, SqlParseException{

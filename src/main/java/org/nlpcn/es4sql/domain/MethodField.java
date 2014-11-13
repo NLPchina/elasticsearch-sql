@@ -2,7 +2,6 @@ package org.nlpcn.es4sql.domain;
 
 import java.util.List;
 
-import org.apache.lucene.queryparser.flexible.core.util.StringUtils;
 import org.nlpcn.es4sql.Util;
 
 /**
