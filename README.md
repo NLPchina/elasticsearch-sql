@@ -18,7 +18,7 @@ elasticsearch-sql
 
 ````
 
-./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/0.5/elasticsearch-sql-1.3.2.jar --install sql 
+./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.3.2/elasticsearch-sql-1.3.2.jar --install sql 
 
 ````
 
