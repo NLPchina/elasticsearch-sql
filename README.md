@@ -16,9 +16,17 @@ elasticsearch-sql
 
 * plug
 
+###1.3.2
 ````
 
 ./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.3.2/elasticsearch-sql-1.3.2.jar --install sql 
+
+````
+
+###1.4.1
+````
+
+./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.4.1/elasticsearch-sql-1.4.1.jar --install sql 
 
 ````
 
