@@ -3,52 +3,53 @@ package org.nlpcn.es4sql;
 import java.io.IOException;
 
 import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 public class AggregationTest {
 
-	private SearchDao searchDao = new SearchDao("localhost", 9300);
+	private SearchDao searchDao = new SearchDao();
 
 	@Test
 	public void sumDistinctOrderTest() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.execute("select sum(age),count(*), count(distinct age) from bank  group by gender order by count(distinct age)  desc  limit 3");
+		SearchRequestBuilder select = searchDao.explan("select sum(age),count(*), count(distinct age) from bank  group by gender order by count(distinct age)  desc  limit 3");
 		System.out.println(select);
 	}
 
 	@Test
 	public void sumSortAliasCount() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.execute("select sum(age),count(*) as kk, count(age) as k from bank  group by gender order by kk asc limit 10 ");
+		SearchRequestBuilder select = searchDao.explan("select sum(age),count(*) as kk, count(age) as k from bank  group by gender order by kk asc limit 10 ");
 		System.out.println(select);
 	}
 
 	@Test
 	public void sumSortCount() throws IOException, SqlParseException {
-		ActionResponse select = searchDao.execute("select sum(age), count(age)  from bank  group by gender order by count(age) asc limit 2 ");
+		SearchRequestBuilder select = searchDao.explan("select sum(age), count(age)  from bank  group by gender order by count(age) asc limit 2 ");
 		System.out.println(select);
 	}
 
 	@Test
 	public void minTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select min(age) from bank  group by gender ");
+		SearchRequestBuilder result = searchDao.explan("select min(age) from bank  group by gender ");
 		System.out.println(result);
 	}
 
 	@Test
 	public void maxTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select max(age) from bank  group by gender ");
+		SearchRequestBuilder result = searchDao.explan("select max(age) from bank  group by gender ");
 		System.out.println(result);
 	}
 
 	@Test
 	public void avgTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select avg(age) from bank  group by gender ");
+		SearchRequestBuilder result = searchDao.explan("select avg(age) from bank  group by gender ");
 		System.out.println(result);
 	}
 
 	@Test
 	public void countGroupByTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select count(*) from bank  group by gender ");
+		SearchRequestBuilder result = searchDao.explan("select count(*) from bank  group by gender ");
 		System.out.println(result);
 	}
 
@@ -62,7 +63,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByRange() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
+		SearchRequestBuilder result = searchDao.explan("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
 		System.out.println(result);
 	}
 
@@ -76,7 +77,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByDateTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
+		SearchRequestBuilder result = searchDao.explan("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
 		System.out.println(result);
 	}
 
@@ -90,8 +91,8 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countDateRangeTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao
-				.execute("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+		SearchRequestBuilder result = searchDao
+				.explan("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
 
@@ -105,8 +106,8 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao
-				.execute("select count(*),sum(all_tv_clinet) from online group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+		SearchRequestBuilder result = searchDao
+				.explan("select count(*),sum(all_tv_clinet) from online group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
 
@@ -121,7 +122,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void topHitTest() throws IOException, SqlParseException {
-		ActionResponse result = searchDao.execute("select topHits('size'=3,age='desc') from bank  group by gender ");
+		SearchRequestBuilder result = searchDao.explan("select topHits('size'=3,age='desc') from bank  group by gender ");
 		System.out.println(result);
 	}
 
