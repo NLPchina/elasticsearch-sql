@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Elasticsearch-sql client</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="style.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          
+          <a class="navbar-brand" href="#">Elasticsearch-sql</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            
+            <li><a id="helpButton" href="#">Help</a></li>
+          </ul>
+
+          <form class="navbar-form navbar-right">
+            <input type="text" id="urlBox" class="form-control" value="http://localhost:9200" />
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-9 col-sm-offset-3 col-md-11 col-md-offset-1 main">
+          <h1 class="page-header">SQL Query</h1>
+
+          <div class="search-area">
+          	<textarea id="queryTextarea">SELECT * FROM myindex</textarea> 
+  	        <button type="button" id="searchButton" class="btn btn-success search-button">Search</button>
+  	      </div>
+
+
+
+          <div id="errorBox" class="alert alert-danger" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            <span id="errorBoxText"></span>
+          </div>
+
+
+          <div id="resultsContainer" style="display:none">
+            <h2 class="sub-header">Results</h2>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr id="tableHead">
+
+                  </tr>
+                </thead>
+                <tbody id="tableBody">
+     
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="vendor/jquery/jquery-2.1.1.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+	<script src="vendor/codemirror/lib/codemirror.js"></script>
+	<link rel="stylesheet" href="vendor/codemirror/lib/codemirror.css">
+	<script src="vendor/codemirror/mode/sql/sql.js"></script>
+	<link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.css" />
+	<script src="vendor/codemirror/addon/hint/show-hint.js"></script>
+	<script src="vendor/codemirror/addon/hint/sql-hint.js"></script>
+
+  <script type="text/javascript">
+    window.onload = function() {
+      window.editor = CodeMirror.fromTextArea(document.getElementById('queryTextarea'), {
+        mode: 'text/x-mysql',
+        indentWithTabs: true,
+        smartIndent: true,
+        lineNumbers: true,
+        matchBrackets : true,
+        autofocus: true,
+        extraKeys: {"Ctrl-Space": "autocomplete"}
+      });
+    };
+  </script>
+
+
+	<script type="text/javascript">
+    $("#helpButton").click(function() {
+      alert("Feature will be avalible soon...")
+    })
+    
+    $("#searchButton").click(search);
+
+
+		function search() {
+      $("#resultsContainer").hide()
+      $("#errorBox").hide()
+      $("#tableHead").empty()
+      $("#tableBody").empty()
+
+      var query = window.editor.getValue()
+      var url = $("#urlBox").val()
+
+			$.post(url + "/_sql", query, function( data ) {
+          var hits = data.hits.hits          
+  				scheme = createScheme(hits)
+          setTableHead(scheme)
+          $("#resultsContainer").show('slow')
+          setTableBody(hits, scheme)
+			})
+      .fail(function(xhr, textStatus, errorThrown) {
+        errorOccured(xhr.responseText);
+      });
+		}
+
+
+    function createScheme (hits) {
+      scheme = []
+      for(index=0; index<hits.length; index++) {
+        hit = hits[index]
+
+        for(key in hit._source) {
+          if(scheme.indexOf(key) == -1) {
+            scheme.push(key)
+          }
+        }
+      }
+      return scheme
+    }
+
+
+    function setTableHead(scheme) {
+      tableHead = ""
+      for(var i=0; i < scheme.length; i++) {
+        tableHead += "<th>" + scheme[i] + "</th>"
+      }
+
+      $("#tableHead").html(tableHead)
+    }
+
+
+    function setTableBody(hits, scheme) {
+      for(var i = 0; i< hits.length; i++) {
+        var hit = hits[i]._source
+        var tr = "<tr>"
+
+        for(var j = 0; j < scheme.length; j++) {
+          if(scheme[j] in hit) {
+            tr += "<td>" + hit[scheme[j]] + "</td>"
+          }
+          else {
+            tr += "<td>&nbsp;</td>"
+          }
+        }
+
+        tr += "</tr>"
+        $("#tableBody").append(tr)
+      }
+    }
+
+
+    function errorOccured(errorText) {
+      if(errorText == undefined) {
+        errorText = "Error occured! response is not avalible."
+      }
+
+      $("#errorBoxText").html(errorText)
+      $("#errorBox").show('slow')
+    }
+
+
+	</script>
+
+
+
+  </body>
+</html>
