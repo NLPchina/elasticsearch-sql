@@ -19,29 +19,40 @@ elasticsearch-sql
 ###1.3.2
 ````
 
-./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.3.2/elasticsearch-sql-1.3.2.jar --install sql 
+./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.3.2/elasticsearch-sql-1.3.2.zip --install sql 
 
 ````
 
 ###1.4.1
 ````
 
-./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.4.1/elasticsearch-sql-1.4.1.jar --install sql 
+./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.4.1/elasticsearch-sql-1.4.1.zip --install sql 
 
 ````
+
+* visit by web site
+
+````
+
+http://localhost:9200/_plugin/sql/
+
+````
+
+
+
 
 * search by search
 
 ````
 
-http://localhost:9200/_sql?sql=select * from indexName limit 10  //indexName是索引中的索引名字
+http://localhost:9200/_sql?sql=select * from indexName limit 10 
 
 ````
 
 * explain sql to es script
 
 ````
-http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10  //indexName是索引中的索引名字
+http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10  
 
 ```` 
 
