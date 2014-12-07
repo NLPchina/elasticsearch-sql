@@ -113,7 +113,12 @@ body {
   float:right;
   margin-right: 20%;
   margin-top: 10px;
-};
+}
+
+
+.keyboardSection {
+  margin-top:35px;
+}
 
 
 #resultsContainer {
@@ -126,3 +131,5 @@ body {
   width:80%;
   margin-top:70px;
 }
+
+

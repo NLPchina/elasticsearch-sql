@@ -55,32 +55,34 @@
         <div class="modal-body">
           <h4>SQL queries</h4>
 
-          <p style="margin-bottom:35px;">
+          <p>
             Write your SQL query and run it against elasticsearch. The results will be displayed in the table. You can use autocomple to write
             your queries easier.
           </p>
 
-          <h4>Keyboard tips</h4>
-          <dl class="dl-horizontal">
-            <dt></dt>
-            <dd><strong>General editing</strong></dd>
+          <div class="keyboardSection">
+            <h4>Keyboard tips</h4>
+            <dl class="dl-horizontal">
+              <dt></dt>
+              <dd><strong>General editing</strong></dd>
 
-            <dt>Ctrl + Space</dt>
-            <dd>Open Auto complete</dd>
-            <dt>Ctrl + Enter</dt>
-            <dd>Submit query</dd>
+              <dt>Ctrl + Space</dt>
+              <dd>Open Auto complete</dd>
+              <dt>Ctrl + Enter</dt>
+              <dd>Submit query</dd>
 
-          </dl>
-          <dl class="dl-horizontal">
-            <dt></dt>
-            <dd><strong>When auto-complete is visible</strong></dd>
-            <dt>Arrows</dt>
-            <dd>Use arrows to select the term to auto complete.</dd>
-            <dt>Enter/Tab</dt>
-            <dd>Select the currently selected auto-complete menu</dd>
-            <dt>Esc</dt>
-            <dd>Close auto-complete menu</dd>
-          </dl>
+            </dl>
+            <dl class="dl-horizontal">
+              <dt></dt>
+              <dd><strong>When auto-complete is visible</strong></dd>
+              <dt>Arrows</dt>
+              <dd>Use arrows to select the term to auto complete.</dd>
+              <dt>Enter/Tab</dt>
+              <dd>Select the currently selected auto-complete menu</dd>
+              <dt>Esc</dt>
+              <dd>Close auto-complete menu</dd>
+            </dl>
+          </div>
 
         </div>
         <div class="modal-footer">
@@ -114,7 +116,7 @@
           </div>
 
           <!-- Results area, displayed after search -->
-          <div id="resultsContainer" style="display:none">
+          <div id="resultsContainer">
             <h2 class="sub-header">Results</h2>
             <div class="table-responsive">
               <table class="table table-striped">
