@@ -28,7 +28,10 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
             
-            <li><a id="helpButton" href="#">Help</a></li>
+            <li id="help_btn" data-toggle="modal" data-target="#help_popup">
+              <a title="Help" href="#" data-placement="bottom">Help</a>
+            </li>
+
           </ul>
 
           <form class="navbar-form navbar-right">
@@ -37,6 +40,58 @@
         </div>
       </div>
     </nav>
+
+
+
+
+    <div id="help_popup" tabindex="-1" class="modal fade" data-keyboard="true">
+        <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>Help</h3>
+        </div>
+        <div class="modal-body">
+          <h4>SQL queries</h4>
+
+          <p style="margin-bottom:35px;">
+            Write your SQL query and run it against elasticsearch. The results will be displayed in the table. You can use autocomple to write
+            your queries easier.
+          </p>
+
+          <h4>Keyboard tips</h4>
+          <dl class="dl-horizontal">
+            <dt></dt>
+            <dd><strong>General editing</strong></dd>
+
+            <dt>Ctrl + Space</dt>
+            <dd>Open Auto complete</dd>
+            <dt>Ctrl + Enter</dt>
+            <dd>Submit query</dd>
+
+          </dl>
+          <dl class="dl-horizontal">
+            <dt></dt>
+            <dd><strong>When auto-complete is visible</strong></dd>
+            <dt>Arrows</dt>
+            <dd>Use arrows to select the term to auto complete.</dd>
+            <dt>Enter/Tab</dt>
+            <dd>Select the currently selected auto-complete menu</dd>
+            <dt>Esc</dt>
+            <dd>Close auto-complete menu</dd>
+          </dl>
+
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Got it</a>
+        </div>
+      </div>
+    </div>
+    </div>
+
+
+
+
 
     <div class="container-fluid">
       <div class="row">
@@ -77,120 +132,128 @@
       </div>
     </div>
 
+
+
+
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="vendor/jquery/jquery-2.1.1.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 
-	<script src="vendor/codemirror/lib/codemirror.js"></script>
-	<link rel="stylesheet" href="vendor/codemirror/lib/codemirror.css">
-	<script src="vendor/codemirror/mode/sql/sql.js"></script>
-	<link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.css" />
-	<script src="vendor/codemirror/addon/hint/show-hint.js"></script>
-	<script src="vendor/codemirror/addon/hint/sql-hint.js"></script>
+  	<script src="vendor/codemirror/lib/codemirror.js"></script>
+  	<link rel="stylesheet" href="vendor/codemirror/lib/codemirror.css">
+  	<script src="vendor/codemirror/mode/sql/sql.js"></script>
+  	<link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.css" />
+  	<script src="vendor/codemirror/addon/hint/show-hint.js"></script>
+  	<script src="vendor/codemirror/addon/hint/sql-hint.js"></script>
 
-  <script type="text/javascript">
-    window.onload = function() {
-      window.editor = CodeMirror.fromTextArea(document.getElementById('queryTextarea'), {
-        mode: 'text/x-mysql',
-        indentWithTabs: true,
-        smartIndent: true,
-        lineNumbers: true,
-        matchBrackets : true,
-        autofocus: true,
-        extraKeys: {"Ctrl-Space": "autocomplete"}
-      });
-    };
-  </script>
-
-
-	<script type="text/javascript">
-    $("#helpButton").click(function() {
-      alert("Feature will be avalible soon...")
-    })
-    
-    $("#searchButton").click(search);
+    <script type="text/javascript">
+      window.onload = function() {
+        window.editor = CodeMirror.fromTextArea(document.getElementById('queryTextarea'), {
+          mode: 'text/x-mysql',
+          indentWithTabs: true,
+          smartIndent: true,
+          lineNumbers: true,
+          matchBrackets : true,
+          autofocus: true,
+          extraKeys: {
+            "Ctrl-Space": "autocomplete",
+            "Ctrl-Enter": search
+          }
+        });
+      };
 
 
-		function search() {
-      $("#resultsContainer").hide()
-      $("#errorBox").hide()
-      $("#tableHead").empty()
-      $("#tableBody").empty()
-
-      var query = window.editor.getValue()
-      var url = $("#urlBox").val()
-
-			$.post(url + "/_sql", query, function( data ) {
-          var hits = data.hits.hits          
-  				scheme = createScheme(hits)
-          setTableHead(scheme)
-          $("#resultsContainer").show('slow')
-          setTableBody(hits, scheme)
-			})
-      .fail(function(xhr, textStatus, errorThrown) {
-        errorOccured(xhr.responseText);
-      });
-		}
+    </script>
 
 
-    function createScheme (hits) {
-      scheme = []
-      for(index=0; index<hits.length; index++) {
-        hit = hits[index]
+  	<script type="text/javascript">      
+      $("#searchButton").click(search);
 
-        for(key in hit._source) {
-          if(scheme.indexOf(key) == -1) {
-            scheme.push(key)
+
+  		function search() {
+        $("#resultsContainer").hide()
+        $("#errorBox").hide()
+        $("#tableHead").empty()
+        $("#tableBody").empty()
+
+        var query = window.editor.getValue()
+        var url = $("#urlBox").val()
+
+  			$.post(url + "/_sql", query, function( data ) {
+            var hits = data.hits.hits          
+    				scheme = createScheme(hits)
+            setTableHead(scheme)
+            $("#resultsContainer").show('slow')
+            setTableBody(hits, scheme)
+  			})
+        .fail(function(xhr, textStatus, errorThrown) {
+          errorOccured(xhr.responseText);
+        });
+  		}
+
+
+      function createScheme (hits) {
+        scheme = []
+        for(index=0; index<hits.length; index++) {
+          hit = hits[index]
+
+          for(key in hit._source) {
+            if(scheme.indexOf(key) == -1) {
+              scheme.push(key)
+            }
           }
         }
-      }
-      return scheme
-    }
-
-
-    function setTableHead(scheme) {
-      tableHead = ""
-      for(var i=0; i < scheme.length; i++) {
-        tableHead += "<th>" + scheme[i] + "</th>"
+        return scheme
       }
 
-      $("#tableHead").html(tableHead)
-    }
 
-
-    function setTableBody(hits, scheme) {
-      for(var i = 0; i< hits.length; i++) {
-        var hit = hits[i]._source
-        var tr = "<tr>"
-
-        for(var j = 0; j < scheme.length; j++) {
-          if(scheme[j] in hit) {
-            tr += "<td>" + hit[scheme[j]] + "</td>"
-          }
-          else {
-            tr += "<td>&nbsp;</td>"
-          }
+      function setTableHead(scheme) {
+        tableHead = ""
+        for(var i=0; i < scheme.length; i++) {
+          tableHead += "<th>" + scheme[i] + "</th>"
         }
 
-        tr += "</tr>"
-        $("#tableBody").append(tr)
-      }
-    }
-
-
-    function errorOccured(errorText) {
-      if(errorText == undefined) {
-        errorText = "Error occured! response is not avalible."
+        $("#tableHead").html(tableHead)
       }
 
-      $("#errorBoxText").html(errorText)
-      $("#errorBox").show('slow')
-    }
+
+      function setTableBody(hits, scheme) {
+        for(var i = 0; i< hits.length; i++) {
+          var hit = hits[i]._source
+          var tr = "<tr>"
+
+          for(var j = 0; j < scheme.length; j++) {
+            if(scheme[j] in hit) {
+              tr += "<td>" + hit[scheme[j]] + "</td>"
+            }
+            else {
+              tr += "<td>&nbsp;</td>"
+            }
+          }
+
+          tr += "</tr>"
+          $("#tableBody").append(tr)
+        }
+      }
 
 
-	</script>
+      function errorOccured(errorText) {
+        if(errorText == undefined) {
+          errorText = "Error occured! response is not avalible."
+        }
+
+        $("#errorBoxText").html(errorText)
+        $("#errorBox").show('slow')
+      }
+
+
+      $('#queryTextarea').live('keydown',function(e) {
+          alert(e.keyCode);
+      });
+
+  	</script>
 
 
 
