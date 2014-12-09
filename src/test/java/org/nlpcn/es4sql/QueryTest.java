@@ -8,7 +8,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 
 public class QueryTest {
 	
-	private SearchDao searchDao = new SearchDao("localhost", 9300) ;
+	private SearchDao searchDao = new SearchDao() ;
 	@Test
 	public void likeTest() throws IOException, SqlParseException{
 		SearchRequestBuilder select = searchDao.explan("select email from bank where age between 20 and 21 and email like '%c%' ");
