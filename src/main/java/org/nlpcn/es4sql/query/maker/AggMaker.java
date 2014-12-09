@@ -83,6 +83,8 @@ public class AggMaker {
 			return dateRange(field);
 		case "month":
 			return dateRange(field);
+		case "histogram":
+			return histogram(field);
 		default:
 			throw new SqlParseException("can define this method " + field);
 		}
@@ -162,6 +164,52 @@ public class AggMaker {
 			}
 		}
 		return dateHistogram;
+	}
+
+	private HistogramBuilder histogram(MethodField field) throws SqlParseException {
+		HistogramBuilder histogram = AggregationBuilders.histogram(field.getAlias());
+		String value = null;
+		for (KVValue kv : field.getParams()) {
+			value = kv.value.toString();
+			switch (kv.key.toLowerCase()) {
+				case "interval":
+					histogram.interval(Long.parseLong(value));
+					break;
+				case "field":
+					histogram.field(value);
+					break;
+				case "min_doc_count":
+					histogram.minDocCount(Long.parseLong(value));
+					break;
+				case "extended_bounds":
+					String[] bounds = value.split(":");
+					if (bounds.length == 2)
+						histogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
+					break;
+				case "order":
+					Histogram.Order order = null;
+					switch (value) {
+						case "key_desc":
+							order = Histogram.Order.KEY_DESC;
+							break;
+						case "count_asc":
+							order = Histogram.Order.COUNT_ASC;
+							break;
+						case "count_desc":
+							order = Histogram.Order.COUNT_DESC;
+							break;
+						case "key_asc":
+						default:
+							order = Histogram.Order.KEY_ASC;
+							break;
+					}
+					histogram.order(order);
+					break;
+				default:
+					throw new SqlParseException("histogram err or not define field " + kv.toString());
+			}
+		}
+		return histogram;
 	}
 
 	/**
