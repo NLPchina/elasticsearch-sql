@@ -13,7 +13,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
  *
  */
 public class MethodQueryTest {
-	private SearchDao searchDao = new SearchDao("localhost", 9300);
+	private SearchDao searchDao = new SearchDao();
 
 	/**
 	 * query 搜索就是　，　lucene 原生的搜素方式 注意这个例子中ｖａｌｕｅ可以随便命名 "query" :
