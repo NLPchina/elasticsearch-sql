@@ -123,7 +123,6 @@ public abstract class Maker {
 		case IS:
 		case N:
 		case EQ:
-
 			if (value instanceof SQLIdentifierExpr) {
 				x = FilterBuilders.missingFilter(name);
 				if (isQuery) {
@@ -131,10 +130,11 @@ public abstract class Maker {
 				}
 				break;
 			} else {
-				if (isQuery)
-					x = QueryBuilders.termQuery(name, value);
-				else
-					x = FilterBuilders.termFilter(name, value);
+				// TODO, maybe use term filter when not analayzed field avalaible to make exact matching?
+				// using matchPhrase to achieve equallity.
+				// matchPhrase still have some disatvantegs, f.e search for 'word' will match 'some word'
+				MatchQueryBuilder matchPhraseQuery = QueryBuilders.matchPhraseQuery(name, value);
+				x = isQuery? matchPhraseQuery : FilterBuilders.queryFilter(matchPhraseQuery);
 				break;
 			}
 		case LIKE:

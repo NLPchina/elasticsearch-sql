@@ -35,6 +35,7 @@ public class DefaultQuery extends Query {
 				BoolQueryBuilder boolQuery = QueryMaker.explan(where);
 				request.setQuery(boolQuery);
 			} else {
+				// TODO use regular filter instead of postFilter?
 				BoolFilterBuilder boolFilter = FilterMaker.explan(where);
 				request.setPostFilter(boolFilter);
 			}

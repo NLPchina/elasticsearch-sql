@@ -1,6 +1,8 @@
 package org.nlpcn.es4sql;
 
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -16,6 +18,7 @@ import org.elasticsearch.common.io.FileSystemUtils;
 import org.elasticsearch.common.io.stream.BytesStreamInput;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.indices.IndexMissingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -84,18 +87,31 @@ public class MainTestSuite {
 
 
 	private static void loadAllData() throws Exception {
-		// delete index if exists.
-		client.delete(new DeleteRequest(TEST_INDEX));
+		deleteIndex(TEST_INDEX);
 
 		// load data
 		BulkRequestBuilder bulkBuilder = new BulkRequestBuilder(client);
 		loadBulk("src/test/resource/accounts.json", bulkBuilder);
+		loadBulk("src/test/resource/phrases.json", bulkBuilder);
 		BulkResponse response = bulkBuilder.get();
 		if(response.hasFailures()) {
 			throw new Exception(String.format("Failed during bulk load. failure message: %s", response.buildFailureMessage()));
 		}
 		else {
 			System.out.println("Loaded all test data into elasticsearch cluster");
+		}
+	}
+
+	private static void deleteIndex(String indexName) {
+		// delete index if exists.
+		try {
+			DeleteIndexResponse response = new DeleteIndexRequestBuilder(client.admin().indices(), indexName).get();
+			if(response.isAcknowledged()) {
+				System.out.println(String.format("Deleted index %s...", indexName));
+			}
+		}
+		catch(IndexMissingException ex) {
+			System.out.println(String.format("Cannot delete index %s. (index is missing). continue anyway...", indexName));
 		}
 	}
 

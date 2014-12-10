@@ -15,6 +15,35 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class QueryTest {
 	
 	private SearchDao searchDao = new SearchDao() ;
+
+	@Test
+	public void equallityTest() throws SqlParseException {
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		String query = String.format("select * from %s where city = 'Nogal'", MainTestSuite.TEST_INDEX);
+		SearchRequestBuilder select = searchDao.explan(query);
+		SearchHits response = select.get().getHits();
+		SearchHit[] hits = response.getHits();
+
+		// assert the results is correct according to accounts.json data.
+		Assert.assertEquals(1, response.getTotalHits());
+		Assert.assertEquals("Nogal", hits[0].getSource().get("city"));
+	}
+
+
+	// TODO search 'quick fox' still matching 'quick fox brown' this is wrong behavior.
+	@Test
+	public void equallityTest_phrase() throws SqlParseException {
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		String query = String.format("select * from %s where phrase = 'quick fox here'", MainTestSuite.TEST_INDEX);
+		SearchRequestBuilder select = searchDao.explan(query);
+		SearchHits response = select.get().getHits();
+		SearchHit[] hits = response.getHits();
+
+		// assert the results is correct according to accounts.json data.
+		Assert.assertEquals(1, response.getTotalHits());
+		Assert.assertEquals("quick fox here", hits[0].getSource().get("phrase"));
+	}
+
 	@Test
 	public void likeTest() throws IOException, SqlParseException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
