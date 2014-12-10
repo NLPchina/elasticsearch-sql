@@ -2,17 +2,30 @@ package org.nlpcn.es4sql;
 
 import java.io.IOException;
 
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
 
 public class QueryTest {
 	
 	private SearchDao searchDao = new SearchDao() ;
 	@Test
-	public void likeTest() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select email from bank where age between 20 and 21 and email like '%c%' ");
-		System.out.println(select);
+	public void likeTest() throws IOException, SqlParseException {
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		String query = String.format("select * from %s where firstname like 'amb%%'", MainTestSuite.TEST_INDEX);
+		SearchRequestBuilder select = searchDao.explan(query);
+		SearchHits response = select.get().getHits();
+		SearchHit[] hits = response.getHits();
+
+		// assert the results is correct according to accounts.json data.
+		Assert.assertEquals(1, response.getTotalHits());
+		Assert.assertEquals("Amber", hits[0].getSource().get("firstname"));
 	}
 	
 	@Test
