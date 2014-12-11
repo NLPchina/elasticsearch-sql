@@ -1,10 +1,14 @@
 package org.nlpcn.es4sql;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import org.elasticsearch.common.inject.matcher.Matchers;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.junit.Assert;
@@ -18,10 +22,7 @@ public class QueryTest {
 
 	@Test
 	public void equallityTest() throws SqlParseException {
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-		String query = String.format("select * from %s where city = 'Nogal'", MainTestSuite.TEST_INDEX);
-		SearchRequestBuilder select = searchDao.explan(query);
-		SearchHits response = select.get().getHits();
+		SearchHits response = query(String.format("select * from %s where city = 'Nogal' LIMIT 1000", MainTestSuite.TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert the results is correct according to accounts.json data.
@@ -33,10 +34,7 @@ public class QueryTest {
 	// TODO search 'quick fox' still matching 'quick fox brown' this is wrong behavior.
 	@Test
 	public void equallityTest_phrase() throws SqlParseException {
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-		String query = String.format("select * from %s where phrase = 'quick fox here'", MainTestSuite.TEST_INDEX);
-		SearchRequestBuilder select = searchDao.explan(query);
-		SearchHits response = select.get().getHits();
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE phrase = 'quick fox here' LIMIT 1000", MainTestSuite.TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert the results is correct according to accounts.json data.
@@ -44,29 +42,140 @@ public class QueryTest {
 		Assert.assertEquals("quick fox here", hits[0].getSource().get("phrase"));
 	}
 
+
+	@Test
+	public void greaterThanTest() throws IOException, SqlParseException {
+		int someAge = 25;
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age > %s LIMIT 1000", MainTestSuite.TEST_INDEX, someAge));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			int age = (int) hit.getSource().get("age");
+			assertThat(age, greaterThan(someAge));
+		}
+	}
+
+	@Test
+	public void greaterThanOrEqualTest() throws IOException, SqlParseException {
+		int someAge = 25;
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age >= %s LIMIT 1000", MainTestSuite.TEST_INDEX, someAge));
+		SearchHit[] hits = response.getHits();
+
+		boolean isEqualFound = false;
+		for(SearchHit hit : hits) {
+			int age = (int) hit.getSource().get("age");
+			assertThat(age, greaterThanOrEqualTo(someAge));
+
+			if(age == someAge)
+				isEqualFound = true;
+		}
+
+		Assert.assertTrue(String.format("at least one of the documents need to contains age equal to %s", someAge), isEqualFound);
+	}
+
+
+	@Test
+	public void lessThanTest() throws IOException, SqlParseException {
+		int someAge = 25;
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age < %s LIMIT 1000", MainTestSuite.TEST_INDEX, someAge));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			int age = (int) hit.getSource().get("age");
+			assertThat(age, lessThan(someAge));
+		}
+	}
+
+	@Test
+	public void lessThanOrEqualTest() throws IOException, SqlParseException {
+		int someAge = 25;
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age <= %s LIMIT 1000", MainTestSuite.TEST_INDEX, someAge));
+		SearchHit[] hits = response.getHits();
+
+		boolean isEqualFound = false;
+		for(SearchHit hit : hits) {
+			int age = (int) hit.getSource().get("age");
+			assertThat(age, lessThanOrEqualTo(someAge));
+
+			if(age == someAge)
+				isEqualFound = true;
+		}
+
+		Assert.assertTrue(String.format("at least one of the documents need to contains age equal to %s", someAge), isEqualFound);
+	}
+
+
+
+	@Test
+	public void orTest() throws IOException, SqlParseException {
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE gender='F' OR gender='M' LIMIT 1000", MainTestSuite.TEST_INDEX));
+		// Assert all documents from accounts.json is returned.
+		Assert.assertEquals(1000, response.getTotalHits());
+	}
+
+
+	@Test
+	public void andTest() throws IOException, SqlParseException {
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age=32 AND gender='M' LIMIT 1000", MainTestSuite.TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Assert.assertEquals(32, hit.getSource().get("age"));
+			Assert.assertEquals("M", hit.getSource().get("gender"));
+		}
+	}
+
+
+
 	@Test
 	public void likeTest() throws IOException, SqlParseException {
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-		String query = String.format("select * from %s where firstname like 'amb%%'", MainTestSuite.TEST_INDEX);
-		SearchRequestBuilder select = searchDao.explan(query);
-		SearchHits response = select.get().getHits();
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE firstname LIKE 'amb%%' LIMIT 1000", MainTestSuite.TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert the results is correct according to accounts.json data.
 		Assert.assertEquals(1, response.getTotalHits());
 		Assert.assertEquals("Amber", hits[0].getSource().get("firstname"));
 	}
-	
+
+
 	@Test
-	public void betweenTest() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select age from bank where age between 20 and 21 limit 3");
-		System.out.println(select);
+	public void limitTest() throws IOException, SqlParseException {
+		SearchHits response = query(String.format("SELECT * FROM %s LIMIT 30", MainTestSuite.TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		// assert the results is correct according to accounts.json data.
+		Assert.assertEquals(30, hits.length);
 	}
 	
 	@Test
-	public void notBetweenTest() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select age from bank where age not between 20 and 21 limit 3");
-		System.out.println(select);
+	public void betweenTest() throws IOException, SqlParseException {
+		int min = 27;
+		int max = 30;
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age BETWEEN %s AND %s LIMIT 1000", MainTestSuite.TEST_INDEX, min, max));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			int age = (int) hit.getSource().get("age");
+			Assert.assertTrue(String.format("age must be between %s and %s. found age: %s", min, max, age), age >= min && age <= max);
+		}
+	}
+
+
+	/*
+	TODO/ when using not between on some field, documents that not contains this
+	 field will return as well, That may considered a Wrong behaivor.
+	 */
+	@Test
+	public void notBetweenTest() throws IOException, SqlParseException {
+		int min = 20;
+		int max = 37;
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE age NOT BETWEEN %s AND %s LIMIT 1000", MainTestSuite.TEST_INDEX, min, max));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Map<String, Object> source = hit.getSource();
+
+			// ignore document which not contains the age field.
+			if(source.containsKey("age")) {
+				int age = (int) hit.getSource().get("age");
+				Assert.assertTrue(String.format("age must not be between %s and %s. found age: %s", min, max, age), (age < min || age > max));
+			}
+		}
 	}
 	
 	@Test
@@ -135,5 +244,12 @@ public class QueryTest {
 	public void searchTableTest() throws IOException, SqlParseException{
 		SearchRequestBuilder select = searchDao.explan("select count(*) from doc/accounts,bank/doc limit 10");
 		System.out.println(select);
+	}
+
+
+	private SearchHits query(String query) throws SqlParseException {
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		SearchRequestBuilder select = searchDao.explan(query);
+		return select.get().getHits();
 	}
 }
