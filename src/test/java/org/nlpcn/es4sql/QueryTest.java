@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import org.elasticsearch.common.inject.matcher.Matchers;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.junit.Assert;
 import org.junit.Test;
@@ -152,13 +153,13 @@ public class QueryTest {
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
 			int age = (int) hit.getSource().get("age");
-			Assert.assertTrue(String.format("age must be between %s and %s. found age: %s", min, max, age), age >= min && age <= max);
+			assertThat(age, allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max)));
 		}
 	}
 
 
 	/*
-	TODO/ when using not between on some field, documents that not contains this
+	TODO when using not between on some field, documents that not contains this
 	 field will return as well, That may considered a Wrong behaivor.
 	 */
 	@Test
@@ -173,21 +174,38 @@ public class QueryTest {
 			// ignore document which not contains the age field.
 			if(source.containsKey("age")) {
 				int age = (int) hit.getSource().get("age");
-				Assert.assertTrue(String.format("age must not be between %s and %s. found age: %s", min, max, age), (age < min || age > max));
+				assertThat(age, not(allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max))));
 			}
 		}
 	}
 	
 	@Test
 	public void inTest() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select age from bank where age  in (20,21) limit 3");
-		System.out.println(select);
+		SearchHits response = query(String.format("SELECT age FROM %s WHERE age IN (20, 22) LIMIT 1000", MainTestSuite.TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			int age = (int) hit.field("age").getValue();
+			assertThat(age, isOneOf(20, 22));
+		}
 	}
-	
+
+
+	/* TODO when using not in on some field, documents that not contains this
+	field will return as well, That may considered a Wrong behaivor.
+	*/
 	@Test
 	public void notInTest() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select age from bank where age not in (20,21) limit 3");
-		System.out.println(select);
+		SearchHits response = query(String.format("SELECT age FROM %s WHERE age NOT IN (20, 22) LIMIT 1000", MainTestSuite.TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Map<String, SearchHitField> fields = hit.fields();
+
+			// ignore document which not contains the age field.
+			if(fields.containsKey("age")) {
+				int age = (int) hit.field("age").getValue();
+				assertThat(age, not(isOneOf(20, 22)));
+			}
+		}
 	}
 	
 	

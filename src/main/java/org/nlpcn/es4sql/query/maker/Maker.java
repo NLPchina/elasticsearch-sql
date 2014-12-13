@@ -4,13 +4,7 @@ import java.util.Set;
 
 import org.elasticsearch.common.collect.Sets;
 import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
-import org.elasticsearch.index.query.WildcardQueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
@@ -170,10 +164,27 @@ public abstract class Maker {
 			break;
 		case NIN:
 		case IN:
-			if (isQuery)
-				x = QueryBuilders.inQuery(name, (Object[]) value);
-			else
-				x = FilterBuilders.inFilter(name, (Object[]) value);
+			Object[] values = (Object[]) value;
+			MatchQueryBuilder[] matchQueries = new MatchQueryBuilder[values.length];
+			for(int i = 0; i < values.length; i++) {
+				matchQueries[i] = QueryBuilders.matchPhraseQuery(name, values[i]);
+			}
+
+			if(isQuery) {
+				BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+				for(MatchQueryBuilder matchQuery : matchQueries) {
+					boolQuery.should(matchQuery);
+				}
+				x = boolQuery;
+			}
+			else {
+				OrFilterBuilder orFilter = FilterBuilders.orFilter();
+				for(MatchQueryBuilder matchQuery : matchQueries) {
+					orFilter.add(FilterBuilders.queryFilter(matchQuery));
+				}
+				x = orFilter;
+			}
+			break;
 		case BETWEEN:
 		case NBETWEEN:
 			if (isQuery)
