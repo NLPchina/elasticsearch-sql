@@ -7,7 +7,7 @@ jdk:
 
 
 before_install:
-  - wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.2.4.deb && sudo dpkg -i --force-confnew elasticsearch-1.4.1.deb
+  - wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.4.1.deb && sudo dpkg -i --force-confnew elasticsearch-1.4.1.deb
 
 services:
   - elasticsearch
