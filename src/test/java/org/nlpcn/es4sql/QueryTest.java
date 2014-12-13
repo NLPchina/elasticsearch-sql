@@ -189,6 +189,17 @@ public class QueryTest {
 		}
 	}
 
+	@Test
+	public void inTestWithStrings() throws IOException, SqlParseException{
+		SearchHits response = query(String.format("SELECT phrase FROM %s WHERE phrase IN ('quick fox here', 'fox brown') LIMIT 1000", MainTestSuite.TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		Assert.assertEquals(2, response.getTotalHits());
+		for(SearchHit hit : hits) {
+			String phrase = hit.field("phrase").getValue();
+			assertThat(phrase, isOneOf("quick fox here", "fox brown"));
+		}
+	}
+
 
 	/* TODO when using not in on some field, documents that not contains this
 	field will return as well, That may considered a Wrong behaivor.
