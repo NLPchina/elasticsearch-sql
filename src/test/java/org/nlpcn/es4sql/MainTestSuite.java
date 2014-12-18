@@ -1,34 +1,23 @@
 package org.nlpcn.es4sql;
 
+
+
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.exists.ExistsRequest;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.base.Charsets;
 import org.elasticsearch.common.io.ByteStreams;
-import org.elasticsearch.common.io.BytesStream;
-import org.elasticsearch.common.io.FileSystemUtils;
-import org.elasticsearch.common.io.stream.BytesStreamInput;
-import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.indices.IndexMissingException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import sun.misc.IOUtils;
 
-import java.io.*;
-
-import static org.elasticsearch.common.io.Streams.copyToStringFromClasspath;
-
+import java.io.FileInputStream;
+import static org.nlpcn.es4sql.TestsConstants.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -37,8 +26,6 @@ import static org.elasticsearch.common.io.Streams.copyToStringFromClasspath;
 		AggregationTest.class
 })
 public class MainTestSuite {
-
-	public final static String TEST_INDEX = "elasticsearch-sql_test_index";
 
 	private static TransportClient client;
 	private static SearchDao searchDao;
@@ -91,8 +78,9 @@ public class MainTestSuite {
 
 		// load data
 		BulkRequestBuilder bulkBuilder = new BulkRequestBuilder(client);
-		loadBulk("src/test/resource/accounts.json", bulkBuilder);
-		loadBulk("src/test/resource/phrases.json", bulkBuilder);
+		loadBulk("src/test/resources/accounts.json", bulkBuilder);
+		loadBulk("src/test/resources/phrases.json", bulkBuilder);
+		loadBulk("src/test/resources/online.json", bulkBuilder);
 		BulkResponse response = bulkBuilder.get();
 		if(response.hasFailures()) {
 			throw new Exception(String.format("Failed during bulk load. failure message: %s", response.buildFailureMessage()));
@@ -117,6 +105,7 @@ public class MainTestSuite {
 
 
 	private static void loadBulk(String jsonPath, BulkRequestBuilder bulkBuilder) throws Exception {
+		System.out.println(String.format("Loading file %s into elasticsearch cluster", jsonPath));
 		byte[] buffer = ByteStreams.toByteArray(new FileInputStream(jsonPath));
 		bulkBuilder.add(buffer, 0, buffer.length, true, TEST_INDEX, null);
 	}
