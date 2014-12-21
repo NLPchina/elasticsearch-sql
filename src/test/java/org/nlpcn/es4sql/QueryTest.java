@@ -1,6 +1,9 @@
 package org.nlpcn.es4sql;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.joda.time.format.DateTimeFormat;
+import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
@@ -226,25 +229,39 @@ public class QueryTest {
 	
 	@Test
 	public void dateSearch() throws IOException, SqlParseException, ParseException {
-		Calendar dateToCompare = Calendar.getInstance();
-		dateToCompare.set(Calendar.YEAR, 2014);
-		dateToCompare.set(Calendar.MONTH, 8);
-		dateToCompare.set(Calendar.DAY_OF_MONTH, 18);
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(DATE_FORMAT);
+		DateTime dateToCompare = new DateTime(2014, 8, 18, 0, 0, 0);
 
 		SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time < '2014-08-18'", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
 			Map<String, SearchHitField> fields = hit.fields();
-			Calendar insertTime = Calendar.getInstance();
-			insertTime.setTime(new SimpleDateFormat(DATE_FORMAT).parse((String) fields.get("insert_time").getValue()));
-			Assert.assertTrue("insert_time must be smaller then 2014-08-18", insertTime.before(dateToCompare));
+			DateTime insertTime = formatter.parseDateTime((String) fields.get("insert_time").getValue());
+
+			String errorMessage = String.format("insert_time must be smaller then 2014-08-18. found: %s", insertTime);
+			Assert.assertTrue(errorMessage, insertTime.isBefore(dateToCompare));
 		}
 	}
 	
 	@Test
-	public void dateBetweenSearch() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select insert_time from online where insert_time between '2014-08-18' and '2014-08-21' limit 3");
-		System.out.println(select);
+	public void dateBetweenSearch() throws IOException, SqlParseException {
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(DATE_FORMAT);
+
+		DateTime dateLimit1 = new DateTime(2014, 8, 18, 0, 0, 0);
+		DateTime dateLimit2 = new DateTime(2014, 8, 21, 0, 0, 0);
+
+		SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time BETWEEN '2014-08-18' AND '2014-08-21' LIMIT 3", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Map<String, SearchHitField> fields = hit.fields();
+			DateTime insertTime = formatter.parseDateTime((String) fields.get("insert_time").getValue());
+
+			boolean isBetween =
+					(insertTime.isAfter(dateLimit1) || insertTime.isEqual(dateLimit1)) &&
+					(insertTime.isBefore(dateLimit2) || insertTime.isEqual(dateLimit2));
+
+			Assert.assertTrue("insert_time must be between 2014-08-18 and 2014-08-21", isBetween);
+		}
 	}
 	
 	/**
