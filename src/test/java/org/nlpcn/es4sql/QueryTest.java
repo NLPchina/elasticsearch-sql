@@ -14,9 +14,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -27,6 +25,19 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 public class QueryTest {
 	
 	private SearchDao searchDao = new SearchDao() ;
+
+
+	@Test
+	public void selectSpecificFields() throws IOException, SqlParseException {
+		String[] arr = new String[] {"age", "account_number"};
+		Set expectedSource = new HashSet(Arrays.asList(arr));
+
+		SearchHits response = query(String.format("SELECT age, account_number FROM %s/account", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Assert.assertEquals(expectedSource, hit.getSource().keySet());
+		}
+	}
 
 	@Test
 	public void equallityTest() throws SqlParseException {
@@ -191,7 +202,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT age FROM %s WHERE age IN (20, 22) LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			int age = (int) hit.field("age").getValue();
+			int age = (int) hit.getSource().get("age");
 			assertThat(age, isOneOf(20, 22));
 		}
 	}
@@ -202,7 +213,7 @@ public class QueryTest {
 		SearchHit[] hits = response.getHits();
 		Assert.assertEquals(2, response.getTotalHits());
 		for(SearchHit hit : hits) {
-			String phrase = hit.field("phrase").getValue();
+			String phrase = (String) hit.getSource().get("phrase");
 			assertThat(phrase, isOneOf("quick fox here", "fox brown"));
 		}
 	}
@@ -216,11 +227,11 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT age FROM %s WHERE age NOT IN (20, 22) LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, SearchHitField> fields = hit.fields();
+			Map<String, Object> source = hit.getSource();
 
 			// ignore document which not contains the age field.
-			if(fields.containsKey("age")) {
-				int age = (int) hit.field("age").getValue();
+			if(source.containsKey("age")) {
+				int age = (int) source.get("age");
 				assertThat(age, not(isOneOf(20, 22)));
 			}
 		}
@@ -235,8 +246,8 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time < '2014-08-18'", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, SearchHitField> fields = hit.fields();
-			DateTime insertTime = formatter.parseDateTime((String) fields.get("insert_time").getValue());
+			Map<String, Object> source = hit.getSource();
+			DateTime insertTime = formatter.parseDateTime((String) source.get("insert_time"));
 
 			String errorMessage = String.format("insert_time must be smaller then 2014-08-18. found: %s", insertTime);
 			Assert.assertTrue(errorMessage, insertTime.isBefore(dateToCompare));
@@ -253,8 +264,8 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time BETWEEN '2014-08-18' AND '2014-08-21' LIMIT 3", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, SearchHitField> fields = hit.fields();
-			DateTime insertTime = formatter.parseDateTime((String) fields.get("insert_time").getValue());
+			Map<String, Object> source = hit.getSource();
+			DateTime insertTime = formatter.parseDateTime((String) source.get("insert_time"));
 
 			boolean isBetween =
 					(insertTime.isAfter(dateLimit1) || insertTime.isEqual(dateLimit1)) &&
