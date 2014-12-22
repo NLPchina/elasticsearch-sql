@@ -144,10 +144,12 @@ public class SqlParser {
 			return expr;
 		} else if (expr instanceof SQLNullExpr) {
 			return null;
-		} else if (expr instanceof SQLIdentifierExpr && "miss".equalsIgnoreCase(expr.toString())) {
+		} else if (expr instanceof SQLIdentifierExpr) {
 			return expr;
 		} else {
-			throw new SqlParseException("i can not know value type " + expr.getClass() + " , value is : " + expr);
+			throw new SqlParseException(
+					String.format("Failed to parse SqlExpression of type %s. expression value: %s", expr.getClass(), expr)
+			);
 		}
 	}
 

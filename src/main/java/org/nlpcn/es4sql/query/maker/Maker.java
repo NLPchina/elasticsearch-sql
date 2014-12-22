@@ -118,9 +118,15 @@ public abstract class Maker {
 		case N:
 		case EQ:
 			if (value instanceof SQLIdentifierExpr) {
-				x = FilterBuilders.missingFilter(name);
-				if (isQuery) {
-					x = QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.missingFilter(name));
+				SQLIdentifierExpr identifier = (SQLIdentifierExpr) value;
+				if(identifier.getName().equalsIgnoreCase("missing")) {
+					x = FilterBuilders.missingFilter(name);
+					if (isQuery) {
+						x = QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.missingFilter(name));
+					}
+				}
+				else {
+					throw new SqlParseException(String.format("Cannot recoginze Sql identifer %s", identifier.getName()));
 				}
 				break;
 			} else {
