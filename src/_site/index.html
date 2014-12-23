@@ -11,13 +11,11 @@
 
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom styles for this template -->
     <link href="style.css" rel="stylesheet">
 
   </head>
 
-  <body>
+  <body ng-app="elasticsearchSqlApp" ng-controller="MainController">
 
     <!-- Top navbar -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -36,7 +34,7 @@
           </ul>
 
           <form class="navbar-form navbar-right">
-            <input type="text" id="urlBox" class="form-control" value="http://localhost:9200" />
+            <input type="text" id="urlBox" class="form-control" ng-model="url" />
           </form>
         </div>
       </div>
@@ -95,7 +93,6 @@
 
 
 
-
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-9 col-sm-offset-3 col-md-11 col-md-offset-1 main">
@@ -104,29 +101,32 @@
           <!-- Query area -->
           <div class="search-area">
           	<textarea id="queryTextarea">SELECT * FROM myindex</textarea> 
-  	        <button type="button" id="searchButton" class="btn btn-success search-button">Search</button>
+  	        <button type="button" ng-click="search()" id="searchButton" class="btn btn-success search-button" ng-bind-html="getSearchButtonContent(loading)" ng-cloak></button>
   	      </div>
 
-
           <!-- Error box, displayed only on errors -->
-          <div id="errorBox" class="alert alert-danger" role="alert">
+          <div id="errorBox" ng-hide="error == ''" class="alert alert-danger fadein" role="alert" ng-cloak>
             <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
             <span class="sr-only">Error:</span>
-            <span id="errorBoxText"></span>
+            <span ng-model="error">{{error}}</span>
           </div>
 
           <!-- Results area, displayed after search -->
-          <div id="resultsContainer">
+          <div class="fadein" ng-show="resultsColumns.length > 0" ng-cloak>
             <h2 class="sub-header">Results</h2>
             <div class="table-responsive">
               <table class="table table-striped">
                 <thead>
                   <tr id="tableHead">
-
+                    <th ng-repeat="column in resultsColumns">{{column}}</th>
                   </tr>
                 </thead>
                 <tbody id="tableBody">
-     
+                  <tr ng-repeat="row in resultsRows">
+                    <td ng-repeat="column in resultsColumns">
+                      {{row[column]}}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -139,10 +139,10 @@
 
 
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- Jquery include -->
     <script src="vendor/jquery/jquery-2.1.1.min.js"></script>
+
+    <!-- Bootstrap core JavaScript -->
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 
     <!-- CodeMirror includes -->
@@ -153,32 +153,16 @@
   	<script src="vendor/codemirror/addon/hint/show-hint.js"></script>
   	<script src="vendor/codemirror/addon/hint/sql-hint.js"></script>
 
+    <!-- AngularJS -->
+    <script src="vendor/angularjs/angular.min.js"></script>
+    <script src="vendor/angularjs/angular-animate.min.js"></script>
+    <script src="vendor/angularjs/angular-sanitize.min.js"></script>
 
     <script src="editor.js"></script>
     <script src="query.js"></script>
+    <script src="controllers.js"></script>
 
   	<script type="text/javascript">      
-      $("#searchButton").click(search);
-
-  		function search() {
-        // Reset results and error box
-        $("#resultsContainer").hide()
-        $("#errorBox").hide()
-        $("#tableHead").empty()
-        $("#tableBody").empty()
-
-        var query = window.editor.getValue()
-        var url = $("#urlBox").val()
-
-  			$.post(url + "/_sql", query, function(data) {
-          var handler = new QueryResultHandler(data)
-          handler.handle()
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-          errorOccured(xhr.responseText);
-        });
-  		}
-
 
       // show errorText in error box.
       function errorOccured(errorText) {

@@ -1,64 +1,28 @@
 
-/* QueryResultHandler object
-Handles the query result
-by displaying it in the table. */
-var QueryResultHandler = function(data) {
-  this.data = data
-}
+/* ResultHandlerFactory
+Returns the right Result Handler depend
+on the results */
+var ResultHandlerFactory = {
+  "create": function(data) {
 
-// Is query is of aggregation type? (SQL group by)
-QueryResultHandler.prototype.isAggregation = function() {
-    return "aggregations" in this.data
-}
-
-QueryResultHandler.prototype.setTableHead = function(scheme) {
-  tableHead = ""
-  for(var i=0; i < scheme.length; i++) {
-    tableHead += "<th>" + scheme[i] + "</th>"
-  }
-
-  $("#tableHead").html(tableHead)
-}
-
-QueryResultHandler.prototype.setTableBody = function(body, head) {
-  for(var index = 0; index < body.length; index++) {
-    var row = body[index]
-    var rowHTML = "<tr>"
-
-    for(var i = 0; i < head.length; i++) {
-      if(head[i] in row) {
-        rowHTML += "<td>" + row[head[i]] + "</td>"
-      }
-      else {
-        rowHTML += "<td>&nbsp;</td>"
-      }
+    // Is query is of aggregation type? (SQL group by)
+    function isAggregation() {
+      return "aggregations" in data
     }
 
-    rowHTML += "</tr>"
-    $("#tableBody").append(rowHTML)
+    return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data)
   }
 }
 
-QueryResultHandler.prototype.handle = function() {
-  var resultHandler = this.isAggregation() ? new AggregationQueryResult(this.data) : new DefaultQueryResult(this.data)
-  var head = resultHandler.getHead();
-  this.setTableHead(head);
-
-  var body = resultHandler.getBody();
-  this.setTableBody(body, head)
-  $("#resultsContainer").show('slow');
-};
 
 
 
-
-
-/* DefaultQueryResult object 
+/* DefaultQueryResultHandler object 
 Handle the query result,
 in case of regular query
 (Not aggregation)
 */
-var DefaultQueryResult = function(data) {
+var DefaultQueryResultHandler = function(data) {
 
   // createScheme by traverse hits field
   function createScheme() {
@@ -80,11 +44,11 @@ var DefaultQueryResult = function(data) {
   this.head = createScheme()
 };
 
-DefaultQueryResult.prototype.getHead = function() {
+DefaultQueryResultHandler.prototype.getHead = function() {
   return this.head
 };
 
-DefaultQueryResult.prototype.getBody = function() {
+DefaultQueryResultHandler.prototype.getBody = function() {
   var hits = this.data.hits.hits
   var body = []
   for(var i = 0; i < hits.length; i++) {
@@ -98,12 +62,12 @@ DefaultQueryResult.prototype.getBody = function() {
 
 
 
-/* AggregationQueryResult object 
+/* AggregationQueryResultHandler object 
 Handle the query result,
 in case of Aggregation query
 (SQL group by)
 */
-var AggregationQueryResult = function(data) {
+var AggregationQueryResultHandler = function(data) {
 
   function getRows(bucketName, bucket, additionalColumns) {
     var rows = []
@@ -165,7 +129,7 @@ var AggregationQueryResult = function(data) {
   this.flattenBuckets = getRows(undefined, data.aggregations, {})
 };
 
-AggregationQueryResult.prototype.getHead = function() {
+AggregationQueryResultHandler.prototype.getHead = function() {
   head = []
   for(var i = 0; i < this.flattenBuckets.length; i++) {
     var keys = Object.keys(this.flattenBuckets[i])
@@ -178,7 +142,7 @@ AggregationQueryResult.prototype.getHead = function() {
   return head
 };
 
-AggregationQueryResult.prototype.getBody = function() {
+AggregationQueryResultHandler.prototype.getBody = function() {
   return this.flattenBuckets
 };
 

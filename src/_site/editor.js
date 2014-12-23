@@ -9,7 +9,7 @@ window.onload = function() {
     autofocus: true,
     extraKeys: {
       "Ctrl-Space": "autocomplete",
-      "Ctrl-Enter": search
-    }
+      "Ctrl-Enter": angular.element($("#queryTextarea")).scope().search
+    } 
   });
 };

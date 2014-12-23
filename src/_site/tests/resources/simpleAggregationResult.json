@@ -1,0 +1,45 @@
+{
+  "took" : 29,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 1000,
+    "max_score" : 0.0,
+    "hits" : [ ]
+  },
+  "aggregations" : {
+    "gender" : {
+      "doc_count_error_upper_bound" : 0,
+      "sum_other_doc_count" : 0,
+      "buckets" : [ {
+        "key" : "m",
+        "doc_count" : 507,
+        "averge_age" : {
+          "value" : 30.027613412228796
+        },
+        "count" : {
+          "value" : 507
+        },
+        "balance_sum" : {
+          "value" : 1.3082527E7
+        }
+      }, {
+        "key" : "f",
+        "doc_count" : 493,
+        "averge_age" : {
+          "value" : 30.3184584178499
+        },
+        "count" : {
+          "value" : 493
+        },
+        "balance_sum" : {
+          "value" : 1.263231E7
+        }
+      } ]
+    }
+  }
+}
