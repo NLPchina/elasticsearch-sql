@@ -7,6 +7,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -44,8 +45,7 @@ public class AggregationQuery extends Query {
 
 		if (where != null) {
 			boolFilter = FilterMaker.explan(where);
-			filter = AggregationBuilders.filter("filter").filter(boolFilter);
-			request.addAggregation(filter);
+			request.setQuery(QueryBuilders.filteredQuery(null, boolFilter));
 		}
 
 		//
