@@ -12,7 +12,7 @@ Install as plugin:
 ###Elasticsearch 1.4.X
 ````
 
-./bin/plugin -u http://maven.nlpcn.org/org/nlpcn/elasticsearch-sql/1.4.1/elasticsearch-sql-1.4.1.zip --install sql 
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.2/elasticsearch-sql-1.2.zip --install sql
 
 ````
 ## Basic Usuage
