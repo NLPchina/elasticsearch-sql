@@ -105,12 +105,11 @@ describe("AggregationQueryResultHandler", function() {
   });
 
 
-  /* TODO make this test pass.
-  Add test that take complex aggregation result with
-  some buckets. */
   it("should return the expected body", function() {  
     var body = handler.getBody();
     expect(angular.equals(body, expectedBody)).toBe(true);
   });
+
+  // TODO add nested aggregations test.
 
 });

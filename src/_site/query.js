@@ -91,21 +91,23 @@ var AggregationQueryResultHandler = function(data) {
       }
     }
 
-    var obj = $.extend({}, additionalColumns)
-    if(bucketName != undefined) {
-      obj[bucketName] = bucket.key
+    else {
+      var obj = $.extend({}, additionalColumns)
+      if(bucketName != undefined) {
+        obj[bucketName] = bucket.key
+      }
+
+      for(var field in bucket) {              
+        if(bucket[field].value != undefined) {
+          obj[field] = bucket[field].value
+        }
+        else {
+          continue;
+        }
+      }
+      rows.push(obj)
     }
 
-    for(var field in bucket) {              
-      if(bucket[field].value != undefined) {
-        obj[field] = bucket[field].value
-      }
-      else {
-        continue;
-      }
-    }
-
-    rows.push(obj)
     return rows
   }
 

@@ -61,14 +61,17 @@ public class MainTestSuite {
 		String host = System.getenv("ES_TEST_HOST");
 		String port = System.getenv("ES_TEST_PORT");
 
-		if(host == null || port == null) {
+		if(host == null) {
 			host = "localhost";
-			port = "9300";
-
-			System.out.println("ES_TEST_HOST AND ES_TEST_PORT enviroment variables does not exist.");
-			System.out.println(String.format("Using defaults. host: %s. port:%s.", host, port));
+			System.out.println("ES_TEST_HOST enviroment variable does not exist. choose default 'localhost'");
 		}
 
+		if(port == null) {
+			port = "9300";
+			System.out.println("ES_TEST_PORT enviroment variable does not exist. choose default '9300'");
+		}
+
+		System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
 		return new InetSocketTransportAddress(host, Integer.parseInt(port));
 	}
 
