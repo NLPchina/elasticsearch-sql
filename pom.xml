@@ -3,9 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>1.4.1</version>
+	<version>1.2</version>
 	<packaging>jar</packaging>
-	<description>elasticsearh by sql ! </description>
+	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
 	<url>https://github.com/NLPchina/elasticsearch-sql/</url>
 	<licenses>
@@ -22,6 +22,11 @@
 			<name>ansj</name>
 			<email>ansj-sun@163.com</email>
 		</developer>
+        <developer>
+            <id>omershelef</id>
+            <name>Omer shelef</name>
+            <email>shlaflaf@gmail.com</email>
+        </developer>
 	</developers>
 
 	<distributionManagement>
