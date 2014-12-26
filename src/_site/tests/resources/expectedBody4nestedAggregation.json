@@ -1,0 +1,6 @@
+[
+	{"gender": "f", "age": 28, "count": 31, "sum_balance": 839381, "averge_balance": 27076.8064516129},
+	{"gender": "f", "age": 29, "count": 12, "sum_balance": 343217, "averge_balance": 28601.416666666668},  
+	{"gender": "m", "age": 29, "count": 23, "sum_balance": 688693, "averge_balance": 29943.17391304348},
+	{"gender": "m", "age": 28, "count": 20, "sum_balance": 602587, "averge_balance": 30129.35}  
+]

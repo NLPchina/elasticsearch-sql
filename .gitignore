@@ -17,4 +17,5 @@ log/
 elasticsearch-sql.iml
 .idea
 src/_site/vendor/codemirror/mode/jinja2/.goutputstream-*
+src/_site/node_modules
 *~

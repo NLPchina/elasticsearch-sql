@@ -10,6 +10,14 @@
 		avg(age) AS averge_age
 		FROM elasticsearch-sql_test_index/account
 		group by gender
+
+
+  nestedAggregationResult:
+    SELECT COUNT(*) AS count, AVG(balance) AS averge_balance,
+    SUM(balance) AS sum_balance
+    FROM elasticsearch-sql_test_index
+    WHERE age > 27 AND age < 30
+    GROUP BY gender, age
 */
 
 
@@ -83,21 +91,25 @@ describe("DefaultQueryResultHandler", function() {
 
 describe("AggregationQueryResultHandler", function() {
   
-  var aggregationResult;  
-  var expectedBody;
-  var handler;
+  var simpleAggregationResult;
+  var expectedBody4simpleAggregation;
+
+  var nestedAggregationResult;
+  var expectedBody4nestedAggregation;
+
 
   beforeAll(function() {
   	jasmine.getJSONFixtures().fixturesPath = 'resources';
-  	aggregationResult = getJSONFixture('simpleAggregationResult.json');
-  	expectedBody = [
-  		{"gender": "m", "averge_age": 30.027613412228796, "count": 507, "balance_sum": 13082527},
-  		{"gender": "f", "averge_age": 30.3184584178499, "count": 493, "balance_sum": 12632310}  		
-  	]
-  	handler = new AggregationQueryResultHandler(aggregationResult);
+
+  	simpleAggregationResult = getJSONFixture('simpleAggregationResult.json');
+  	expectedBody4simpleAggregation = getJSONFixture('expectedBody4simpleAggregation.json');
+
+    nestedAggregationResult = getJSONFixture('nestedAggregationResult.json');
+    expectedBody4nestedAggregation = getJSONFixture('expectedBody4nestedAggregation.json');
   });
 
-  it("should return the expected head", function() {
+  it("should return the expected head for simple aggregation", function() {
+    var handler = new AggregationQueryResultHandler(simpleAggregationResult);
   	var expectedHead = ["gender", "averge_age", "count", "balance_sum"];
   	
     var head = handler.getHead();
@@ -105,11 +117,24 @@ describe("AggregationQueryResultHandler", function() {
   });
 
 
-  it("should return the expected body", function() {  
+  it("should return the expected body for simple aggregation", function() {  
+    var handler = new AggregationQueryResultHandler(simpleAggregationResult);
     var body = handler.getBody();
-    expect(angular.equals(body, expectedBody)).toBe(true);
+    expect(angular.equals(body, expectedBody4simpleAggregation)).toBe(true);
   });
 
-  // TODO add nested aggregations test.
+  it("should return the expected head for nested aggregation", function() {
+    var handler = new AggregationQueryResultHandler(nestedAggregationResult);
+    var expectedHead = ["gender", "age", "count", "sum_balance", "averge_balance"];
+    
+    var head = handler.getHead();
+    expect(isSetsEquals(expectedHead, head)).toBe(true);
+  });
+
+  it("should return the expected body for nested aggregation", function() {  
+    var handler = new AggregationQueryResultHandler(nestedAggregationResult);
+    var body = handler.getBody();
+    expect(angular.equals(body, expectedBody4nestedAggregation)).toBe(true);
+  });
 
 });

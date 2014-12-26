@@ -1,0 +1,85 @@
+{
+  "took" : 11,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 86,
+    "max_score" : 0.0,
+    "hits" : [ ]
+  },
+  "aggregations" : {
+    "gender" : {
+      "doc_count_error_upper_bound" : 0,
+      "sum_other_doc_count" : 0,
+      "buckets" : [ {
+        "key" : "f",
+        "doc_count" : 43,
+        "age" : {
+          "doc_count_error_upper_bound" : 0,
+          "sum_other_doc_count" : 0,
+          "buckets" : [ {
+            "key" : 28,
+            "doc_count" : 31,
+            "count" : {
+              "value" : 31
+            },
+            "sum_balance" : {
+              "value" : 839381.0
+            },
+            "averge_balance" : {
+              "value" : 27076.8064516129
+            }
+          }, {
+            "key" : 29,
+            "doc_count" : 12,
+            "count" : {
+              "value" : 12
+            },
+            "sum_balance" : {
+              "value" : 343217.0
+            },
+            "averge_balance" : {
+              "value" : 28601.416666666668
+            }
+          } ]
+        }
+      }, {
+        "key" : "m",
+        "doc_count" : 43,
+        "age" : {
+          "doc_count_error_upper_bound" : 0,
+          "sum_other_doc_count" : 0,
+          "buckets" : [ {
+            "key" : 29,
+            "doc_count" : 23,
+            "count" : {
+              "value" : 23
+            },
+            "sum_balance" : {
+              "value" : 688693.0
+            },
+            "averge_balance" : {
+              "value" : 29943.17391304348
+            }
+          }, {
+            "key" : 28,
+            "doc_count" : 20,
+            "count" : {
+              "value" : 20
+            },
+            "sum_balance" : {
+              "value" : 602587.0
+            },
+            "averge_balance" : {
+              "value" : 30129.35
+            }
+          } ]
+        }
+      } ]
+    }
+  }
+}
