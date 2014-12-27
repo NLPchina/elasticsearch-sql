@@ -60,6 +60,7 @@ public class QueryTest {
 
 
 	// TODO search 'quick fox' still matching 'quick fox brown' this is wrong behavior.
+	// in some cases, depends on the analasis, we might want choose better behavior for equallity.
 	@Test
 	public void equallityTest_phrase() throws SqlParseException {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE phrase = 'quick fox here' LIMIT 1000", TEST_INDEX));
@@ -316,17 +317,20 @@ public class QueryTest {
 
 
 	@Test
-	public void boolQuerySearch() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select * from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not missing order by age,_score desc limit 10 ");
-		System.out.println(select);
-	}
-	
+	public void complexConditionQuery() throws IOException, SqlParseException{
+		String errorMessage = "Result does not exist to the condition (gender='m' AND (age> 25 OR account_number>5)) OR (gender='f' AND (age>30 OR account_number < 8)";
 
+		SearchHits response = query(String.format("SELECT * FROM %s/account WHERE (gender='m' AND (age> 25 OR account_number>5)) OR (gender='f' AND (age>30 OR account_number < 8))", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
 
-	@Test
-	public void countSearch() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan("select count(*) from bank where (gender='m' and (age> 25 or account_number>5)) or (gender='w' and (age>30 or account_number < 8)) and email is not missing");
-		System.out.println(select);
+		for(SearchHit hit : hits) {
+			Map<String, Object> source = hit.getSource();
+			String gender = ((String)source.get("gender")).toLowerCase();
+			int age = (int)source.get("age");
+			int account_number = (int) source.get("account_number");
+
+			Assert.assertTrue(errorMessage, (gender.equals("m") && (age> 25 || account_number>5)) || (gender.equals("f") && (age>30 || account_number < 8)));
+		}
 	}
 	
 

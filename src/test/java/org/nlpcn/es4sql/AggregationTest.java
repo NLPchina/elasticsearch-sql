@@ -7,9 +7,19 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+
 public class AggregationTest {
 
 	private SearchDao searchDao = new SearchDao();
+
+	// TODO count must be returned as aggregation.
+	@Test
+	public void countSearch() throws IOException, SqlParseException{
+		SearchRequestBuilder select = searchDao.explan(String.format("SELECT COUNT(*) FROM %s/accounts GROUP BY age", TEST_INDEX));
+		System.out.println(select);
+	}
+
 
 	@Test
 	public void sumDistinctOrderTest() throws IOException, SqlParseException {
