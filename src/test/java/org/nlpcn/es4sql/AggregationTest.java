@@ -4,6 +4,10 @@ import java.io.IOException;
 
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
+import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -13,11 +17,11 @@ public class AggregationTest {
 
 	private SearchDao searchDao = new SearchDao();
 
-	// TODO count must be returned as aggregation.
 	@Test
 	public void countSearch() throws IOException, SqlParseException{
-		SearchRequestBuilder select = searchDao.explan(String.format("SELECT COUNT(*) FROM %s/accounts GROUP BY age", TEST_INDEX));
-		System.out.println(select);
+		Aggregations result  = query(String.format("SELECT COUNT(*) FROM %s/account", TEST_INDEX));
+		ValueCount count = result.get("COUNT(*)");
+		Assert.assertEquals(count.getValue(), 1000);
 	}
 
 
@@ -134,6 +138,12 @@ public class AggregationTest {
 	public void topHitTest() throws IOException, SqlParseException {
 		SearchRequestBuilder result = searchDao.explan("select topHits('size'=3,age='desc') from bank  group by gender ");
 		System.out.println(result);
+	}
+
+	private Aggregations query(String query) throws SqlParseException {
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		SearchRequestBuilder select = searchDao.explan(query);
+		return select.get().getAggregations();
 	}
 
 }

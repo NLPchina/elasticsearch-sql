@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -9,6 +10,9 @@ import java.util.List;
  * @author ansj
  */
 public class Select {
+
+	// Using this functions, will cause query to execute as aggregation.
+	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT");
 
 	private List<Index> indexs = new ArrayList<>();
 	private List<Field> fields = new ArrayList<>();
@@ -109,25 +113,16 @@ public class Select {
 	}
 
 	public void addField(Field field) {
-		// 如果查詢＊　那麼放棄
 		if (field == null) {
 			return;
 		}
 
-		if (field instanceof MethodField) {
-			switch (field.getName()) {
-			case "SUM":
-			case "MAX":
-			case "MIN":
-			case "AVG":
-			case "TOPHITS":
-			case "COUNT":
-				if (!"*".equals(((MethodField) field).getParams().get(0).toString())) {
-					isAgg = true;
-				}
-			}
+		if(field instanceof  MethodField && aggsFunctions.contains(field.getName())) {
+			isAgg = true;
 		}
+
 		fields.add(field);
 	}
 
 }
+

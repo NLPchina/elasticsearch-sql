@@ -46,12 +46,13 @@ public class AggMaker {
 		}
 	}
 
+
 	/**
-	 * 将Field 转换为agg
-	 * 
-	 * @param field
-	 * @return
-	 * @throws SqlParseException
+	 * Create aggregation according to the SQL function.
+	 * @param field SQL function
+	 * @param parent parentAggregation
+	 * @return AggregationBuilder represents the SQL function
+	 * @throws SqlParseException in case of unrecognized function
 	 */
 	public AbstractAggregationBuilder makeFieldAgg(MethodField field, AbstractAggregationBuilder parent) throws SqlParseException {
 		groupMap.put(field.getAlias(), new KVValue("FIELD", parent));
@@ -67,7 +68,6 @@ public class AggMaker {
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
 		case "COUNT":
-			// 如果是count修正排序方式
 			groupMap.put(field.getAlias(), new KVValue("COUNT", parent));
 			return makeCountAgg(field);
 		default:
@@ -237,20 +237,26 @@ public class AggMaker {
 		return range;
 	}
 
+
 	/**
-	 * 构建count查询
-	 * 
-	 * @param field
-	 * @return
+	 * Create count aggregation.
+	 * @param field The count function
+	 * @return AggregationBuilder use to count result
 	 */
 	private AbstractAggregationBuilder makeCountAgg(MethodField field) {
+
+		// Cardinality is approximate DISTINCT.
 		if ("DISTINCT".equals(field.getOption())) {
 			return AggregationBuilders.cardinality(field.getAlias()).precisionThreshold(40000).field(field.getParams().get(0).value.toString());
 		}
+
 		String fieldName = field.getParams().get(0).value.toString();
+
+		// In case of count(*) we use '_index' as field parameter to count all documents
 		if ("*".equals(fieldName)) {
-			return AggregationBuilders.count(field.getAlias());
-		} else {
+			return AggregationBuilders.count(field.getAlias()).field("_index");
+		}
+		else {
 			return AggregationBuilders.count(field.getAlias()).field(fieldName);
 		}
 	}
