@@ -1,17 +1,21 @@
 package org.nlpcn.es4sql;
 
-import java.io.IOException;
-
-import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.avg.Avg;
+import org.elasticsearch.search.aggregations.metrics.max.Max;
+import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
+import java.io.IOException;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 
 public class AggregationTest {
 
@@ -19,9 +23,45 @@ public class AggregationTest {
 
 	@Test
 	public void countSearch() throws IOException, SqlParseException{
-		Aggregations result  = query(String.format("SELECT COUNT(*) FROM %s/account", TEST_INDEX));
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account", TEST_INDEX));
 		ValueCount count = result.get("COUNT(*)");
-		Assert.assertEquals(count.getValue(), 1000);
+		Assert.assertEquals(1000, count.getValue());
+	}
+
+
+	@Test
+	public void sumTest() throws IOException, SqlParseException {
+		Aggregations result = query(String.format("SELECT SUM(balance) FROM %s/account", TEST_INDEX));
+		Sum sum = result.get("SUM(balance)");
+		assertThat(sum.getValue(), equalTo(25714837.0));
+	}
+
+	@Test
+	public void minTest() throws IOException, SqlParseException {
+		Aggregations result = query(String.format("SELECT MIN(age) FROM %s/account", TEST_INDEX));
+		Min min = result.get("MIN(age)");
+		assertThat(min.getValue(), equalTo(20.0));
+	}
+
+	@Test
+	public void maxTest() throws IOException, SqlParseException {
+		Aggregations result = query(String.format("SELECT MAX(age) FROM %s/account", TEST_INDEX));
+		Max max = result.get("MAX(age)");
+		assertThat(max.getValue(), equalTo(40.0));
+	}
+
+	@Test
+	public void avgTest() throws IOException, SqlParseException {
+		Aggregations result = query(String.format("SELECT AVG(age) FROM %s/account", TEST_INDEX));
+		Avg avg = result.get("AVG(age)");
+		assertThat(avg.getValue(), equalTo(30.171));
+	}
+
+
+	@Test
+	public void aliasTest() throws IOException, SqlParseException{
+		Aggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s/account", TEST_INDEX));
+		assertThat(result.asMap(), hasKey("mycount"));
 	}
 
 
@@ -43,23 +83,6 @@ public class AggregationTest {
 		System.out.println(select);
 	}
 
-	@Test
-	public void minTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select min(age) from bank  group by gender ");
-		System.out.println(result);
-	}
-
-	@Test
-	public void maxTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select max(age) from bank  group by gender ");
-		System.out.println(result);
-	}
-
-	@Test
-	public void avgTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select avg(age) from bank  group by gender ");
-		System.out.println(result);
-	}
 
 	@Test
 	public void countGroupByTest() throws IOException, SqlParseException {

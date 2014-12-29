@@ -5,16 +5,13 @@ import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormat;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,6 +24,11 @@ public class QueryTest {
 	
 	private SearchDao searchDao = new SearchDao() ;
 
+	@Test
+	public void searchTypeTest() throws IOException, SqlParseException{
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase LIMIT 1000", TEST_INDEX));
+		Assert.assertEquals(4, response.getTotalHits());
+	}
 
 	@Test
 	public void selectSpecificFields() throws IOException, SqlParseException {
@@ -41,11 +43,20 @@ public class QueryTest {
 	}
 
 
+	// TODO field aliases is not supported currently. it might be possible to change field names after the query already executed.
+	/*
 	@Test
-	public void searchTypeTest() throws IOException, SqlParseException{
-		SearchHits response = query(String.format("SELECT * FROM %s/phrase LIMIT 1000", TEST_INDEX));
-		Assert.assertEquals(4, response.getTotalHits());
+	public void selectAliases() throws IOException, SqlParseException {
+		String[] arr = new String[] {"myage", "myaccount_number"};
+		Set expectedSource = new HashSet(Arrays.asList(arr));
+
+		SearchHits response = query(String.format("SELECT age AS myage, account_number AS myaccount_number FROM %s/account", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Assert.assertEquals(expectedSource, hit.getSource().keySet());
+		}
 	}
+	*/
 
 
 	@Test
@@ -332,7 +343,38 @@ public class QueryTest {
 			Assert.assertTrue(errorMessage, (gender.equals("m") && (age> 25 || account_number>5)) || (gender.equals("f") && (age>30 || account_number < 8)));
 		}
 	}
-	
+
+
+	@Test
+	public void orderByAscTest() throws IOException, SqlParseException {
+		SearchHits response = query(String.format("SELECT age FROM %s/account ORDER BY age ASC LIMIT 1000", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		ArrayList<Integer> ages = new ArrayList<Integer>();
+		for(SearchHit hit : hits) {
+			ages.add((int)hit.getSource().get("age"));
+		}
+
+		ArrayList<Integer> sortedAges = (ArrayList<Integer>)ages.clone();
+		Collections.sort(sortedAges);
+		Assert.assertTrue("The list is not ordered ascending", sortedAges.equals(ages));
+	}
+
+
+	@Test
+	public void orderByDescTest() throws IOException, SqlParseException {
+		SearchHits response = query(String.format("SELECT age FROM %s/account ORDER BY age DESC LIMIT 1000", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		ArrayList<Integer> ages = new ArrayList<Integer>();
+		for(SearchHit hit : hits) {
+			ages.add((int)hit.getSource().get("age"));
+		}
+
+		ArrayList<Integer> sortedAges = (ArrayList<Integer>)ages.clone();
+		Collections.sort(sortedAges, Collections.reverseOrder());
+		Assert.assertTrue("The list is not ordered descending", sortedAges.equals(ages));
+	}
 
 	private SearchHits query(String query) throws SqlParseException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
