@@ -75,7 +75,8 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 ## Features
 
 *  ES TopHits
-*  ES MISS
+*  ES MISSING
+*  ES STATS
 *  SQL select
 *  SQL COUNT distinct
 *  SQL where

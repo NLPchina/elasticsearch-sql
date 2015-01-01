@@ -10,6 +10,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
@@ -33,7 +34,7 @@ public class AggregationTest {
 	private SearchDao searchDao = new SearchDao();
 
 	@Test
-	public void countSearch() throws IOException, SqlParseException{
+	public void countTest() throws IOException, SqlParseException{
 		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account", TEST_INDEX));
 		ValueCount count = result.get("COUNT(*)");
 		Assert.assertEquals(1000, count.getValue());
@@ -66,6 +67,17 @@ public class AggregationTest {
 		Aggregations result = query(String.format("SELECT AVG(age) FROM %s/account", TEST_INDEX));
 		Avg avg = result.get("AVG(age)");
 		assertThat(avg.getValue(), equalTo(30.171));
+	}
+
+	@Test
+	public void statsTest() throws IOException, SqlParseException {
+		Aggregations result = query(String.format("SELECT STATS(age) FROM %s/account", TEST_INDEX));
+		Stats stats = result.get("STATS(age)");
+		Assert.assertEquals(1000, stats.getCount());
+		assertThat(stats.getSum(), equalTo(25714837.0));
+		assertThat(stats.getMin(), equalTo(20.0));
+		assertThat(stats.getMax(), equalTo(40.0));
+		assertThat(stats.getAvg(), equalTo(30.171));
 	}
 
 
@@ -177,21 +189,6 @@ public class AggregationTest {
 	public void countDateRangeTest() throws IOException, SqlParseException {
 		SearchRequestBuilder result = searchDao
 				.explan("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
-		System.out.println(result);
-	}
-
-	/**
-	 * 时间范围聚合
-	 * 
-	 * <a>http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-daterange-aggregation.html</a>
-	 * 
-	 * @throws IOException
-	 * @throws SqlParseException
-	 */
-	@Test
-	public void countTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao
-				.explan("select count(*),sum(all_tv_clinet) from online group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
 
