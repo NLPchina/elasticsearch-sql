@@ -1,7 +1,12 @@
 package org.nlpcn.es4sql;
 
+
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Range;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
@@ -10,11 +15,17 @@ import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
 import java.io.IOException;
-import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 
 public class AggregationTest {
@@ -64,6 +75,47 @@ public class AggregationTest {
 		assertThat(result.asMap(), hasKey("mycount"));
 	}
 
+	@Test
+	public void groupByTest() throws Exception {
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender", TEST_INDEX));
+		Terms gender = result.get("gender");
+		for(Terms.Bucket bucket : gender.getBuckets()) {
+			String key = bucket.getKey();
+			long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
+			if(key.equalsIgnoreCase("m")) {
+				Assert.assertEquals(507, count);
+			}
+			else if(key.equalsIgnoreCase("f")) {
+				Assert.assertEquals(493, count);
+			}
+			else {
+				throw new Exception(String.format("Unexpected key. expected: m OR f. found: %s", key));
+			}
+		}
+	}
+
+	@Test
+	public void multipleGroupByTest() throws Exception {
+		Set expectedAges = new HashSet<Integer>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
+
+		Map<String, Set<Integer>> buckets = new HashMap<>();
+
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender, age", TEST_INDEX));
+		Terms gender = result.get("gender");
+		for(Terms.Bucket genderBucket : gender.getBuckets()) {
+			String genderKey = genderBucket.getKey();
+			buckets.put(genderKey, new HashSet<Integer>());
+			Terms ageBuckets = (Terms) genderBucket.getAggregations().get("age");
+			for(Terms.Bucket ageBucket : ageBuckets.getBuckets()) {
+				buckets.get(genderKey).add(Integer.parseInt(ageBucket.getKey()));
+			}
+		}
+
+		Assert.assertEquals(2, buckets.keySet().size());
+		Assert.assertEquals(expectedAges, buckets.get("m"));
+		Assert.assertEquals(expectedAges, buckets.get("f"));
+	}
+
 
 	@Test
 	public void sumDistinctOrderTest() throws IOException, SqlParseException {
@@ -84,11 +136,6 @@ public class AggregationTest {
 	}
 
 
-	@Test
-	public void countGroupByTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select count(*) from bank  group by gender ");
-		System.out.println(result);
-	}
 
 	/**
 	 * 区段group 聚合

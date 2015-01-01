@@ -21,8 +21,6 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 
 public class QueryTest {
-	
-	private SearchDao searchDao = new SearchDao() ;
 
 	@Test
 	public void searchTypeTest() throws IOException, SqlParseException{

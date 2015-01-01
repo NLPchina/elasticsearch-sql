@@ -1,11 +1,10 @@
 package org.nlpcn.es4sql;
 
-import java.io.IOException;
-
-import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
+import java.io.IOException;
 
 /**
  * 定製方法查詢．
