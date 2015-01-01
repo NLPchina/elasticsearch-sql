@@ -74,7 +74,7 @@ public class AggregationTest {
 		Aggregations result = query(String.format("SELECT STATS(age) FROM %s/account", TEST_INDEX));
 		Stats stats = result.get("STATS(age)");
 		Assert.assertEquals(1000, stats.getCount());
-		assertThat(stats.getSum(), equalTo(25714837.0));
+		assertThat(stats.getSum(), equalTo(30171.0));
 		assertThat(stats.getMin(), equalTo(20.0));
 		assertThat(stats.getMax(), equalTo(40.0));
 		assertThat(stats.getAvg(), equalTo(30.171));

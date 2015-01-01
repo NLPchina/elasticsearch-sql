@@ -12,7 +12,7 @@ import java.util.List;
 public class Select {
 
 	// Using this functions, will cause query to execute as aggregation.
-	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT");
+	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS");
 
 	private List<Index> indexs = new ArrayList<>();
 	private List<Field> fields = new ArrayList<>();
