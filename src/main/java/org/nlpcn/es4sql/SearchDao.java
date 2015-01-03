@@ -25,6 +25,8 @@ import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.AggregationQuery;
 import org.nlpcn.es4sql.query.DefaultQuery;
 import org.nlpcn.es4sql.query.Query;
+import org.nlpcn.es4sql.query.QueryFactory;
+
 
 public class SearchDao {
 
@@ -40,48 +42,27 @@ public class SearchDao {
 
 	private Client client = null;
 
-	@SuppressWarnings("resource")
-	public SearchDao(String ip, int port) {
-		this.client = new TransportClient().addTransportAddress(new InetSocketTransportAddress(ip, port));
-	}
 
 	public SearchDao(Client client) {
 		this.client = client;
 	}
 
-	public SearchDao() {
-		this.client = new TransportClient();
-	}
-
-	@SuppressWarnings("resource")
-	public SearchDao(String clusterName, String ip, int port) {
-		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", clusterName).build();
-		this.client = new TransportClient(settings).addTransportAddress(new InetSocketTransportAddress(ip, port));
-	}
-
-	private SearchRequestBuilder explan(SQLQueryExpr SQLQueryExpr) throws SqlParseException {
-		Select select = new SqlParser().parseSelect(SQLQueryExpr);
-
-		Query query = null;
-
-		if (select.isAgg) {
-			query = new AggregationQuery(client, select);
-		} else {
-			query = new DefaultQuery(client, select);
-		}
-		return query.explan();
-	}
 
 	/**
-	 * 把sql解析成es的查询
-	 * 
-	 * @param sql
-	 * @return
+	 * Prepare Search And transform sql
+	 * into ES Search Request
+	 * @param sql SQL query to execute.
+	 * @return ES search request
 	 * @throws SqlParseException
 	 */
-	public SearchRequestBuilder explan(String sql) throws SqlParseException {
-		return explan(toSqlExpr(sql));
+	public SearchRequestBuilder explain(String sql) throws SqlParseException {
+		SQLQueryExpr sqlExpr = toSqlExpr(sql);
+
+		Select select = new SqlParser().parseSelect(sqlExpr);
+		Query query = QueryFactory.create(client, select);
+		return query.explain();
 	}
+
 
 	/**
 	 * 对table进行特殊处理
@@ -128,17 +109,6 @@ public class SearchDao {
 		return expr;
 	}
 
-	/**
-	 * 執行一條sql
-	 * 
-	 * @param sql
-	 * @return
-	 * @throws IOException
-	 * @throws SqlParseException
-	 */
-	public SearchResponse execute(String sql) throws IOException, SqlParseException {
-		return select((SQLQueryExpr) toSqlExpr(sql));
-	}
 
 	/**
 	 * 刪除一個索引
@@ -153,36 +123,4 @@ public class SearchDao {
 		return delete.actionGet();
 	}
 
-	/**
-	 * 查询返回es的查询结果
-	 * 
-	 * @param sql
-	 * @return
-	 * @throws IOException
-	 * @throws SqlParseException
-	 */
-	private SearchResponse select(SQLQueryExpr mySqlExpr) throws IOException, SqlParseException {
-
-		Select select = new SqlParser().parseSelect(mySqlExpr);
-
-		Query query = select2Query(select);
-
-		return query.explan().execute().actionGet();
-	}
-
-	private Query select2Query(Select select) throws SqlParseException {
-
-		Query query = null;
-
-		if (select.isAgg) {
-			query = new AggregationQuery(client, select);
-		} else {
-			query = new DefaultQuery(client, select);
-		}
-		return query;
-	}
-
-	public Client getClient() {
-		return client;
-	}
 }

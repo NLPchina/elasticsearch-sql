@@ -37,13 +37,13 @@ public class RestSqlAction extends BaseRestHandler {
 
 		SearchDao searchDao = new SearchDao(client);
 
-		SearchRequestBuilder explan = searchDao.explan(sql);
+		SearchRequestBuilder searchRequestBuilder = searchDao.explain(sql);
 
 		if (request.path().endsWith("/_explain")) {
-			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, explan.toString());
+			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, searchRequestBuilder.toString());
 			channel.sendResponse(bytesRestResponse);
 		} else {
-			SearchRequest searchRequest = explan.request();
+			SearchRequest searchRequest = searchRequestBuilder.request();
 			searchRequest.listenerThreaded(false);
 			client.search(searchRequest, new RestStatusToXContentListener<SearchResponse>(channel));
 		}

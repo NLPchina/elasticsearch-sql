@@ -12,7 +12,6 @@ import java.io.IOException;
  *
  */
 public class MethodQueryTest {
-	private SearchDao searchDao = new SearchDao();
 
 	/**
 	 * query 搜索就是　，　lucene 原生的搜素方式 注意这个例子中ｖａｌｕｅ可以随便命名 "query" :
@@ -23,7 +22,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void queryTest() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select address from bank where q= query('address:880 Holmes Lane') limit 3");
+		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select address from bank where q= query('address:880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
 
@@ -36,7 +35,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void matchQueryTest() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select address from bank where address= matchQuery('880 Holmes Lane') limit 3");
+		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select address from bank where address= matchQuery('880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
 
@@ -52,8 +51,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void scoreQueryTest() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao
-				.explan("select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3");
+		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3");
 		System.out.println(select);
 	}
 
@@ -66,7 +64,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void wildcardQueryTest() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select address from bank where address= wildcardQuery('l*e')  order by _score desc limit 3");
+		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select address from bank where address= wildcardQuery('l*e')  order by _score desc limit 3");
 		System.out.println(select);
 	}
 	
@@ -83,7 +81,7 @@ public class MethodQueryTest {
 	 */
 	@Test
 	public void matchPhraseQueryTest() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select address from bank where address= matchPhrase('671 Bristol Street')  order by _score desc limit 3");
+		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select address from bank where address= matchPhrase('671 Bristol Street')  order by _score desc limit 3");
 		System.out.println(select);
 	}
 }

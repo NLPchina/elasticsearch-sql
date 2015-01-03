@@ -13,12 +13,11 @@ import org.nlpcn.es4sql.exception.SqlParseException;
  */
 public class BugTest {
 
-	private SearchDao searchDao = new SearchDao();
 	
 	@Test
 	public void bug1() throws IOException, SqlParseException{
 
-		SearchRequestBuilder select = searchDao.explan("select count(*),sum(age) from bank");
+		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select count(*),sum(age) from bank");
 		System.out.println(select);
 	}
 }

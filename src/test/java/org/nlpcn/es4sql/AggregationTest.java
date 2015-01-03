@@ -18,10 +18,7 @@ import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -31,7 +28,6 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 public class AggregationTest {
 
-	private SearchDao searchDao = new SearchDao();
 
 	@Test
 	public void countTest() throws IOException, SqlParseException{
@@ -130,22 +126,48 @@ public class AggregationTest {
 
 
 	@Test
-	public void sumDistinctOrderTest() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select sum(age),count(*), count(distinct age) from bank  group by gender order by count(distinct age)  desc  limit 3");
-		System.out.println(select);
+	public void orderByAscTest() throws IOException, SqlParseException {
+		ArrayList<Long> agesCount = new ArrayList<>();
+
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*)", TEST_INDEX));
+		Terms age = result.get("age");
+
+		for(Terms.Bucket bucket : age.getBuckets()) {
+			agesCount.add(((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue());
+		}
+
+		ArrayList<Long> sortedAgesCount = (ArrayList<Long>)agesCount.clone();
+		Collections.sort(sortedAgesCount);
+		Assert.assertTrue("The list is not ordered ascending", agesCount.equals(agesCount));
 	}
 
-	@Test
-	public void sumSortAliasCount() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select sum(age),count(*) as kk, count(age) as k from bank  group by gender order by kk asc limit 10 ");
-		System.out.println(select);
-	}
 
 	@Test
-	public void sumSortCount() throws IOException, SqlParseException {
-		SearchRequestBuilder select = searchDao.explan("select sum(age), count(age)  from bank  group by gender order by count(age) asc limit 2 ");
-		System.out.println(select);
+	public void orderByDescTest() throws IOException, SqlParseException {
+		ArrayList<Long> agesCount = new ArrayList<>();
+
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) DESC", TEST_INDEX));
+		Terms age = result.get("age");
+
+		for(Terms.Bucket bucket : age.getBuckets()) {
+			agesCount.add(((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue());
+		}
+
+		ArrayList<Long> sortedAgesCount = (ArrayList<Long>)agesCount.clone();
+		Collections.sort(sortedAgesCount, Collections.reverseOrder());
+		Assert.assertTrue("The list is not ordered descending", agesCount.equals(agesCount));
 	}
+
+
+
+	@Test
+	public void limitTest() throws IOException, SqlParseException {
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) LIMIT 5", TEST_INDEX));
+		Terms age = result.get("age");
+
+		assertThat(age.getBuckets().size(), equalTo(5));
+	}
+
 
 
 
@@ -159,7 +181,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByRange() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
+		SearchRequestBuilder result = MainTestSuite.getSearchDao().explain("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
 		System.out.println(result);
 	}
 
@@ -173,7 +195,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByDateTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
+		SearchRequestBuilder result = MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
 		System.out.println(result);
 	}
 
@@ -187,8 +209,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countDateRangeTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao
-				.explan("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+		SearchRequestBuilder result = MainTestSuite.getSearchDao().explain("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
 
@@ -203,13 +224,13 @@ public class AggregationTest {
 	 */
 	@Test
 	public void topHitTest() throws IOException, SqlParseException {
-		SearchRequestBuilder result = searchDao.explan("select topHits('size'=3,age='desc') from bank  group by gender ");
+		SearchRequestBuilder result = MainTestSuite.getSearchDao().explain("select topHits('size'=3,age='desc') from bank  group by gender ");
 		System.out.println(result);
 	}
 
 	private Aggregations query(String query) throws SqlParseException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SearchRequestBuilder select = searchDao.explan(query);
+		SearchRequestBuilder select = searchDao.explain(query);
 		return select.get().getAggregations();
 	}
 

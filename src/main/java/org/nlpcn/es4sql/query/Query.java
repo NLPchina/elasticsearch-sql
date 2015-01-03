@@ -6,10 +6,8 @@ import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 /**
- * 查询封装类
- * 
- * @author ansj
- *
+ * Abstract class. used to transform Select object (Represents SQL query) to
+ * SearchRequestBuilder (Represents ES query)
  */
 public abstract class Query {
 
@@ -25,11 +23,11 @@ public abstract class Query {
 	}
 
 	/**
-	 * 将select 解析成es的query
-	 * 
+	 * Prepere the search, and return ES query represention.
+	 * @return SearchRequestBuilder (ES query)
 	 * @throws SqlParseException
 	 */
-	public SearchRequestBuilder explan() throws SqlParseException {
+	public SearchRequestBuilder explain() throws SqlParseException {
 		// set index
 		request = client.prepareSearch(select.getIndexArr());
 
@@ -39,14 +37,14 @@ public abstract class Query {
 			request.setTypes(typeArr);
 		}
 
-		return _explan();
+		return _explain();
 	}
 
 	/**
-	 * 针对不同类型的query进行不同类型的解析 fuck
-	 * 
+	 * Make the actual Select to ES query transofrmation.
+	 * @return ES query.
 	 * @throws SqlParseException
 	 */
-	protected abstract SearchRequestBuilder _explan() throws SqlParseException;
+	protected abstract SearchRequestBuilder _explain() throws SqlParseException;
 
 }

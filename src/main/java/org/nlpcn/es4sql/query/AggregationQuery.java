@@ -34,7 +34,7 @@ public class AggregationQuery extends Query {
 	}
 
 	@Override
-	protected SearchRequestBuilder _explan() throws SqlParseException {
+	protected SearchRequestBuilder _explain() throws SqlParseException {
 
 		BoolFilterBuilder boolFilter = null;
 		// set where
