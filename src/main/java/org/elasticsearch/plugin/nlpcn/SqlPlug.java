@@ -15,10 +15,11 @@ public class SqlPlug extends AbstractPlugin {
 
 	@Override
 	public String description() {
-		return "sql query by sql.";
+		return "Use sql to query elasticsearch.";
 	}
 
-	public void onModule(RestModule module) {
+	public void onModule(RestModule module)
+	{
 		module.addRestAction(RestSqlAction.class);
 	}
 }

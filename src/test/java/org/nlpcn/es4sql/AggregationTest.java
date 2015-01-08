@@ -20,9 +20,10 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import java.io.IOException;
 import java.util.*;
 
+import static org.elasticsearch.search.aggregations.bucket.range.Range.Bucket;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 
@@ -170,19 +171,18 @@ public class AggregationTest {
 
 
 
-
-	/**
-	 * 区段group 聚合
-	 * 
-	 * http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-range-aggregation.html
-	 * 
-	 * @throws IOException
-	 * @throws SqlParseException
-	 */
 	@Test
 	public void countGroupByRange() throws IOException, SqlParseException {
-		SearchRequestBuilder result = MainTestSuite.getSearchDao().explain("select count(age) from bank  group by range(age, 20,25,30,35,40) ");
-		System.out.println(result);
+		Aggregations result = query(String.format("SELECT COUNT(age) FROM %s/account GROUP BY range(age, 20,25,30,35,40) ", TEST_INDEX));
+		org.elasticsearch.search.aggregations.bucket.range.Range  ageRanges = result.get("range(age,20,25,30,35,40)");
+		assertThat(ageRanges.getBuckets().size(), equalTo(4));
+
+		long[] expectedResults = new long[] {225L, 226L, 259L, 245L};
+		int index = 0;
+		for(Bucket bucket : ageRanges.getBuckets()) {
+			assertThat(((ValueCount) bucket.getAggregations().get("COUNT(age)")).getValue(), equalTo(expectedResults[index]));
+			index++;
+		}
 	}
 
 	/**

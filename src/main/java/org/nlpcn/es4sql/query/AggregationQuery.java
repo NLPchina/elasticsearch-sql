@@ -7,6 +7,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -24,7 +25,11 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.maker.AggMaker;
 import org.nlpcn.es4sql.query.maker.FilterMaker;
+import org.nlpcn.es4sql.query.maker.QueryMaker;
 
+/**
+ * Transform SQL query to Elasticsearch aggregations query
+ */
 public class AggregationQuery extends Query {
 
 	private AggMaker aggMaker = new AggMaker();
@@ -35,20 +40,9 @@ public class AggregationQuery extends Query {
 
 	@Override
 	protected SearchRequestBuilder _explain() throws SqlParseException {
-
-		BoolFilterBuilder boolFilter = null;
-		// set where
-		Where where = select.getWhere();
-
+		setWhere(select.getWhere());
 		AggregationBuilder<?> lastAgg = null;
-		FilterAggregationBuilder filter = null;
 
-		if (where != null) {
-			boolFilter = FilterMaker.explan(where);
-			request.setQuery(QueryBuilders.filteredQuery(null, boolFilter));
-		}
-
-		//
 		if (select.getGroupBys().size() > 0) {
 			Field field = select.getGroupBys().get(0);
 			lastAgg = aggMaker.makeGroupAgg(field);
@@ -57,12 +51,9 @@ public class AggregationQuery extends Query {
 			if (lastAgg != null && lastAgg instanceof TermsBuilder) {
 				((TermsBuilder) lastAgg).size(select.getRowCount());
 			}
-			
-			if (filter != null) {
-				filter.subAggregation(lastAgg);
-			} else {
-				request.addAggregation(lastAgg);
-			}
+
+			request.addAggregation(lastAgg);
+
 			for (int i = 1; i < select.getGroupBys().size(); i++) {
 				field = select.getGroupBys().get(i);
 				AggregationBuilder<?> subAgg = aggMaker.makeGroupAgg(field);
@@ -78,7 +69,7 @@ public class AggregationQuery extends Query {
 		Map<String, KVValue> groupMap = aggMaker.getGroupMap();
 		// add field
 		if (select.getFields().size() > 0) {
-			explanFields(request, select.getFields(), lastAgg, filter);
+			explanFields(request, select.getFields(), lastAgg);
 		}
 
 		// add order
@@ -112,15 +103,14 @@ public class AggregationQuery extends Query {
 		return "ASC".equals(order.getType());
 	}
 
-	private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder<?> groupByAgg, FilterAggregationBuilder filter) throws SqlParseException {
+	private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder<?> groupByAgg) throws SqlParseException {
 		for (Field field : fields) {
 			if (field instanceof MethodField) {
 				AbstractAggregationBuilder makeAgg = aggMaker.makeFieldAgg((MethodField) field, groupByAgg);
 				if (groupByAgg != null) {
 					groupByAgg.subAggregation(makeAgg);
-				} else if (filter != null) {
-					filter.subAggregation(makeAgg);
-				} else {
+				}
+				 else {
 					request.addAggregation(makeAgg);
 				}
 			} else if (field instanceof Field) {
@@ -128,6 +118,19 @@ public class AggregationQuery extends Query {
 			} else {
 				throw new SqlParseException("it did not support this field method " + field);
 			}
+		}
+	}
+
+	/**
+	 * Create filters based on
+	 * the Where clause.
+	 * @param where the 'WHERE' part of the SQL query.
+	 * @throws SqlParseException
+	 */
+	private void setWhere(Where where) throws SqlParseException {
+		if (where != null) {
+			BoolFilterBuilder boolFilter = FilterMaker.explan(where);
+			request.setQuery(QueryBuilders.filteredQuery(null, boolFilter));
 		}
 	}
 }
