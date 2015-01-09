@@ -376,7 +376,7 @@ public class QueryTest {
 
 	private SearchHits query(String query) throws SqlParseException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SearchRequestBuilder select = searchDao.explain(query);
+		SearchRequestBuilder select = (SearchRequestBuilder)searchDao.explain(query);
 		return select.get().getHits();
 	}
 }

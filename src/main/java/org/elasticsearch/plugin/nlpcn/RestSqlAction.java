@@ -1,5 +1,7 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.elasticsearch.action.ActionRequest;
+import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -12,6 +14,7 @@ import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.rest.action.support.RestBuilderListener;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.SearchDao;
 
@@ -36,16 +39,13 @@ public class RestSqlAction extends BaseRestHandler {
 		}
 
 		SearchDao searchDao = new SearchDao(client);
-
-		SearchRequestBuilder searchRequestBuilder = searchDao.explain(sql);
+		ActionRequest actionRequest = searchDao.explain(sql).request();
 
 		if (request.path().endsWith("/_explain")) {
-			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, searchRequestBuilder.toString());
+			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, actionRequest.toString());
 			channel.sendResponse(bytesRestResponse);
 		} else {
-			SearchRequest searchRequest = searchRequestBuilder.request();
-			searchRequest.listenerThreaded(false);
-			client.search(searchRequest, new RestStatusToXContentListener<SearchResponse>(channel));
+			new ActionRequestExecuter(actionRequest, channel, client).execute();
 		}
 	}
 }

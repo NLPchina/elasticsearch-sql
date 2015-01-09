@@ -23,7 +23,7 @@ public abstract class Query {
 	}
 
 	/**
-	 * Prepere the search, and return ES query represention.
+	 * Prepare the search, and return ES query represention.
 	 * @return SearchRequestBuilder (ES query)
 	 * @throws SqlParseException
 	 */

@@ -8,7 +8,7 @@ public class QueryFactory {
 
 	/**
 	 * Create the compatible Query object
-	 * based on the SQL Select query structre.
+	 * based on the SQL query.
 	 *
 	 * @param select The SQL query.
 	 * @return Query object.

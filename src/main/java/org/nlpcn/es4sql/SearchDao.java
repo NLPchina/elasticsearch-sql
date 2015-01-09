@@ -9,6 +9,8 @@ import org.durid.sql.ast.expr.SQLQueryExpr;
 import org.durid.sql.ast.statement.SQLTableSource;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.elasticsearch.action.ActionFuture;
+import org.elasticsearch.action.ActionRequest;
+import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -49,13 +51,13 @@ public class SearchDao {
 
 
 	/**
-	 * Prepare Search And transform sql
-	 * into ES Search Request
+	 * Prepare action And transform sql
+	 * into ES ActionRequest
 	 * @param sql SQL query to execute.
-	 * @return ES search request
+	 * @return ES request
 	 * @throws SqlParseException
 	 */
-	public SearchRequestBuilder explain(String sql) throws SqlParseException {
+	public ActionRequestBuilder explain(String sql) throws SqlParseException {
 		SQLQueryExpr sqlExpr = toSqlExpr(sql);
 
 		Select select = new SqlParser().parseSelect(sqlExpr);

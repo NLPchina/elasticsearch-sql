@@ -17,7 +17,7 @@ public class BugTest {
 	@Test
 	public void bug1() throws IOException, SqlParseException{
 
-		SearchRequestBuilder select = MainTestSuite.getSearchDao().explain("select count(*),sum(age) from bank");
+		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select count(*),sum(age) from bank");
 		System.out.println(select);
 	}
 }
