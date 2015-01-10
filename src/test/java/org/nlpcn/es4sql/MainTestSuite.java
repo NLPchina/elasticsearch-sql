@@ -88,7 +88,7 @@ public class MainTestSuite {
 			System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
 		}
 		catch(IndexMissingException e) {
-			System.out.println(String.format("Failed to delete index, Index %s does not exist, continue any way"));
+			System.out.println(String.format("Failed to delete index, Index %s does not exist, continue any way", indexName));
 		}
 	}
 
