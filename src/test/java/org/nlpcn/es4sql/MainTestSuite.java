@@ -76,15 +76,20 @@ public class MainTestSuite {
 	 * @param typeName the type to delete
 	 */
 	public static void deleteQuery(String indexName, String typeName) {
-		DeleteByQueryRequestBuilder deleteQuery = new DeleteByQueryRequestBuilder(client);
-		deleteQuery.setIndices(indexName);
-		if(typeName != null) {
-			deleteQuery.setTypes(typeName);
-		}
-		deleteQuery.setQuery(QueryBuilders.matchAllQuery());
+		try {
+			DeleteByQueryRequestBuilder deleteQuery = new DeleteByQueryRequestBuilder(client);
+			deleteQuery.setIndices(indexName);
+			if (typeName != null) {
+				deleteQuery.setTypes(typeName);
+			}
+			deleteQuery.setQuery(QueryBuilders.matchAllQuery());
 
-		deleteQuery.get();
-		System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
+			deleteQuery.get();
+			System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
+		}
+		catch(IndexMissingException e) {
+			System.out.println(String.format("Failed to delete index, Index %s does not exist, continue any way"));
+		}
 	}
 
 
