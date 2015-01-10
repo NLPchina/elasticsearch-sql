@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.io.IOException;
+import java.sql.SQLFeatureNotSupportedException;
 
 /**
  * 定製方法查詢．
@@ -21,7 +22,7 @@ public class MethodQueryTest {
 	 * @throws SqlParseException
 	 */
 	@Test
-	public void queryTest() throws IOException, SqlParseException {
+	public void queryTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select address from bank where q= query('address:880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
@@ -34,7 +35,7 @@ public class MethodQueryTest {
 	 * @throws SqlParseException
 	 */
 	@Test
-	public void matchQueryTest() throws IOException, SqlParseException {
+	public void matchQueryTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select address from bank where address= matchQuery('880 Holmes Lane') limit 3");
 		System.out.println(select);
 	}
@@ -50,7 +51,7 @@ public class MethodQueryTest {
 	 * @throws SqlParseException
 	 */
 	@Test
-	public void scoreQueryTest() throws IOException, SqlParseException {
+	public void scoreQueryTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3");
 		System.out.println(select);
 	}
@@ -63,7 +64,7 @@ public class MethodQueryTest {
 	 * @throws SqlParseException
 	 */
 	@Test
-	public void wildcardQueryTest() throws IOException, SqlParseException {
+	public void wildcardQueryTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select address from bank where address= wildcardQuery('l*e')  order by _score desc limit 3");
 		System.out.println(select);
 	}
@@ -80,7 +81,7 @@ public class MethodQueryTest {
 	 * @throws SqlParseException
 	 */
 	@Test
-	public void matchPhraseQueryTest() throws IOException, SqlParseException {
+	public void matchPhraseQueryTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select address from bank where address= matchPhrase('671 Bristol Street')  order by _score desc limit 3");
 		System.out.println(select);
 	}

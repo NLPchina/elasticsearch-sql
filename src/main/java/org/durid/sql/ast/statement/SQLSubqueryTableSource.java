@@ -62,4 +62,9 @@ public class SQLSubqueryTableSource extends SQLTableSourceImpl {
         this.select.output(buf);
         buf.append(")");
     }
+
+	@Override
+	public String getTablename() {
+		return null;
+	}
 }

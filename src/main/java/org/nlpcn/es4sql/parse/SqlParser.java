@@ -3,9 +3,8 @@ package org.nlpcn.es4sql.parse;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nlpcn.es4sql.domain.Condition;
-import org.nlpcn.es4sql.domain.Select;
-import org.nlpcn.es4sql.domain.Where;
+import org.durid.sql.ast.statement.*;
+import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.durid.sql.ast.SQLExpr;
@@ -21,10 +20,6 @@ import org.durid.sql.ast.expr.SQLNullExpr;
 import org.durid.sql.ast.expr.SQLNumericLiteralExpr;
 import org.durid.sql.ast.expr.SQLPropertyExpr;
 import org.durid.sql.ast.expr.SQLQueryExpr;
-import org.durid.sql.ast.statement.SQLSelectGroupByClause;
-import org.durid.sql.ast.statement.SQLSelectItem;
-import org.durid.sql.ast.statement.SQLSelectOrderByItem;
-import org.durid.sql.ast.statement.SQLTableSource;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
 
@@ -47,9 +42,9 @@ public class SqlParser {
 
 		findSelect(query, select);
 
-		findFrom(query, select);
+		select.getFrom().addAll(findFrom(query.getFrom()));
 
-		findWhere(query, select);
+		select.setWhere(findWhere(query.getWhere()));
 
 		findLimit(query, select);
 
@@ -60,16 +55,27 @@ public class SqlParser {
 		return select;
 	}
 
-	private void findWhere(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
-		SQLExpr where = query.getWhere();
-		if (where == null) {
-			return;
+
+	public Delete parseDelete(SQLDeleteStatement deleteStatement) throws SqlParseException {
+		Delete delete = new Delete();
+
+		delete.getFrom().addAll(findFrom(deleteStatement.getTableSource()));
+
+		delete.setWhere(findWhere(deleteStatement.getWhere()));
+
+		return delete;
+	}
+
+	private Where findWhere(SQLExpr where) throws SqlParseException {
+		if(where == null) {
+			return null;
 		}
 
 		Where myWhere = Where.newInstance();
 		parseWhere(where, myWhere);
-		select.setWhere(myWhere);
+		return myWhere;
 	}
+
 
 	private boolean isCond(SQLBinaryOpExpr expr) {
 		return expr.getLeft() instanceof SQLIdentifierExpr || expr.getLeft() instanceof SQLPropertyExpr;
@@ -207,14 +213,21 @@ public class SqlParser {
 			select.setOffset(Integer.parseInt(limit.getOffset().toString()));
 	}
 
-	private void findFrom(MySqlSelectQueryBlock query, Select select) {
-		SQLTableSource from = query.getFrom();
+	/**
+	 * Parse the from clause
+	 * @param from the from clause.
+	 * @return list of From objects represents all the sources.
+	 */
+	private List<From> findFrom(SQLTableSource from) {
+		from.toString();
+		String[] split = from.getTablename().toString().split(",");
 
-		String[] split = from.getAlias().toString().split(",");
-
-		for (String string : split) {
-			select.addIndexAndType(string.replace(" ", "").trim());
+		ArrayList<From> fromList = new ArrayList<>();
+		for (String source : split) {
+			fromList.add(new From(source.trim()));
 		}
+
+		return fromList;
 	}
 
 }

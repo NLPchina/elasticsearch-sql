@@ -587,9 +587,9 @@ public class SQLStatementParser extends SQLParser {
                 lexer.nextToken();
             }
 
-            SQLName tableName = exprParser.name();
+            SQLExpr tableName = exprParser.expr();
 
-            deleteStatement.setTableName(tableName);
+			deleteStatement.setTableSource(tableName);
         }
 
         if (lexer.token() == (Token.WHERE)) {
