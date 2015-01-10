@@ -5,6 +5,12 @@ Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
 
 
+
+## Web frontend overview
+
+![Web frontend overview](https://cloud.githubusercontent.com/assets/9518816/5555009/ebe4b53c-8c93-11e4-88ad-96d805cc698f.png)
+
+
 ## SETUP
 
 Install as plugin:
@@ -102,6 +108,3 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 
 
 
-## Web frontend overview
-
-![Web frontend overview](https://cloud.githubusercontent.com/assets/9518816/5555009/ebe4b53c-8c93-11e4-88ad-96d805cc698f.png)
