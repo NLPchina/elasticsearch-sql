@@ -101,7 +101,8 @@
           <!-- Query area -->
           <div class="search-area">
           	<textarea id="queryTextarea">SELECT * FROM myindex</textarea> 
-  	        <button type="button" ng-click="search()" id="searchButton" class="btn btn-success search-button" ng-bind-html="getSearchButtonContent(loading)" ng-cloak></button>
+  	        <button type="button" ng-click="search()" id="searchButton" class="btn btn-success search-button" ng-bind-html="getButtonContent(loading,'Search')" ng-cloak></button>
+            <button type="button" ng-click="explan()" id="explanButton" class="btn btn-success explan-button" ng-bind-html="getButtonContent(loading,'Explan')" ng-cloak></button>
   	      </div>
 
           <!-- Error box, displayed only on errors -->
@@ -132,6 +133,14 @@
             </div>
           </div>
 
+          <!-- explan area , displayed after explan -->
+           <div class="fadein" ng-show="resultExplan" ng-cloak>
+            <h2 class="sub-header">Results</h2>
+            <div class="table-responsive">
+              <textarea id="explanResult"></textarea> 
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -149,6 +158,7 @@
   	<script src="vendor/codemirror/lib/codemirror.js"></script>
   	<link rel="stylesheet" href="vendor/codemirror/lib/codemirror.css">
   	<script src="vendor/codemirror/mode/sql/sql.js"></script>
+    <script src="vendor/codemirror/mode/javascript/javascript.js"></script>
   	<link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.css" />
   	<script src="vendor/codemirror/addon/hint/show-hint.js"></script>
   	<script src="vendor/codemirror/addon/hint/sql-hint.js"></script>

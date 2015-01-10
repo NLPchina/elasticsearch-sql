@@ -109,9 +109,16 @@ body {
   margin-bottom: 50px;
 }
 
+
 .search-button {
   float:right;
   margin-right: 20%;
+  margin-top: 10px;
+}
+
+.explan-button {
+  float:right;
+  margin-right: 25px;
   margin-top: 10px;
 }
 

@@ -6,6 +6,9 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 	$scope.resultsColumns = [];
 	$scope.resultsRows = [];
 	$scope.loading = false;
+	$scope.resultExplan = false;
+	
+
 
 	$scope.search = function() {
 		// Reset results and error box
@@ -14,6 +17,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		$scope.resultsRows = [];
 		$scope.loading = true;
 		$scope.$apply();
+		$scope.resultExplan = false;
 
 		saveUrl()
 
@@ -39,10 +43,42 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
           $scope.$apply()    
         });
 	}
+	
+	$scope.explan = function() {
+		// Reset results and error box
+		$scope.error = "";
+		$scope.resultsColumns = [];
+		$scope.resultsRows = [];
+		$scope.loading = true;
+		$scope.$apply();
+		$scope.resultExplan = true;
 
-	$scope.getSearchButtonContent = function(isLoading) {
+		saveUrl()
+
+        var query = window.editor.getValue();
+		$http.post($scope.url + "_sql/_explain", query)
+		.success(function(data, status, headers, config) {
+					 $scope.resultExplan = true;
+				   window.explanResult.setValue(JSON.stringify(data, null, "\t"));
+        })
+        .error(function(data, status, headers, config) {        
+        	$scope.resultExplan = false;
+          if(data == "") {
+            $scope.error = "Error occured! response is not avalible.";
+    	  }
+    	  else {
+    	  	$scope.error = JSON.stringify(data);
+		  }
+        })
+        .finally(function() {
+          $scope.loading = false;
+          $scope.$apply()    
+        });
+	}
+
+	$scope.getButtonContent = function(isLoading , defName) {
 		var loadingContent = "<span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span> Loading...";
-		var returnValue = isLoading ? loadingContent : "Search";
+		var returnValue = isLoading ? loadingContent : defName;
 		return $sce.trustAsHtml(returnValue);
 	}
 
