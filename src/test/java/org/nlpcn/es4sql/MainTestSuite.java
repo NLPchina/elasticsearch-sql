@@ -28,8 +28,8 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		QueryTest.class,
 		MethodQueryTest.class,
 		AggregationTest.class,
-		BugTest.class
-		//DeleteTest.class
+		BugTest.class,
+		DeleteTest.class
 })
 public class MainTestSuite {
 
@@ -112,6 +112,9 @@ public class MainTestSuite {
 		return searchDao;
 	}
 
+	public static TransportClient getClient() {
+		return client;
+	}
 
 	private static InetSocketTransportAddress getTransportAddress() {
 		String host = System.getenv("ES_TEST_HOST");

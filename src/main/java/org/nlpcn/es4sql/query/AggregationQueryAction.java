@@ -7,13 +7,9 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.nlpcn.es4sql.domain.Field;
@@ -25,21 +21,27 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.maker.AggMaker;
 import org.nlpcn.es4sql.query.maker.FilterMaker;
-import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 /**
  * Transform SQL query to Elasticsearch aggregations query
  */
-public class AggregationQuery extends Query {
+public class AggregationQueryAction extends QueryAction {
 
+	private final Select select;
 	private AggMaker aggMaker = new AggMaker();
+	private SearchRequestBuilder request;
 
-	public AggregationQuery(Client client, Select select) {
+	public AggregationQueryAction(Client client, Select select) {
 		super(client, select);
+		this.select = select;
 	}
 
 	@Override
-	protected SearchRequestBuilder _explain() throws SqlParseException {
+	public SearchRequestBuilder explain() throws SqlParseException {
+		this.request = client.prepareSearch();
+		request.setListenerThreaded(false);
+		setIndicesAndTypes();
+
 		setWhere(select.getWhere());
 		AggregationBuilder<?> lastAgg = null;
 
@@ -131,6 +133,19 @@ public class AggregationQuery extends Query {
 		if (where != null) {
 			BoolFilterBuilder boolFilter = FilterMaker.explan(where);
 			request.setQuery(QueryBuilders.filteredQuery(null, boolFilter));
+		}
+	}
+
+
+	/**
+	 * Set indices and types to the search request.
+	 */
+	private void setIndicesAndTypes() {
+		request.setIndices(query.getIndexArr());
+
+		String[] typeArr = query.getTypeArr();
+		if(typeArr != null) {
+			request.setTypes(typeArr);
 		}
 	}
 }

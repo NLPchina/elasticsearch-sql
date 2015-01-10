@@ -90,7 +90,12 @@ public class SQLJoinTableSource extends SQLTableSourceImpl {
         }
     }
 
-    public static enum JoinType {
+	@Override
+	public String getTablename() {
+		return null;
+	}
+
+	public static enum JoinType {
         COMMA(","), // 
         JOIN("JOIN"), //
         INNER_JOIN("INNER JOIN"), // 

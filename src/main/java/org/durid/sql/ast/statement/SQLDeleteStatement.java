@@ -51,13 +51,6 @@ public class SQLDeleteStatement extends SQLStatementImpl {
         return (SQLName) getExprTableSource().getExpr();
     }
 
-    public void setTableName(SQLName tableName) {
-        this.setTableSource(new SQLExprTableSource(tableName));
-    }
-
-    public void setTableName(String name) {
-        setTableName(new SQLIdentifierExpr(name));
-    }
 
     public SQLExpr getWhere() {
         return where;

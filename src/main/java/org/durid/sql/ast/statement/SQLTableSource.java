@@ -25,6 +25,8 @@ public interface SQLTableSource extends SQLObject {
     String getAlias();
 
     void setAlias(String alias);
+
+	String getTablename();
     
     List<SQLHint> getHints();
 }

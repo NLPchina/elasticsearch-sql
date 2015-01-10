@@ -41,6 +41,8 @@ public class RestSqlAction extends BaseRestHandler {
 		SearchDao searchDao = new SearchDao(client);
 		ActionRequest actionRequest = searchDao.explain(sql).request();
 
+
+		// TODO fix explain and add unit tests.
 		if (request.path().endsWith("/_explain")) {
 			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, actionRequest.toString());
 			channel.sendResponse(bytesRestResponse);

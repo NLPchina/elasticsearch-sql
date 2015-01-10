@@ -8,10 +8,8 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
-import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
@@ -22,14 +20,22 @@ import org.nlpcn.es4sql.query.maker.QueryMaker;
 /**
  * Transform SQL query to standard Elasticsearch search query
  */
-public class DefaultQuery extends Query {
+public class DefaultQueryAction extends QueryAction {
 
-	public DefaultQuery(Client client, Select select) {
+	private final Select select;
+	private SearchRequestBuilder request;
+
+	public DefaultQueryAction(Client client, Select select) {
 		super(client, select);
+		this.select = select;
 	}
 
 	@Override
-	protected SearchRequestBuilder _explain() throws SqlParseException {
+	public SearchRequestBuilder explain() throws SqlParseException {
+		this.request = client.prepareSearch();
+		request.setListenerThreaded(false);
+		setIndicesAndTypes();
+
 		setFields(select.getFields());
 		setWhere(select.getWhere());
 		setSorts(select.getOrderBys());
@@ -39,6 +45,18 @@ public class DefaultQuery extends Query {
 		request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 
 		return request;
+	}
+
+	/**
+	 * Set indices and types to the search request.
+	 */
+	private void setIndicesAndTypes() {
+		request.setIndices(query.getIndexArr());
+
+		String[] typeArr = query.getTypeArr();
+		if(typeArr != null) {
+			request.setTypes(typeArr);
+		}
 	}
 
 
@@ -105,4 +123,6 @@ public class DefaultQuery extends Query {
 			request.setSize(size);
 		}
 	}
+
+
 }
