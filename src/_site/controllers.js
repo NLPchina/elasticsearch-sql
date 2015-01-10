@@ -75,11 +75,45 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
           $scope.$apply()    
         });
 	}
+	
+	
+	
+	$scope.exportCSV = function() {			
+			var columns = $scope.resultsColumns ;
+			var rows = $scope.resultsRows ;
+			var data =arr2csvStr(columns,',') ;
+			for(var i=0; i<rows.length ; i++){
+				data += "\n";
+				data += map2csvStr(columns,rows[i],',') ;
+				
+			}
+			window.location='data:text/csv;charset=utf8,' + encodeURIComponent(data);
+  		return true; 
+	}
 
 	$scope.getButtonContent = function(isLoading , defName) {
 		var loadingContent = "<span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span> Loading...";
 		var returnValue = isLoading ? loadingContent : defName;
 		return $sce.trustAsHtml(returnValue);
+	}
+	
+	
+	function arr2csvStr(arr,op){
+		var data = arr[0]; 
+		for(var i=1; i<arr.length ; i++){
+				data += op;
+				data += arr[i] ;
+		}
+		return data ;
+	}
+	
+	function map2csvStr(columns,arr,op){
+		var data = arr[columns[0]]; 
+		for(var i=1; i<columns.length ; i++){
+				data += op;
+				data += arr[columns[i]] ;
+		}
+		return data ;
 	}
 
 

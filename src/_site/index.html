@@ -114,9 +114,13 @@
 
           <!-- Results area, displayed after search -->
           <div class="fadein" ng-show="resultsColumns.length > 0" ng-cloak>
-            <h2 class="sub-header">Results</h2>
+          	<div>
+            	<h2 class="sub-header">Results</h2>  
+           		<button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-success " ng-cloak>Export CSV</button>
+         		</div>
+
             <div class="table-responsive">
-              <table class="table table-striped">
+              <table class="table table-striped" id="searchResult">
                 <thead>
                   <tr id="tableHead">
                     <th ng-repeat="column in resultsColumns">{{column}}</th>
@@ -167,6 +171,7 @@
     <script src="vendor/angularjs/angular.min.js"></script>
     <script src="vendor/angularjs/angular-animate.min.js"></script>
     <script src="vendor/angularjs/angular-sanitize.min.js"></script>
+    <script src="vendor/table2CSV.js"></script>
 
     <script src="editor.js"></script>
     <script src="query.js"></script>
