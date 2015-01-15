@@ -10,15 +10,11 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.rest.BaseRestHandler;
-import org.elasticsearch.rest.BytesRestResponse;
-import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.RestController;
-import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.rest.*;
 import org.elasticsearch.rest.action.support.RestBuilderListener;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.SearchDao;
+import org.nlpcn.es4sql.query.explain.ExplainManager;
 
 import java.io.FileOutputStream;
 
@@ -48,7 +44,8 @@ public class RestSqlAction extends BaseRestHandler {
 
 		// TODO add unittests to explain. (rest level?)
 		if (request.path().endsWith("/_explain")) {
-			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, actionRequestBuilder.toString());
+			String jsonExplanation = ExplainManager.explain(actionRequestBuilder);
+			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, jsonExplanation);
 			channel.sendResponse(bytesRestResponse);
 		} else {
 			new ActionRequestExecuter(actionRequest, channel, client).execute();

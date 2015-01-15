@@ -29,7 +29,8 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		MethodQueryTest.class,
 		AggregationTest.class,
 		BugTest.class,
-		DeleteTest.class
+		DeleteTest.class,
+		ExplainTest.class
 })
 public class MainTestSuite {
 
