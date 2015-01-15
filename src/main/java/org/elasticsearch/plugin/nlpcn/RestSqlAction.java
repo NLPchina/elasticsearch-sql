@@ -7,6 +7,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.io.stream.BytesStreamOutput;
+import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.BaseRestHandler;
 import org.elasticsearch.rest.BytesRestResponse;
@@ -17,6 +19,8 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.support.RestBuilderListener;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.SearchDao;
+
+import java.io.FileOutputStream;
 
 public class RestSqlAction extends BaseRestHandler {
 
@@ -39,12 +43,12 @@ public class RestSqlAction extends BaseRestHandler {
 		}
 
 		SearchDao searchDao = new SearchDao(client);
-		ActionRequest actionRequest = searchDao.explain(sql).request();
+		ActionRequestBuilder actionRequestBuilder = searchDao.explain(sql);
+		ActionRequest actionRequest = actionRequestBuilder.request();
 
-
-		// TODO fix explain and add unit tests.
+		// TODO add unittests to explain. (rest level?)
 		if (request.path().endsWith("/_explain")) {
-			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, actionRequest.toString());
+			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, actionRequestBuilder.toString());
 			channel.sendResponse(bytesRestResponse);
 		} else {
 			new ActionRequestExecuter(actionRequest, channel, client).execute();
