@@ -5,7 +5,8 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 	$scope.error = "";	
 	$scope.resultsColumns = [];
 	$scope.resultsRows = [];
-	$scope.loading = false;
+	$scope.searchLoading = false;
+	$scope.explainLoading = false;
 	$scope.resultExplan = false;
 	
 
@@ -15,7 +16,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		$scope.error = "";
 		$scope.resultsColumns = [];
 		$scope.resultsRows = [];
-		$scope.loading = true;
+		$scope.searchLoading = true;
 		$scope.$apply();
 		$scope.resultExplan = false;
 
@@ -39,17 +40,17 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		  }
         })
         .finally(function() {
-          $scope.loading = false;
+          $scope.searchLoading = false;
           $scope.$apply()    
         });
 	}
 	
-	$scope.explan = function() {
+	$scope.explain = function() {
 		// Reset results and error box
 		$scope.error = "";
 		$scope.resultsColumns = [];
 		$scope.resultsRows = [];
-		$scope.loading = true;
+		$scope.explainLoading = true;
 		$scope.$apply();
 		$scope.resultExplan = true;
 
@@ -71,7 +72,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		  }
         })
         .finally(function() {
-          $scope.loading = false;
+          $scope.explainLoading = false;
           $scope.$apply()    
         });
 	}

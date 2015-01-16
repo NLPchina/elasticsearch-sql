@@ -101,8 +101,11 @@
           <!-- Query area -->
           <div class="search-area">
           	<textarea id="queryTextarea">SELECT * FROM myindex</textarea> 
-  	        <button type="button" ng-click="search()" id="searchButton" class="btn btn-success search-button" ng-bind-html="getButtonContent(loading,'Search')" ng-cloak></button>
-            <button type="button" ng-click="explan()" id="explanButton" class="btn btn-success explan-button" ng-bind-html="getButtonContent(loading,'Explan')" ng-cloak></button>
+  	        <button type="button" ng-click="search()" id="searchButton" class="btn btn-success search-button" ng-bind-html="getButtonContent(searchLoading,'Search')" ng-cloak>
+            </button>
+
+            <button type="button" ng-click="explain()" id="explainButton" class="btn btn-info explain-button" ng-bind-html="getButtonContent(explainLoading,'Explain')" ng-cloak>
+            </button>
   	      </div>
 
           <!-- Error box, displayed only on errors -->
