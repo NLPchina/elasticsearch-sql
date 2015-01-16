@@ -118,8 +118,7 @@
           <!-- Results area, displayed after search -->
           <div class="fadein" ng-show="resultsColumns.length > 0" ng-cloak>
           	<div>
-            	<h2 class="sub-header">Results</h2>  
-           		<button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-success " ng-cloak>Export CSV</button>
+            	<h2 class="sub-header">Results</h2>             		
          		</div>
 
             <div class="table-responsive">
@@ -138,6 +137,8 @@
                 </tbody>
               </table>
             </div>
+
+            <button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-primary btn-sm" ng-cloak>Export CSV <span class="glyphicon glyphicon-share"></span></button>
           </div>
 
           <!-- explan area , displayed after explan -->
