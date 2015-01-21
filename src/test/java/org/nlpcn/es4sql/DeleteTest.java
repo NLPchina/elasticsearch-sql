@@ -43,6 +43,18 @@ public class DeleteTest {
 	}
 
 
+	@Test
+	public void deleteWithConditionTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		delete(String.format("DELETE FROM %s/phrase WHERE phrase = 'quick fox here' ", TEST_INDEX));
+
+		// Assert no results exist for this type.
+		SearchRequestBuilder request = MainTestSuite.getClient().prepareSearch(TEST_INDEX);
+		request.setTypes("phrase");
+		SearchResponse response = request.setQuery(QueryBuilders.matchAllQuery()).get();
+		assertThat(response.getHits().getTotalHits(), equalTo(3L));
+	}
+
+
 	private void delete(String deleteStatement) throws SqlParseException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
 		searchDao.explain(deleteStatement).get();
