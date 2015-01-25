@@ -52,6 +52,11 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
         select COUNT(*),SUM(age),MIN(age) as m, MAX(age),AVG(age)
         FROM bank GROUP BY gender ORDER BY SUM(age), m DESC
 
+* DELETE
+
+        DELETE * FROM bank WHERE age >30 AND gender = 'm'
+
+
 > ###Beyond sql
 
 * Search
@@ -80,10 +85,11 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 
 ## Features
 
+*  SQL Select
+*  SQL Delete
 *  ES TopHits
 *  ES MISSING
 *  ES STATS
-*  SQL select
 *  SQL COUNT distinct
 *  SQL where
 *  SQL AND & OR
