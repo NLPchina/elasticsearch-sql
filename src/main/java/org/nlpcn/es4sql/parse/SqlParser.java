@@ -219,7 +219,6 @@ public class SqlParser {
 	 * @return list of From objects represents all the sources.
 	 */
 	private List<From> findFrom(SQLTableSource from) {
-		from.toString();
 		String[] split = from.getTablename().toString().split(",");
 
 		ArrayList<From> fromList = new ArrayList<>();
