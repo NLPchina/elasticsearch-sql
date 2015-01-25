@@ -30,6 +30,13 @@ public class QueryTest {
 	}
 
 	@Test
+	public void multipleFromTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase, %s/account LIMIT 2000", TEST_INDEX, TEST_INDEX));
+		Assert.assertEquals(1004, response.getTotalHits());
+	}
+
+
+	@Test
 	public void selectSpecificFields() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		String[] arr = new String[] {"age", "account_number"};
 		Set expectedSource = new HashSet(Arrays.asList(arr));
