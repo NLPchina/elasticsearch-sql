@@ -18,7 +18,7 @@ Install as plugin:
 ###Elasticsearch 1.4.X
 ````
 
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.2/elasticsearch-sql-1.2.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3/elasticsearch-sql-1.3.zip --install sql
 
 ````
 ## Basic Usuage
@@ -52,7 +52,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
         select COUNT(*),SUM(age),MIN(age) as m, MAX(age),AVG(age)
         FROM bank GROUP BY gender ORDER BY SUM(age), m DESC
 
-* DELETE
+* Delete
 
         DELETE * FROM bank WHERE age >30 AND gender = 'm'
 
