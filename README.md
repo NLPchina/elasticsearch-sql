@@ -54,7 +54,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 
 * Delete
 
-        DELETE * FROM bank WHERE age >30 AND gender = 'm'
+        DELETE FROM bank WHERE age >30 AND gender = 'm'
 
 
 > ###Beyond sql
