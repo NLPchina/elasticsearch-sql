@@ -21,7 +21,7 @@ Install as plugin:
 ./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3/elasticsearch-sql-1.3.zip --install sql
 
 ````
-## Basic Usuage
+## Basic Usage
 
 * Visit The elasticsearch-sql web front end:
 ````
