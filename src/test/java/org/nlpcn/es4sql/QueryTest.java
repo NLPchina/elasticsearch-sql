@@ -35,6 +35,12 @@ public class QueryTest {
 		Assert.assertEquals(1004, response.getTotalHits());
 	}
 
+	@Test
+	public void typeWithWildcardTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase* LIMIT 1000", TEST_INDEX));
+		Assert.assertEquals(8, response.getTotalHits());
+	}
+
 
 	@Test
 	public void selectSpecificFields() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
@@ -67,7 +73,7 @@ public class QueryTest {
 
 	@Test
 	public void equallityTest() throws SqlParseException, SQLFeatureNotSupportedException {
-		SearchHits response = query(String.format("select * from %s where city = 'Nogal' LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("select * from %s/phrase where city = 'Nogal' LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert the results is correct according to accounts.json data.
@@ -80,7 +86,7 @@ public class QueryTest {
 	// in some cases, depends on the analasis, we might want choose better behavior for equallity.
 	@Test
 	public void equallityTest_phrase() throws SqlParseException, SQLFeatureNotSupportedException {
-		SearchHits response = query(String.format("SELECT * FROM %s WHERE phrase = 'quick fox here' LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase WHERE phrase = 'quick fox here' LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert the results is correct according to accounts.json data.
@@ -228,7 +234,7 @@ public class QueryTest {
 
 	@Test
 	public void inTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
-		SearchHits response = query(String.format("SELECT age FROM %s WHERE age IN (20, 22) LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT age FROM %s/phrase WHERE age IN (20, 22) LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
 			int age = (int) hit.getSource().get("age");
@@ -239,7 +245,7 @@ public class QueryTest {
 
 	@Test
 	public void inTestWithStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
-		SearchHits response = query(String.format("SELECT phrase FROM %s WHERE phrase IN ('quick fox here', 'fox brown') LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT phrase FROM %s/phrase WHERE phrase IN ('quick fox here', 'fox brown') LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		Assert.assertEquals(2, response.getTotalHits());
 		for(SearchHit hit : hits) {

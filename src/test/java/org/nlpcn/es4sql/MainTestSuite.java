@@ -50,7 +50,9 @@ public class MainTestSuite {
 		deleteQuery(TEST_INDEX);
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/phrases.json");
+		loadBulk("src/test/resources/phrases_2.json");
 		loadBulk("src/test/resources/online.json");
+
 
 		searchDao = new SearchDao(client);
 		System.out.println("Finished the setup process...");
