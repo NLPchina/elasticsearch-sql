@@ -34,6 +34,10 @@ public class SQLExprTableSource extends SQLTableSourceImpl {
 		this.tablename = expr.toString().replace(" ", "");
     }
 
+	public SQLExprTableSource(String tablename){
+		this.tablename = tablename;
+	}
+
     public SQLExpr getExpr() {
         return this.expr;
     }

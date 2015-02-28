@@ -67,9 +67,25 @@ public class Lexer {
 
     private int           varIndex     = -1;
 
+
     public Lexer(String input){
         this(input, true);
     }
+
+
+	public Lexer(String input, boolean skipComment){
+		this.skipComment = skipComment;
+
+		this.text = input;
+		this.pos = -1;
+
+		scanChar();
+	}
+
+
+	public Lexer(char[] input, int inputLength, boolean skipComment){
+		this(new String(input, 0, inputLength), skipComment);
+	}
 
     public final char charAt(int index) {
         if (index >= text.length()) {
@@ -143,19 +159,6 @@ public class Lexer {
         this.mark = savePoint.np;
         this.ch = savePoint.ch;
         this.token = savePoint.token;
-    }
-
-    public Lexer(String input, boolean skipComment){
-        this.skipComment = skipComment;
-
-        this.text = input;
-        this.pos = -1;
-
-        scanChar();
-    }
-
-    public Lexer(char[] input, int inputLength, boolean skipComment){
-        this(new String(input, 0, inputLength), skipComment);
     }
 
     protected final void scanChar() {
@@ -374,6 +377,42 @@ public class Lexer {
         }
 
     }
+
+
+	/**
+	 * Scan all values until first whitespace, spaces near ',' are ignored,
+	 * so values like 'hello , world' will capture as one token.
+	 * @return all names as string.
+	 */
+	public String scanNames() {
+		String restOfText = text.substring(pos);
+		String[] splittedText = restOfText.split(",");
+
+		StringBuilder names = new StringBuilder();
+		for (String textPart : splittedText) {
+			String trimmedTextPart = textPart.trim();
+
+			// is last part?
+			if(trimmedTextPart.contains(" ")) {
+				int whitespaceIndex = trimmedTextPart.indexOf(" ");
+				if(whitespaceIndex != -1) {
+					trimmedTextPart = trimmedTextPart.substring(0, whitespaceIndex);
+				}
+				names.append(trimmedTextPart);
+				while(isWhitespace(charAt(pos))) {
+					scanChar();
+				}
+				pos += whitespaceIndex + 1;
+				break;
+			}
+
+			names.append(trimmedTextPart + ",");
+			pos += textPart.length() + 1;
+		}
+
+		ch = charAt(pos);
+		return names.toString();
+	}
 
     private final void scanOperator() {
         switch (ch) {

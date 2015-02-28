@@ -52,6 +52,7 @@ public class MainTestSuite {
 		loadBulk("src/test/resources/phrases.json");
 		loadBulk("src/test/resources/online.json");
 
+
 		searchDao = new SearchDao(client);
 		System.out.println("Finished the setup process...");
 	}
