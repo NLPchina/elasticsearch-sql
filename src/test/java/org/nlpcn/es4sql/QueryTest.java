@@ -73,7 +73,7 @@ public class QueryTest {
 
 	@Test
 	public void equallityTest() throws SqlParseException, SQLFeatureNotSupportedException {
-		SearchHits response = query(String.format("select * from %s/phrase where city = 'Nogal' LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("select * from %s/account where city = 'Nogal' LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert the results is correct according to accounts.json data.
