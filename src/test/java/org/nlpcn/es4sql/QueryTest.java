@@ -36,9 +36,9 @@ public class QueryTest {
 	}
 
 	@Test
-	public void typeWithWildcardTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
-		SearchHits response = query(String.format("SELECT * FROM %s/phrase* LIMIT 1000", TEST_INDEX));
-		Assert.assertEquals(8, response.getTotalHits());
+	public void indexWithWildcardTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+		SearchHits response = query("SELECT * FROM elasticsearch-* LIMIT 1000");
+		assertThat(response.getTotalHits(), greaterThan(0L));
 	}
 
 
