@@ -150,7 +150,7 @@ public class SQLExprParser extends SQLParser {
                 tokenValue.add(lexer.token().name());
                 lexer.nextToken();
                 boolean foundRBrace = false;
-                if(lexer.stringVal().equals(Token.TS)){
+                if(lexer.stringVal().equals(Token.TS.name)){
                     String current = lexer.stringVal();
                     do {
                         tokens.add(lexer.token());
@@ -171,6 +171,8 @@ public class SQLExprParser extends SQLParser {
                     }else{
                         throw new ParserException("Error. Unable to find closing RBRACE");
                     }
+                }else{
+                    throw new ParserException("Error. Unable to parse ODBC Literal Timestamp");
                 }
                 break;
             case INSERT:
