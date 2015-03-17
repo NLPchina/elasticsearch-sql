@@ -37,8 +37,6 @@ import org.durid.sql.ast.statement.SQLPrimaryKey;
 import org.durid.sql.ast.statement.SQLSelect;
 import org.durid.sql.ast.statement.SQLSelectOrderByItem;
 
-import javax.swing.text.html.parser.Parser;
-
 public class SQLExprParser extends SQLParser {
 
     public SQLExprParser(String sql){
@@ -144,18 +142,11 @@ public class SQLExprParser extends SQLParser {
                 accept(Token.RPAREN);
                 break;
             case LBRACE:
-                List<Token> tokens = new ArrayList<>();
-                List<String> tokenValue = new ArrayList<>();
-                tokens.add(lexer.token());
-                tokenValue.add(lexer.token().name());
                 lexer.nextToken();
                 boolean foundRBrace = false;
                 if(lexer.stringVal().equals(Token.TS.name)){
                     String current = lexer.stringVal();
                     do {
-                        tokens.add(lexer.token());
-                        tokenValue.add(lexer.token().name());
-                        System.out.println(lexer.stringVal());
                         if(current.equals(tok.RBRACE.name())){
                             foundRBrace = true;
                             break;
@@ -165,7 +156,7 @@ public class SQLExprParser extends SQLParser {
                     }while(!foundRBrace && !current.trim().equals(""));
 
                     if(foundRBrace){
-                        SQLCharExpr sdle = new SQLCharExpr(lexer.stringVal());
+                        SQLOdbcExpr sdle = new SQLOdbcExpr(lexer.stringVal());
                         sqlExpr = sdle;
                         accept(Token.RBRACE);
                     }else{
