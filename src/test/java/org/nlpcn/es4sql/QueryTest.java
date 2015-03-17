@@ -290,6 +290,22 @@ public class QueryTest {
 		}
 	}
 
+    @Test
+    public void dateSearchBraces() throws IOException, SqlParseException, SQLFeatureNotSupportedException, ParseException {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(DATE_FORMAT);
+        DateTime dateToCompare = new DateTime(2014, 8, 18, 0, 0, 0);
+
+        SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time < {ts '2014-08-18'}", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        for(SearchHit hit : hits) {
+            Map<String, Object> source = hit.getSource();
+            DateTime insertTime = formatter.parseDateTime((String) source.get("insert_time"));
+
+            String errorMessage = String.format("insert_time must be smaller then 2014-08-18. found: %s", insertTime);
+            Assert.assertTrue(errorMessage, insertTime.isBefore(dateToCompare));
+        }
+    }
+
 
 	@Test
 	public void dateBetweenSearch() throws IOException, SqlParseException, SQLFeatureNotSupportedException {

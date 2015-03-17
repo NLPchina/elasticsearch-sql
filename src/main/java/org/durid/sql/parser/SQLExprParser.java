@@ -28,36 +28,7 @@ import org.durid.sql.ast.SQLName;
 import org.durid.sql.ast.SQLOrderBy;
 import org.durid.sql.ast.SQLOrderingSpecification;
 import org.durid.sql.ast.SQLOver;
-import org.durid.sql.ast.expr.SQLAggregateExpr;
-import org.durid.sql.ast.expr.SQLAllColumnExpr;
-import org.durid.sql.ast.expr.SQLAllExpr;
-import org.durid.sql.ast.expr.SQLAnyExpr;
-import org.durid.sql.ast.expr.SQLBetweenExpr;
-import org.durid.sql.ast.expr.SQLBinaryOpExpr;
-import org.durid.sql.ast.expr.SQLBinaryOperator;
-import org.durid.sql.ast.expr.SQLCaseExpr;
-import org.durid.sql.ast.expr.SQLCastExpr;
-import org.durid.sql.ast.expr.SQLCharExpr;
-import org.durid.sql.ast.expr.SQLCurrentOfCursorExpr;
-import org.durid.sql.ast.expr.SQLDefaultExpr;
-import org.durid.sql.ast.expr.SQLExistsExpr;
-import org.durid.sql.ast.expr.SQLHexExpr;
-import org.durid.sql.ast.expr.SQLIdentifierExpr;
-import org.durid.sql.ast.expr.SQLInListExpr;
-import org.durid.sql.ast.expr.SQLInSubQueryExpr;
-import org.durid.sql.ast.expr.SQLIntegerExpr;
-import org.durid.sql.ast.expr.SQLListExpr;
-import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.durid.sql.ast.expr.SQLNCharExpr;
-import org.durid.sql.ast.expr.SQLNotExpr;
-import org.durid.sql.ast.expr.SQLNullExpr;
-import org.durid.sql.ast.expr.SQLNumberExpr;
-import org.durid.sql.ast.expr.SQLPropertyExpr;
-import org.durid.sql.ast.expr.SQLQueryExpr;
-import org.durid.sql.ast.expr.SQLSomeExpr;
-import org.durid.sql.ast.expr.SQLUnaryExpr;
-import org.durid.sql.ast.expr.SQLUnaryOperator;
-import org.durid.sql.ast.expr.SQLVariantRefExpr;
+import org.durid.sql.ast.expr.*;
 import org.durid.sql.ast.statement.NotNullConstraint;
 import org.durid.sql.ast.statement.SQLAssignItem;
 import org.durid.sql.ast.statement.SQLCharactorDataType;
@@ -65,6 +36,8 @@ import org.durid.sql.ast.statement.SQLColumnDefinition;
 import org.durid.sql.ast.statement.SQLPrimaryKey;
 import org.durid.sql.ast.statement.SQLSelect;
 import org.durid.sql.ast.statement.SQLSelectOrderByItem;
+
+import javax.swing.text.html.parser.Parser;
 
 public class SQLExprParser extends SQLParser {
 
@@ -169,6 +142,36 @@ public class SQLExprParser extends SQLParser {
                     sqlExpr = listExpr;
                 }
                 accept(Token.RPAREN);
+                break;
+            case LBRACE:
+                List<Token> tokens = new ArrayList<>();
+                List<String> tokenValue = new ArrayList<>();
+                tokens.add(lexer.token());
+                tokenValue.add(lexer.token().name());
+                lexer.nextToken();
+                boolean foundRBrace = false;
+                if(lexer.stringVal().equals(Token.TS)){
+                    String current = lexer.stringVal();
+                    do {
+                        tokens.add(lexer.token());
+                        tokenValue.add(lexer.token().name());
+                        System.out.println(lexer.stringVal());
+                        if(current.equals(tok.RBRACE.name())){
+                            foundRBrace = true;
+                            break;
+                        }
+                        lexer.nextToken();
+                        current = lexer.token().name();
+                    }while(!foundRBrace && !current.trim().equals(""));
+
+                    if(foundRBrace){
+                        SQLCharExpr sdle = new SQLCharExpr(lexer.stringVal());
+                        sqlExpr = sdle;
+                        accept(Token.RBRACE);
+                    }else{
+                        throw new ParserException("Error. Unable to find closing RBRACE");
+                    }
+                }
                 break;
             case INSERT:
                 lexer.nextToken();
