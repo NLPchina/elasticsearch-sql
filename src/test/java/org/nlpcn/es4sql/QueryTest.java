@@ -301,7 +301,7 @@ public class QueryTest {
             Map<String, Object> source = hit.getSource();
             DateTime insertTime = formatter.parseDateTime((String) source.get("insert_time"));
 
-            String errorMessage = String.format("insert_time must be smaller then 2015-01-15. found: %s", insertTime);
+            String errorMessage = String.format("insert_time must be smaller then 2015-03-15. found: %s", insertTime);
             Assert.assertTrue(errorMessage, insertTime.isBefore(dateToCompare));
         }
     }
