@@ -5,6 +5,7 @@ package org.nlpcn.es4sql;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
@@ -51,6 +52,10 @@ public class MainTestSuite {
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/phrases.json");
 		loadBulk("src/test/resources/online.json");
+
+        prepareOdbcIndex();
+        loadBulk("src/test/resources/odbc-date-formats.json");
+
 
 
 		searchDao = new SearchDao(client);
@@ -114,6 +119,23 @@ public class MainTestSuite {
 		}
 	}
 
+    public static void prepareOdbcIndex(){
+        String dataMapping = "{\n" +
+                "\t\"odbc\" :{\n" +
+                "\t\t\"properties\":{\n" +
+                "\t\t\t\"insert_time\":{\n" +
+                "\t\t\t\t\"type\":\"date\",\n" +
+                "\t\t\t\t\"format\": \"{'ts' ''yyyy-MM-dd HH:mm:ss.SSS''}\"\n" +
+                "\t\t\t},\n" +
+                "\t\t\t\"docCount\":{\n" +
+                "\t\t\t\t\"type\":\"string\"\n" +
+                "\t\t\t}\n" +
+                "\t\t}\n" +
+                "\t}\n" +
+                "}";
+
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping).execute().actionGet();
+    }
 
 	public static SearchDao getSearchDao() {
 		return searchDao;

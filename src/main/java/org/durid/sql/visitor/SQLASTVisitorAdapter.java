@@ -20,38 +20,7 @@ import org.durid.sql.ast.SQLDataType;
 import org.durid.sql.ast.SQLObject;
 import org.durid.sql.ast.SQLOrderBy;
 import org.durid.sql.ast.SQLOver;
-import org.durid.sql.ast.expr.SQLAggregateExpr;
-import org.durid.sql.ast.expr.SQLAllColumnExpr;
-import org.durid.sql.ast.expr.SQLAllExpr;
-import org.durid.sql.ast.expr.SQLAnyExpr;
-import org.durid.sql.ast.expr.SQLBetweenExpr;
-import org.durid.sql.ast.expr.SQLBinaryOpExpr;
-import org.durid.sql.ast.expr.SQLBitStringLiteralExpr;
-import org.durid.sql.ast.expr.SQLCaseExpr;
-import org.durid.sql.ast.expr.SQLCastExpr;
-import org.durid.sql.ast.expr.SQLCharExpr;
-import org.durid.sql.ast.expr.SQLCurrentOfCursorExpr;
-import org.durid.sql.ast.expr.SQLDateLiteralExpr;
-import org.durid.sql.ast.expr.SQLDefaultExpr;
-import org.durid.sql.ast.expr.SQLExistsExpr;
-import org.durid.sql.ast.expr.SQLHexExpr;
-import org.durid.sql.ast.expr.SQLHexStringLiteralExpr;
-import org.durid.sql.ast.expr.SQLIdentifierExpr;
-import org.durid.sql.ast.expr.SQLInListExpr;
-import org.durid.sql.ast.expr.SQLInSubQueryExpr;
-import org.durid.sql.ast.expr.SQLIntegerExpr;
-import org.durid.sql.ast.expr.SQLIntervalLiteralExpr;
-import org.durid.sql.ast.expr.SQLListExpr;
-import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.durid.sql.ast.expr.SQLNCharExpr;
-import org.durid.sql.ast.expr.SQLNotExpr;
-import org.durid.sql.ast.expr.SQLNullExpr;
-import org.durid.sql.ast.expr.SQLNumberExpr;
-import org.durid.sql.ast.expr.SQLPropertyExpr;
-import org.durid.sql.ast.expr.SQLQueryExpr;
-import org.durid.sql.ast.expr.SQLSomeExpr;
-import org.durid.sql.ast.expr.SQLUnaryExpr;
-import org.durid.sql.ast.expr.SQLVariantRefExpr;
+import org.durid.sql.ast.expr.*;
 import org.durid.sql.ast.statement.NotNullConstraint;
 import org.durid.sql.ast.statement.SQLAlterTableAddColumn;
 import org.durid.sql.ast.statement.SQLAlterTableAddPrimaryKey;
@@ -100,6 +69,9 @@ public class SQLASTVisitorAdapter implements SQLASTVisitor {
     }
 
     public void endVisit(SQLBinaryOpExpr x) {
+    }
+
+    public void endVisit(SQLOdbcExpr x) {
     }
 
     public void endVisit(SQLCaseExpr x) {
@@ -164,6 +136,8 @@ public class SQLASTVisitorAdapter implements SQLASTVisitor {
     public boolean visit(SQLBinaryOpExpr x) {
         return true;
     }
+
+    public boolean visit(SQLOdbcExpr x) { return false; }
 
     public boolean visit(SQLCaseExpr x) {
         return true;

@@ -227,7 +227,8 @@ public enum Token {
     PERCENT("%"), 
     LTLT("<<"), 
     GTGT(">>"),
-    MONKEYS_AT("@");
+    MONKEYS_AT("@"),
+    TS("ts");
 
     public final String name;
 
