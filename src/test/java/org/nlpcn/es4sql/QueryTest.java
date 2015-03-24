@@ -404,6 +404,24 @@ public class QueryTest {
 		Assert.assertTrue("The list is not ordered descending", sortedAges.equals(ages));
 	}
 
+    @Test
+    public void testMultipartWhere() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/account WHERE (firstname LIKE 'opal' OR firstname like 'rodriquez') AND (state like 'oh' OR state like 'hi')", TEST_INDEX));
+        Assert.assertEquals(2, response.getTotalHits());
+    }
+
+    @Test
+    public void testMultipartWhere2() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/account where ((account_number > 200 and account_number < 300) or gender like 'm') and (state like 'hi' or address like 'avenue')", TEST_INDEX));
+        Assert.assertEquals(11, response.getTotalHits());
+    }
+
+    @Test
+    public void testMultipartWhere3() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/account where ((account_number > 25 and account_number < 75) and age >35 ) and (state like 'md' or (address like 'avenue' or address like 'street'))", TEST_INDEX));
+        Assert.assertEquals(7, response.getTotalHits());
+    }
+
 	private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
 		SearchRequestBuilder select = (SearchRequestBuilder)searchDao.explain(query);
