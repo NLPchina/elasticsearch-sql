@@ -103,7 +103,7 @@ public class SqlParser {
 		if (isCond(sub)) {
 			explanCond(expr.operator.name, sub, where);
 		} else {
-			if (sub.operator.priority > expr.operator.priority) {
+			if (sub.operator.priority != expr.operator.priority) {
 				Where subWhere = new Where(expr.getOperator().name);
 				where.addWhere(subWhere);
 				parseWhere(sub, subWhere);

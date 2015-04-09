@@ -413,7 +413,7 @@ public class QueryTest {
     @Test
     public void testMultipartWhere2() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/account where ((account_number > 200 and account_number < 300) or gender like 'm') and (state like 'hi' or address like 'avenue')", TEST_INDEX));
-        Assert.assertEquals(11, response.getTotalHits());
+        Assert.assertEquals(127, response.getTotalHits());
     }
 
     @Test
