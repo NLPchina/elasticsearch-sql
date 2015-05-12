@@ -18,7 +18,7 @@ Install as plugin:
 ###Elasticsearch 1.4.X
 ````
 
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.2/elasticsearch-sql-1.3.2.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.2/elasticsearch-sql-1.3.3.zip --install sql
 
 ````
 ## Basic Usage
