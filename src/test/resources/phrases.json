@@ -1,8 +1,8 @@
 {"index":{"_type": "phrase"}}
 {"phrase": "quick fox"}
 {"index":{"_type": "phrase"}}
-{"phrase": "quick fox here", "insert_time":"2014-08-19T07:09:13.434Z" }
+{"phrase": "quick fox here"}
 {"index":{"_type": "phrase"}}
 {"phrase": "brown fox"}
 {"index":{"_type": "phrase"}}
-{"phrase": "fox brown", "insert_time":"2014-08-19T07:09:13.434Z"}
+{"phrase": "fox brown"}
