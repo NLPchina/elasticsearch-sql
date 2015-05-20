@@ -51,12 +51,10 @@ public class MainTestSuite {
 		deleteQuery(TEST_INDEX);
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
+        loadBulk("src/test/resources/phrases.json");
 
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");
-        preparePhraseIndex();
-        loadBulk("src/test/resources/phrases.json");
-
 
 		searchDao = new SearchDao(client);
 		System.out.println("Finished the setup process...");
@@ -135,25 +133,6 @@ public class MainTestSuite {
                 "}";
 
         client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping).execute().actionGet();
-    }
-
-    public static void preparePhraseIndex(){
-        String dataMapping = "{\n" +
-                "\t\"phrase\" :{\n" +
-                "\t\t\"properties\":{\n" +
-                "\t\t\t\"insert_time\":{\n" +
-                "\t\t\t\t\"type\":\"date\",\n" +
-                "\t\t\t\t\"format\": \"{'ts' ''yyyy-MM-dd HH:mm:ss.SSS''}\"\n" +
-                "\t\t\t},\n" +
-                "\t\"phrase\":{\n" +
-                "\t\"type\":\"string\",\n" +
-                "\t\"index\":\"not_analyzed\"\n" +
-                "\t}\n" +
-                "\t}\n" +
-                "\t}\n" +
-                "}";
-
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping).execute().actionGet();
     }
 
 	public static SearchDao getSearchDao() {
