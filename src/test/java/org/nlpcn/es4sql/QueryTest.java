@@ -54,6 +54,18 @@ public class QueryTest {
 		}
 	}
 
+	@Test
+	public void selectFieldWithSpace() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		String[] arr = new String[] {"test field"};
+		Set expectedSource = new HashSet(Arrays.asList(arr));
+
+		SearchHits response = query(String.format("SELECT `test field` FROM %s/phrase_2", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Assert.assertEquals(expectedSource, hit.getSource().keySet());
+		}
+	}
+
 
 	// TODO field aliases is not supported currently. it might be possible to change field names after the query already executed.
 	/*
