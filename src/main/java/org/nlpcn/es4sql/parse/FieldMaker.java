@@ -27,7 +27,8 @@ import org.durid.sql.ast.expr.SQLQueryExpr;
 public class FieldMaker {
 	public static Field makeField(SQLExpr expr, String alias) throws SqlParseException {
 		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr) {
-			return new Field(expr.toString(), alias);
+			String name = expr.toString().replace("`", "");
+			return new Field(name, alias);
 		} else if (expr instanceof SQLQueryExpr) {
 			throw new SqlParseException("unknow field name : " + expr);
 		} else if (expr instanceof SQLAllColumnExpr) {

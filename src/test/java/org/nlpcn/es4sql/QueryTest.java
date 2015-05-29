@@ -54,6 +54,18 @@ public class QueryTest {
 		}
 	}
 
+	@Test
+	public void selectFieldWithSpace() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		String[] arr = new String[] {"test field"};
+		Set expectedSource = new HashSet(Arrays.asList(arr));
+
+		SearchHits response = query(String.format("SELECT `test field` FROM %s/phrase_2", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+		for(SearchHit hit : hits) {
+			Assert.assertEquals(expectedSource, hit.getSource().keySet());
+		}
+	}
+
 
 	// TODO field aliases is not supported currently. it might be possible to change field names after the query already executed.
 	/*
@@ -402,6 +414,22 @@ public class QueryTest {
 		ArrayList<Integer> sortedAges = (ArrayList<Integer>)ages.clone();
 		Collections.sort(sortedAges, Collections.reverseOrder());
 		Assert.assertTrue("The list is not ordered descending", sortedAges.equals(ages));
+	}
+
+
+	@Test
+	public void orderByAscFieldWithSpaceTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase_2 ORDER BY `test field` ASC LIMIT 1000", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		ArrayList<Integer> testFields = new ArrayList<Integer>();
+		for(SearchHit hit : hits) {
+			testFields.add((int)hit.getSource().get("test field"));
+		}
+
+		ArrayList<Integer> sortedTestFields = (ArrayList<Integer>)testFields.clone();
+		Collections.sort(sortedTestFields);
+		Assert.assertTrue("The list is not ordered ascending", sortedTestFields.equals(testFields));
 	}
 
     @Test
