@@ -189,6 +189,7 @@ public class SqlParser {
 			}
 			String type = sqlSelectOrderByItem.getType().toString();
 			for (String name : lists) {
+				name = name.replace("`", "");
 				select.addOrderBy(name, type);
 			}
 			lists.clear();

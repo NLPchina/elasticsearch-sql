@@ -404,6 +404,22 @@ public class QueryTest {
 		Assert.assertTrue("The list is not ordered descending", sortedAges.equals(ages));
 	}
 
+
+	@Test
+	public void orderByAscFieldWithSpaceTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase_2 ORDER BY `test field` ASC LIMIT 1000", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		ArrayList<Integer> testFields = new ArrayList<Integer>();
+		for(SearchHit hit : hits) {
+			testFields.add((int)hit.getSource().get("test field"));
+		}
+
+		ArrayList<Integer> sortedTestFields = (ArrayList<Integer>)testFields.clone();
+		Collections.sort(sortedTestFields);
+		Assert.assertTrue("The list is not ordered ascending", sortedTestFields.equals(testFields));
+	}
+
     @Test
     public void testMultipartWhere() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/account WHERE (firstname LIKE 'opal' OR firstname like 'rodriquez') AND (state like 'oh' OR state like 'hi')", TEST_INDEX));
