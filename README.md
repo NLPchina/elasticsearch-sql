@@ -15,10 +15,10 @@ You can also use ES functions in SQL.
 
 Install as plugin:
 
-###Elasticsearch 1.4.X
+###Elasticsearch 1.6.X
 ````
 
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.3/elasticsearch-sql-1.3.3.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.4/elasticsearch-sql-1.3.4.zip --install sql
 
 ````
 ## Basic Usage
