@@ -230,7 +230,7 @@ public class AggregationTest {
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY (gender(age),state)", TEST_INDEX));
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY (gender, age), (state)", TEST_INDEX));
 		Terms gender = result.get("gender");
 		for(Terms.Bucket genderBucket : gender.getBuckets()) {
 			String genderKey = genderBucket.getKey();

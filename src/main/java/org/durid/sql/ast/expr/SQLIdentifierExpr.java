@@ -24,6 +24,7 @@ public class SQLIdentifierExpr extends SQLExprImpl implements SQLName {
     private static final long serialVersionUID = -4101240977289682659L;
 
     private String            name;
+    private boolean           wrappedInParens;
 
     public SQLIdentifierExpr(){
 
@@ -44,6 +45,14 @@ public class SQLIdentifierExpr extends SQLExprImpl implements SQLName {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isWrappedInParens() {
+        return this.wrappedInParens;
+    }
+
+    public void setWrappedInParens(boolean wrappedInParens) {
+        this.wrappedInParens = wrappedInParens;
     }
 
     public void output(StringBuffer buf) {

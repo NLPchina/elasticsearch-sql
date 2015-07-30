@@ -168,10 +168,41 @@ public class SqlParser {
 			return;
 		}
 		List<SQLExpr> items = groupBy.getItems();
+
+		List<SQLExpr> standardGroupBys = new ArrayList<>();
 		for (SQLExpr sqlExpr : items) {
-			select.addGroupBy(FieldMaker.makeField(sqlExpr, null));
+			if ((!(sqlExpr instanceof SQLIdentifierExpr) || ((SQLIdentifierExpr) sqlExpr).isWrappedInParens()) && !standardGroupBys.isEmpty()) {
+				// flush the standard group bys
+				select.addGroupBy(convertExprsToFields(standardGroupBys));
+				standardGroupBys = new ArrayList<>();
+			}
+
+			if (sqlExpr instanceof SQLIdentifierExpr) {
+				SQLIdentifierExpr identifierExpr = (SQLIdentifierExpr) sqlExpr;
+				if (identifierExpr.isWrappedInParens()) {
+					// single item with parens (should be its own agg)
+					select.addGroupBy(FieldMaker.makeField(identifierExpr, null));
+				} else {
+					// single item without parens (should latch to before or after list)
+					standardGroupBys.add(identifierExpr);
+				}
+			} else if (sqlExpr instanceof SQLListExpr) {
+				// multiple items in their own list
+				SQLListExpr listExpr = (SQLListExpr) sqlExpr;
+				select.addGroupBy(convertExprsToFields(listExpr.getItems()));
+			}
 		}
 	}
+
+	private List<Field> convertExprsToFields(List<? extends SQLExpr> exprs) throws SqlParseException {
+		List<Field> fields = new ArrayList<>(exprs.size());
+		for (SQLExpr expr : exprs) {
+			fields.add(FieldMaker.makeField(expr, null));
+		}
+		return fields;
+	}
+
+
 
 	private void findOrderBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
 		SQLOrderBy orderBy = query.getOrderBy();

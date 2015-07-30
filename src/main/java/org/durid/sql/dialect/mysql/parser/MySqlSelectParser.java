@@ -17,6 +17,7 @@ package org.durid.sql.dialect.mysql.parser;
 
 import org.durid.sql.ast.SQLExpr;
 import org.durid.sql.ast.SQLSetQuantifier;
+import org.durid.sql.ast.expr.SQLIdentifierExpr;
 import org.durid.sql.ast.expr.SQLLiteralExpr;
 import org.durid.sql.ast.statement.SQLSelectGroupByClause;
 import org.durid.sql.ast.statement.SQLSelectQuery;
@@ -227,7 +228,13 @@ public class MySqlSelectParser extends SQLSelectParser {
 
             SQLSelectGroupByClause groupBy = new SQLSelectGroupByClause();
             while (true) {
-                groupBy.getItems().add(this.exprParser.expr());
+                boolean parens = lexer.token() == Token.LPAREN;
+                SQLExpr expr = this.exprParser.expr();
+                // if it is an identifier, keep track of if it is in parens or not
+                if (expr instanceof SQLIdentifierExpr) {
+                    ((SQLIdentifierExpr) expr).setWrappedInParens(parens);
+                }
+                groupBy.getItems().add(expr);
                 if (!(lexer.token() == (Token.COMMA))) {
                     break;
                 }
