@@ -192,6 +192,9 @@ public class SqlParser {
 				select.addGroupBy(convertExprsToFields(listExpr.getItems()));
 			}
 		}
+		if (!standardGroupBys.isEmpty()) {
+			select.addGroupBy(convertExprsToFields(standardGroupBys));
+		}
 	}
 
 	private List<Field> convertExprsToFields(List<? extends SQLExpr> exprs) throws SqlParseException {
