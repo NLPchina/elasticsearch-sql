@@ -109,7 +109,7 @@ public class MainTestSuite {
 
 		BulkRequestBuilder bulkBuilder = new BulkRequestBuilder(client);
 		byte[] buffer = ByteStreams.toByteArray(new FileInputStream(jsonPath));
-		bulkBuilder.add(buffer, 0, buffer.length, true, TEST_INDEX, null);
+		bulkBuilder.add(buffer, 0, buffer.length, TEST_INDEX, null);
 		BulkResponse response = bulkBuilder.get();
 
 		if(response.hasFailures()) {
