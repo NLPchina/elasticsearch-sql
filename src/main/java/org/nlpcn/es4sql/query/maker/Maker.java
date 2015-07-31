@@ -1,9 +1,17 @@
 package org.nlpcn.es4sql.query.maker;
 
+import java.io.IOException;
 import java.util.Set;
 
+import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.GeometryEngine;
+import com.esri.core.geometry.WktImportFlags;
 import org.elasticsearch.common.collect.Sets;
+import org.elasticsearch.common.geo.ShapeRelation;
+import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.elasticsearch.common.xcontent.ToXContent;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
@@ -26,9 +34,7 @@ public abstract class Maker {
 	/**
 	 * 构建过滤条件
 	 * 
-	 * @param boolFilter
-	 * @param expr
-	 * @param expr
+	 * @param cond
 	 * @return
 	 * @throws SqlParseException
 	 */
@@ -198,6 +204,21 @@ public abstract class Maker {
 			else
 				x = FilterBuilders.rangeFilter(name).gte(((Object[]) value)[0]).lte(((Object[]) value)[1]);
 			break;
+        case GEO_INTERSECTS:
+            String wkt = cond.getValue().toString();
+            try {
+                ShapeBuilder shapeBuilder = getShapeBuilderFromWkt(wkt);
+                if(isQuery)
+                    x = QueryBuilders.geoShapeQuery(cond.getName(), shapeBuilder);
+                else
+                    x = FilterBuilders.geoShapeFilter(cond.getName(), shapeBuilder, ShapeRelation.INTERSECTS);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new SqlParseException("couldn't create shapeBuilder from wkt: " + wkt);
+            }
+
+            break;
 		default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}
@@ -206,7 +227,28 @@ public abstract class Maker {
 		return x;
 	}
 
-	private ToXContent fixNot(Condition cond, ToXContent bqb) {
+    private ShapeBuilder getShapeBuilderFromWkt(String wkt) throws IOException {
+        String json = getGeoJsonFromWkt(wkt);
+        return getShapeBuilderFromJson(json);
+    }
+
+    private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {
+        XContentParser parser = null;
+        parser = JsonXContent.jsonXContent.createParser(json);
+        parser.nextToken();
+        return ShapeBuilder.parse(parser);
+    }
+
+    private String getGeoJsonFromWkt(String wkt) {
+        //trims the '' from sql string rep
+        wkt = wkt.substring(1, wkt.length()-1);
+        //using esri to validate that it is parsable geometry and create geoJson from it
+
+        com.esri.core.geometry.Geometry geometry = GeometryEngine.geometryFromWkt(wkt, WktImportFlags.wktImportDefaults, Geometry.Type.Unknown);
+        return GeometryEngine.geometryToGeoJson(geometry);
+    }
+
+    private ToXContent fixNot(Condition cond, ToXContent bqb) {
 		if (NOT_OPEAR_SET.contains(cond.getOpear())) {
 			if (isQuery) {
 				bqb = QueryBuilders.boolQuery().mustNot((QueryBuilder) bqb);

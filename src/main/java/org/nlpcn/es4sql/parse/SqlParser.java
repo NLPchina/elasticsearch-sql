@@ -124,7 +124,20 @@ public class SqlParser {
             SQLExpr right = ((SQLBinaryOpExpr) ((SQLNotExpr) expr).getExpr()).getRight();
             Condition condition = new Condition(CONN.valueOf(opear),left, Condition.OPEAR.N, parseValue(right));
             where.addWhere(condition);
-        } else {
+        }
+        else if (expr instanceof SQLMethodInvokeExpr) {
+        SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
+        List<SQLExpr> methodParameters = methodExpr.getParameters();
+        if (methodParameters.size() > 2) {
+           throw new SqlParseException("only support 2 parameters methods as conditions " + expr.getClass());
+        }
+        String firstVar = methodParameters.get(0).toString();
+        String secondVar = methodParameters.get(1).toString();
+        String methodName = methodExpr.getMethodName();
+
+        Condition condition = new Condition(CONN.valueOf(opear), firstVar, methodName, secondVar);
+        where.addWhere(condition);
+        }else {
 			throw new SqlParseException("err find condition " + expr.getClass());
 		}
 	}

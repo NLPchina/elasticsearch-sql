@@ -58,7 +58,11 @@
 			<version>1.6.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+        <dependency>
+            <groupId>com.esri.geometry</groupId>
+            <artifactId>esri-geometry-api</artifactId>
+            <version>1.2</version>
+        </dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -92,6 +96,11 @@
             <artifactId>guava</artifactId>
             <version>18.0</version>
 
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <version>1.13</version>
         </dependency>
 	</dependencies>
 

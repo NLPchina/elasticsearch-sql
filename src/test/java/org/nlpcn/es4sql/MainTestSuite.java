@@ -3,14 +3,9 @@ package org.nlpcn.es4sql;
 
 
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.io.ByteStreams;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -56,7 +51,14 @@ public class MainTestSuite {
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");
 
-		searchDao = new SearchDao(client);
+        prepareSpatialIndex();
+        loadBulk("src/test/resources/locations.json");
+
+        searchDao = new SearchDao(client);
+
+        //refresh to make sure all the docs will return on queries
+        client.admin().indices().prepareRefresh(TEST_INDEX).execute().actionGet();
+
 		System.out.println("Finished the setup process...");
 	}
 
@@ -116,7 +118,27 @@ public class MainTestSuite {
 			throw new Exception(String.format("Failed during bulk load of file %s. failure message: %s", jsonPath, response.buildFailureMessage()));
 		}
 	}
+    public static void prepareSpatialIndex(){
+        String dataMapping = "{\n" +
+                "\t\"location\" :{\n" +
+                "\t\t\"properties\":{\n" +
+                "\t\t\t\"place\":{\n" +
+                "\t\t\t\t\"type\":\"geo_shape\",\n" +
+                "\t\t\t\t\"tree\": \"quadtree\",\n" +
+                "\t\t\t\t\"precision\": \"10km\"\n" +
+                "\t\t\t},\n" +
+                "\t\t\t\"center\":{\n" +
+                "\t\t\t\t\"type\":\"geo_point\"\n" +
+                "\t\t\t},\n" +
+                "\t\t\t\"description\":{\n" +
+                "\t\t\t\t\"type\":\"string\"\n" +
+                "\t\t\t}\n" +
+                "\t\t}\n" +
+                "\t}\n" +
+                "}";
 
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("location").setSource(dataMapping).execute().actionGet();
+    }
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
                 "\t\"odbc\" :{\n" +

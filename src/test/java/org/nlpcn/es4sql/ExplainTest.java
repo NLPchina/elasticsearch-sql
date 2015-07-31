@@ -36,8 +36,14 @@ public class ExplainTest {
 		assertThat(result, equalTo(expectedOutput));
 	}
 
+    @Test
+    public void spatialFilterExplainTest() throws IOException, SqlParseException, NoSuchMethodException, IllegalAccessException, SQLFeatureNotSupportedException, InvocationTargetException {
+        String expectedOutput = Files.toString(new File("src/test/resources/expectedOutput/search_spatial_explain.json"), StandardCharsets.UTF_8);
+        String result = explain(String.format("SELECT * FROM %s WHERE GEO_INTERSECTS(place,'POLYGON ((102 2, 103 2, 103 3, 102 3, 102 2))')", TEST_INDEX));
+        assertThat(result, equalTo(expectedOutput));
+    }
 
-	private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
 		ActionRequestBuilder requestBuilder = searchDao.explain(sql);
 		return ExplainManager.explain(requestBuilder);
