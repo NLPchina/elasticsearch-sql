@@ -15,7 +15,7 @@ public class Select extends Query {
 	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS");
 
 	private List<Field> fields = new ArrayList<>();
-	private List<Field> groupBys = new ArrayList<>();
+	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
 	private int rowCount = 200;
@@ -39,13 +39,18 @@ public class Select extends Query {
 		this.rowCount = rowCount;
 	}
 
-
 	public void addGroupBy(Field field) {
-		isAgg = true;
-		this.groupBys.add(field);
+		List<Field> wrapper = new ArrayList<>();
+		wrapper.add(field);
+		addGroupBy(wrapper);
 	}
 
-	public List<Field> getGroupBys() {
+	public void addGroupBy(List<Field> fields) {
+		isAgg = true;
+		this.groupBys.add(fields);
+	}
+
+	public List<List<Field>> getGroupBys() {
 		return groupBys;
 	}
 

@@ -45,26 +45,27 @@ public class AggregationQueryAction extends QueryAction {
 		setWhere(select.getWhere());
 		AggregationBuilder<?> lastAgg = null;
 
-		if (select.getGroupBys().size() > 0) {
-			Field field = select.getGroupBys().get(0);
-			lastAgg = aggMaker.makeGroupAgg(field);
-			
+		for (List<Field> groupBy : select.getGroupBys()) {
+			if (!groupBy.isEmpty()) {
+				Field field = groupBy.get(0);
+				lastAgg = aggMaker.makeGroupAgg(field);
 
-			if (lastAgg != null && lastAgg instanceof TermsBuilder) {
-				((TermsBuilder) lastAgg).size(select.getRowCount());
-			}
-
-			request.addAggregation(lastAgg);
-
-			for (int i = 1; i < select.getGroupBys().size(); i++) {
-				field = select.getGroupBys().get(i);
-				AggregationBuilder<?> subAgg = aggMaker.makeGroupAgg(field);
-				if(subAgg instanceof TermsBuilder){
-					((TermsBuilder)subAgg).size(0) ;
+				if (lastAgg != null && lastAgg instanceof TermsBuilder) {
+					((TermsBuilder) lastAgg).size(select.getRowCount());
 				}
-				
-				lastAgg.subAggregation(subAgg);
-				lastAgg = subAgg;
+
+				request.addAggregation(lastAgg);
+
+				for (int i = 1; i < groupBy.size(); i++) {
+					field = groupBy.get(i);
+					AggregationBuilder<?> subAgg = aggMaker.makeGroupAgg(field);
+					if (subAgg instanceof TermsBuilder) {
+						((TermsBuilder) subAgg).size(0);
+					}
+
+					lastAgg.subAggregation(subAgg);
+					lastAgg = subAgg;
+				}
 			}
 		}
 

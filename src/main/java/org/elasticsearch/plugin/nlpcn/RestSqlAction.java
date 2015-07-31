@@ -2,21 +2,12 @@ package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.io.stream.BytesStreamOutput;
-import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.*;
-import org.elasticsearch.rest.action.support.RestBuilderListener;
-import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.query.explain.ExplainManager;
-
-import java.io.FileOutputStream;
 
 public class RestSqlAction extends BaseRestHandler {
 
@@ -31,7 +22,6 @@ public class RestSqlAction extends BaseRestHandler {
 
 	@Override
 	protected void handleRequest(RestRequest request, RestChannel channel, final Client client) throws Exception {
-
 		String sql = request.param("sql");
 
 		if (sql == null) {
