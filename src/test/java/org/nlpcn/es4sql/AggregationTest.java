@@ -5,7 +5,10 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
+import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -136,7 +139,16 @@ public class AggregationTest {
 		Assert.assertTrue("The list is not ordered ascending", agesCount.equals(agesCount));
 	}
 
-
+    @Test
+    public void geoHashGrid() throws SQLFeatureNotSupportedException, SqlParseException {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/location GROUP BY geohash_grid(field='center',precision=5) ", TEST_INDEX));
+        InternalGeoHashGrid grid = result.get("geohash_grid(field=center,precision=5)");
+        Collection<GeoHashGrid.Bucket> buckets = grid.getBuckets();
+        for (GeoHashGrid.Bucket bucket : buckets) {
+            Assert.assertTrue(bucket.getKey().equals("w2fsm") || bucket.getKey().equals("w0p6y") );
+            Assert.assertEquals(1,bucket.getDocCount());
+        }
+    }
 	@Test
 	public void orderByDescTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		ArrayList<Long> agesCount = new ArrayList<>();
