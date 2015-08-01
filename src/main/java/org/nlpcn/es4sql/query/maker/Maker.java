@@ -21,6 +21,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import org.durid.sql.ast.expr.SQLIdentifierExpr;
 import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.nlpcn.es4sql.spatial.BoundingBoxFilterParams;
+import org.nlpcn.es4sql.spatial.DistanceFilterParams;
 import org.nlpcn.es4sql.spatial.Point;
 
 public abstract class Maker {
@@ -222,11 +223,19 @@ public abstract class Maker {
             break;
         case GEO_BOUNDING_BOX:
             if(isQuery)
-                throw new SqlParseException("Bounding box is only a filter");
+                throw new SqlParseException("Bounding box is only for filter");
             BoundingBoxFilterParams boxFilterParams = (BoundingBoxFilterParams) cond.getValue();
             Point topLeft = boxFilterParams.getTopLeft();
             Point bottomRight = boxFilterParams.getBottomRight();
             x = FilterBuilders.geoBoundingBoxFilter(cond.getName()).topLeft(topLeft.getLat(),topLeft.getLon()).bottomRight(bottomRight.getLat(),bottomRight.getLon());
+            break;
+        case GEO_DISTANCE:
+            if(isQuery)
+                throw new SqlParseException("Distance is only for filter");
+            DistanceFilterParams distanceFilterParams = (DistanceFilterParams) cond.getValue();
+            Point fromPoint = distanceFilterParams.getFrom();
+            String distance = trimApostrophes(distanceFilterParams.getDistance());
+            x = FilterBuilders.geoDistanceFilter(cond.getName()).distance(distance).lon(fromPoint.getLon()).lat(fromPoint.getLat());
             break;
 		default:
 			throw new SqlParseException("not define type " + cond.getName());
@@ -249,12 +258,14 @@ public abstract class Maker {
     }
 
     private String getGeoJsonFromWkt(String wkt) {
-        //trims the '' from sql string rep
-        wkt = wkt.substring(1, wkt.length()-1);
+        wkt = trimApostrophes(wkt);
         //using esri to validate that it is parsable geometry and create geoJson from it
-
         com.esri.core.geometry.Geometry geometry = GeometryEngine.geometryFromWkt(wkt, WktImportFlags.wktImportDefaults, Geometry.Type.Unknown);
         return GeometryEngine.geometryToGeoJson(geometry);
+    }
+
+    private String trimApostrophes(String str) {
+        return str.substring(1, str.length()-1);
     }
 
     private ToXContent fixNot(Condition cond, ToXContent bqb) {

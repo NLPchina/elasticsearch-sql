@@ -465,6 +465,13 @@ public class QueryTest {
         SearchHit result = results.getAt(0);
         Assert.assertEquals("square",result.getSource().get("description"));
     }
+    @Test
+    public void geoDistance() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_DISTANCE(center,'1km',100.5,0.500001)", TEST_INDEX));
+        org.junit.Assert.assertEquals(1,results.getTotalHits());
+        SearchHit result = results.getAt(0);
+        Assert.assertEquals("square",result.getSource().get("description"));
+    }
 
 	private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();

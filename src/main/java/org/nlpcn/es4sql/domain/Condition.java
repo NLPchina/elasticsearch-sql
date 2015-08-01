@@ -12,7 +12,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class Condition extends Where {
 
 	public static enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE
 	};
 
 	private String name;
@@ -93,6 +93,9 @@ public class Condition extends Where {
             break;
         case "GEO_BOUNDING_BOX":
             this.opear = OPEAR.GEO_BOUNDING_BOX;
+            break;
+        case "GEO_DISTANCE":
+                this.opear = OPEAR.GEO_DISTANCE;
             break;
 		default:
 			throw new SqlParseException(oper + " is err!");

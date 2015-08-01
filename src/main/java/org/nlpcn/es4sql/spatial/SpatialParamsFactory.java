@@ -2,7 +2,6 @@ package org.nlpcn.es4sql.spatial;
 
 import org.durid.sql.ast.SQLExpr;
 import org.durid.sql.parser.SQLParseException;
-import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.util.List;
 
@@ -24,6 +23,13 @@ public class SpatialParamsFactory {
                 double bottomRightLon = Double.parseDouble(params.get(3).toString());
                 double bottomRightLat = Double.parseDouble(params.get(4).toString());
                 return new BoundingBoxFilterParams(new Point(topLeftLon,topLeftLat),new Point(bottomRightLon,bottomRightLat));
+            case "GEO_DISTANCE":
+                if(params.size()!=4)
+                    throw new SQLParseException("GEO_DISTANCE should have exactly 5 parameters : (fieldName,distance,fromLon,fromLat) ");
+                String distance = params.get(1).toString();
+                double lon = Double.parseDouble(params.get(2).toString());
+                double lat = Double.parseDouble(params.get(3).toString());
+                return new DistanceFilterParams(distance ,new Point(lon,lat));
             default:
                 throw new SQLParseException(String.format("Unknown method name: %s", methodName));
         }
