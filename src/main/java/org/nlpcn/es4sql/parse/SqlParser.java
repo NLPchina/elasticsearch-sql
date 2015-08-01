@@ -13,6 +13,7 @@ import org.durid.sql.ast.SQLOrderBy;
 import org.durid.sql.ast.SQLOrderingSpecification;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
+import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
 /**
  * es sql support
@@ -126,17 +127,15 @@ public class SqlParser {
             where.addWhere(condition);
         }
         else if (expr instanceof SQLMethodInvokeExpr) {
-        SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
-        List<SQLExpr> methodParameters = methodExpr.getParameters();
-        if (methodParameters.size() > 2) {
-           throw new SqlParseException("only support 2 parameters methods as conditions " + expr.getClass());
-        }
-        String firstVar = methodParameters.get(0).toString();
-        String secondVar = methodParameters.get(1).toString();
-        String methodName = methodExpr.getMethodName();
+            SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
+            List<SQLExpr> methodParameters = methodExpr.getParameters();
 
-        Condition condition = new Condition(CONN.valueOf(opear), firstVar, methodName, secondVar);
-        where.addWhere(condition);
+            String methodName = methodExpr.getMethodName();
+            String fieldName = methodParameters.get(0).toString();
+            Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
+
+            Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject);
+            where.addWhere(condition);
         }else {
 			throw new SqlParseException("err find condition " + expr.getClass());
 		}

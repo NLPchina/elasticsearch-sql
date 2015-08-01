@@ -20,6 +20,8 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 
 import org.durid.sql.ast.expr.SQLIdentifierExpr;
 import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
+import org.nlpcn.es4sql.spatial.BoundingBoxFilterParams;
+import org.nlpcn.es4sql.spatial.Point;
 
 public abstract class Maker {
 
@@ -217,7 +219,14 @@ public abstract class Maker {
                 e.printStackTrace();
                 throw new SqlParseException("couldn't create shapeBuilder from wkt: " + wkt);
             }
-
+            break;
+        case GEO_BOUNDING_BOX:
+            if(isQuery)
+                throw new SqlParseException("Bounding box is only a filter");
+            BoundingBoxFilterParams boxFilterParams = (BoundingBoxFilterParams) cond.getValue();
+            Point topLeft = boxFilterParams.getTopLeft();
+            Point bottomRight = boxFilterParams.getBottomRight();
+            x = FilterBuilders.geoBoundingBoxFilter(cond.getName()).topLeft(topLeft.getLat(),topLeft.getLon()).bottomRight(bottomRight.getLat(),bottomRight.getLon());
             break;
 		default:
 			throw new SqlParseException("not define type " + cond.getName());
