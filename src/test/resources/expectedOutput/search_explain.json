@@ -1,5 +1,6 @@
 {
-  "size" : 0,
+  "from" : 0,
+  "size" : 200,
   "query" : {
     "filtered" : {
       "filter" : {
