@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
@@ -72,38 +74,56 @@ public class AggregationQueryAction extends QueryAction {
 		Map<String, KVValue> groupMap = aggMaker.getGroupMap();
 		// add field
 		if (select.getFields().size() > 0) {
+			setFields(select.getFields());
 			explanFields(request, select.getFields(), lastAgg);
 		}
 
 		// add order
 		if (lastAgg != null && select.getOrderBys().size() > 0) {
-			KVValue temp = null;
-			TermsBuilder termsBuilder = null;
 			for (Order order : select.getOrderBys()) {
-				temp = groupMap.get(order.getName());
-				termsBuilder = (TermsBuilder) temp.value;
-				switch (temp.key) {
-				case "COUNT":
-					termsBuilder.order(Terms.Order.count(isASC(order)));
-					break;
-				case "KEY":
-					termsBuilder.order(Terms.Order.term(isASC(order)));
-					break;
-				case "FIELD":
-					termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
-					break;
-				default:
-					throw new SqlParseException(order.getName() + " can not to order");
+				KVValue temp = groupMap.get(order.getName());
+				if (temp != null) {
+					TermsBuilder termsBuilder = (TermsBuilder) temp.value;
+					switch (temp.key) {
+					case "COUNT":
+						termsBuilder.order(Terms.Order.count(isASC(order)));
+						break;
+					case "KEY":
+						termsBuilder.order(Terms.Order.term(isASC(order)));
+						break;
+					case "FIELD":
+						termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
+						break;
+					default:
+						throw new SqlParseException(order.getName() + " can not to order");
+					}
+				} else {
+					request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
 				}
 			}
 		}
-		request.setSize(0);
+		setLimit(select.getOffset(), select.getRowCount());
+
 		request.setSearchType(SearchType.DEFAULT);
 		return request;
 	}
 
 	private boolean isASC(Order order) {
 		return "ASC".equals(order.getType());
+	}
+
+	private void setFields(List<Field> fields) {
+		if (select.getFields().size() > 0) {
+			ArrayList<String> includeFields = new ArrayList<>();
+
+			for (Field field : fields) {
+				if (field != null) {
+					includeFields.add(field.getName());
+				}
+			}
+
+			request.setFetchSource(includeFields.toArray(new String[includeFields.size()]), null);
+		}
 	}
 
 	private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder<?> groupByAgg) throws SqlParseException {
@@ -147,6 +167,14 @@ public class AggregationQueryAction extends QueryAction {
 		String[] typeArr = query.getTypeArr();
 		if(typeArr != null) {
 			request.setTypes(typeArr);
+		}
+	}
+
+	private void setLimit(int from, int size) {
+		request.setFrom(from);
+
+		if (size > -1) {
+			request.setSize(size);
 		}
 	}
 }
