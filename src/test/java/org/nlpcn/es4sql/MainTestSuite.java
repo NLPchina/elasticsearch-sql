@@ -26,7 +26,8 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		AggregationTest.class,
 		BugTest.class,
 		DeleteTest.class,
-		ExplainTest.class
+		ExplainTest.class,
+        WktToGeoJsonConverterTests.class
 })
 public class MainTestSuite {
 

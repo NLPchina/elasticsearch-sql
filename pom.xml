@@ -58,11 +58,6 @@
 			<version>1.6.0</version>
 			<scope>provided</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.esri.geometry</groupId>
-            <artifactId>esri-geometry-api</artifactId>
-            <version>1.2</version>
-        </dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>

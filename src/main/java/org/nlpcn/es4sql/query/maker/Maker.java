@@ -3,9 +3,6 @@ package org.nlpcn.es4sql.query.maker;
 import java.io.IOException;
 import java.util.Set;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.WktImportFlags;
 import org.elasticsearch.common.collect.Sets;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
@@ -23,6 +20,7 @@ import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.nlpcn.es4sql.spatial.BoundingBoxFilterParams;
 import org.nlpcn.es4sql.spatial.DistanceFilterParams;
 import org.nlpcn.es4sql.spatial.Point;
+import org.nlpcn.es4sql.spatial.WktToGeoJsonConverter;
 
 public abstract class Maker {
 
@@ -246,7 +244,7 @@ public abstract class Maker {
 	}
 
     private ShapeBuilder getShapeBuilderFromWkt(String wkt) throws IOException {
-        String json = getGeoJsonFromWkt(wkt);
+        String json = WktToGeoJsonConverter.toGeoJson(trimApostrophes(wkt));
         return getShapeBuilderFromJson(json);
     }
 
@@ -255,13 +253,6 @@ public abstract class Maker {
         parser = JsonXContent.jsonXContent.createParser(json);
         parser.nextToken();
         return ShapeBuilder.parse(parser);
-    }
-
-    private String getGeoJsonFromWkt(String wkt) {
-        wkt = trimApostrophes(wkt);
-        //using esri to validate that it is parsable geometry and create geoJson from it
-        com.esri.core.geometry.Geometry geometry = GeometryEngine.geometryFromWkt(wkt, WktImportFlags.wktImportDefaults, Geometry.Type.Unknown);
-        return GeometryEngine.geometryToGeoJson(geometry);
     }
 
     private String trimApostrophes(String str) {
