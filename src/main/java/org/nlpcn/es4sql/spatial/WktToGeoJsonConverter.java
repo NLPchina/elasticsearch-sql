@@ -1,7 +1,4 @@
 package org.nlpcn.es4sql.spatial;
-
-import com.sun.javaws.exceptions.InvalidArgumentException;
-
 import java.util.ArrayList;
 import java.util.List;
 
