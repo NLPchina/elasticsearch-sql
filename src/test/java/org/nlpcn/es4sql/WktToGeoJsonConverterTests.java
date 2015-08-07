@@ -89,6 +89,7 @@ public class WktToGeoJsonConverterTests {
         String expectedGeoJson = "{\"type\":\"LineString\", \"coordinates\": [[30,10],[10,30],[40,40]]}";
         Assert.assertEquals(expectedGeoJson,geoJson);
     }
+
     @Test
     public void convertLineString_WithRedundantSpaces_ShouldConvert(){
         String wkt = "LINESTRING (     30  10, 10 30 , 40 40    )";
@@ -116,6 +117,37 @@ public class WktToGeoJsonConverterTests {
         String wkt = "MULTIPOLYGON (((30 20, 45 40, 10 40, 30 20),(20 30, 35 35, 30 20, 20 30)),((15 5, 40 10, 10 20, 5 10, 15 5)))";
         String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
         String expectedGeoJson = "{\"type\":\"MultiPolygon\", \"coordinates\": [[[[30,20],[45,40],[10,40],[30,20]],[[20,30],[35,35],[30,20],[20,30]]],[[[15,5],[40,10],[10,20],[5,10],[15,5]]]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
+    public void convertMultiPoint_V1_ShouldConvert(){
+        String wkt = "MULTIPOINT (10 40, 40 30, 20 20, 30 10)";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"MultiPoint\", \"coordinates\": [[10,40],[40,30],[20,20],[30,10]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
+    public void convertMultiPoint_V2_ShouldConvert(){
+        String wkt = "MULTIPOINT ((10 40), (40 30), (20 20), (30 10))";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"MultiPoint\", \"coordinates\": [[10,40],[40,30],[20,20],[30,10]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
+    public void convertMultiLineString_NoRedundantSpaces_ShouldConvert(){
+        String wkt = "MULTILINESTRING ((10 10, 20 20, 10 40),(40 40, 30 30, 40 20, 30 10))";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"MultiLineString\", \"coordinates\": [[[10,10],[20,20],[10,40]],[[40,40],[30,30],[40,20],[30,10]]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+    @Test
+    public void convertMultiLineString_WithRedundantSpaces_ShouldConvert(){
+        String wkt = "MULTILINESTRING ( (10 10, 20 20, 10   40 ) , (40 40, 30 30, 40 20, 30 10))";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"MultiLineString\", \"coordinates\": [[[10,10],[20,20],[10,40]],[[40,40],[30,30],[40,20],[30,10]]]}";
         Assert.assertEquals(expectedGeoJson,geoJson);
     }
 }

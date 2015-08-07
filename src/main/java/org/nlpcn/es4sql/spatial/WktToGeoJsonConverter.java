@@ -37,12 +37,47 @@ public class WktToGeoJsonConverter {
                 type = "MultiPolygon";
                 coordinates  = multiPolygonCoordinatesFromWkt(wkt);
                 break;
+            case("multipoint"):
+                type = "MultiPoint";
+                coordinates = multiPointCoordinatesFromWkt(wkt);
+                break;
+            case("multilinestring"):
+                type = "MultiLineString";
+                coordinates = multiLineStringCoordinatesFromWkt(wkt);
+                break;
             default:
                 throw new IllegalArgumentException("not supported wkt type");
 
         }
 
         return buildGeoJson(type,coordinates);
+    }
+    //input: ((10 10, 20 20, 10 40),(40 40, 30 30, 40 20, 30 10))
+    private static String multiLineStringCoordinatesFromWkt(String wkt) {
+        wkt = removeBrackets(wkt,1);
+        String lineStringsWithPipeSeparator = wkt.replaceAll("\\s*\\)\\s*,\\s*\\(",")|(");
+        String[] lineStrings = lineStringsWithPipeSeparator.split("\\|");
+        String[] coordinates = new String[lineStrings.length];
+        for (int i=0;i<lineStrings.length;i++){
+            coordinates[i] = lineStringCoordinatesFromWkt(lineStrings[i]);
+        }
+        String multiLineStringCoordinates = String.join(",", coordinates);
+        return String.format("[%s]", multiLineStringCoordinates);
+
+    }
+
+    //input v1:MULTIPOINT (10 40, 40 30, 20 20, 30 10)
+    //v2:MULTIPOINT ((10 40), (40 30), (20 20), (30 10))
+    private static String multiPointCoordinatesFromWkt(String wkt) {
+        wkt = removeBrackets(wkt,1);
+        boolean isSecondVersionMultiPoint = wkt.contains("(");
+        String coordinates = "";
+        if(isSecondVersionMultiPoint){
+            //(10 40), (40 30), (20 20)-> 10 40, 40 30, 20 20
+            wkt = wkt.replaceAll("\\(|\\)" ,"");
+        }
+        coordinates = getJsonArrayFromListOfPoints(wkt);
+        return coordinates;
     }
 
     //input (((30 20, 45 40, 10 40, 30 20)),((15 5, 40 10, 10 20, 5 10, 15 5)))
