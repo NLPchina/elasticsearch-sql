@@ -29,6 +29,14 @@ public class WktToGeoJsonConverter {
                 type = "Polygon";
                 coordinates = polygonCoordinatesFromWkt(wkt);
                 break;
+            case("linestring"):
+                type = "LineString";
+                coordinates = lineStringCoordinatesFromWkt(wkt);
+                break;
+            case("multipolygon"):
+                type = "MultiPolygon";
+                coordinates  = multiPolygonCoordinatesFromWkt(wkt);
+                break;
             default:
                 throw new IllegalArgumentException("not supported wkt type");
 
@@ -37,11 +45,30 @@ public class WktToGeoJsonConverter {
         return buildGeoJson(type,coordinates);
     }
 
+    //input (((30 20, 45 40, 10 40, 30 20)),((15 5, 40 10, 10 20, 5 10, 15 5)))
+    private static String multiPolygonCoordinatesFromWkt(String wkt) {
+        wkt = removeBrackets(wkt,1);
+        String polygonsWithPipeSeparator = wkt.replaceAll("\\s*\\)\\s*\\)\\s*,\\s*\\(\\s*\\(\\s*","))|((");
+        String[] polygons = polygonsWithPipeSeparator.split("\\|");
+        String[] polygonsCoordinates = new String[polygons.length];
+        for (int i=0;i<polygons.length;i++){
+            polygonsCoordinates[i] = polygonCoordinatesFromWkt(polygons[i]);
+        }
+        String coordinates = String.join(",", polygonsCoordinates);
+        return String.format("[%s]", coordinates);
+    }
 
+    //input : (30 10, 10 30, 40 40)
+    private static String lineStringCoordinatesFromWkt(String wkt) {
+        wkt = removeBrackets(wkt,1);
+        return getJsonArrayFromListOfPoints(wkt);
+    }
+
+    //input: v1:((35 10, 45 45, 15 40, 10 20, 35 10))
+    //v2:((35 10, 45 45, 15 40, 10 20, 35 10),(20 30, 35 35, 30 20, 20 30))
     private static String polygonCoordinatesFromWkt(String wkt) {
         wkt = removeBrackets(wkt,2);
         String coordinates;
-        //if polygon contains inner hole
         boolean polygonContainsInnerHoles = wkt.contains("(");
         if(polygonContainsInnerHoles) {
             String[] polygons = wkt.split("\\s*\\)\\s*,\\s*\\(\\s*");
@@ -71,7 +98,7 @@ public class WktToGeoJsonConverter {
     private static String buildGeoJson(String type, String coordinates) {
         return String.format("{\"type\":\"%s\", \"coordinates\": %s}", type, coordinates);
     }
-
+    //input : (30 10)
     public static String pointCoordinatesFromWkt(String wkt) {
         wkt = removeBrackets(wkt,1);
         return extractCoordinateFromPoint(wkt);
