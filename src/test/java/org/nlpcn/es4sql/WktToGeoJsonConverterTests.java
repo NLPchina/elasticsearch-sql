@@ -66,5 +66,21 @@ public class WktToGeoJsonConverterTests {
         Assert.assertEquals(expectedGeoJson,geoJson);
     }
 
+    @Test
+    public void convertPolygonWithHole_NoRedundantSpaces_ShouldConvert(){
+        String wkt = "POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10),(20 30, 35 35, 30 20, 20 30))";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"Polygon\", \"coordinates\": [[[35,10],[45,45],[15,40],[10,20],[35,10]],[[20,30],[35,35],[30,20],[20,30]]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
+    public void convertPolygonWithHole_WithRedundantSpaces_ShouldConvert(){
+        String wkt = "POLYGON ( (35 10, 45 45, 15 40, 10 20, 35 10 ), (20 30 , 35 35, 30 20,   20 30 ) ) ";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"Polygon\", \"coordinates\": [[[35,10],[45,45],[15,40],[10,20],[35,10]],[[20,30],[35,35],[30,20],[20,30]]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
 
 }
