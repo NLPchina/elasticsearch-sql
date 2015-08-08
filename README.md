@@ -18,7 +18,7 @@ Install as plugin:
 ###Elasticsearch 1.6.X
 ````
 
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.4/elasticsearch-sql-1.3.4.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.5/elasticsearch-sql-1.3.5.zip --install sql
 
 ````
 ## Basic Usage
@@ -64,7 +64,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
         SELECT address FROM bank WHERE address = matchQuery('880 Holmes Lane') ORDER BY _score DESC LIMIT 3
         
 
-* Group by aggregation
+* Aggregations
 
 	+ range age group 20-25,25-30,30-35,35-40
 
@@ -78,23 +78,25 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 
 			SELECT online FROM online GROUP BY date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now')
 
+* ES Geographic
+		
+		SELECT * FROM locations WHERE GEO_BOUNDING_BOX(fieldname,100.0,1.0,101,0.0)
+
 * Select type
 
         SELECT * FROM indexName/type
 
 
-## Features
+## SQL Features
 
 *  SQL Select
 *  SQL Delete
-*  ES TopHits
-*  ES MISSING
-*  ES STATS
-*  SQL COUNT distinct
-*  SQL where
-*  SQL AND & OR
+*  SQL Where
 *  SQL Order By
+*  SQL Group By
+*  SQL AND & OR
 *  SQL Like
+*  SQL COUNT distinct
 *  SQL In
 *  SQL Between
 *  SQL Aliases
@@ -108,9 +110,17 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 *  SQL sum()
 *  SQL Nulls
 *  SQL isnull()
-*  SQL Group By
 *  SQL now()
 
+## Beyond sql features
+
+*  ES TopHits
+*  ES MISSING
+*  ES STATS
+*  ES GEO_INTERSECTS
+*  ES GEO_BOUNDING_BOX
+*  ES GEO_DISTANCE
+*  ES GEOHASH_GRID aggregation
 
 
 
