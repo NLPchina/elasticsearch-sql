@@ -5,10 +5,8 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
-import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -139,16 +137,7 @@ public class AggregationTest {
 		Assert.assertTrue("The list is not ordered ascending", agesCount.equals(agesCount));
 	}
 
-    @Test
-    public void geoHashGrid() throws SQLFeatureNotSupportedException, SqlParseException {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/location GROUP BY geohash_grid(field='center',precision=5) ", TEST_INDEX));
-        InternalGeoHashGrid grid = result.get("geohash_grid(field=center,precision=5)");
-        Collection<GeoHashGrid.Bucket> buckets = grid.getBuckets();
-        for (GeoHashGrid.Bucket bucket : buckets) {
-            Assert.assertTrue(bucket.getKey().equals("w2fsm") || bucket.getKey().equals("w0p6y") );
-            Assert.assertEquals(1,bucket.getDocCount());
-        }
-    }
+
 	@Test
 	public void orderByDescTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		ArrayList<Long> agesCount = new ArrayList<>();
@@ -238,11 +227,16 @@ public class AggregationTest {
 
 	@Test
 	public void testSubAggregations() throws  Exception {
-		Set expectedAges = new HashSet<Integer>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
+		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
+		final String query = String.format("SELECT * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY (gender, age), (state)", TEST_INDEX));
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		SearchRequestBuilder select = (SearchRequestBuilder) searchDao.explain(query);
+		SearchResponse response = select.get();
+		Aggregations result = response.getAggregations();
+
 		Terms gender = result.get("gender");
 		for(Terms.Bucket genderBucket : gender.getBuckets()) {
 			String genderKey = genderBucket.getKey();
@@ -262,8 +256,10 @@ public class AggregationTest {
 			if(stateBucket.getKey().equalsIgnoreCase("ak")) {
 				Assert.assertTrue("There are 22 entries for state ak", stateBucket.getDocCount() == 22);
 			}
-
 		}
+
+		Assert.assertEquals(response.getHits().totalHits(), 1000);
+		Assert.assertEquals(response.getHits().hits().length, 10);
 	}
 
 }
