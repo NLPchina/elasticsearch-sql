@@ -450,6 +450,29 @@ public class QueryTest {
         Assert.assertEquals(7, response.getTotalHits());
     }
 
+    @Test
+    public void filterPolygonTest() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_INTERSECTS(place,'POLYGON ((102 2, 103 2, 103 3, 102 3, 102 2))')", TEST_INDEX));
+        org.junit.Assert.assertEquals(1,results.getTotalHits());
+        SearchHit result = results.getAt(0);
+        Assert.assertEquals("bigSquare",result.getSource().get("description"));
+    }
+
+    @Test
+    public void boundingBox() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_BOUNDING_BOX(center,100.0,1.0,101,0.0)", TEST_INDEX));
+        org.junit.Assert.assertEquals(1,results.getTotalHits());
+        SearchHit result = results.getAt(0);
+        Assert.assertEquals("square",result.getSource().get("description"));
+    }
+    @Test
+    public void geoDistance() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_DISTANCE(center,'1km',100.5,0.500001)", TEST_INDEX));
+        org.junit.Assert.assertEquals(1,results.getTotalHits());
+        SearchHit result = results.getAt(0);
+        Assert.assertEquals("square",result.getSource().get("description"));
+    }
+
 	private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
 		SearchRequestBuilder select = (SearchRequestBuilder)searchDao.explain(query);

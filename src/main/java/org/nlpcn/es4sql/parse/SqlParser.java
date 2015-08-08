@@ -13,6 +13,7 @@ import org.durid.sql.ast.SQLOrderBy;
 import org.durid.sql.ast.SQLOrderingSpecification;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
+import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
 /**
  * es sql support
@@ -124,7 +125,18 @@ public class SqlParser {
             SQLExpr right = ((SQLBinaryOpExpr) ((SQLNotExpr) expr).getExpr()).getRight();
             Condition condition = new Condition(CONN.valueOf(opear),left, Condition.OPEAR.N, parseValue(right));
             where.addWhere(condition);
-        } else {
+        }
+        else if (expr instanceof SQLMethodInvokeExpr) {
+            SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
+            List<SQLExpr> methodParameters = methodExpr.getParameters();
+
+            String methodName = methodExpr.getMethodName();
+            String fieldName = methodParameters.get(0).toString();
+            Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
+
+            Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject);
+            where.addWhere(condition);
+        }else {
 			throw new SqlParseException("err find condition " + expr.getClass());
 		}
 	}
