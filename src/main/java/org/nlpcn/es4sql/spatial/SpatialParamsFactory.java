@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.spatial;
 import org.durid.sql.ast.SQLExpr;
 import org.durid.sql.parser.SQLParseException;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,11 +26,42 @@ public class SpatialParamsFactory {
                 return new BoundingBoxFilterParams(new Point(topLeftLon,topLeftLat),new Point(bottomRightLon,bottomRightLat));
             case "GEO_DISTANCE":
                 if(params.size()!=4)
-                    throw new SQLParseException("GEO_DISTANCE should have exactly 5 parameters : (fieldName,distance,fromLon,fromLat) ");
+                    throw new SQLParseException("GEO_DISTANCE should have exactly 4 parameters : (fieldName,distance,fromLon,fromLat) ");
                 String distance = params.get(1).toString();
                 double lon = Double.parseDouble(params.get(2).toString());
                 double lat = Double.parseDouble(params.get(3).toString());
                 return new DistanceFilterParams(distance ,new Point(lon,lat));
+            case "GEO_DISTANCE_RANGE":
+                if(params.size()!=5)
+                    throw new SQLParseException("GEO_DISTANCE should have exactly 5 parameters : (fieldName,distanceFrom,distanceTo,fromLon,fromLat) ");
+                String distanceFrom = params.get(1).toString();
+                String distanceTo = params.get(2).toString();
+                lon = Double.parseDouble(params.get(3).toString());
+                lat = Double.parseDouble(params.get(4).toString());
+                return new RangeDistanceFilterParams(distanceFrom,distanceTo ,new Point(lon,lat));
+            case "GEO_POLYGON":
+                if(params.size()%2 == 0 || params.size() <= 5)
+                    throw new SQLParseException("GEO_POLYGON should have odd num of parameters and > 5 : (fieldName,lon1,lat1,lon2,lat2,lon3,lat3,...) ");
+                int numberOfPoints = (params.size()-1)/2;
+                List<Point> points = new LinkedList<>();
+                for(int i =0 ;i< numberOfPoints ;i ++){
+                    int currentPointLocation = 1 + i * 2;
+                    lon = Double.parseDouble(params.get(currentPointLocation).toString());
+                    lat = Double.parseDouble(params.get(currentPointLocation + 1).toString());
+                    points.add(new Point(lon,lat));
+                }
+                return new PolygonFilterParams(points);
+            case "GEO_CELL":
+                if(params.size()< 4 || params.size() > 5)
+                    throw new SQLParseException("GEO_CELL should have 4 or 5 params (fieldName,lon,lat,precision,neighbors(optional)) ");
+                lon = Double.parseDouble(params.get(1).toString());
+                lat = Double.parseDouble(params.get(2).toString());
+                Point geoHashPoint = new Point(lon,lat);
+                int precision = Integer.parseInt(params.get(3).toString());
+                if(params.size()==4)
+                    return new CellFilterParams(geoHashPoint,precision);
+                boolean neighbors = Boolean.parseBoolean(params.get(4).toString());
+                return new CellFilterParams(geoHashPoint,precision,neighbors);
             default:
                 throw new SQLParseException(String.format("Unknown method name: %s", methodName));
         }

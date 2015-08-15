@@ -17,10 +17,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 
 import org.durid.sql.ast.expr.SQLIdentifierExpr;
 import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.nlpcn.es4sql.spatial.BoundingBoxFilterParams;
-import org.nlpcn.es4sql.spatial.DistanceFilterParams;
-import org.nlpcn.es4sql.spatial.Point;
-import org.nlpcn.es4sql.spatial.WktToGeoJsonConverter;
+import org.nlpcn.es4sql.spatial.*;
 
 public abstract class Maker {
 
@@ -235,7 +232,32 @@ public abstract class Maker {
             String distance = trimApostrophes(distanceFilterParams.getDistance());
             x = FilterBuilders.geoDistanceFilter(cond.getName()).distance(distance).lon(fromPoint.getLon()).lat(fromPoint.getLat());
             break;
-		default:
+        case GEO_DISTANCE_RANGE:
+            if(isQuery)
+                throw new SqlParseException("RangeDistance is only for filter");
+            RangeDistanceFilterParams rangeDistanceFilterParams = (RangeDistanceFilterParams) cond.getValue();
+            fromPoint = rangeDistanceFilterParams.getFrom();
+            String distanceFrom = trimApostrophes(rangeDistanceFilterParams.getDistanceFrom());
+            String distanceTo = trimApostrophes(rangeDistanceFilterParams.getDistanceTo());
+            x = FilterBuilders.geoDistanceRangeFilter(cond.getName()).from(distanceFrom).to(distanceTo).lon(fromPoint.getLon()).lat(fromPoint.getLat());
+            break;
+        case GEO_POLYGON:
+            if(isQuery)
+                throw new SqlParseException("Polygon is only for filter");
+            PolygonFilterParams polygonFilterParams = (PolygonFilterParams) cond.getValue();
+            GeoPolygonFilterBuilder polygonFilterBuilder = FilterBuilders.geoPolygonFilter(cond.getName());
+            for(Point p : polygonFilterParams.getPolygon())
+                polygonFilterBuilder.addPoint(p.getLat(),p.getLon());
+            x = polygonFilterBuilder;
+            break;
+        case GEO_CELL:
+            if(isQuery)
+                throw new SqlParseException("geocell is only for filter");
+            CellFilterParams cellFilterParams = (CellFilterParams) cond.getValue();
+            Point geoHashPoint = cellFilterParams.getGeohashPoint();
+            x = FilterBuilders.geoHashCellFilter(cond.getName()).point(geoHashPoint.getLat(),geoHashPoint.getLon()).precision(cellFilterParams.getPrecision()).neighbors(cellFilterParams.isNeighbors());
+            break;
+        default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}
 
