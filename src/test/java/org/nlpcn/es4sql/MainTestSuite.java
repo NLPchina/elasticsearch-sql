@@ -129,7 +129,10 @@ public class MainTestSuite {
                 "\t\t\t\t\"precision\": \"10km\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"center\":{\n" +
-                "\t\t\t\t\"type\":\"geo_point\"\n" +
+                "\t\t\t\t\"type\":\"geo_point\",\n" +
+                "\t\t\t\t\"geohash\":true,\n" +
+                "\t\t\t\t\"geohash_prefix\":true,\n" +
+                "\t\t\t\t\"geohash_precision\":17\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"description\":{\n" +
                 "\t\t\t\t\"type\":\"string\"\n" +
