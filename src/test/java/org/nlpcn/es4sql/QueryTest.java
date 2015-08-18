@@ -303,24 +303,24 @@ public class QueryTest {
 		}
 	}
 
-    @Test
-    public void dateSearchBraces() throws IOException, SqlParseException, SQLFeatureNotSupportedException, ParseException {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(TS_DATE_FORMAT);
-        DateTime dateToCompare = new DateTime(2015, 3, 15, 0, 0, 0);
-
-        SearchHits response = query(String.format("SELECT insert_time FROM %s/odbc WHERE insert_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX));
-        SearchHit[] hits = response.getHits();
-        for(SearchHit hit : hits) {
-            Map<String, Object> source = hit.getSource();
-			String insertTimeStr = (String) source.get("insert_time");
-			insertTimeStr = insertTimeStr.replace("{ts '", "").replace("'}", "");
-
-            DateTime insertTime = formatter.parseDateTime(insertTimeStr);
-
-            String errorMessage = String.format("insert_time must be smaller then 2015-03-15. found: %s", insertTime);
-            Assert.assertTrue(errorMessage, insertTime.isBefore(dateToCompare));
-        }
-    }
+//    @Test
+//    public void dateSearchBraces() throws IOException, SqlParseException, SQLFeatureNotSupportedException, ParseException {
+//        DateTimeFormatter formatter = DateTimeFormat.forPattern(TS_DATE_FORMAT);
+//        DateTime dateToCompare = new DateTime(2015, 3, 15, 0, 0, 0);
+//
+//        SearchHits response = query(String.format("SELECT insert_time FROM %s/odbc WHERE insert_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX));
+//        SearchHit[] hits = response.getHits();
+//        for(SearchHit hit : hits) {
+//            Map<String, Object> source = hit.getSource();
+//			String insertTimeStr = (String) source.get("insert_time");
+//			insertTimeStr = insertTimeStr.replace("{ts '", "").replace("'}", "");
+//
+//            DateTime insertTime = formatter.parseDateTime(insertTimeStr);
+//
+//            String errorMessage = String.format("insert_time must be smaller then 2015-03-15. found: %s", insertTime);
+//            Assert.assertTrue(errorMessage, insertTime.isBefore(dateToCompare));
+//        }
+//    }
 
 
 	@Test
