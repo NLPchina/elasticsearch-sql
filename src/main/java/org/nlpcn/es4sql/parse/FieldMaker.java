@@ -3,21 +3,14 @@ package org.nlpcn.es4sql.parse;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.dialect.mysql.ast.MysqlForeignKey;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.durid.sql.ast.SQLExpr;
-import org.durid.sql.ast.expr.SQLAggregateExpr;
-import org.durid.sql.ast.expr.SQLAggregateExpr.Option;
-import org.durid.sql.ast.expr.SQLAllColumnExpr;
-import org.durid.sql.ast.expr.SQLBinaryOpExpr;
-import org.durid.sql.ast.expr.SQLIdentifierExpr;
-import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.durid.sql.ast.expr.SQLPropertyExpr;
-import org.durid.sql.ast.expr.SQLQueryExpr;
-
+import com.alibaba.druid.sql.ast.*;
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
  * 
@@ -44,7 +37,7 @@ public class FieldMaker {
 		return null;
 	}
 
-	private static MethodField makeMethodField(String name, List<SQLExpr> arguments, Option option, String alias) throws SqlParseException {
+	private static MethodField makeMethodField(String name, List<SQLExpr> arguments, SQLAggregateOption option, String alias) throws SqlParseException {
 		List<KVValue> paramers = new LinkedList<>();
 		for (SQLExpr object : arguments) {
 			if (object instanceof SQLBinaryOpExpr) {

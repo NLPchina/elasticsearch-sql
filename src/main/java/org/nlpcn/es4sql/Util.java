@@ -3,15 +3,12 @@ package org.nlpcn.es4sql;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.druid.sql.ast.expr.*;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import org.durid.sql.ast.SQLExpr;
-import org.durid.sql.ast.expr.SQLAllColumnExpr;
-import org.durid.sql.ast.expr.SQLCharExpr;
-import org.durid.sql.ast.expr.SQLIdentifierExpr;
-import org.durid.sql.ast.expr.SQLNumericLiteralExpr;
-import org.durid.sql.ast.expr.SQLPropertyExpr;
+import com.alibaba.druid.sql.ast.*;
+
 
 public class Util {
 	public static String joiner(List<KVValue> lists, String oper) {

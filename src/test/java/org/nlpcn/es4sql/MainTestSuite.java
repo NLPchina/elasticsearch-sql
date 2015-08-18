@@ -48,6 +48,7 @@ public class MainTestSuite {
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
         loadBulk("src/test/resources/phrases.json");
+        loadBulk("src/test/resources/dogs.json");
 
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");

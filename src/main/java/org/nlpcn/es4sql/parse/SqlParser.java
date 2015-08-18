@@ -1,18 +1,20 @@
 package org.nlpcn.es4sql.parse;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.durid.sql.ast.expr.*;
-import org.durid.sql.ast.statement.*;
+import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.ast.statement.*;
+import com.alibaba.druid.sql.ast.*;
+import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
+
+
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.durid.sql.ast.SQLExpr;
-import org.durid.sql.ast.SQLOrderBy;
-import org.durid.sql.ast.SQLOrderingSpecification;
-import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import org.durid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
 import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
 /**
@@ -76,8 +78,8 @@ public class SqlParser {
 	private void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
 		if (expr instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) expr)) {
 			SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
-			routeCond(bExpr, bExpr.left, where);
-			routeCond(bExpr, bExpr.right, where);
+			routeCond(bExpr, bExpr.getLeft(), where);
+			routeCond(bExpr, bExpr.getRight(), where);
 		} else {
 			explanCond("AND", expr, where);
 		}
@@ -87,15 +89,15 @@ public class SqlParser {
 		if (sub instanceof SQLBinaryOpExpr) {
 			parseWhere(bExpr, (SQLBinaryOpExpr) sub, where);
 		} else {
-			explanCond(bExpr.operator.name, sub, where);
+			explanCond(bExpr.getOperator().name, sub, where);
 		}
 	}
 
 	private void parseWhere(SQLBinaryOpExpr expr, SQLBinaryOpExpr sub, Where where) throws SqlParseException {
 		if (isCond(sub)) {
-			explanCond(expr.operator.name, sub, where);
+			explanCond(expr.getOperator().name, sub, where);
 		} else {
-			if (sub.operator.priority != expr.operator.priority) {
+			if (sub.getOperator().priority != expr.getOperator().priority) {
 				Where subWhere = new Where(expr.getOperator().name);
 				where.addWhere(subWhere);
 				parseWhere(sub, subWhere);
@@ -186,7 +188,13 @@ public class SqlParser {
 
 		List<SQLExpr> standardGroupBys = new ArrayList<>();
 		for (SQLExpr sqlExpr : items) {
-			if ((!(sqlExpr instanceof SQLIdentifierExpr) || ((SQLIdentifierExpr) sqlExpr).isWrappedInParens()) && !standardGroupBys.isEmpty()) {
+            //todo: mysql expr patch
+            if (sqlExpr instanceof MySqlSelectGroupByExpr) {
+                MySqlSelectGroupByExpr sqlSelectGroupByExpr = (MySqlSelectGroupByExpr) sqlExpr;
+                sqlExpr = sqlSelectGroupByExpr.getExpr();
+            }
+
+             if (!(sqlExpr instanceof SQLIdentifierExpr) &&  !standardGroupBys.isEmpty()) {
 				// flush the standard group bys
 				select.addGroupBy(convertExprsToFields(standardGroupBys));
 				standardGroupBys = new ArrayList<>();
@@ -194,14 +202,10 @@ public class SqlParser {
 
 			if (sqlExpr instanceof SQLIdentifierExpr) {
 				SQLIdentifierExpr identifierExpr = (SQLIdentifierExpr) sqlExpr;
-				if (identifierExpr.isWrappedInParens()) {
-					// single item with parens (should be its own agg)
-					select.addGroupBy(FieldMaker.makeField(identifierExpr, null));
-				} else {
 					// single item without parens (should latch to before or after list)
 					standardGroupBys.add(identifierExpr);
-				}
-			} else if (sqlExpr instanceof SQLListExpr) {
+
+            } else if (sqlExpr instanceof SQLListExpr) {
 				// multiple items in their own list
 				SQLListExpr listExpr = (SQLListExpr) sqlExpr;
 				select.addGroupBy(convertExprsToFields(listExpr.getItems()));
@@ -250,7 +254,7 @@ public class SqlParser {
 	}
 
 	private void findLimit(MySqlSelectQueryBlock query, Select select) {
-		Limit limit = query.getLimit();
+		MySqlSelectQueryBlock.Limit limit = query.getLimit();
 
 		if (limit == null) {
 			return;
@@ -268,14 +272,22 @@ public class SqlParser {
 	 * @return list of From objects represents all the sources.
 	 */
 	private List<From> findFrom(SQLTableSource from) {
-		String[] split = from.getTablename().toString().split(",");
+        boolean isSqlExprTable = from.getClass().isAssignableFrom(SQLExprTableSource.class);
 
-		ArrayList<From> fromList = new ArrayList<>();
-		for (String source : split) {
-			fromList.add(new From(source.trim()));
-		}
+        if(isSqlExprTable){
+            String[] split = ((SQLExprTableSource) from).getExpr().toString().replaceAll(" ","").split(",");
+            ArrayList<From> fromList = new ArrayList<>();
+            for (String source : split) {
+                fromList.add(new From(source.trim()));
+            }
+            return fromList;
+        }
 
-		return fromList;
-	}
+        SQLJoinTableSource joinTableSource = ((SQLJoinTableSource) from);
+        List<From> fromList = new ArrayList<>();
+        fromList.addAll(findFrom(joinTableSource.getLeft()));
+        fromList.addAll(findFrom(joinTableSource.getRight()));
+        return fromList;
+    }
 
 }
