@@ -39,7 +39,7 @@ public class AggregationQueryAction extends QueryAction {
 	}
 
 	@Override
-	public SearchRequestBuilder explain() throws SqlParseException {
+	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 		this.request = client.prepareSearch();
 		request.setListenerThreaded(false);
 		setIndicesAndTypes();
@@ -105,7 +105,8 @@ public class AggregationQueryAction extends QueryAction {
 		setLimit(select.getOffset(), select.getRowCount());
 
 		request.setSearchType(SearchType.DEFAULT);
-		return request;
+        SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
+        return sqlElasticRequestBuilder;
 	}
 
 	private boolean isASC(Order order) {

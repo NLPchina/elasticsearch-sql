@@ -9,6 +9,7 @@ import org.elasticsearch.client.Client;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.ESActionFactory;
 import org.nlpcn.es4sql.query.QueryAction;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 
 public class SearchDao {
@@ -38,7 +39,7 @@ public class SearchDao {
 	 * @return ES request
 	 * @throws SqlParseException
 	 */
-	public ActionRequestBuilder explain(String sql) throws SqlParseException, SQLFeatureNotSupportedException {
+	public SqlElasticRequestBuilder explain(String sql) throws SqlParseException, SQLFeatureNotSupportedException {
 
 		QueryAction query = ESActionFactory.create(client, sql);
 		return query.explain();

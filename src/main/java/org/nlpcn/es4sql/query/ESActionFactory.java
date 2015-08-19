@@ -5,6 +5,10 @@ import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
+import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQuery;
+import com.alibaba.druid.sql.ast.statement.SQLTableSource;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlExprParser;
 import com.alibaba.druid.sql.parser.*;
 import com.alibaba.druid.util.JdbcUtils;
@@ -28,17 +32,31 @@ public class ESActionFactory {
 	 */
 	public static QueryAction create(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
 		String firstWord = sql.substring(0, sql.indexOf(' '));
-		switch (firstWord.toUpperCase()) {
+		//Join
+        //NestedLoops ?
+        // contains:
+        // s1 = select from SqlParser for one of them (need to take only first table wheres)
+        // c = conditions for crossed -> each condition is field = s2Field , value = s1Field
+        // s2 = select from SqlParser for the 2nd (need to take only 2nd table wheres)
+        // res1 = DefaultQueryAction(client, s1);
+        // for each res1 item => s2.conditions = union(s2.conditions,c(replace value to res1 value))
+
+        switch (firstWord.toUpperCase()) {
 			case "SELECT":
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
+                if(isJoin(sqlExpr,sql)){
+                    //NestedLoopQueryAction(client)
+                    return null;
+                }
+                else {
+                    Select select = new SqlParser().parseSelect(sqlExpr);
 
-				Select select = new SqlParser().parseSelect(sqlExpr);
-
-				if (select.isAgg) {
-					return new AggregationQueryAction(client, select);
-				} else {
-					return new DefaultQueryAction(client, select);
-				}
+                    if (select.isAgg) {
+                        return new AggregationQueryAction(client, select);
+                    } else {
+                        return new DefaultQueryAction(client, select);
+                    }
+                }
 			case "DELETE":
 				SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql, JdbcUtils.MYSQL);
 				SQLDeleteStatement deleteStatement = parser.parseDeleteStatement();
@@ -49,6 +67,11 @@ public class ESActionFactory {
 				throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
 		}
 	}
+
+    private static boolean isJoin(SQLQueryExpr sqlExpr,String sql) {
+        MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
+        return query.getFrom() instanceof  SQLJoinTableSource && sql.toLowerCase().contains("join");
+    }
 
     private static SQLExpr toSqlExpr(String sql) {
         SQLExprParser parser = new ElasticSqlExprParser(sql);

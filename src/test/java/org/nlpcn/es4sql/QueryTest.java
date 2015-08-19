@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormat;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
@@ -9,6 +10,7 @@ import org.elasticsearch.search.SearchHits;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -503,8 +505,8 @@ public class QueryTest {
 
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SearchRequestBuilder select = (SearchRequestBuilder)searchDao.explain(query);
-		return select.get().getHits();
-	}
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        return ((SearchResponse)select.get()).getHits();
+    }
 }

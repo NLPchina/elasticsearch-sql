@@ -29,6 +29,6 @@ public abstract class QueryAction {
 	 * @return ActionRequestBuilder (ES request)
 	 * @throws SqlParseException
 	 */
-	public abstract ActionRequestBuilder explain() throws SqlParseException;
+	public abstract SqlElasticRequestBuilder explain() throws SqlParseException;
 
 }

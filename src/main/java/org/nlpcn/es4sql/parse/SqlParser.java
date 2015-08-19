@@ -33,9 +33,9 @@ public class SqlParser {
 		MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) mySqlExpr.getSubQuery().getQuery();
 
 		Select select = new Select();
-
+        //TODO: JOIN: maby other select parse? we need to know which field to get from which index
 		findSelect(query, select);
-
+        //TODO: here we will know if this is join.
 		select.getFrom().addAll(findFrom(query.getFrom()));
 
 		select.setWhere(findWhere(query.getWhere()));

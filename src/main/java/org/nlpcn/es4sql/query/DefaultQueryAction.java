@@ -31,7 +31,7 @@ public class DefaultQueryAction extends QueryAction {
 	}
 
 	@Override
-	public SearchRequestBuilder explain() throws SqlParseException {
+	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 		this.request = client.prepareSearch();
 		request.setListenerThreaded(false);
 		setIndicesAndTypes();
@@ -43,8 +43,8 @@ public class DefaultQueryAction extends QueryAction {
 
 		// set SearchType.
 		request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-
-		return request;
+        SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
+		return sqlElasticRequestBuilder;
 	}
 
 	/**

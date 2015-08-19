@@ -6,6 +6,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
 /**
  * some bad case 
@@ -18,7 +19,7 @@ public class BugTest {
 	@Test
 	public void bug1() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 
-		SearchRequestBuilder select = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select count(*),sum(age) from bank");
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select count(*),sum(age) from bank");
 		System.out.println(select);
 	}
 }
