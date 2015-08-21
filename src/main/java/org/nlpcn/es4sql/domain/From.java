@@ -9,20 +9,24 @@ package org.nlpcn.es4sql.domain;
 public class From {
 	private String index;
 	private String type;
-
+    private String alias;
 
 	/**
  	 * Extract index and type from the 'from' string
 	 * @param from The part after the FROM keyword.
 	 */
 	public From(String from) {
-        from.replaceAll("#","*");
 		String[] parts = from.split("/");
 		this.index = parts[0].trim();
 		if (parts.length == 2) {
 			this.type = parts[1].trim();
 		}
 	}
+
+    public From(String from,String alias){
+        this(from);
+        this.alias = alias;
+    }
 
 	public String getIndex() {
 		return index ;
@@ -39,4 +43,12 @@ public class From {
 	public void setType(String type) {
 		this.type = type;
 	}
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 }

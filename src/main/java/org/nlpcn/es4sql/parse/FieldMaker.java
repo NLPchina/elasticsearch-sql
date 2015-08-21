@@ -18,10 +18,19 @@ import com.alibaba.druid.sql.ast.*;
  *
  */
 public class FieldMaker {
-	public static Field makeField(SQLExpr expr, String alias) throws SqlParseException {
+	public static Field makeField(SQLExpr expr, String alias,String tableAlias) throws SqlParseException {
 		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr) {
 			String name = expr.toString().replace("`", "");
-			return new Field(name, alias);
+            if(tableAlias==null) return new Field(name, alias);
+            else if(tableAlias!=null){
+                String aliasPrefix = tableAlias + ".";
+                if(name.startsWith(aliasPrefix))
+                {
+                    name = name.replaceFirst(aliasPrefix,"");
+                    return new Field(name, alias);
+                }
+            }
+            return null;
 		} else if (expr instanceof SQLQueryExpr) {
 			throw new SqlParseException("unknow field name : " + expr);
 		} else if (expr instanceof SQLAllColumnExpr) {

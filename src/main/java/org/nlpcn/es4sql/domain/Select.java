@@ -75,7 +75,7 @@ public class Select extends Query {
 
 
 	public void addField(Field field) {
-		if (field == null) {
+		if (field == null || field.getName() == "*") {
 			return;
 		}
 

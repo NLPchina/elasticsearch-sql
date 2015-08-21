@@ -1,15 +1,12 @@
 package org.nlpcn.es4sql.parse;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import com.alibaba.druid.sql.parser.SQLStatementParser;
 
 
 import org.nlpcn.es4sql.domain.*;
@@ -33,14 +30,14 @@ public class SqlParser {
 		MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) mySqlExpr.getSubQuery().getQuery();
 
 		Select select = new Select();
-        //TODO: JOIN: maby other select parse? we need to know which field to get from which index
-		findSelect(query, select);
-        //TODO: here we will know if this is join.
+
+		findSelect(query, select,null);
+
 		select.getFrom().addAll(findFrom(query.getFrom()));
 
 		select.setWhere(findWhere(query.getWhere()));
 
-		findLimit(query, select);
+		findLimit(query.getLimit(), select);
 
 		findOrderBy(query, select);
 
@@ -164,7 +161,9 @@ public class SqlParser {
 		} else if (expr instanceof SQLNullExpr) {
 			return null;
 		} else if (expr instanceof SQLIdentifierExpr) {
-			return expr;
+            return expr;
+        } else if (expr instanceof SQLPropertyExpr){
+            return expr;
 		} else {
 			throw new SqlParseException(
 					String.format("Failed to parse SqlExpression of type %s. expression value: %s", expr.getClass(), expr)
@@ -172,12 +171,14 @@ public class SqlParser {
 		}
 	}
 
-	private void findSelect(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
-		List<SQLSelectItem> selectList = query.getSelectList();
-		for (SQLSelectItem sqlSelectItem : selectList) {
-			select.addField(FieldMaker.makeField(sqlSelectItem.getExpr(), sqlSelectItem.getAlias()));
-		}
-	}
+
+    private void findSelect(MySqlSelectQueryBlock query, Select select,String tableAlias) throws SqlParseException {
+        List<SQLSelectItem> selectList = query.getSelectList();
+        for (SQLSelectItem sqlSelectItem : selectList) {
+            Field field = FieldMaker.makeField(sqlSelectItem.getExpr(), sqlSelectItem.getAlias(),tableAlias);
+            select.addField(field);
+        }
+    }
 
 	private void findGroupBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
 		SQLSelectGroupByClause groupBy = query.getGroupBy();
@@ -222,12 +223,33 @@ public class SqlParser {
 	private List<Field> convertExprsToFields(List<? extends SQLExpr> exprs) throws SqlParseException {
 		List<Field> fields = new ArrayList<>(exprs.size());
 		for (SQLExpr expr : exprs) {
-			fields.add(FieldMaker.makeField(expr, null));
+			fields.add(FieldMaker.makeField(expr, null,null));
 		}
 		return fields;
 	}
 
+    private String sameAliasWhere(Where where, String... aliases) throws SqlParseException {
+        if(where instanceof Condition)
+        {
+            Condition condition = (Condition) where;
+            String fieldName = condition.getName();
+            for (String alias : aliases){
+                String prefix = alias + ".";
+                if(fieldName.startsWith(prefix)){
+                    return alias;
+                }
+            }
+            throw new SqlParseException(String.format("fieldName : %s on codition:%s does not contain alias", fieldName, condition.toString()));
+        }
+        List<String> sameAliases = new ArrayList<>();
 
+        for ( Where innerWhere : where.getWheres())
+            sameAliases.add(sameAliasWhere(innerWhere, aliases));
+
+        if ( sameAliases.contains(null) ) return null;
+        if ( sameAliases.stream().distinct().count() != 1 ) return null;
+        return sameAliases.get(0);
+    }
 
 	private void findOrderBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
 		SQLOrderBy orderBy = query.getOrderBy();
@@ -239,7 +261,7 @@ public class SqlParser {
 		List<String> lists = new ArrayList<>();
 		for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
 			SQLExpr expr = sqlSelectOrderByItem.getExpr();
-			lists.add(FieldMaker.makeField(expr, null).toString());
+			lists.add(FieldMaker.makeField(expr, null,null).toString());
 			if (sqlSelectOrderByItem.getType() == null) {
 				sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
 			}
@@ -253,8 +275,7 @@ public class SqlParser {
 
 	}
 
-	private void findLimit(MySqlSelectQueryBlock query, Select select) {
-		MySqlSelectQueryBlock.Limit limit = query.getLimit();
+	private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {
 
 		if (limit == null) {
 			return;
@@ -275,14 +296,158 @@ public class SqlParser {
         boolean isSqlExprTable = from.getClass().isAssignableFrom(SQLExprTableSource.class);
 
         if(isSqlExprTable){
-            String[] split = ((SQLExprTableSource) from).getExpr().toString().replaceAll(" ","").split(",");
+            SQLExprTableSource fromExpr = (SQLExprTableSource) from;
+            String[] split = fromExpr.getExpr().toString().replaceAll(" ","").split(",");
+
             ArrayList<From> fromList = new ArrayList<>();
             for (String source : split) {
-                fromList.add(new From(source.trim()));
+                fromList.add(new From(source.trim(),fromExpr.getAlias()));
             }
             return fromList;
         }
 
+        SQLJoinTableSource joinTableSource = ((SQLJoinTableSource) from);
+        List<From> fromList = new ArrayList<>();
+        fromList.addAll(findFrom(joinTableSource.getLeft()));
+        fromList.addAll(findFrom(joinTableSource.getRight()));
+        return fromList;
+    }
+
+    public JoinSelect parseJoinSelect(SQLQueryExpr sqlExpr) throws SqlParseException {
+        MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
+
+        List<From> joinedFrom = findJoinedFrom(query.getFrom());
+        if(joinedFrom.size() != 2)
+            throw new RuntimeException("currently supports only 2 tables join");
+
+        Where where = findWhere(query.getWhere());
+        String firstTableAlias = joinedFrom.get(0).getAlias();
+        String secondTableAlias = joinedFrom.get(1).getAlias();
+
+        Map<String,Where> aliasToWhere =  splitWheres(where, firstTableAlias, secondTableAlias);
+
+
+        JoinSelect joinSelect = new JoinSelect();
+
+        joinSelect.setT1Select(fillSelect(joinedFrom.get(0), aliasToWhere, query));
+        joinSelect.setT2Select(fillSelect(joinedFrom.get(1), aliasToWhere, query));
+
+        List<Condition> conditions = getJoinConditionsFlatten((SQLJoinTableSource) query.getFrom());
+        joinSelect.setConnectedConditions(conditions);
+
+        joinSelect.setT1ConnectedFields(getConnectedFields(conditions,firstTableAlias));
+        joinSelect.setT2ConnectedFields(getConnectedFields(conditions, secondTableAlias));
+        //todo: throw error feature not supported:  no group bys on joins ?
+
+        SQLJoinTableSource.JoinType joinType = ((SQLJoinTableSource) query.getFrom()).getJoinType();
+        joinSelect.setJoinType(joinType);
+
+        joinSelect.setT1OnlyFields(joinSelect.getT1Select().getFields());
+        joinSelect.setT2OnlyFields(joinSelect.getT2Select().getFields());
+
+        return joinSelect;
+    }
+
+    private List<Field> getConnectedFields(List<Condition> conditions, String alias) throws SqlParseException {
+        List<Field> fields = new ArrayList<>();
+        String prefix = alias + ".";
+        for(Condition condition : conditions) {
+            if(condition.getName().startsWith(prefix)){
+                fields.add(new Field(condition.getName().replaceFirst(prefix,""),null));
+            }
+            else {
+                if(! (condition.getValue() instanceof SQLPropertyExpr)){
+                    throw new SqlParseException("conditions on join should be one side is firstTable second Other , condition was:" + condition.toString());
+                }
+                SQLPropertyExpr conditionValue = (SQLPropertyExpr) condition.getValue();
+                SQLIdentifierExpr owner = (SQLIdentifierExpr) conditionValue.getOwner();
+                if(owner.getName().equals(alias))
+                    fields.add(new Field(conditionValue.getName(),null));
+            }
+        }
+        return fields;
+    }
+
+    private Select fillSelect(From from, Map<String, Where> aliasToWhere, MySqlSelectQueryBlock query) throws SqlParseException {
+        Select select = new Select();
+        select.getFrom().add(from);
+        findSelect(query, select,from.getAlias());
+        findLimit(query.getLimit(),select);
+        select.setWhere(aliasToWhere.get(from.getAlias()));
+        return select;
+    }
+
+    private List<Condition> getJoinConditionsFlatten(SQLJoinTableSource from) throws SqlParseException {
+        List<Condition> conditions = new ArrayList<>();
+        Where where = Where.newInstance();
+        parseWhere(from.getCondition(), where);
+        addIfConditionRecursive(where, conditions);
+        return conditions;
+    }
+
+
+    private Map<String,Where> splitWheres(Where where, String... aliases) throws SqlParseException {
+        Map<String,Where> aliasToWhere = new HashMap<>();
+        for(String alias : aliases){
+            aliasToWhere.put(alias,null);
+        }
+
+        String allWhereFromSameAlias = sameAliasWhere(where, aliases);
+        if( allWhereFromSameAlias != null ) {
+            removeAliasPrefix(where,allWhereFromSameAlias);
+            aliasToWhere.put(allWhereFromSameAlias,where);
+            return aliasToWhere;
+        }
+        for(Where innerWhere : where.getWheres()){
+            String sameAlias =  sameAliasWhere(innerWhere, aliases);
+            if(sameAlias == null )
+                throw new SqlParseException("Currently support only one hierarchy on different tables where");
+            removeAliasPrefix(innerWhere,sameAlias);
+            Where aliasCurrentWhere = aliasToWhere.get(sameAlias);
+            if(aliasCurrentWhere == null) {
+                aliasToWhere.put(sameAlias, innerWhere);
+            }
+            else {
+                Where andWhereContainer = Where.newInstance();
+                andWhereContainer.addWhere(aliasCurrentWhere);
+                andWhereContainer.addWhere(innerWhere);
+                aliasToWhere.put(sameAlias,andWhereContainer);
+            }
+        }
+
+        return  aliasToWhere;
+    }
+
+    private void removeAliasPrefix(Where where, String alias) {
+
+        if(where instanceof Condition) {
+            Condition cond = (Condition) where;
+            String fieldName = cond.getName();
+            String aliasPrefix = alias + ".";
+            cond.setName(cond.getName().replaceFirst(aliasPrefix, ""));
+            return;
+        }
+        for(Where innerWhere : where.getWheres())
+        {
+            removeAliasPrefix(innerWhere, alias);
+        }
+    }
+
+    private void addIfConditionRecursive(Where where, List<Condition> conditions) throws SqlParseException {
+        if(where instanceof Condition){
+            Condition cond = (Condition) where;
+            if( ! (cond.getValue() instanceof  SQLPropertyExpr)){
+                throw new SqlParseException("conditions on join should be one side is firstTable second Other , condition was:" + cond.toString());
+            }
+            conditions.add(cond);
+        }
+        for(Where innerWhere : where.getWheres())
+        {
+            addIfConditionRecursive(innerWhere,conditions);
+        }
+    }
+
+    private List<From> findJoinedFrom(SQLTableSource from) {
         SQLJoinTableSource joinTableSource = ((SQLJoinTableSource) from);
         List<From> fromList = new ArrayList<>();
         fromList.addAll(findFrom(joinTableSource.getLeft()));
