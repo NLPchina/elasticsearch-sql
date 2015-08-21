@@ -8,7 +8,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.*;
 import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
-import org.nlpcn.es4sql.query.explain.ExplainManager;
+
 
 public class RestSqlAction extends BaseRestHandler {
 

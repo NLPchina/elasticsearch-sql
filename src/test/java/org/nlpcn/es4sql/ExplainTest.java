@@ -6,7 +6,7 @@ import org.elasticsearch.action.ActionRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
-import org.nlpcn.es4sql.query.explain.ExplainManager;
+
 
 import java.io.File;
 import java.io.IOException;

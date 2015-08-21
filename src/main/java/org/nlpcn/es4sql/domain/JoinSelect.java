@@ -13,24 +13,24 @@ public class JoinSelect {
     //todo: make it an object
     private Select t1Select;
     private List<Field> t1ConnectedFields;
-    private List<Field> t1OnlyFields;
+    private List<Field> t1SelectedFields;
 
     private Select t2Select;
     private List<Field> t2ConnectedFields;
-    private List<Field> t2OnlyFields;
+    private List<Field> t2SelectedFields;
     private SQLJoinTableSource.JoinType joinType;
 
     public JoinSelect() {
     }
 
-    public JoinSelect(List<Condition> connectedConditions, Select t1Select, List<Field> t1ConnectedFields, List<Field> t1OnlyFields, Select t2Select, List<Field> t2ConnectedFields, List<Field> t2OnlyFields,SQLJoinTableSource.JoinType joinType) {
+    public JoinSelect(List<Condition> connectedConditions, Select t1Select, List<Field> t1ConnectedFields, List<Field> t1SelectedFields, Select t2Select, List<Field> t2ConnectedFields, List<Field> t2SelectedFields,SQLJoinTableSource.JoinType joinType) {
         this.connectedConditions = connectedConditions;
         this.t1Select = t1Select;
         this.t1ConnectedFields = t1ConnectedFields;
-        this.t1OnlyFields = t1OnlyFields;
+        this.t1SelectedFields = t1SelectedFields;
         this.t2Select = t2Select;
         this.t2ConnectedFields = t2ConnectedFields;
-        this.t2OnlyFields = t2OnlyFields;
+        this.t2SelectedFields = t2SelectedFields;
         this.joinType = joinType;
     }
 
@@ -58,12 +58,12 @@ public class JoinSelect {
         this.t1ConnectedFields = t1ConnectedFields;
     }
 
-    public List<Field> getT1OnlyFields() {
-        return t1OnlyFields;
+    public List<Field> getT1SelectedFields() {
+        return t1SelectedFields;
     }
 
-    public void setT1OnlyFields(List<Field> t1OnlyFields) {
-        this.t1OnlyFields = t1OnlyFields;
+    public void setT1SelectedFields(List<Field> t1SelectedFields) {
+        this.t1SelectedFields = t1SelectedFields;
     }
 
     public Select getT2Select() {
@@ -82,12 +82,12 @@ public class JoinSelect {
         this.t2ConnectedFields = t2ConnectedFields;
     }
 
-    public List<Field> getT2OnlyFields() {
-        return t2OnlyFields;
+    public List<Field> getT2SelectedFields() {
+        return t2SelectedFields;
     }
 
-    public void setT2OnlyFields(List<Field> t2OnlyFields) {
-        this.t2OnlyFields = t2OnlyFields;
+    public void setT2SelectedFields(List<Field> t2SelectedFields) {
+        this.t2SelectedFields = t2SelectedFields;
     }
 
     public SQLJoinTableSource.JoinType getJoinType() {
