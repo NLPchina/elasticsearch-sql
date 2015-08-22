@@ -342,8 +342,11 @@ public class SqlParser {
         SQLJoinTableSource.JoinType joinType = ((SQLJoinTableSource) query.getFrom()).getJoinType();
         joinSelect.setJoinType(joinType);
 
-        joinSelect.setT1SelectedFields(joinSelect.getT1Select().getFields());
-        joinSelect.setT2SelectedFields(joinSelect.getT2Select().getFields());
+        joinSelect.setT1SelectedFields(new ArrayList<Field>(joinSelect.getT1Select().getFields()));
+        joinSelect.setT2SelectedFields(new ArrayList<Field>(joinSelect.getT2Select().getFields()));
+
+        joinSelect.setT1Alias(firstTableAlias);
+        joinSelect.setT2Alias(secondTableAlias);
 
         return joinSelect;
     }

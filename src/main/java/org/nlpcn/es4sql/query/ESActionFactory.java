@@ -34,6 +34,7 @@ public class ESActionFactory {
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
                 if(isJoin(sqlExpr,sql)){
                     JoinSelect joinSelect = new SqlParser().parseJoinSelect(sqlExpr);
+                    return new ESHashJoinQueryAction(client,joinSelect);
                     //NestedLoopQueryAction(client)
                     //Join  between two tables : s1 and s2
                     // Query contains:
@@ -82,7 +83,6 @@ public class ESActionFactory {
                     // if map.contains(str2)
                     // results_set += union(r2.only_return_fields , r1.only_return_fields)
 
-                    return null;
                 }
                 else {
                     Select select = new SqlParser().parseSelect(sqlExpr);

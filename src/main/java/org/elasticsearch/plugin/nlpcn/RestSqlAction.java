@@ -39,7 +39,7 @@ public class RestSqlAction extends BaseRestHandler {
 			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, jsonExplanation);
 			channel.sendResponse(bytesRestResponse);
 		} else {
-			new ActionRequestExecuter(actionRequest, channel, client).execute();
+			new ActionRequestExecuter(actionRequestBuilder, channel, client).execute();
 		}
 	}
 }

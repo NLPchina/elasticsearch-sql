@@ -124,5 +124,7 @@ public class DefaultQueryAction extends QueryAction {
 		}
 	}
 
-
+    public SearchRequestBuilder getRequestBuilder() {
+        return request;
+    }
 }

@@ -14,21 +14,25 @@ public class JoinSelect {
     private Select t1Select;
     private List<Field> t1ConnectedFields;
     private List<Field> t1SelectedFields;
+    private String t1Alias;
 
     private Select t2Select;
     private List<Field> t2ConnectedFields;
     private List<Field> t2SelectedFields;
     private SQLJoinTableSource.JoinType joinType;
+    private String t2Alias;
 
     public JoinSelect() {
     }
 
-    public JoinSelect(List<Condition> connectedConditions, Select t1Select, List<Field> t1ConnectedFields, List<Field> t1SelectedFields, Select t2Select, List<Field> t2ConnectedFields, List<Field> t2SelectedFields,SQLJoinTableSource.JoinType joinType) {
+    public JoinSelect(List<Condition> connectedConditions, Select t1Select,String t1Alias, List<Field> t1ConnectedFields, List<Field> t1SelectedFields, Select t2Select, String t2Alias, List<Field> t2ConnectedFields, List<Field> t2SelectedFields,SQLJoinTableSource.JoinType joinType) {
         this.connectedConditions = connectedConditions;
         this.t1Select = t1Select;
+        this.t1Alias = t1Alias;
         this.t1ConnectedFields = t1ConnectedFields;
         this.t1SelectedFields = t1SelectedFields;
         this.t2Select = t2Select;
+        this.t2Alias = t2Alias;
         this.t2ConnectedFields = t2ConnectedFields;
         this.t2SelectedFields = t2SelectedFields;
         this.joinType = joinType;
@@ -96,5 +100,21 @@ public class JoinSelect {
 
     public void setJoinType(SQLJoinTableSource.JoinType joinType) {
         this.joinType = joinType;
+    }
+
+    public String getT1Alias() {
+        return t1Alias;
+    }
+
+    public void setT1Alias(String t1Alias) {
+        this.t1Alias = t1Alias;
+    }
+
+    public String getT2Alias() {
+        return t2Alias;
+    }
+
+    public void setT2Alias(String t2Alias) {
+        this.t2Alias = t2Alias;
     }
 }
