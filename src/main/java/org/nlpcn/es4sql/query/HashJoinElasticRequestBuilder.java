@@ -35,7 +35,6 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
 
     @Override
     public ActionRequest request() {
-        //todo: it should recieve client
         if(multi == null)
             buildMulti();
         return multi;

@@ -174,7 +174,7 @@ public class QueryTest {
 
 	@Test
 	public void orTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		SearchHits response = query(String.format("SELECT * FROM %s WHERE gender='F' OR gender='M' LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT * FROM %s/account WHERE gender='F' OR gender='M' LIMIT 1000", TEST_INDEX));
 		// Assert all documents from accounts.json is returned.
 		Assert.assertEquals(1000, response.getTotalHits());
 	}

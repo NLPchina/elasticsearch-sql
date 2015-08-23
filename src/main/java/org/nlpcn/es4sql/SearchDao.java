@@ -31,8 +31,11 @@ public class SearchDao {
 		this.client = client;
 	}
 
+    public Client getClient() {
+        return client;
+    }
 
-	/**
+    /**
 	 * Prepare action And transform sql
 	 * into ES ActionRequest
 	 * @param sql SQL query to execute.

@@ -9,6 +9,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.query.ESHashJoinQueryAction;
+import org.nlpcn.es4sql.query.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 
@@ -31,15 +32,20 @@ public class ActionRequestExecuter {
         ActionRequest request = requestBuilder.request();
         request.listenerThreaded(false);
 
-		if (request instanceof SearchRequest) {
+        //todo: maby change to instanceof multi?
+        if(requestBuilder instanceof HashJoinElasticRequestBuilder){
+            HashJoinElasticRequestBuilder hashJoin = (HashJoinElasticRequestBuilder) requestBuilder;
+            HashJoinElasticExecutor executor = new HashJoinElasticExecutor(client,hashJoin);
+            executor.run();
+            executor.sendResponse(channel);
+        }
+		else if (request instanceof SearchRequest) {
 			client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
 		} else if (request instanceof DeleteByQueryRequest) {
 			client.deleteByQuery((DeleteByQueryRequest) request, new DeleteByQueryRestListener(channel));
 		}
-        //todo: join
-        /*else if (request instanceof ){
 
-        }*/
+
 		else {
 			throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
 		}
