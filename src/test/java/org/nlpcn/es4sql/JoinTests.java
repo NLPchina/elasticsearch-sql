@@ -37,15 +37,15 @@ public class JoinTests {
         SearchHit[] hits = executor.getHits().getHits();
         Assert.assertEquals(2,hits.length);
         Map<String,Object> oneMatch = new HashMap<>();
-        oneMatch.put("firstname","Daenerys");
-        oneMatch.put("lastname","Targaryen");
-        oneMatch.put("gender","M");
-        oneMatch.put("name", "rex");
+        oneMatch.put("a.firstname","Daenerys");
+        oneMatch.put("a.lastname","Targaryen");
+        oneMatch.put("a.gender","M");
+        oneMatch.put("d.name", "rex");
         Map<String,Object> secondMatch = new HashMap<>();
-        secondMatch.put("firstname","Hattie");
-        secondMatch.put("lastname","Bond");
-        secondMatch.put("gender","M");
-        secondMatch.put("name","snoopy");
+        secondMatch.put("a.firstname","Hattie");
+        secondMatch.put("a.lastname","Bond");
+        secondMatch.put("a.gender","M");
+        secondMatch.put("d.name","snoopy");
 
         Assert.assertTrue(hitsContains(hits, oneMatch));
         Assert.assertTrue(hitsContains(hits,secondMatch));
@@ -53,14 +53,20 @@ public class JoinTests {
     }
 
     private boolean hitsContains(SearchHit[] hits, Map<String, Object> matchMap) {
-
         for(SearchHit hit : hits){
             Map<String, Object> hitMap = hit.sourceAsMap();
+            boolean matchedHit = true;
             for(Map.Entry<String,Object> entry: hitMap.entrySet()){
-                if(!matchMap.containsKey(entry.getKey())) continue;;
-                if(!matchMap.get(entry.getKey()).equals(entry.getValue())) continue;
+                if(!matchMap.containsKey(entry.getKey())) {
+                    matchedHit = false;
+                    break;
+                }
+                if(!matchMap.get(entry.getKey()).equals(entry.getValue())){
+                    matchedHit = false;
+                    break;
+                }
             }
-            return true;
+            if(matchedHit) return true;
         }
         return false;
     }

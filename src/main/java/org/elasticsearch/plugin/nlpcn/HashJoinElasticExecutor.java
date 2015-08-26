@@ -25,10 +25,7 @@ import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.query.HashJoinElasticRequestBuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Eliran on 22/8/2015.
@@ -48,9 +45,7 @@ public class HashJoinElasticExecutor {
     }
     public void sendResponse(RestChannel channel){
         try {
-            XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            results.toXContent(builder, ToXContent.EMPTY_PARAMS);
-            String json = builder.string();
+            String json = resultAsString();
             BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
@@ -58,6 +53,31 @@ public class HashJoinElasticExecutor {
         }
 
     }
+
+    //use our deserializer instead of results toXcontent because the source field is differnet from sourceAsMap.
+    private String resultAsString() throws IOException {
+        Object[] searchHits;
+        searchHits = new Object[(int) this.results.totalHits()];
+        int i = 0;
+        for(SearchHit hit : this.results) {
+            HashMap<String,Object> value = new HashMap<>();
+            value.put("_id",hit.getId());
+            value.put("_type", hit.getType());
+            value.put("_score", hit.score());
+            value.put("_source", hit.sourceAsMap());
+            searchHits[i] = value;
+            i++;
+        }
+        XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
+
+        builder.startObject("hits");
+            builder.field("total").value(this.results.totalHits());
+            builder.field("max_score").value(this.results.maxScore());
+            builder.array("hits",searchHits);
+        builder.endObject();
+        return builder.string();
+    }
+
     public void run() throws IOException {
         SearchHits firstTableHits = requestBuilder.getFirstTableRequest().get().getHits();
         Map<String,List<InternalSearchHit>> comparisonKeyToSearchHits = new HashMap<>();
@@ -117,7 +137,7 @@ public class HashJoinElasticExecutor {
                     //todo: decide which id to put or type. or maby its ok this way. just need to doc.
                     InternalSearchHit searchHit = new InternalSearchHit(ids, matchingHit.id() + "|" + secondTableHit.getId(), new StringText(matchingHit.getType() + "|" + secondTableHit.getType()), matchingHit.getFields());
                     searchHit.sourceRef(matchingHit.getSourceRef());
-                    searchHit.getSource().putAll(secondTableHit.getSource());
+                    mergeSourceAndAddAliases(secondTableHit, searchHit);
 
 
                     finalResult.add(searchHit);
@@ -129,6 +149,22 @@ public class HashJoinElasticExecutor {
         InternalSearchHit[] hits = finalResult.toArray(new InternalSearchHit[ids]);
         this.results = new InternalSearchHits(hits,ids,1.0f);
 
+    }
+
+    private void mergeSourceAndAddAliases(SearchHit secondTableHit, InternalSearchHit searchHit) {
+        //todo: aliases place
+        addAlias(searchHit.getSource(), requestBuilder.getFirstTableAlias());
+        addAlias(secondTableHit.getSource(),requestBuilder.getSecondTableAlias());
+        searchHit.getSource().putAll(secondTableHit.getSource());
+    }
+
+    private void addAlias(Map<String, Object> source, String alias) {
+        Map<String,Object> mapWithAliases = new HashMap<>();
+        for(Map.Entry<String,Object> fieldNameToValue : source.entrySet()) {
+            mapWithAliases.put(alias + "." + fieldNameToValue.getKey(), fieldNameToValue.getValue());
+        }
+        source.clear();
+        source.putAll(mapWithAliases);
     }
 
     private void  onlyReturnedFields(Map<String, Object> fieldsMap, List<Field> required) {
