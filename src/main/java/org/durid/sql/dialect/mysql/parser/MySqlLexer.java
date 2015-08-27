@@ -264,9 +264,11 @@ public class MySqlLexer extends Lexer {
                     token = LITERAL_CHARS;
                     break;
                 } else {
-                    initBuff(bufPos);
-                    arraycopy(mark + 1, buf, 0, bufPos);
-                    hasSpecial = true;
+                    if (!hasSpecial) {
+                        initBuff(bufPos);
+                        arraycopy(mark + 1, buf, 0, bufPos);
+                        hasSpecial = true;
+                    }
                     putChar('\'');
                     continue;
                 }
