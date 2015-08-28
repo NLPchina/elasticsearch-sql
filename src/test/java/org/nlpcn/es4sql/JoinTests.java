@@ -87,12 +87,13 @@ public class JoinTests {
                 "h.words","fireAndBlood");
         Assert.assertTrue(hitsContains(hits, someMatch));
     }
+
     @Test
     public void joinNoConditionButWithWhere() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
 
-        String query = String.format("select c.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+        String query = String.format("select c.gender , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h " +
-                "where c.firstname='Daenerys'",TEST_INDEX,TEST_INDEX);
+                "where c.name.firstname='Daenerys'",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = hashJoinGetHits(query);
         Assert.assertEquals(3,hits.length);
 
@@ -101,11 +102,39 @@ public class JoinTests {
     @Test
     public void joinNoConditionAndNoWhere() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
 
-        String query = String.format("select c.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+        String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = hashJoinGetHits(query);
         Assert.assertEquals(12,hits.length);
 
+    }
+
+    @Test
+    public void joinWithNestedFieldsOnReturn() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on c.house = h.name " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(1,hits.length);
+        //use flatten?
+        Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
+                "h.words","fireAndBlood");
+        Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+    @Test
+    public void joinWithNestedFieldsOnComparisonAndOnReturn() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on c.name.lastname = h.name " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(1,hits.length);
+        //use flatten?
+        Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
+                "h.words","fireAndBlood");
+        Assert.assertTrue(hitsContains(hits, someMatch));
     }
 
 

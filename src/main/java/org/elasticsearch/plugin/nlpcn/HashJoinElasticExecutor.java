@@ -75,16 +75,7 @@ public class HashJoinElasticExecutor {
         List<Map.Entry<Field, Field>> t1ToT2FieldsComparison = requestBuilder.getT1ToT2FieldsComparison();
         int ids = 1;
         for(SearchHit hit : firstTableHits){
-            String key = "";
-            Map<String, Object> sourceAsMap = hit.sourceAsMap();
-            for(Map.Entry<Field,Field> t1ToT2 : t1ToT2FieldsComparison){
-                //todo: change to our function find if key contains '.'
-                String data = sourceAsMap.get(t1ToT2.getKey().getName()).toString();
-                if(data == null)
-                    key+="|null|";
-                else
-                    key+="|"+data+"|";
-            }
+            String key = getComparisonKey(t1ToT2FieldsComparison, hit,true);
             List<InternalSearchHit> currentSearchHits = comparisonKeyToSearchHits.get(key);
             if(currentSearchHits == null) {
                 currentSearchHits = new ArrayList<>();
@@ -105,16 +96,7 @@ public class HashJoinElasticExecutor {
         SearchHits secondTableHits = requestBuilder.getSecondTableRequest().get().getHits();
         for(SearchHit secondTableHit : secondTableHits){
 
-            String key = "";
-            Map<String, Object> sourceAsMap = secondTableHit.sourceAsMap();
-            for(Map.Entry<Field,Field> t1ToT2 : t1ToT2FieldsComparison){
-                //todo: change to our function find if key contains '.'
-                String data = sourceAsMap.get(t1ToT2.getValue().getName()).toString();
-                if(data == null)
-                    key+="|null|";
-                else
-                    key+="|"+data+"|";
-            }
+            String key = getComparisonKey(t1ToT2FieldsComparison,secondTableHit,false);
 
             List<InternalSearchHit> searchHits = comparisonKeyToSearchHits.get(key);
             //TODO decide what to do according to left join. now assume regular join.
@@ -140,6 +122,24 @@ public class HashJoinElasticExecutor {
 
     }
 
+    private String getComparisonKey(List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, SearchHit hit, boolean firstTable) {
+        String key = "";
+        Map<String, Object> sourceAsMap = hit.sourceAsMap();
+        for(Map.Entry<Field,Field> t1ToT2 : t1ToT2FieldsComparison){
+            //todo: change to our function find if key contains '.'
+            String name;
+            if(firstTable) name = t1ToT2.getKey().getName();
+            else name = t1ToT2.getValue().getName();
+
+            Object data = deepSearchInMap(sourceAsMap,name);
+            if(data == null)
+                key+="|null|";
+            else
+                key+="|"+data.toString()+"|";
+        }
+        return key;
+    }
+
     private void mergeSourceAndAddAliases(SearchHit secondTableHit, InternalSearchHit searchHit) {
         Map<String,Object> results = mapWithAliases(searchHit.getSource(), requestBuilder.getFirstTableAlias());
         results.putAll(mapWithAliases(secondTableHit.getSource(), requestBuilder.getSecondTableAlias()));
@@ -156,15 +156,30 @@ public class HashJoinElasticExecutor {
     }
 
     private void  onlyReturnedFields(Map<String, Object> fieldsMap, List<Field> required) {
-        List<String> keysToRemove = new ArrayList<>();
-        for (String key : fieldsMap.keySet()) {
-            //todo: alias? recursiveFind ? give map instead to better performance?
-            if (!required.contains(new Field(key, null))) {
-                keysToRemove.add(key);
-            }
-        }
-        for (String key : keysToRemove)
-            fieldsMap.remove(key);
+        HashMap<String,Object> filteredMap = new HashMap<>();
 
+        for(Field field: required){
+            String name = field.getName();
+            filteredMap.put(name, deepSearchInMap(fieldsMap, name));
+        }
+        fieldsMap.clear();
+        fieldsMap.putAll(filteredMap);
+
+    }
+
+    private Object deepSearchInMap(Map<String, Object> fieldsMap, String name) {
+        if(name.contains(".")){
+            String[] path = name.split("\\.");
+            Map<String,Object> currentObject = fieldsMap;
+            for(int i=0;i<path.length-1 ;i++){
+                Object valueFromCurrentMap = currentObject.get(path[i]);
+                if(valueFromCurrentMap == null) return null;
+                if(!Map.class.isAssignableFrom(valueFromCurrentMap.getClass())) return null;
+                currentObject = (Map<String, Object>) valueFromCurrentMap;
+            }
+            return currentObject.get(path[path.length-1]);
+        }
+
+        return fieldsMap.get(name);
     }
 }
