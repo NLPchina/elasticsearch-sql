@@ -37,11 +37,8 @@ public class JoinTests {
 
         Map<String,Object> oneMatch = ImmutableMap.of("a.firstname", (Object)"Daenerys", "a.lastname","Targaryen",
                                                         "a.gender","M","d.name", "rex");
-        Map<String,Object> secondMatch = new HashMap<>();
-        secondMatch.put("a.firstname","Hattie");
-        secondMatch.put("a.lastname","Bond");
-        secondMatch.put("a.gender","M");
-        secondMatch.put("d.name","snoopy");
+        Map<String,Object> secondMatch = ImmutableMap.of("a.firstname", (Object)"Hattie", "a.lastname","Bond",
+                "a.gender","M","d.name", "snoopy");
 
         Assert.assertTrue(hitsContains(hits, oneMatch));
         Assert.assertTrue(hitsContains(hits,secondMatch));
@@ -131,7 +128,6 @@ public class JoinTests {
                 "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = hashJoinGetHits(query);
         Assert.assertEquals(1,hits.length);
-        //use flatten?
         Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
                 "h.words","fireAndBlood");
         Assert.assertTrue(hitsContains(hits, someMatch));

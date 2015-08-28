@@ -39,13 +39,13 @@ public class SqlParserTests {
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
 
-        List<Field> t1Fields = joinSelect.getT1SelectedFields();
+        List<Field> t1Fields = joinSelect.getFirstTable().getSelectedFields();
         Assert.assertEquals(t1Fields.size(),3);
         Assert.assertTrue(fieldExist(t1Fields, "firstname"));
         Assert.assertTrue(fieldExist(t1Fields, "lastname"));
         Assert.assertTrue(fieldExist(t1Fields, "gender"));
 
-        List<Field> t2Fields = joinSelect.getT2SelectedFields();
+        List<Field> t2Fields = joinSelect.getSecondTable().getSelectedFields();
         Assert.assertEquals(t2Fields.size(),2);
         Assert.assertTrue(fieldExist(t2Fields,"holdersName"));
         Assert.assertTrue(fieldExist(t2Fields,"name"));
@@ -62,12 +62,12 @@ public class SqlParserTests {
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
 
-        List<Field> t1Fields = joinSelect.getT1ConnectedFields();
+        List<Field> t1Fields = joinSelect.getFirstTable().getConnectedFields();
         Assert.assertEquals(t1Fields.size(),2);
         Assert.assertTrue(fieldExist(t1Fields, "firstname"));
         Assert.assertTrue(fieldExist(t1Fields, "age"));
 
-        List<Field> t2Fields = joinSelect.getT2ConnectedFields();
+        List<Field> t2Fields = joinSelect.getSecondTable().getConnectedFields();
         Assert.assertEquals(t2Fields.size(),2);
         Assert.assertTrue(fieldExist(t2Fields,"holdersName"));
         Assert.assertTrue(fieldExist(t2Fields,"age"));
@@ -90,13 +90,13 @@ public class SqlParserTests {
                 " AND d.age > 1";
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
-        List<From> t1From = joinSelect.getT1Select().getFrom();
+        List<From> t1From = joinSelect.getFirstTable().getFrom();
 
         Assert.assertNotNull(t1From);
         Assert.assertEquals(1,t1From.size());
         Assert.assertTrue(checkFrom(t1From.get(0),"elasticsearch-sql_test_index","account","a"));
 
-        List<From> t2From = joinSelect.getT2Select().getFrom();
+        List<From> t2From = joinSelect.getSecondTable().getFrom();
         Assert.assertNotNull(t2From);
         Assert.assertEquals(1,t2From.size());
         Assert.assertTrue(checkFrom(t2From.get(0),"elasticsearch-sql_test_index","dog","d"));
@@ -149,9 +149,9 @@ public class SqlParserTests {
                 " AND d.age > 1";
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
-        String s1Where = joinSelect.getT1Select().getWhere().toString();
+        String s1Where = joinSelect.getFirstTable().getWhere().toString();
         Assert.assertEquals("AND ( AND firstname EQ eliran, AND ( OR age GT 10, OR balance GT 2000 )  ) " , s1Where);
-        String s2Where = joinSelect.getT2Select().getWhere().toString();
+        String s2Where = joinSelect.getSecondTable().getWhere().toString();
         Assert.assertEquals("AND age GT 1",s2Where);
     }
 

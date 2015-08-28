@@ -21,14 +21,14 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-//		QueryTest.class,
-//		MethodQueryTest.class,
-//		AggregationTest.class,
-//		BugTest.class,
-//		DeleteTest.class,
-//		ExplainTest.class,
-//        WktToGeoJsonConverterTests.class,
-//        SqlParserTests.class,
+		QueryTest.class,
+		MethodQueryTest.class,
+		AggregationTest.class,
+		BugTest.class,
+		DeleteTest.class,
+		ExplainTest.class,
+        WktToGeoJsonConverterTests.class,
+        SqlParserTests.class,
         JoinTests.class
 })
 public class MainTestSuite {

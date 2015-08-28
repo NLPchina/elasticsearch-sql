@@ -317,41 +317,47 @@ public class SqlParser {
     }
 
     public JoinSelect parseJoinSelect(SQLQueryExpr sqlExpr) throws SqlParseException {
+
         MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
 
         List<From> joinedFrom = findJoinedFrom(query.getFrom());
         if(joinedFrom.size() != 2)
             throw new RuntimeException("currently supports only 2 tables join");
 
-        Where where = findWhere(query.getWhere());
+        JoinSelect joinSelect = createBasicJoinSelectAccordingToTableSource((SQLJoinTableSource) query.getFrom());
+
         String firstTableAlias = joinedFrom.get(0).getAlias();
         String secondTableAlias = joinedFrom.get(1).getAlias();
+        Map<String, Where> aliasToWhere = splitAndFindWhere(query.getWhere(), firstTableAlias, secondTableAlias);
 
-        Map<String,Where> aliasToWhere =  splitWheres(where, firstTableAlias, secondTableAlias);
+        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias), joinSelect.getConnectedConditions());
+        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), joinSelect.getConnectedConditions());
 
-
-        JoinSelect joinSelect = new JoinSelect();
-
-        joinSelect.setT1Select(fillSelect(joinedFrom.get(0), aliasToWhere, query));
-        joinSelect.setT2Select(fillSelect(joinedFrom.get(1), aliasToWhere, query));
-
-        List<Condition> conditions = getJoinConditionsFlatten((SQLJoinTableSource) query.getFrom());
-        joinSelect.setConnectedConditions(conditions);
-
-        joinSelect.setT1ConnectedFields(getConnectedFields(conditions,firstTableAlias));
-        joinSelect.setT2ConnectedFields(getConnectedFields(conditions, secondTableAlias));
         //todo: throw error feature not supported:  no group bys on joins ?
 
-        SQLJoinTableSource.JoinType joinType = ((SQLJoinTableSource) query.getFrom()).getJoinType();
-        joinSelect.setJoinType(joinType);
-
-        joinSelect.setT1SelectedFields(new ArrayList<Field>(joinSelect.getT1Select().getFields()));
-        joinSelect.setT2SelectedFields(new ArrayList<Field>(joinSelect.getT2Select().getFields()));
-
-        joinSelect.setT1Alias(firstTableAlias);
-        joinSelect.setT2Alias(secondTableAlias);
-
         return joinSelect;
+    }
+
+    private JoinSelect createBasicJoinSelectAccordingToTableSource(SQLJoinTableSource joinTableSource) throws SqlParseException {
+        JoinSelect joinSelect = new JoinSelect();
+        List<Condition> conditions = getJoinConditionsFlatten(joinTableSource);
+        joinSelect.setConnectedConditions(conditions);
+        SQLJoinTableSource.JoinType joinType = joinTableSource.getJoinType();
+        joinSelect.setJoinType(joinType);
+        return joinSelect;
+    }
+
+    private Map<String, Where> splitAndFindWhere(SQLExpr whereExpr, String firstTableAlias, String secondTableAlias) throws SqlParseException {
+        Where where = findWhere(whereExpr);
+        return splitWheres(where, firstTableAlias, secondTableAlias);
+    }
+
+    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin,MySqlSelectQueryBlock query, From tableFrom,  Where where, List<Condition> conditions) throws SqlParseException {
+        String alias = tableFrom.getAlias();
+        fillBasicTableSelectJoin(tableOnJoin, tableFrom, where, query);
+        tableOnJoin.setConnectedFields(getConnectedFields(conditions, alias));
+        tableOnJoin.setSelectedFields(new ArrayList<Field>(tableOnJoin.getFields()));
+        tableOnJoin.setAlias(alias);
     }
 
     private List<Field> getConnectedFields(List<Condition> conditions, String alias) throws SqlParseException {
@@ -374,13 +380,11 @@ public class SqlParser {
         return fields;
     }
 
-    private Select fillSelect(From from, Map<String, Where> aliasToWhere, MySqlSelectQueryBlock query) throws SqlParseException {
-        Select select = new Select();
+    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from,  Where where, MySqlSelectQueryBlock query) throws SqlParseException {
         select.getFrom().add(from);
         findSelect(query, select,from.getAlias());
         findLimit(query.getLimit(),select);
-        select.setWhere(aliasToWhere.get(from.getAlias()));
-        return select;
+        select.setWhere(where);
     }
 
     private List<Condition> getJoinConditionsFlatten(SQLJoinTableSource from) throws SqlParseException {

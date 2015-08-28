@@ -21,17 +21,16 @@ import java.util.Map;
  */
 public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
 
-    private SearchRequestBuilder firstTableRequest;
-    private SearchRequestBuilder secondTableRequest;
     private MultiSearchRequest multi;
-    private String firstTableAlias;
-    private String secondTableAlias;
-    private List<Field> firstTableReturnedField;
-    private List<Field> secondTableReturnedField;
+    private TableInJoinRequestBuilder firstTable;
+    private TableInJoinRequestBuilder secondTable;
+
     private List<Map.Entry<Field,Field>> t1ToT2FieldsComparison;
     private SQLJoinTableSource.JoinType joinType;
 
     public HashJoinElasticRequestBuilder() {
+        firstTable = new TableInJoinRequestBuilder();
+        secondTable = new TableInJoinRequestBuilder();
     }
 
 
@@ -45,8 +44,8 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
 
     private void buildMulti() {
         multi = new MultiSearchRequest();
-        multi.add(firstTableRequest);
-        multi.add(secondTableRequest);
+        multi.add(firstTable.getRequestBuilder());
+        multi.add(secondTable.getRequestBuilder());
         multi.listenerThreaded(false);
     }
 
@@ -54,10 +53,10 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
     public String explain() {
         try {
             XContentBuilder firstBuilder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            firstTableRequest.internalBuilder().toXContent(firstBuilder, ToXContent.EMPTY_PARAMS);
+            firstTable.getRequestBuilder().internalBuilder().toXContent(firstBuilder, ToXContent.EMPTY_PARAMS);
 
             XContentBuilder secondBuilder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            secondTableRequest.internalBuilder().toXContent(secondBuilder, ToXContent.EMPTY_PARAMS);
+            secondTable.getRequestBuilder().internalBuilder().toXContent(secondBuilder, ToXContent.EMPTY_PARAMS);
             String explained = String.format("HashJoin. first query:\n%s\n second query:\n%s", firstBuilder.string(), secondBuilder.string());
 
             return explained;
@@ -73,44 +72,12 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
     }
 
 
-    public SearchRequestBuilder getFirstTableRequest() {
-        return firstTableRequest;
-    }
-
-    public void setFirstTableRequest(SearchRequestBuilder firstTableRequest) {
-        this.firstTableRequest = firstTableRequest;
-    }
-
-    public SearchRequestBuilder getSecondTableRequest() {
-        return secondTableRequest;
-    }
-
-    public void setSecondTableRequest(SearchRequestBuilder secondTableRequest) {
-        this.secondTableRequest = secondTableRequest;
-    }
-
     public MultiSearchRequest getMulti() {
         return multi;
     }
 
     public void setMulti(MultiSearchRequest multi) {
         this.multi = multi;
-    }
-
-    public List<Field> getFirstTableReturnedField() {
-        return firstTableReturnedField;
-    }
-
-    public void setFirstTableReturnedField(List<Field> firstTableReturnedField) {
-        this.firstTableReturnedField = firstTableReturnedField;
-    }
-
-    public List<Field> getSecondTableReturnedField() {
-        return secondTableReturnedField;
-    }
-
-    public void setSecondTableReturnedField(List<Field> secondTableReturnedField) {
-        this.secondTableReturnedField = secondTableReturnedField;
     }
 
     public List<Map.Entry<Field, Field>> getT1ToT2FieldsComparison() {
@@ -125,24 +92,15 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
         return joinType;
     }
 
-    public String getFirstTableAlias() {
-        return firstTableAlias;
-    }
-
-    public void setFirstTableAlias(String firstTableAlias) {
-        this.firstTableAlias = firstTableAlias;
-    }
-
-    public String getSecondTableAlias() {
-        return secondTableAlias;
-    }
-
-    public void setSecondTableAlias(String secondTableAlias) {
-        this.secondTableAlias = secondTableAlias;
-    }
-
     public void setJoinType(SQLJoinTableSource.JoinType joinType) {
         this.joinType = joinType;
     }
 
+    public TableInJoinRequestBuilder getFirstTable() {
+        return firstTable;
+    }
+
+    public TableInJoinRequestBuilder getSecondTable() {
+        return secondTable;
+    }
 }
