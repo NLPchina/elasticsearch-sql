@@ -4,6 +4,8 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
+import org.elasticsearch.common.collect.ImmutableMap;
+import org.elasticsearch.search.SearchHit;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,7 +15,12 @@ import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.ESHashJoinQueryAction;
 
+import java.io.IOException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
+import java.util.Map;
+
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 /**
  * Created by Eliran on 21/8/2015.
@@ -155,12 +162,38 @@ public class SqlParserTests {
         Assert.assertEquals("AND age GT 1",s2Where);
     }
 
+    @Test
+    public void joinConditionWithComplexObjectComparisonRightSide() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.name = c.name.lastname  " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
+        List<Condition> conditions = joinSelect.getConnectedConditions();
+        Assert.assertNotNull(conditions);
+        Assert.assertEquals(1,conditions.size());
+        Assert.assertTrue("condition not exist: h.name = c.name.lastname",conditionExist(conditions, "h.name", "c.name.lastname", Condition.OPEAR.EQ));
+    }
+
+    @Test
+    public void joinConditionWithComplexObjectComparisonLeftSide() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on c.name.lastname = h.name  " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
+        List<Condition> conditions = joinSelect.getConnectedConditions();
+        Assert.assertNotNull(conditions);
+        Assert.assertEquals(1,conditions.size());
+        Assert.assertTrue("condition not exist: c.name.lastname = h.name",conditionExist(conditions, "c.name.lastname", "h.name", Condition.OPEAR.EQ));
+    }
+
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }
 
     private boolean conditionExist(List<Condition> conditions, String from, String to, Condition.OPEAR opear) {
-        String[] aliasAndField = to.split("\\.");
+        String[] aliasAndField = to.split("\\.",2);
         String toAlias = aliasAndField[0];
         String toField = aliasAndField[1];
         for (Condition condition : conditions){
@@ -170,8 +203,9 @@ public class SqlParserTests {
             if(!fromIsEqual) continue;
 
             SQLPropertyExpr value = (SQLPropertyExpr) condition.getValue();
-            boolean toFieldNameIsEqual =value.getName().equals(toField);
-            boolean toAliasIsEqual = ((SQLIdentifierExpr) value.getOwner()).getName().equals(toAlias);
+            String[] valueAliasAndField = value.toString().split("\\.",2);
+            boolean toFieldNameIsEqual = valueAliasAndField[1].equals(toField);
+            boolean toAliasIsEqual =  valueAliasAndField[0].equals(toAlias);
             boolean toIsEqual = toAliasIsEqual && toFieldNameIsEqual;
 
             if(toIsEqual) return true;

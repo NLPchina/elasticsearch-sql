@@ -28,7 +28,7 @@ public class JoinTests {
     @Test
     public void joinParseCheckSelectedFieldsSplit() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         String query = "SELECT a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
+                " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
                 " WHERE " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
@@ -37,8 +37,8 @@ public class JoinTests {
 
         Map<String,Object> oneMatch = ImmutableMap.of("a.firstname", (Object)"Daenerys", "a.lastname","Targaryen",
                                                         "a.gender","M","d.name", "rex");
-        Map<String,Object> secondMatch = ImmutableMap.of("a.firstname", (Object)"Hattie", "a.lastname","Bond",
-                "a.gender","M","d.name", "snoopy");
+        Map<String,Object> secondMatch = ImmutableMap.of("a.firstname", (Object) "Hattie", "a.lastname", "Bond",
+                "a.gender", "M", "d.name", "snoopy");
 
         Assert.assertTrue(hitsContains(hits, oneMatch));
         Assert.assertTrue(hitsContains(hits,secondMatch));
@@ -62,7 +62,7 @@ public class JoinTests {
                     matchedHit = false;
                     break;
                 }
-                if(!matchMap.get(entry.getKey()).equals(entry.getValue())){
+                if(!equalsWithNullCheck(matchMap.get(entry.getKey()), entry.getValue())){
                     matchedHit = false;
                     break;
                 }
@@ -70,6 +70,11 @@ public class JoinTests {
             if(matchedHit) return true;
         }
         return false;
+    }
+
+    private boolean equalsWithNullCheck(Object one, Object other) {
+        if(one == null)   return other == null;
+        return one.equals(other);
     }
 
 
@@ -131,6 +136,27 @@ public class JoinTests {
         Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
                 "h.words","fireAndBlood");
         Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+
+    @Test
+    public void testLeftJoin() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.name.firstname, f.name.firstname,f.name.lastname from %s/gotCharacters c " +
+                "LEFT JOIN %s/gotCharacters f " +
+                "on c.parents.father = f.name.firstname "
+                , TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(4,hits.length);
+
+        Map<String,Object> oneMatch = new HashMap<>();
+        oneMatch.put("c.name.firstname", "Daenerys");
+        oneMatch.put("f.name.firstname",null);
+        oneMatch.put("f.name.lastname",null);
+
+        Assert.assertTrue(hitsContains(hits, oneMatch));
+        Map<String,Object> secondMatch =  ImmutableMap.of("c.name.firstname", (Object)"Brandon",
+                "f.name.firstname","Eddard", "f.name.lastname","Stark");
+        Assert.assertTrue(hitsContains(hits, secondMatch));
     }
 
 

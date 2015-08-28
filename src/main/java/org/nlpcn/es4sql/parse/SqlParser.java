@@ -372,9 +372,11 @@ public class SqlParser {
                     throw new SqlParseException("conditions on join should be one side is firstTable second Other , condition was:" + condition.toString());
                 }
                 SQLPropertyExpr conditionValue = (SQLPropertyExpr) condition.getValue();
-                SQLIdentifierExpr owner = (SQLIdentifierExpr) conditionValue.getOwner();
-                if(owner.getName().equals(alias))
-                    fields.add(new Field(conditionValue.getName(),null));
+                String aliasDotValue = conditionValue.toString();
+                int indexOfDot = aliasDotValue.indexOf(".");
+                String owner = aliasDotValue.substring(0, indexOfDot);
+                if(owner.equals(alias))
+                    fields.add(new Field(aliasDotValue.substring(indexOfDot+1),null));
             }
         }
         return fields;
