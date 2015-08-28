@@ -1,5 +1,5 @@
 {"index":{"_type": "gotCharacters", "_id":"1"}}
-{"name":{"firstname":"Daenerys","lastname":"Targaryen","ofHerName":1},"house":"Targaryen","gender":"F","parents":{"father":"Aerys" , "mother":"Rhaella"},"titles":["motherOfDragons","queenOfTheAndals","breakerOfChains","Khaleesi"]}
+{"name":{"firstname":"Daenerys","lastname":"Targaryen","ofHerName":1},"nickname":"Daenerys \"Stormborn\"","house":"Targaryen","gender":"F","parents":{"father":"Aerys" , "mother":"Rhaella"},"titles":["motherOfDragons","queenOfTheAndals","breakerOfChains","Khaleesi"]}
 {"index":{"_type": "gotCharacters", "_id":"2"}}
 {"name":{"firstname":"Eddard","lastname":"Stark","ofHisName":1},"house":"Stark", "parents":{"father":"Rickard" , "mother":"Lyarra"} ,"gender":"M","titles":["lordOfWinterfell","wardenOfTheNorth","handOfTheKing"]}
 {"index":{"_type": "gotCharacters", "_id":"3"}}

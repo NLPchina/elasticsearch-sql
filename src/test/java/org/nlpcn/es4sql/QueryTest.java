@@ -505,6 +505,12 @@ public class QueryTest {
     }
 
     @Test
+    public void escapedCharactersCheck() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/gotCharacters where nickname = 'Daenerys \"Stormborn\"' LIMIT 1000", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+
+    @Test
     public void complexObjectSearch() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/gotCharacters where name.firstname = 'Jaime' LIMIT 1000", TEST_INDEX));
         Assert.assertEquals(1, response.getTotalHits());
