@@ -32,7 +32,8 @@ public class QueryTest {
 		Assert.assertEquals(4, response.getTotalHits());
 	}
 
-	@Test
+
+    @Test
 	public void multipleFromTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
 		SearchHits response = query(String.format("SELECT * FROM %s/phrase, %s/account LIMIT 2000", TEST_INDEX, TEST_INDEX));
 		Assert.assertEquals(1004, response.getTotalHits());
@@ -503,6 +504,19 @@ public class QueryTest {
         Assert.assertEquals("square",result.getSource().get("description"));
     }
 
+    @Test
+    public void complexObjectSearch() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/gotCharacters where name.firstname = 'Jaime' LIMIT 1000", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+
+    @Test
+    public void complexObjectReutrnField() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT parents.father FROM %s/gotCharacters where name.firstname = 'Brandon' LIMIT 1000", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+        Map<String, Object> sourceAsMap = response.getHits()[0].sourceAsMap();
+        Assert.assertEquals("Eddard",((HashMap<String,Object>)sourceAsMap.get("parents")).get("father"));
+    }
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();

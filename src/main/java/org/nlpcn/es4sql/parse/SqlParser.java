@@ -229,6 +229,8 @@ public class SqlParser {
 	}
 
     private String sameAliasWhere(Where where, String... aliases) throws SqlParseException {
+        if(where == null) return null;
+
         if(where instanceof Condition)
         {
             Condition condition = (Condition) where;
@@ -242,9 +244,10 @@ public class SqlParser {
             throw new SqlParseException(String.format("fieldName : %s on codition:%s does not contain alias", fieldName, condition.toString()));
         }
         List<String> sameAliases = new ArrayList<>();
-
-        for ( Where innerWhere : where.getWheres())
-            sameAliases.add(sameAliasWhere(innerWhere, aliases));
+        if(where.getWheres()!=null && where.getWheres().size() > 0) {
+            for (Where innerWhere : where.getWheres())
+                sameAliases.add(sameAliasWhere(innerWhere, aliases));
+        }
 
         if ( sameAliases.contains(null) ) return null;
         if ( sameAliases.stream().distinct().count() != 1 ) return null;
@@ -382,6 +385,7 @@ public class SqlParser {
 
     private List<Condition> getJoinConditionsFlatten(SQLJoinTableSource from) throws SqlParseException {
         List<Condition> conditions = new ArrayList<>();
+        if(from.getCondition() == null ) return conditions;
         Where where = Where.newInstance();
         parseWhere(from.getCondition(), where);
         addIfConditionRecursive(where, conditions);
@@ -394,6 +398,7 @@ public class SqlParser {
         for(String alias : aliases){
             aliasToWhere.put(alias,null);
         }
+        if(where == null) return aliasToWhere;
 
         String allWhereFromSameAlias = sameAliasWhere(where, aliases);
         if( allWhereFromSameAlias != null ) {
