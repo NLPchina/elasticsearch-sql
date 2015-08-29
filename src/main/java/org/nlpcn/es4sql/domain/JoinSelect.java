@@ -13,6 +13,7 @@ public class JoinSelect {
     private TableOnJoinSelect firstTable;
     private TableOnJoinSelect secondTable;
     private List<Condition> connectedConditions;
+    private List<Hint> hints;
 
     private SQLJoinTableSource.JoinType joinType;
 
@@ -49,4 +50,11 @@ public class JoinSelect {
         this.joinType = joinType;
     }
 
+    public List<Hint> getHints() {
+        return hints;
+    }
+
+    public void setHints(List<Hint> hints) {
+        this.hints = hints;
+    }
 }

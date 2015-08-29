@@ -33,7 +33,14 @@ public class ESHashJoinQueryAction extends QueryAction  {
         hashRequest.setT1ToT2FieldsComparison(comparisonFields);
 
         hashRequest.setJoinType(joinSelect.getJoinType());
+
+        updateHashRequestWithHints(hashRequest);
+
         return hashRequest;
+    }
+
+    private void updateHashRequestWithHints(HashJoinElasticRequestBuilder hashRequest) {
+        hashRequest.setUseTermFiltersOptimization(joinSelect.getHints().contains(Hint.HASH_WITH_TERMS_FILTER));
     }
 
     private List<Map.Entry<Field, Field>> getComparisonFields(String t1Alias, String t2Alias, List<Condition> connectedConditions) throws SqlParseException {
@@ -63,6 +70,7 @@ public class ESHashJoinQueryAction extends QueryAction  {
     private void fillRequestBuilder(TableInJoinRequestBuilder requestBuilder,TableOnJoinSelect tableOnJoinSelect) throws SqlParseException {
         List<Field> connectedFields = tableOnJoinSelect.getConnectedFields();
         addFieldsToSelectIfMissing(tableOnJoinSelect,connectedFields);
+        requestBuilder.setOriginalSelect(tableOnJoinSelect);
         DefaultQueryAction queryAction = new DefaultQueryAction(client,tableOnJoinSelect);
         queryAction.explain();
         requestBuilder.setRequestBuilder(queryAction.getRequestBuilder());

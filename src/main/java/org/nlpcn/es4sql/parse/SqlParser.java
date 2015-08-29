@@ -325,7 +325,8 @@ public class SqlParser {
             throw new RuntimeException("currently supports only 2 tables join");
 
         JoinSelect joinSelect = createBasicJoinSelectAccordingToTableSource((SQLJoinTableSource) query.getFrom());
-
+        List<Hint> hints = parseHints(query.getHints());
+        joinSelect.setHints(hints);
         String firstTableAlias = joinedFrom.get(0).getAlias();
         String secondTableAlias = joinedFrom.get(1).getAlias();
         Map<String, Where> aliasToWhere = splitAndFindWhere(query.getWhere(), firstTableAlias, secondTableAlias);
@@ -336,6 +337,15 @@ public class SqlParser {
         //todo: throw error feature not supported:  no group bys on joins ?
 
         return joinSelect;
+    }
+
+    private List<Hint> parseHints(List<SQLCommentHint> sqlHints) {
+        List<Hint> hints = new ArrayList<>();
+        for (SQLCommentHint sqlHint : sqlHints) {
+            Hint hint = Hint.hintFromString(sqlHint.getText());
+            if (hint != null) hints.add(hint);
+        }
+        return hints;
     }
 
     private JoinSelect createBasicJoinSelectAccordingToTableSource(SQLJoinTableSource joinTableSource) throws SqlParseException {

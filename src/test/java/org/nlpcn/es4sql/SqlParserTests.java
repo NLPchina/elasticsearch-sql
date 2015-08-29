@@ -188,6 +188,23 @@ public class SqlParserTests {
         Assert.assertTrue("condition not exist: c.name.lastname = h.name",conditionExist(conditions, "c.name.lastname", "h.name", Condition.OPEAR.EQ));
     }
 
+    @Test
+    public void hints() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! SECOND_TABLE_FILTERS */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "use KEY (termsFilter) "+
+                "JOIN %s/gotHouses h " +
+                "on c.name.lastname = h.name  " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
+        //use KEY (termsFilter) --> ((SQLExprTableSource)((SQLJoinTableSource)query.from).left).hints [com.alibaba.druid.sql.dialect.mysql.ast.MySqlUseIndexHint@2a742aa2]
+        ///*! SQL_NO_CACHE */   --> query.getHints()
+        ////*! SECOND_TABLE_FILTERS */ => query.getHints() CHOSEN :)
+        List<Condition> conditions = joinSelect.getConnectedConditions();
+        Assert.assertNotNull(conditions);
+        Assert.assertEquals(1,conditions.size());
+        Assert.assertTrue("condition not exist: c.name.lastname = h.name",conditionExist(conditions, "c.name.lastname", "h.name", Condition.OPEAR.EQ));
+    }
+
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }

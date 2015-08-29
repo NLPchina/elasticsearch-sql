@@ -27,7 +27,7 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
 
     private List<Map.Entry<Field,Field>> t1ToT2FieldsComparison;
     private SQLJoinTableSource.JoinType joinType;
-
+    private boolean useTermFiltersOptimization;
     public HashJoinElasticRequestBuilder() {
         firstTable = new TableInJoinRequestBuilder();
         secondTable = new TableInJoinRequestBuilder();
@@ -102,5 +102,13 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
 
     public TableInJoinRequestBuilder getSecondTable() {
         return secondTable;
+    }
+
+    public boolean isUseTermFiltersOptimization() {
+        return useTermFiltersOptimization;
+    }
+
+    public void setUseTermFiltersOptimization(boolean useTermFiltersOptimization) {
+        this.useTermFiltersOptimization = useTermFiltersOptimization;
     }
 }

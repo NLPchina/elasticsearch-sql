@@ -45,6 +45,25 @@ public class JoinTests {
 
     }
 
+    @Test
+    public void joinParseWithHintsCheckSelectedFieldsSplit() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = "SELECT /*! HASH_WITH_TERMS_FILTER*/ a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
+                " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
+                " WHERE " +
+                " (a.age > 10 OR a.balance > 2000)" +
+                " AND d.age > 1";
+        String explainedQuery = hashJoinRunAndExplain(query);
+        boolean containTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"holdersName\":[\"daenerys\",\"hattie\",\"nanette\",\"dale\",\"elinor\",\"virginia\",\"dillard\",\"mcgee\",\"aurelia\",\"fulton\",\"burton\"]}");
+        Assert.assertTrue(containTerms);
+    }
+
+    private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query);
+        HashJoinElasticExecutor executor = new HashJoinElasticExecutor(searchDao.getClient(),  explain);
+        executor.run();
+        return explain.explain();
+    }
     private SearchHit[] hashJoinGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder explain = searchDao.explain(query);
