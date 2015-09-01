@@ -1,6 +1,7 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.StringText;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -35,6 +36,7 @@ import java.util.*;
 public class HashJoinElasticExecutor {
     private HashJoinElasticRequestBuilder requestBuilder;
     private SearchHits results ;
+    private long tookImMilli;
     private Client client;
     private boolean useQueryTermsFilterOptimization = false;
     public HashJoinElasticExecutor(Client client,HashJoinElasticRequestBuilder requestBuilder) {
@@ -58,7 +60,7 @@ public class HashJoinElasticExecutor {
     }
 
     //use our deserializer instead of results toXcontent because the source field is differnet from sourceAsMap.
-    private String resultAsString() throws IOException {
+    public String resultAsString() throws IOException {
         Object[] searchHits;
         searchHits = new Object[(int) this.results.totalHits()];
         int i = 0;
@@ -71,17 +73,23 @@ public class HashJoinElasticExecutor {
             searchHits[i] = value;
             i++;
         }
+        HashMap<String,Object> hits = new HashMap<>();
+        hits.put("total",this.results.totalHits());
+        hits.put("max_score",this.results.maxScore());
+        hits.put("hits",searchHits);
         XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-
-        builder.startObject("hits");
-            builder.field("total").value(this.results.totalHits());
-            builder.field("max_score").value(this.results.maxScore());
-            builder.array("hits",searchHits);
+         builder.startObject();
+            builder.field("took", tookImMilli);
+            builder.field("timed_out",false);
+            builder.field("_shards",ImmutableMap.of("total",5,"successful",5,"failed",0));
+            builder.field("hits",hits) ;
         builder.endObject();
+
         return builder.string();
     }
 
     public void run() throws IOException, SqlParseException {
+        long timeBefore = System.currentTimeMillis();
         Map<String,List<Object>> optimizationTermsFilterStructure = new HashMap<>();
         List<Map.Entry<Field, Field>> t1ToT2FieldsComparison = requestBuilder.getT1ToT2FieldsComparison();
 
@@ -100,7 +108,8 @@ public class HashJoinElasticExecutor {
         }
         InternalSearchHit[] hits = combinedResult.toArray(new InternalSearchHit[combinedResult.size()]);
         this.results = new InternalSearchHits(hits,combinedResult.size(),1.0f);
-
+        long timeAfter = System.currentTimeMillis();
+        this.tookImMilli = timeAfter - timeBefore;
     }
 
     private List<InternalSearchHit> createCombinedResults(Map<String, List<Object>> optimizationTermsFilterStructure, List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, Map<String, SearchHitsResult> comparisonKeyToSearchHits, TableInJoinRequestBuilder secondTableRequest) {

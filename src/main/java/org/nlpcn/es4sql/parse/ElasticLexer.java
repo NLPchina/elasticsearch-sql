@@ -1,7 +1,6 @@
 package org.nlpcn.es4sql.parse;
 
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlLexer;
-import com.alibaba.druid.sql.parser.Lexer;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.Token;
 
