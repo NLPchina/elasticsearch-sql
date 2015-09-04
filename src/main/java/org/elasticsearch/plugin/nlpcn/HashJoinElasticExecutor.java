@@ -2,6 +2,7 @@ package org.elasticsearch.plugin.nlpcn;
 
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.google.common.collect.ImmutableMap;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.StringText;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -36,13 +37,14 @@ import java.util.*;
 public class HashJoinElasticExecutor {
     private HashJoinElasticRequestBuilder requestBuilder;
     private SearchHits results ;
-    private long tookImMilli;
+    private MetaSearchResult metaResults;
     private Client client;
     private boolean useQueryTermsFilterOptimization = false;
     public HashJoinElasticExecutor(Client client,HashJoinElasticRequestBuilder requestBuilder) {
         this.client = client;
         this.requestBuilder = requestBuilder;
         this.useQueryTermsFilterOptimization = requestBuilder.isUseTermFiltersOptimization();
+        metaResults = new MetaSearchResult();
     }
 
     public SearchHits getHits(){
@@ -79,9 +81,11 @@ public class HashJoinElasticExecutor {
         hits.put("hits",searchHits);
         XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
          builder.startObject();
-            builder.field("took", tookImMilli);
-            builder.field("timed_out",false);
-            builder.field("_shards",ImmutableMap.of("total",5,"successful",5,"failed",0));
+            builder.field("took", metaResults.getTookImMilli());
+            builder.field("timed_out",metaResults.isTimedOut());
+            builder.field("_shards",ImmutableMap.of("total",metaResults.getTotalNumOfShards(),
+                                                    "successful",metaResults.getSuccessfulShards()
+                                                    ,"failed",metaResults.getFailedShards()));
             builder.field("hits",hits) ;
         builder.endObject();
 
@@ -108,14 +112,16 @@ public class HashJoinElasticExecutor {
         }
         InternalSearchHit[] hits = combinedResult.toArray(new InternalSearchHit[combinedResult.size()]);
         this.results = new InternalSearchHits(hits,combinedResult.size(),1.0f);
-        long timeAfter = System.currentTimeMillis();
-        this.tookImMilli = timeAfter - timeBefore;
+        long joinTimeInMilli = System.currentTimeMillis() - timeBefore;
+        this.metaResults.setTookImMilli(joinTimeInMilli);
     }
 
     private List<InternalSearchHit> createCombinedResults(Map<String, List<Object>> optimizationTermsFilterStructure, List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, Map<String, SearchHitsResult> comparisonKeyToSearchHits, TableInJoinRequestBuilder secondTableRequest) {
         List<InternalSearchHit> combinedResult = new ArrayList<>();
         int resultIds = 0;
-        SearchHits secondTableHits = secondTableRequest.getRequestBuilder().get().getHits();
+        SearchResponse searchResponse = secondTableRequest.getRequestBuilder().get();
+        updateMetaSearchResults(searchResponse);
+        SearchHits secondTableHits = searchResponse.getHits();
         for(SearchHit secondTableHit : secondTableHits){
 
             String key = getComparisonKey(t1ToT2FieldsComparison,secondTableHit,false, optimizationTermsFilterStructure);
@@ -144,7 +150,9 @@ public class HashJoinElasticExecutor {
     }
 
     private Map<String, SearchHitsResult> createKeyToResultsAndFillOptimizationStructure(Map<String, List<Object>> optimizationTermsFilterStructure, List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, TableInJoinRequestBuilder firstTableRequest) {
-        SearchHits firstTableHits = firstTableRequest.getRequestBuilder().get().getHits();
+        SearchResponse searchResponse = firstTableRequest.getRequestBuilder().get();
+        updateMetaSearchResults(searchResponse);
+        SearchHits firstTableHits = searchResponse.getHits();
         Map<String,SearchHitsResult> comparisonKeyToSearchHits = new HashMap<>();
 
         int resultIds = 1;
@@ -164,6 +172,13 @@ public class HashJoinElasticExecutor {
             currentSearchHitsResult.getSearchHits().add(searchHit);
         }
         return comparisonKeyToSearchHits;
+    }
+
+    private void updateMetaSearchResults( SearchResponse searchResponse) {
+        this.metaResults.addSuccessfulShards(searchResponse.getSuccessfulShards());
+        this.metaResults.addFailedShards(searchResponse.getFailedShards());
+        this.metaResults.addTotalNumOfShards(searchResponse.getTotalShards());
+        this.metaResults.updateTimeOut(searchResponse.isTimedOut());
     }
 
     private boolean needToOptimize(Map<String, List<Object>> optimizationTermsFilterStructure) {
