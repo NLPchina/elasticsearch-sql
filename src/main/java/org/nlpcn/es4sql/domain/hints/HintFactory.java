@@ -16,7 +16,7 @@ public class HintFactory {
             String[] numbers =  getParamsFromHint(hintAsString, "! JOIN_TABLES_LIMIT");
             List<Object> params = new ArrayList<>();
             for (String number : numbers){
-                if(number.equals("null")){
+                if(number.equals("null") || number.equals("infinity")){
                     params.add(null);
                 }
                 else {

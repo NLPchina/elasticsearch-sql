@@ -14,6 +14,7 @@ public class TableInJoinRequestBuilder {
     private String alias;
     private List<Field> returnedFields;
     private Select originalSelect;
+    private Integer hintLimit;
 
     public TableInJoinRequestBuilder() {
     }
@@ -48,5 +49,13 @@ public class TableInJoinRequestBuilder {
 
     public void setOriginalSelect(Select originalSelect) {
         this.originalSelect = originalSelect;
+    }
+
+    public Integer getHintLimit() {
+        return hintLimit;
+    }
+
+    public void setHintLimit(Integer hintLimit) {
+        this.hintLimit = hintLimit;
     }
 }

@@ -130,6 +130,17 @@ public class JoinTests {
 
     }
 
+
+    @Test
+    public void joinNoConditionAndNoWhereWithTotalLimit() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h LIMIT 10",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(10,hits.length);
+
+    }
+
     @Test
     public void joinWithNestedFieldsOnReturn() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
         String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +

@@ -336,9 +336,17 @@ public class SqlParser {
         fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias), joinSelect.getConnectedConditions());
         fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), joinSelect.getConnectedConditions());
 
-        //todo: throw error feature not supported:  no group bys on joins ?
+        updateJoinLimit(query.getLimit(), joinSelect);
 
+        //todo: throw error feature not supported:  no group bys on joins ?
         return joinSelect;
+    }
+
+    private void updateJoinLimit(MySqlSelectQueryBlock.Limit limit, JoinSelect joinSelect) {
+         if(limit != null  && limit.getRowCount()!= null) {
+             int sizeLimit = Integer.parseInt(limit.getRowCount().toString());
+             joinSelect.setTotalLimit(sizeLimit);
+         }
     }
 
     private List<Hint> parseHints(List<SQLCommentHint> sqlHints) {
@@ -397,7 +405,6 @@ public class SqlParser {
     private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from,  Where where, MySqlSelectQueryBlock query) throws SqlParseException {
         select.getFrom().add(from);
         findSelect(query, select,from.getAlias());
-        findLimit(query.getLimit(),select);
         select.setWhere(where);
     }
 

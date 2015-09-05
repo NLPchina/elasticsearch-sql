@@ -16,6 +16,9 @@ public class JoinSelect {
     private TableOnJoinSelect secondTable;
     private List<Condition> connectedConditions;
     private List<Hint> hints;
+    private int totalLimit;
+
+    private final int DEAFULT_NUM_OF_RESULTS = 200;
 
     private SQLJoinTableSource.JoinType joinType;
 
@@ -23,6 +26,8 @@ public class JoinSelect {
     public JoinSelect() {
         firstTable = new TableOnJoinSelect();
         secondTable = new TableOnJoinSelect();
+
+        totalLimit = DEAFULT_NUM_OF_RESULTS;
     }
 
 
@@ -58,5 +63,13 @@ public class JoinSelect {
 
     public void setHints(List<Hint> hints) {
         this.hints = hints;
+    }
+
+    public int getTotalLimit() {
+        return totalLimit;
+    }
+
+    public void setTotalLimit(int totalLimit) {
+        this.totalLimit = totalLimit;
     }
 }
