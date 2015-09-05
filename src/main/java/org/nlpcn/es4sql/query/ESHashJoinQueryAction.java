@@ -2,6 +2,8 @@ package org.nlpcn.es4sql.query;
 
 import org.elasticsearch.client.Client;
 import org.nlpcn.es4sql.domain.*;
+import org.nlpcn.es4sql.domain.hints.Hint;
+import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.util.*;
@@ -40,7 +42,14 @@ public class ESHashJoinQueryAction extends QueryAction  {
     }
 
     private void updateHashRequestWithHints(HashJoinElasticRequestBuilder hashRequest) {
-        hashRequest.setUseTermFiltersOptimization(joinSelect.getHints().contains(Hint.HASH_WITH_TERMS_FILTER));
+        boolean foundTermsFilterHint = false;
+        for(Hint hint : joinSelect.getHints()){
+            if(hint.getType() == HintType.HASH_WITH_TERMS_FILTER) {
+                foundTermsFilterHint = true;
+                break;
+            }
+        }
+        hashRequest.setUseTermFiltersOptimization(foundTermsFilterHint);
     }
 
     private List<Map.Entry<Field, Field>> getComparisonFields(String t1Alias, String t2Alias, List<Condition> connectedConditions) throws SqlParseException {

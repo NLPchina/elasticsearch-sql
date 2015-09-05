@@ -188,30 +188,30 @@ public class HashJoinElasticExecutor {
     private void updateRequestWithTermsFilter(Map<String, List<Object>> optimizationTermsFilterStructure, TableInJoinRequestBuilder secondTableRequest) throws SqlParseException {
         Select select = secondTableRequest.getOriginalSelect();
         //todo: change to list with or when more than one object is allowed, and do foreach on map
-        BoolFilterBuilder orFilter = FilterBuilders.boolFilter();
-        BoolQueryBuilder orQuery = QueryBuilders.boolQuery();
+        BoolFilterBuilder andFilter = FilterBuilders.boolFilter();
+        BoolQueryBuilder andQuery = QueryBuilders.boolQuery();
         for(Map.Entry<String,List<Object>> keyToValues : optimizationTermsFilterStructure.entrySet()){
             String fieldName = keyToValues.getKey();
             List<Object> values = keyToValues.getValue();
-            if(select.isQuery) orQuery.should(QueryBuilders.termsQuery(fieldName,values));
-            else orFilter.should(FilterBuilders.termsFilter(fieldName,values));
+            if(select.isQuery) andQuery.must(QueryBuilders.termsQuery(fieldName,values));
+            else andFilter.must(FilterBuilders.termsFilter(fieldName,values));
         }
         Where where = select.getWhere();
         if (select.isQuery) {
             BoolQueryBuilder boolQuery;
             if(where != null ){
                 boolQuery = QueryMaker.explan(where);
-                boolQuery.must(orQuery);
+                boolQuery.must(andQuery);
             }
-            else boolQuery = orQuery;
+            else boolQuery = andQuery;
             secondTableRequest.getRequestBuilder().setQuery(boolQuery);
         } else {
             BoolFilterBuilder boolFilter;
             if(where!=null) {
                 boolFilter = FilterMaker.explan(where);
-                boolFilter.must(orFilter);
+                boolFilter.must(andFilter);
             }
-            else boolFilter = orFilter;
+            else boolFilter = andFilter;
             secondTableRequest.getRequestBuilder().setQuery(QueryBuilders.filteredQuery(null, boolFilter));
         }
     }

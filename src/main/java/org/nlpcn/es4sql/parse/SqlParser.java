@@ -11,6 +11,8 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.Where.CONN;
+import org.nlpcn.es4sql.domain.hints.Hint;
+import org.nlpcn.es4sql.domain.hints.HintFactory;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
@@ -342,7 +344,7 @@ public class SqlParser {
     private List<Hint> parseHints(List<SQLCommentHint> sqlHints) {
         List<Hint> hints = new ArrayList<>();
         for (SQLCommentHint sqlHint : sqlHints) {
-            Hint hint = Hint.hintFromString(sqlHint.getText());
+            Hint hint = HintFactory.getHintFromString(sqlHint.getText());
             if (hint != null) hints.add(hint);
         }
         return hints;

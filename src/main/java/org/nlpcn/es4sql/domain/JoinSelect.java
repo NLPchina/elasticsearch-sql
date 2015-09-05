@@ -1,6 +1,8 @@
 package org.nlpcn.es4sql.domain;
 
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import org.nlpcn.es4sql.domain.hints.Hint;
+
 
 import java.util.List;
 
