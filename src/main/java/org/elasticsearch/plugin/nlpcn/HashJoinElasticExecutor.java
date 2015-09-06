@@ -104,6 +104,7 @@ public class HashJoinElasticExecutor {
         Map<String,List<Object>> optimizationTermsFilterStructure = new HashMap<>();
         List<Map.Entry<Field, Field>> t1ToT2FieldsComparison = requestBuilder.getT1ToT2FieldsComparison();
 
+        updateFirstTableLimitIfNeeded();
         TableInJoinRequestBuilder firstTableRequest = requestBuilder.getFirstTable();
         Map<String, SearchHitsResult> comparisonKeyToSearchHits = createKeyToResultsAndFillOptimizationStructure(optimizationTermsFilterStructure, t1ToT2FieldsComparison, firstTableRequest);
 
@@ -122,6 +123,16 @@ public class HashJoinElasticExecutor {
         this.results = new InternalSearchHits(hits,combinedResult.size(),1.0f);
         long joinTimeInMilli = System.currentTimeMillis() - timeBefore;
         this.metaResults.setTookImMilli(joinTimeInMilli);
+    }
+
+    private void updateFirstTableLimitIfNeeded() {
+        if(requestBuilder.getJoinType() == SQLJoinTableSource.JoinType.LEFT_OUTER_JOIN ){
+            Integer firstTableHintLimit = requestBuilder.getFirstTable().getHintLimit();
+            int totalLimit = requestBuilder.getTotalLimit();
+            if(firstTableHintLimit == null || firstTableHintLimit > totalLimit){
+                requestBuilder.getFirstTable().setHintLimit(totalLimit);
+            }
+        }
     }
 
     private List<InternalSearchHit> createCombinedResults(Map<String, List<Object>> optimizationTermsFilterStructure, List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, Map<String, SearchHitsResult> comparisonKeyToSearchHits, TableInJoinRequestBuilder secondTableRequest) {
@@ -183,6 +194,9 @@ public class HashJoinElasticExecutor {
                     searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll(new TimeValue(600000)).execute().actionGet();
                 }
                 else break;
+            }
+            else {
+                break;
             }
         }
         return combinedResult;

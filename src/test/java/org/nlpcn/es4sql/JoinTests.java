@@ -189,5 +189,43 @@ public class JoinTests {
         Assert.assertTrue(hitsContains(hits, secondMatch));
     }
 
+    @Test
+    public void hintLimits_firstLimitSecondNull() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select /*! JOIN_TABLES_LIMIT(2,null) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(6,hits.length);
+    }
+
+    @Test
+    public void hintLimits_firstLimitSecondLimit() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select /*! JOIN_TABLES_LIMIT(2,2) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(4,hits.length);
+    }
+
+    @Test
+    public void hintLimits_firstNullSecondLimit() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select /*! JOIN_TABLES_LIMIT(null,2) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(8,hits.length);
+    }
+
+    @Test
+    public void testLeftJoinWithLimit() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! JOIN_TABLES_LIMIT(3,null) */ c.name.firstname, f.name.firstname,f.name.lastname from %s/gotCharacters c " +
+                "LEFT JOIN %s/gotCharacters f " +
+                "on c.parents.father = f.name.firstname "
+                , TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = hashJoinGetHits(query);
+        Assert.assertEquals(3,hits.length);
+
+    }
+
 
 }
