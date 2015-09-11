@@ -15,6 +15,7 @@ import org.nlpcn.es4sql.parse.SqlParser;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
@@ -248,7 +249,17 @@ public class SqlParserTests {
         Assert.assertEquals(HintType.JOIN_LIMIT, thirdHint.getType());
     }
 
+    @Test
+    public void searchWithOdbcTimeFormatParse() throws SqlParseException {
+        String query = String.format("SELECT insert_time FROM %s/odbc WHERE insert_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX);
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        LinkedList<Where> wheres = select.getWhere().getWheres();
+        Assert.assertEquals(1,wheres.size());
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertEquals("{ts '2015-03-15 00:00:00.000'}",condition.getValue().toString());
 
+    }
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }
