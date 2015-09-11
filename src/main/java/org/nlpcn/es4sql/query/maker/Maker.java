@@ -143,7 +143,7 @@ public abstract class Maker {
 				break;
 			}
 		case LIKE:
-		case NLIKE:
+        case NLIKE:
 			String queryStr = ((String) value).replace('%', '*').replace('_', '?');
 			WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(name, queryStr);
 			x = isQuery ? wildcardQuery : FilterBuilders.queryFilter(wildcardQuery);

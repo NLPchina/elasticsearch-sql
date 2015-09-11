@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
+import javax.naming.directory.SearchControls;
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.ParseException;
@@ -522,6 +523,19 @@ public class QueryTest {
         Assert.assertEquals(1, response.getTotalHits());
         Map<String, Object> sourceAsMap = response.getHits()[0].sourceAsMap();
         Assert.assertEquals("Eddard",((HashMap<String,Object>)sourceAsMap.get("parents")).get("father"));
+    }
+
+
+    @Test
+    public void notLikeTests() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        //cant use string.format cause of %d
+        SearchHits response = query("SELECT name FROM " +TEST_INDEX + "/gotCharacters where name.firstname not like '%d' LIMIT 1000");
+        Assert.assertEquals(3, response.getTotalHits());
+        for(SearchHit hit : response.getHits()) {
+            Map<String, Object> sourceAsMap = hit.sourceAsMap();
+            String name = ((HashMap<String, Object>) sourceAsMap.get("name")).get("firstname").toString();
+            Assert.assertFalse(name+" was in not like %d",name.startsWith("d"));
+        }
     }
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
