@@ -71,7 +71,7 @@ public class SqlParser {
 
 
 	private boolean isCond(SQLBinaryOpExpr expr) {
-		return expr.getLeft() instanceof SQLIdentifierExpr || expr.getLeft() instanceof SQLPropertyExpr;
+		return expr.getLeft() instanceof SQLIdentifierExpr || expr.getLeft() instanceof SQLPropertyExpr || expr.getLeft() instanceof SQLVariantRefExpr;
 	}
 
 	private void parseWhere(SQLExpr expr, Where where) throws SqlParseException {

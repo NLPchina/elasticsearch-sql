@@ -525,6 +525,14 @@ public class QueryTest {
         Assert.assertEquals("Eddard",((HashMap<String,Object>)sourceAsMap.get("parents")).get("father"));
     }
 
+    @Test
+    public void queryWithATfieldOnWhere() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/gotCharacters where @wolf = 'Summer' LIMIT 1000", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+        Map<String, Object> sourceAsMap = response.getHits()[0].sourceAsMap();
+        Assert.assertEquals("Summer",sourceAsMap.get("@wolf"));
+        Assert.assertEquals("Brandon",((HashMap<String,Object>)sourceAsMap.get("name")).get("firstname"));
+    }
 
     @Test
     public void notLikeTests() throws IOException, SqlParseException, SQLFeatureNotSupportedException{

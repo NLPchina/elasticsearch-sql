@@ -3,7 +3,7 @@
 {"index":{"_type": "gotCharacters", "_id":"2"}}
 {"name":{"firstname":"Eddard","lastname":"Stark","ofHisName":1},"house":"Stark", "parents":{"father":"Rickard" , "mother":"Lyarra"} ,"gender":"M","titles":["lordOfWinterfell","wardenOfTheNorth","handOfTheKing"]}
 {"index":{"_type": "gotCharacters", "_id":"3"}}
-{"name":{"firstname":"Brandon","lastname":"Stark","ofHisName":4},"house":"Stark","parents":{"father":"Eddard","mother":"Catelyn"},"gender":"M","titles":["princeOfWinterfell"]}
+{"name":{"firstname":"Brandon","lastname":"Stark","ofHisName":4},"house":"Stark","parents":{"father":"Eddard","mother":"Catelyn"},"gender":"M","titles":["princeOfWinterfell"],"@wolf":"Summer"}
 {"index":{"_type": "gotCharacters", "_id":"4"}}
 {"name":{"firstname":"Jaime","lastname":"Lannister","ofHisName":1},"gender":"M","house":"Lannister","parents":{"father":"Tywin","mother":"Joanna"},"titles":["kingSlayer","lordCommanderOfTheKingsguard","Ser"]}
 {"index":{"_type": "gotHouses", "_id":"1"}}

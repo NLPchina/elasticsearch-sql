@@ -19,7 +19,7 @@ import com.alibaba.druid.sql.ast.*;
  */
 public class FieldMaker {
 	public static Field makeField(SQLExpr expr, String alias,String tableAlias) throws SqlParseException {
-		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr) {
+		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr || expr instanceof SQLVariantRefExpr) {
 			String name = expr.toString().replace("`", "");
             if(tableAlias==null) return new Field(name, alias);
             else if(tableAlias!=null){
