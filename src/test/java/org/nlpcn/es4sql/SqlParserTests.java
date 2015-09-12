@@ -320,6 +320,27 @@ public class SqlParserTests {
         Field field = fields.get(0);
         Assert.assertEquals(field.getName(),"@field");
     }
+    @Test
+    public void fieldWithColonCharAtSelect() throws SqlParseException {
+        String query = "SELECT a:b FROM index/type where field2 = 6 ";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertEquals(field.getName(),"a:b");
+    }
+
+    @Test
+    public void fieldWithColonCharAtWhere() throws SqlParseException {
+        String query = "SELECT * FROM index/type where a:b = 6 ";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        LinkedList<Where> wheres = select.getWhere().getWheres();
+        Assert.assertEquals(1,wheres.size());
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertEquals("a:b", condition.getName());
+    }
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
