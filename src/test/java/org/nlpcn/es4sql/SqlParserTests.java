@@ -342,6 +342,18 @@ public class SqlParserTests {
         Assert.assertEquals("a:b", condition.getName());
     }
 
+    @Test
+    public void fieldIsNull() throws SqlParseException {
+        String query = "SELECT * FROM index/type where a IS NOT NULL";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        LinkedList<Where> wheres = select.getWhere().getWheres();
+        Assert.assertEquals(1,wheres.size());
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertEquals("a", condition.getName());
+        Assert.assertNull(condition.getValue());
+    }
+
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }

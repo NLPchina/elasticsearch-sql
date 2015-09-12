@@ -546,6 +546,18 @@ public class QueryTest {
         }
     }
 
+    @Test
+    public void isNullTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query("SELECT name FROM " +TEST_INDEX + "/gotCharacters where nickname IS NULL LIMIT 1000");
+        Assert.assertEquals(3, response.getTotalHits());
+    }
+
+    @Test
+    public void isNotNullTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query("SELECT name FROM " +TEST_INDEX + "/gotCharacters where nickname IS NOT NULL LIMIT 1000");
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
