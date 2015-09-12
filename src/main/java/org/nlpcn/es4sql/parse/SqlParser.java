@@ -302,7 +302,7 @@ public class SqlParser {
 
         if(isSqlExprTable){
             SQLExprTableSource fromExpr = (SQLExprTableSource) from;
-            String[] split = fromExpr.getExpr().toString().replaceAll(" ","").split(",");
+            String[] split = fromExpr.getExpr().toString().split(",");
 
             ArrayList<From> fromList = new ArrayList<>();
             for (String source : split) {

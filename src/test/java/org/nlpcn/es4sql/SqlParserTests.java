@@ -260,6 +260,46 @@ public class SqlParserTests {
         Assert.assertEquals("{ts '2015-03-15 00:00:00.000'}",condition.getValue().toString());
 
     }
+
+    @Test
+    public void indexWithSpacesWithinBrackets() throws SqlParseException {
+        String query = "SELECT insert_time FROM [Test Index] WHERE age > 3";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<From> fromList = select.getFrom();
+        Assert.assertEquals(1, fromList.size());
+        From from = fromList.get(0);
+        Assert.assertEquals("Test Index",from.getIndex());
+    }
+
+    @Test
+    public void indexWithSpacesWithTypeWithinBrackets() throws SqlParseException {
+        String query = "SELECT insert_time FROM [Test Index]/type1 WHERE age > 3";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<From> fromList = select.getFrom();
+        Assert.assertEquals(1, fromList.size());
+        From from = fromList.get(0);
+        Assert.assertEquals("Test Index",from.getIndex());
+        Assert.assertEquals("type1",from.getType());
+    }
+    @Test
+    public void twoIndices() throws SqlParseException {
+        String query = "SELECT insert_time FROM index1/type1 , index2/type2 WHERE age > 3";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<From> fromList = select.getFrom();
+        Assert.assertEquals(2, fromList.size());
+        From from1 = fromList.get(0);
+        From from2 = fromList.get(1);
+        boolean preservedOrder = from1.getIndex().equals("index1") && from1.getType().equals("type1")
+                && from2.getIndex().equals("index2") && from2.getType().equals("type2");
+        boolean notPreservedOrder = from1.getIndex().equals("index2")  && from1.getType().equals("type2")
+                && from2.getIndex().equals("index1") && from2.getType().equals("type1");
+        Assert.assertTrue(preservedOrder || notPreservedOrder);
+    }
+
+
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }

@@ -9,6 +9,7 @@ import com.alibaba.druid.sql.parser.Lexer;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.Token;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -61,6 +62,20 @@ public class ElasticSqlExprParser extends MySqlExprParser {
             }else{
                 throw new ParserException("Error. Unable to parse ODBC Literal Timestamp");
             }
+        }
+        else if(lexer.token() == Token.LBRACKET){
+            List<String> identifiers = new ArrayList<>();
+            lexer.nextToken();
+            while(lexer.token()!=Token.RBRACKET){
+                if(lexer.token() != Token.IDENTIFIER && lexer.token()!=Token.INDEX){
+                    throw new ParserException("All items between Brackets should be identifiers , got:" +lexer.token());
+                }
+                identifiers.add(lexer.stringVal());
+                lexer.nextToken();
+            }
+            String identifier = String.join(" ", identifiers);
+            accept(Token.RBRACKET);
+            return new SQLIdentifierExpr(identifier);
         }
         return super.primary();
     }

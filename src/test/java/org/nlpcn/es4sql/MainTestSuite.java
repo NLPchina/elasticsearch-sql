@@ -25,11 +25,12 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		MethodQueryTest.class,
 		AggregationTest.class,
 		BugTest.class,
+        JoinTests.class,
 		DeleteTest.class,
 		ExplainTest.class,
         WktToGeoJsonConverterTests.class,
-        SqlParserTests.class,
-        JoinTests.class
+        SqlParserTests.class
+
 })
 public class MainTestSuite {
 
