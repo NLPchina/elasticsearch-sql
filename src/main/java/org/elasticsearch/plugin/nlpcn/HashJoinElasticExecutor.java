@@ -26,8 +26,8 @@ import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.HashJoinElasticRequestBuilder;
-import org.nlpcn.es4sql.query.TableInJoinRequestBuilder;
+import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
 import org.nlpcn.es4sql.query.maker.FilterMaker;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
 
@@ -37,70 +37,22 @@ import java.util.*;
 /**
  * Created by Eliran on 22/8/2015.
  */
-public class HashJoinElasticExecutor {
+public class HashJoinElasticExecutor extends ElasticJoinExecutor {
     private HashJoinElasticRequestBuilder requestBuilder;
-    private SearchHits results ;
-    private MetaSearchResult metaResults;
+
+
     private Client client;
     private boolean useQueryTermsFilterOptimization = false;
-
-    private final int MAX_RESULTS_ON_ONE_FETCH = 10000;
     private final int MAX_RESULTS_FOR_FIRST_TABLE = 100000;
 
     public HashJoinElasticExecutor(Client client,HashJoinElasticRequestBuilder requestBuilder) {
         this.client = client;
         this.requestBuilder = requestBuilder;
         this.useQueryTermsFilterOptimization = requestBuilder.isUseTermFiltersOptimization();
-        metaResults = new MetaSearchResult();
     }
 
-    public SearchHits getHits(){
-        return results;
-    }
-    public void sendResponse(RestChannel channel){
-        try {
-            String json = resultAsString();
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
-            channel.sendResponse(bytesRestResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public List<InternalSearchHit> innerRun() throws IOException, SqlParseException {
 
-    }
-
-    //use our deserializer instead of results toXcontent because the source field is differnet from sourceAsMap.
-    public String resultAsString() throws IOException {
-        Object[] searchHits;
-        searchHits = new Object[(int) this.results.totalHits()];
-        int i = 0;
-        for(SearchHit hit : this.results) {
-            HashMap<String,Object> value = new HashMap<>();
-            value.put("_id",hit.getId());
-            value.put("_type", hit.getType());
-            value.put("_score", hit.score());
-            value.put("_source", hit.sourceAsMap());
-            searchHits[i] = value;
-            i++;
-        }
-        HashMap<String,Object> hits = new HashMap<>();
-        hits.put("total",this.results.totalHits());
-        hits.put("max_score",this.results.maxScore());
-        hits.put("hits",searchHits);
-        XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-         builder.startObject();
-            builder.field("took", metaResults.getTookImMilli());
-            builder.field("timed_out",metaResults.isTimedOut());
-            builder.field("_shards",ImmutableMap.of("total",metaResults.getTotalNumOfShards(),
-                                                    "successful",metaResults.getSuccessfulShards()
-                                                    ,"failed",metaResults.getFailedShards()));
-            builder.field("hits",hits) ;
-        builder.endObject();
-
-        return builder.string();
-    }
-
-    public void run() throws IOException, SqlParseException {
-        long timeBefore = System.currentTimeMillis();
         Map<String,List<Object>> optimizationTermsFilterStructure = new HashMap<>();
         List<Map.Entry<Field, Field>> t1ToT2FieldsComparison = requestBuilder.getT1ToT2FieldsComparison();
 
@@ -116,13 +68,17 @@ public class HashJoinElasticExecutor {
         List<InternalSearchHit> combinedResult = createCombinedResults(optimizationTermsFilterStructure, t1ToT2FieldsComparison, comparisonKeyToSearchHits, secondTableRequest);
 
         int currentNumOfResults = combinedResult.size();
-        if(requestBuilder.getJoinType() == SQLJoinTableSource.JoinType.LEFT_OUTER_JOIN && currentNumOfResults < requestBuilder.getTotalLimit()){
-            addUnmatchedResults(combinedResult,comparisonKeyToSearchHits.values(),requestBuilder.getSecondTable().getReturnedFields(), currentNumOfResults);
+        int totalLimit = requestBuilder.getTotalLimit();
+        if(requestBuilder.getJoinType() == SQLJoinTableSource.JoinType.LEFT_OUTER_JOIN && currentNumOfResults < totalLimit){
+            String t1Alias = requestBuilder.getFirstTable().getAlias();
+            String t2Alias = requestBuilder.getSecondTable().getAlias();
+            addUnmatchedResults(combinedResult,comparisonKeyToSearchHits.values(),
+                    requestBuilder.getSecondTable().getReturnedFields(),
+                    currentNumOfResults, totalLimit,
+                    t1Alias,
+                    t2Alias);
         }
-        InternalSearchHit[] hits = combinedResult.toArray(new InternalSearchHit[combinedResult.size()]);
-        this.results = new InternalSearchHits(hits,combinedResult.size(),1.0f);
-        long joinTimeInMilli = System.currentTimeMillis() - timeBefore;
-        this.metaResults.setTookImMilli(joinTimeInMilli);
+        return combinedResult;
     }
 
     private void updateFirstTableLimitIfNeeded() {
@@ -178,7 +134,9 @@ public class HashJoinElasticExecutor {
                         searchHit.sourceRef(matchingHit.getSourceRef());
                         searchHit.sourceAsMap().clear();
                         searchHit.sourceAsMap().putAll(matchingHit.sourceAsMap());
-                        mergeSourceAndAddAliases(secondTableHit.getSource(), searchHit);
+                        String t1Alias = requestBuilder.getFirstTable().getAlias();
+                        String t2Alias = requestBuilder.getSecondTable().getAlias();
+                        mergeSourceAndAddAliases(secondTableHit.getSource(), searchHit, t1Alias, t2Alias);
 
                         combinedResult.add(searchHit);
                         resultIds++;
@@ -262,13 +220,6 @@ public class HashJoinElasticExecutor {
         return hitsWithScan;
     }
 
-    private void updateMetaSearchResults( SearchResponse searchResponse) {
-        this.metaResults.addSuccessfulShards(searchResponse.getSuccessfulShards());
-        this.metaResults.addFailedShards(searchResponse.getFailedShards());
-        this.metaResults.addTotalNumOfShards(searchResponse.getTotalShards());
-        this.metaResults.updateTimeOut(searchResponse.isTimedOut());
-    }
-
     private boolean needToOptimize(Map<String, List<Object>> optimizationTermsFilterStructure) {
         return useQueryTermsFilterOptimization && optimizationTermsFilterStructure!=null && optimizationTermsFilterStructure.size()>0;
     }
@@ -304,40 +255,6 @@ public class HashJoinElasticExecutor {
         }
     }
 
-    private void addUnmatchedResults(List<InternalSearchHit> combinedResults, Collection<SearchHitsResult> firstTableSearchHits, List<Field> secondTableReturnedFields,int currentNumOfIds) {
-        boolean limitReached = false;
-        for(SearchHitsResult hitsResult : firstTableSearchHits){
-            if(!hitsResult.isMatchedWithOtherTable()){
-                for(SearchHit hit: hitsResult.getSearchHits() ) {
-                    //todo: decide which id to put or type. or maby its ok this way. just need to doc.
-                    InternalSearchHit searchHit = new InternalSearchHit(currentNumOfIds, hit.id() + "|0", new StringText(hit.getType() + "|null"), hit.getFields());
-                    searchHit.sourceRef(hit.getSourceRef());
-                    searchHit.sourceAsMap().clear();
-                    searchHit.sourceAsMap().putAll(hit.sourceAsMap());
-                    Map<String,Object> emptySecondTableHitSource = createNullsSource(secondTableReturnedFields);
-                    mergeSourceAndAddAliases(emptySecondTableHitSource, searchHit);
-
-                    combinedResults.add(searchHit);
-                    currentNumOfIds++;
-                    if(currentNumOfIds >= requestBuilder.getTotalLimit()){
-                        limitReached = true;
-                        break;
-                    }
-
-                }
-            }
-            if(limitReached) break;
-        }
-    }
-
-    private Map<String, Object> createNullsSource(List<Field> secondTableReturnedFields) {
-        Map<String,Object> nulledSource = new HashMap<>();
-        for(Field field : secondTableReturnedFields){
-            nulledSource.put(field.getName(),null);
-        }
-        return nulledSource;
-    }
-
     private String getComparisonKey(List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, SearchHit hit, boolean firstTable, Map<String, List<Object>> optimizationTermsFilterStructure) {
         String key = "";
         Map<String, Object> sourceAsMap = hit.sourceAsMap();
@@ -371,49 +288,4 @@ public class HashJoinElasticExecutor {
         }
         values.add(data);
     }
-
-    private void mergeSourceAndAddAliases(Map<String,Object> secondTableHitSource, InternalSearchHit searchHit) {
-        Map<String,Object> results = mapWithAliases(searchHit.getSource(), requestBuilder.getFirstTable().getAlias());
-        results.putAll(mapWithAliases(secondTableHitSource, requestBuilder.getSecondTable().getAlias()));
-        searchHit.getSource().clear();
-        searchHit.getSource().putAll(results);
-    }
-
-    private  Map<String,Object> mapWithAliases(Map<String, Object> source, String alias) {
-        Map<String,Object> mapWithAliases = new HashMap<>();
-        for(Map.Entry<String,Object> fieldNameToValue : source.entrySet()) {
-            mapWithAliases.put(alias + "." + fieldNameToValue.getKey(), fieldNameToValue.getValue());
-        }
-        return mapWithAliases;
-    }
-
-    private void  onlyReturnedFields(Map<String, Object> fieldsMap, List<Field> required) {
-        HashMap<String,Object> filteredMap = new HashMap<>();
-
-        for(Field field: required){
-            String name = field.getName();
-            filteredMap.put(name, deepSearchInMap(fieldsMap, name));
-        }
-        fieldsMap.clear();
-        fieldsMap.putAll(filteredMap);
-
-    }
-
-    private Object deepSearchInMap(Map<String, Object> fieldsMap, String name) {
-        if(name.contains(".")){
-            String[] path = name.split("\\.");
-            Map<String,Object> currentObject = fieldsMap;
-            for(int i=0;i<path.length-1 ;i++){
-                Object valueFromCurrentMap = currentObject.get(path[i]);
-                if(valueFromCurrentMap == null) return null;
-                if(!Map.class.isAssignableFrom(valueFromCurrentMap.getClass())) return null;
-                currentObject = (Map<String, Object>) valueFromCurrentMap;
-            }
-            return currentObject.get(path[path.length-1]);
-        }
-
-        return fieldsMap.get(name);
-    }
-
-
 }

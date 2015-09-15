@@ -9,6 +9,7 @@ import java.util.List;
 public enum HintType
 {
     HASH_WITH_TERMS_FILTER,
-    JOIN_LIMIT;
+    JOIN_LIMIT,
+    USE_NESTED_LOOPS;
 
 }

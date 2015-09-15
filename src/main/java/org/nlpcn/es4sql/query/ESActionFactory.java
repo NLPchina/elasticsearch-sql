@@ -8,7 +8,6 @@ import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.parser.*;
-import com.alibaba.druid.util.JdbcUtils;
 import org.elasticsearch.client.Client;
 import org.nlpcn.es4sql.domain.Delete;
 import org.nlpcn.es4sql.domain.JoinSelect;
@@ -17,6 +16,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticLexer;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
 import org.nlpcn.es4sql.parse.SqlParser;
+import org.nlpcn.es4sql.query.join.ESJoinQueryActionFactory;
 
 import java.sql.SQLFeatureNotSupportedException;
 
@@ -36,7 +36,7 @@ public class ESActionFactory {
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
                 if(isJoin(sqlExpr,sql)){
                     JoinSelect joinSelect = new SqlParser().parseJoinSelect(sqlExpr);
-                    return new ESHashJoinQueryAction(client,joinSelect);
+                    return ESJoinQueryActionFactory.createJoinAction(client, joinSelect);
                 }
                 else {
                     Select select = new SqlParser().parseSelect(sqlExpr);

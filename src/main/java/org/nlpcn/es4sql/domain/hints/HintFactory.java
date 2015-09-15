@@ -9,7 +9,9 @@ import java.util.List;
 public class HintFactory {
 
     public static Hint getHintFromString(String hintAsString){
-
+        if(hintAsString.startsWith("! USE_NESTED_LOOPS") || hintAsString.startsWith("! USE_NL")){
+            return new Hint(HintType.USE_NESTED_LOOPS,null);
+        }
         if(hintAsString.equals("! HASH_WITH_TERMS_FILTER"))
             return new Hint(HintType.HASH_WITH_TERMS_FILTER,null);
         if(hintAsString.startsWith("! JOIN_TABLES_LIMIT")){

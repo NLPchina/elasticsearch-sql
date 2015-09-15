@@ -1,16 +1,19 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.action.ActionRequest;
-import org.elasticsearch.action.ActionRunnable;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
-import org.nlpcn.es4sql.query.ESHashJoinQueryAction;
-import org.nlpcn.es4sql.query.HashJoinElasticRequestBuilder;
+import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
+import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
+
+import java.io.IOException;
 
 
 public class ActionRequestExecuter {
@@ -33,11 +36,8 @@ public class ActionRequestExecuter {
         request.listenerThreaded(false);
 
         //todo: maby change to instanceof multi?
-        if(requestBuilder instanceof HashJoinElasticRequestBuilder){
-            HashJoinElasticRequestBuilder hashJoin = (HashJoinElasticRequestBuilder) requestBuilder;
-            HashJoinElasticExecutor executor = new HashJoinElasticExecutor(client,hashJoin);
-            executor.run();
-            executor.sendResponse(channel);
+        if(requestBuilder instanceof JoinRequestBuilder){
+            executeJoinRequestAndSendResponse();
         }
 		else if (request instanceof SearchRequest) {
 			client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
@@ -50,5 +50,11 @@ public class ActionRequestExecuter {
 			throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
 		}
 	}
+
+    private void executeJoinRequestAndSendResponse() throws IOException, SqlParseException {
+        ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client,requestBuilder);
+        executor.run();
+        executor.sendResponse(channel);
+    }
 
 }

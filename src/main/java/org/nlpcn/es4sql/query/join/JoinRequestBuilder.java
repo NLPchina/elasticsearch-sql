@@ -1,36 +1,32 @@
-package org.nlpcn.es4sql.query;
+package org.nlpcn.es4sql.query.join;
 
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.MultiSearchRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Eliran on 22/8/2015.
+ * Created by Eliran on 15/9/2015.
  */
-public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
+public  class JoinRequestBuilder implements SqlElasticRequestBuilder {
 
     private MultiSearchRequest multi;
     private TableInJoinRequestBuilder firstTable;
     private TableInJoinRequestBuilder secondTable;
-
-    private List<Map.Entry<Field,Field>> t1ToT2FieldsComparison;
     private SQLJoinTableSource.JoinType joinType;
-    private boolean useTermFiltersOptimization;
     private int totalLimit;
 
-    public HashJoinElasticRequestBuilder() {
+    public JoinRequestBuilder() {
         firstTable = new TableInJoinRequestBuilder();
         secondTable = new TableInJoinRequestBuilder();
     }
@@ -73,21 +69,12 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
         return null;
     }
 
-
     public MultiSearchRequest getMulti() {
         return multi;
     }
 
     public void setMulti(MultiSearchRequest multi) {
         this.multi = multi;
-    }
-
-    public List<Map.Entry<Field, Field>> getT1ToT2FieldsComparison() {
-        return t1ToT2FieldsComparison;
-    }
-
-    public void setT1ToT2FieldsComparison(List<Map.Entry<Field, Field>> t1ToT2FieldsComparison) {
-        this.t1ToT2FieldsComparison = t1ToT2FieldsComparison;
     }
 
     public SQLJoinTableSource.JoinType getJoinType() {
@@ -106,14 +93,6 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
         return secondTable;
     }
 
-    public boolean isUseTermFiltersOptimization() {
-        return useTermFiltersOptimization;
-    }
-
-    public void setUseTermFiltersOptimization(boolean useTermFiltersOptimization) {
-        this.useTermFiltersOptimization = useTermFiltersOptimization;
-    }
-
     public int getTotalLimit() {
         return totalLimit;
     }
@@ -121,4 +100,5 @@ public class HashJoinElasticRequestBuilder  implements SqlElasticRequestBuilder{
     public void setTotalLimit(int totalLimit) {
         this.totalLimit = totalLimit;
     }
+
 }

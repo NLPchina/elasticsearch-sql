@@ -193,5 +193,4 @@ public class MainTestSuite {
 		return new InetSocketTransportAddress(host, Integer.parseInt(port));
 	}
 
-
 }

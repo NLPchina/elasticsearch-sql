@@ -1,17 +1,15 @@
 package org.nlpcn.es4sql;
 
 
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.collect.ImmutableMap;
+import org.elasticsearch.plugin.nlpcn.ElasticJoinExecutor;
 import org.elasticsearch.plugin.nlpcn.HashJoinElasticExecutor;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.junit.Test;
 import org.junit.Assert;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.HashJoinElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
-import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -26,13 +24,13 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 public class JoinTests {
 
     @Test
-    public void joinParseCheckSelectedFieldsSplit() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void joinParseCheckSelectedFieldsSplitHASH() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         String query = "SELECT a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
                 " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
                 " WHERE " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(2,hits.length);
 
         Map<String,Object> oneMatch = ImmutableMap.of("a.firstname", (Object)"Daenerys", "a.lastname","Targaryen",
@@ -46,7 +44,27 @@ public class JoinTests {
     }
 
     @Test
-    public void joinParseWithHintsCheckSelectedFieldsSplit() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void joinParseCheckSelectedFieldsSplitNL() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = "SELECT /*! USE_NL*/ a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
+                " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
+                " WHERE " +
+                " (a.age > 10 OR a.balance > 2000)" +
+                " AND d.age > 1";
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(2,hits.length);
+
+        Map<String,Object> oneMatch = ImmutableMap.of("a.firstname", (Object)"Daenerys", "a.lastname","Targaryen",
+                "a.gender","M","d.name", "rex");
+        Map<String,Object> secondMatch = ImmutableMap.of("a.firstname", (Object) "Hattie", "a.lastname", "Bond",
+                "a.gender", "M", "d.name", "snoopy");
+
+        Assert.assertTrue(hitsContains(hits, oneMatch));
+        Assert.assertTrue(hitsContains(hits,secondMatch));
+
+    }
+
+    @Test
+    public void joinParseWithHintsCheckSelectedFieldsSplitHASH() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         String query = "SELECT /*! HASH_WITH_TERMS_FILTER*/ a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
                 " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
                 " WHERE " +
@@ -64,10 +82,10 @@ public class JoinTests {
         executor.run();
         return explain.explain();
     }
-    private SearchHit[] hashJoinGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    private SearchHit[] joinAndGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder explain = searchDao.explain(query);
-        HashJoinElasticExecutor executor = new HashJoinElasticExecutor(searchDao.getClient(), (HashJoinElasticRequestBuilder) explain);
+        ElasticJoinExecutor executor  = ElasticJoinExecutor.createJoinExecutor(searchDao.getClient(),explain);
         executor.run();
         return executor.getHits().getHits();
     }
@@ -102,7 +120,20 @@ public class JoinTests {
         String query = String.format("select c.gender , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h " +
                 "on c.house = h.name",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(4,hits.length);
+        Map<String,Object> someMatch =  ImmutableMap.of("c.gender", (Object)"F", "h.name","Targaryen",
+                "h.words","fireAndBlood");
+        Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+
+    @Test
+    public void joinWithNoWhereButWithConditionNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! USE_NL*/ c.gender , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.name = c.house ",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4,hits.length);
         Map<String,Object> someMatch =  ImmutableMap.of("c.gender", (Object)"F", "h.name","Targaryen",
                 "h.words","fireAndBlood");
@@ -115,7 +146,17 @@ public class JoinTests {
         String query = String.format("select c.gender , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h " +
                 "where c.name.firstname='Daenerys'",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(3,hits.length);
+
+    }
+    @Test
+    public void joinNoConditionButWithWhereNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select /*! USE_NL*/ c.gender , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "where c.name.firstname='Daenerys'",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(3,hits.length);
 
     }
@@ -125,7 +166,17 @@ public class JoinTests {
 
         String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(12,hits.length);
+
+    }
+
+@Test
+    public void joinNoConditionAndNoWhereNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select /*! USE_NL*/ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(12,hits.length);
 
     }
@@ -136,7 +187,17 @@ public class JoinTests {
 
         String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h LIMIT 10",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(10,hits.length);
+
+    }
+
+    @Test
+    public void joinNoConditionAndNoWhereWithTotalLimitNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+
+        String query = String.format("select /*! USE_NL*/ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h LIMIT 10",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(10,hits.length);
 
     }
@@ -147,7 +208,21 @@ public class JoinTests {
                 "JOIN %s/gotHouses h " +
                 "on c.house = h.name " +
                 "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(1,hits.length);
+        //use flatten?
+        Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
+                "h.words","fireAndBlood");
+        Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+    @Test
+    public void joinWithNestedFieldsOnReturnNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! USE_NL*/ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.name = c.house " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(1,hits.length);
         //use flatten?
         Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
@@ -161,7 +236,20 @@ public class JoinTests {
                 "JOIN %s/gotHouses h " +
                 "on c.name.lastname = h.name " +
                 "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(1,hits.length);
+        Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
+                "h.words","fireAndBlood");
+        Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+    @Test
+    public void joinWithNestedFieldsOnComparisonAndOnReturnNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! USE_NL*/ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.name = c.name.lastname " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(1,hits.length);
         Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object)"Daenerys","c.parents.father","Aerys", "h.name","Targaryen",
                 "h.words","fireAndBlood");
@@ -175,7 +263,27 @@ public class JoinTests {
                 "LEFT JOIN %s/gotCharacters f " +
                 "on c.parents.father = f.name.firstname "
                 , TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(4,hits.length);
+
+        Map<String,Object> oneMatch = new HashMap<>();
+        oneMatch.put("c.name.firstname", "Daenerys");
+        oneMatch.put("f.name.firstname",null);
+        oneMatch.put("f.name.lastname",null);
+
+        Assert.assertTrue(hitsContains(hits, oneMatch));
+        Map<String,Object> secondMatch =  ImmutableMap.of("c.name.firstname", (Object)"Brandon",
+                "f.name.firstname","Eddard", "f.name.lastname","Stark");
+        Assert.assertTrue(hitsContains(hits, secondMatch));
+    }
+
+    @Test
+    public void testLeftJoinNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! USE_NL*/ c.name.firstname, f.name.firstname,f.name.lastname from %s/gotCharacters c " +
+                "LEFT JOIN %s/gotCharacters f " +
+                "on f.name.firstname = c.parents.father "
+                , TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4,hits.length);
 
         Map<String,Object> oneMatch = new HashMap<>();
@@ -194,7 +302,7 @@ public class JoinTests {
 
         String query = String.format("select /*! JOIN_TABLES_LIMIT(2,null) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(6,hits.length);
     }
 
@@ -203,7 +311,7 @@ public class JoinTests {
 
         String query = String.format("select /*! JOIN_TABLES_LIMIT(2,2) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4,hits.length);
     }
 
@@ -212,7 +320,7 @@ public class JoinTests {
 
         String query = String.format("select /*! JOIN_TABLES_LIMIT(null,2) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h ",TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(8,hits.length);
     }
 
@@ -222,7 +330,7 @@ public class JoinTests {
                 "LEFT JOIN %s/gotCharacters f " +
                 "on c.parents.father = f.name.firstname "
                 , TEST_INDEX,TEST_INDEX);
-        SearchHit[] hits = hashJoinGetHits(query);
+        SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(3,hits.length);
 
     }

@@ -1,4 +1,4 @@
-package org.nlpcn.es4sql.query;
+package org.nlpcn.es4sql.query.join;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.nlpcn.es4sql.domain.Field;
