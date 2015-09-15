@@ -199,6 +199,17 @@ public class QueryTest {
 		Assert.assertEquals("Amber", hits[0].getSource().get("firstname"));
 	}
 
+	@Test
+	public void notLikeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		SearchHits response = query(String.format("SELECT * FROM %s WHERE firstname NOT LIKE 'amb%%'", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		// assert we got hits
+		Assert.assertNotEquals(0, response.getTotalHits());
+		for (SearchHit hit : hits) {
+			Assert.assertFalse(hit.getSource().get("firstname").toString().toLowerCase().startsWith("amb"));
+		}
+	}
 
 	@Test
 	public void limitTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
@@ -388,6 +399,24 @@ public class QueryTest {
 		}
 	}
 
+	@Test
+	public void complexNotConditionQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		String errorMessage = "Result does not exist to the condition NOT (gender='m' AND NOT (age > 25 OR account_number > 5)) OR (NOT gender='f' AND NOT (age > 30 OR account_number < 8))";
+
+		SearchHits response = query(String.format("SELECT * FROM %s/account WHERE NOT (gender='m' AND NOT (age > 25 OR account_number > 5)) OR (NOT gender='f' AND NOT (age > 30 OR account_number < 8))", TEST_INDEX));
+		SearchHit[] hits = response.getHits();
+
+		Assert.assertNotEquals(hits.length, 0);
+
+		for (SearchHit hit : hits) {
+			Map<String, Object> source = hit.getSource();
+			String gender = ((String) source.get("gender")).toLowerCase();
+			int age = (int) source.get("age");
+			int account_number = (int) source.get("account_number");
+
+			Assert.assertTrue(errorMessage, !(gender.equals("m") && !(age > 25 || account_number > 5)) || (!gender.equals("f") && !(age > 30 || account_number < 8)));
+		}
+	}
 
 	@Test
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {

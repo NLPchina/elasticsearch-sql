@@ -24,7 +24,7 @@ import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 public class SqlParser {
 
 	public SqlParser() {
-	};
+	}
 
 	public Select parseSelect(SQLQueryExpr mySqlExpr) throws SqlParseException {
 
@@ -78,32 +78,32 @@ public class SqlParser {
 			SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
 			routeCond(bExpr, bExpr.left, where);
 			routeCond(bExpr, bExpr.right, where);
+		} else if (expr instanceof SQLNotExpr) {
+			parseWhere(((SQLNotExpr) expr).getExpr(), where);
+			negateWhere(where);
 		} else {
 			explanCond("AND", expr, where);
 		}
 	}
 
 	private void routeCond(SQLBinaryOpExpr bExpr, SQLExpr sub, Where where) throws SqlParseException {
-		if (sub instanceof SQLBinaryOpExpr) {
-			parseWhere(bExpr, (SQLBinaryOpExpr) sub, where);
+		if (sub instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) sub)) {
+			SQLBinaryOpExpr binarySub = (SQLBinaryOpExpr) sub;
+			if (binarySub.operator.priority != bExpr.operator.priority) {
+				Where subWhere = new Where(bExpr.getOperator().name);
+				where.addWhere(subWhere);
+				parseWhere(binarySub, subWhere);
+			} else {
+				parseWhere(binarySub, where);
+			}
+		} else if (sub instanceof SQLNotExpr) {
+			Where subWhere = new Where(bExpr.getOperator().name);
+			where.addWhere(subWhere);
+			parseWhere(((SQLNotExpr) sub).getExpr(), subWhere);
+			negateWhere(subWhere);
 		} else {
 			explanCond(bExpr.operator.name, sub, where);
 		}
-	}
-
-	private void parseWhere(SQLBinaryOpExpr expr, SQLBinaryOpExpr sub, Where where) throws SqlParseException {
-		if (isCond(sub)) {
-			explanCond(expr.operator.name, sub, where);
-		} else {
-			if (sub.operator.priority != expr.operator.priority) {
-				Where subWhere = new Where(expr.getOperator().name);
-				where.addWhere(subWhere);
-				parseWhere(sub, subWhere);
-			} else {
-				parseWhere(sub, where);
-			}
-		}
-
 	}
 
 	private void explanCond(String opear, SQLExpr expr, Where where) throws SqlParseException {
@@ -120,14 +120,6 @@ public class SqlParser {
             Condition condition = new Condition(CONN.valueOf(opear), between.getTestExpr().toString(), between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[]{parseValue(between.beginExpr),
                     parseValue(between.endExpr)});
             where.addWhere(condition);
-        } else if (expr instanceof SQLNotExpr){
-			SQLBinaryOpExpr notExpr = (SQLBinaryOpExpr) ((SQLNotExpr) expr).getExpr();
-            String left = notExpr.getLeft().toString();
-            SQLExpr right = notExpr.getRight();
-			// add a check here to see if the not'd value is a 'like' operator
-			Condition.OPEAR notOpear = notExpr.getOperator() == SQLBinaryOperator.Like ? Condition.OPEAR.NLIKE : Condition.OPEAR.N;
-			Condition condition = new Condition(CONN.valueOf(opear), left, notOpear, parseValue(right));
-			where.addWhere(condition);
         }
         else if (expr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
@@ -276,6 +268,18 @@ public class SqlParser {
 		}
 
 		return fromList;
+	}
+
+	private void negateWhere(Where where) throws SqlParseException {
+		for (Where sub : where.getWheres()) {
+			if (sub instanceof Condition) {
+				Condition cond = (Condition) sub;
+				cond.setOpear(cond.getOpear().negative());
+			} else {
+				negateWhere(sub);
+			}
+			sub.setConn(sub.getConn().negative());
+		}
 	}
 
 }
