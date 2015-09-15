@@ -275,7 +275,6 @@ public class SQLExprParser extends SQLParser {
                     SQLExpr notTarget = expr();
 
                     accept(Token.RPAREN);
-                    notTarget = exprRest(notTarget);
 
                     sqlExpr = new SQLNotExpr(notTarget);
 
