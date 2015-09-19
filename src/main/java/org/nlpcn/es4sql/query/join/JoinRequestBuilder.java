@@ -55,7 +55,7 @@ public  class JoinRequestBuilder implements SqlElasticRequestBuilder {
 
             XContentBuilder secondBuilder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
             secondTable.getRequestBuilder().internalBuilder().toXContent(secondBuilder, ToXContent.EMPTY_PARAMS);
-            String explained = String.format("HashJoin. first query:\n%s\n second query:\n%s", firstBuilder.string(), secondBuilder.string());
+            String explained = String.format(" first query:\n%s\n second query:\n%s", firstBuilder.string(), secondBuilder.string());
 
             return explained;
         } catch (IOException e) {
