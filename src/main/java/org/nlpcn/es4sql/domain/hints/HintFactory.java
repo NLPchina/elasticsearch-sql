@@ -16,6 +16,7 @@ public class HintFactory {
             return new Hint(HintType.HASH_WITH_TERMS_FILTER,null);
         if(hintAsString.startsWith("! JOIN_TABLES_LIMIT")){
             String[] numbers =  getParamsFromHint(hintAsString, "! JOIN_TABLES_LIMIT");
+            //todo: check if numbers etc..
             List<Object> params = new ArrayList<>();
             for (String number : numbers){
                 if(number.equals("null") || number.equals("infinity")){
@@ -27,6 +28,12 @@ public class HintFactory {
             }
 
             return new Hint(HintType.JOIN_LIMIT,params.toArray());
+        }
+        if(hintAsString.startsWith("! NL_MULTISEARCH_SIZE")) {
+            String[] number = getParamsFromHint(hintAsString,"! NL_MULTISEARCH_SIZE");
+            //todo: check if numbers etc..
+            int multiSearchSize = Integer.parseInt(number[0]);
+            return new Hint(HintType.NL_MULTISEARCH_SIZE,new Object[]{multiSearchSize});
         }
         return null;
     }

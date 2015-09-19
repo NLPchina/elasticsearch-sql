@@ -3,6 +3,8 @@ package org.nlpcn.es4sql.query.join;
 import org.elasticsearch.client.Client;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.JoinSelect;
+import org.nlpcn.es4sql.domain.hints.Hint;
+import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
@@ -31,6 +33,17 @@ public class ESNestedLoopsQueryAction extends ESJoinQueryAction {
     @Override
     protected JoinRequestBuilder createSpecificBuilder() {
         return new NestedLoopsElasticRequestBuilder();
+    }
+
+    @Override
+    protected void updateRequestWithHints(JoinRequestBuilder requestBuilder) {
+        super.updateRequestWithHints(requestBuilder);
+        for(Hint hint : this.joinSelect.getHints()){
+            if(hint.getType() ==  HintType.NL_MULTISEARCH_SIZE){
+                Integer multiSearchMaxSize = (Integer) hint.getParams()[0];
+                ((NestedLoopsElasticRequestBuilder) requestBuilder).setMultiSearchMaxSize(multiSearchMaxSize);
+            }
+        }
     }
 
     private String removeAlias(String field) {

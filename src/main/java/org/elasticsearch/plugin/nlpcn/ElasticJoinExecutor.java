@@ -180,6 +180,7 @@ public abstract class ElasticJoinExecutor {
         searchHit.sourceAsMap().clear();
         searchHit.sourceAsMap().putAll(hit.sourceAsMap());
         Map<String,Object> emptySecondTableHitSource = createNullsSource(secondTableReturnedFields);
+
         mergeSourceAndAddAliases(emptySecondTableHitSource, searchHit,t1Alias,t2Alias);
 
         combinedResults.add(searchHit);

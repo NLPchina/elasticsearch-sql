@@ -10,6 +10,7 @@ public enum HintType
 {
     HASH_WITH_TERMS_FILTER,
     JOIN_LIMIT,
-    USE_NESTED_LOOPS;
+    USE_NESTED_LOOPS,
+    NL_MULTISEARCH_SIZE;
 
 }
