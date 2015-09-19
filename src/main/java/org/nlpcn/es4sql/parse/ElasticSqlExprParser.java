@@ -64,18 +64,21 @@ public class ElasticSqlExprParser extends MySqlExprParser {
             }
         }
         else if(lexer.token() == Token.LBRACKET){
-            List<String> identifiers = new ArrayList<>();
+            StringBuilder identifier = new StringBuilder();
             lexer.nextToken();
+            String prefix = "";
             while(lexer.token()!=Token.RBRACKET){
                 if(lexer.token() != Token.IDENTIFIER && lexer.token()!=Token.INDEX){
                     throw new ParserException("All items between Brackets should be identifiers , got:" +lexer.token());
                 }
-                identifiers.add(lexer.stringVal());
+                identifier.append(prefix);
+                identifier.append(lexer.stringVal());
+                prefix = " ";
                 lexer.nextToken();
             }
-            String identifier = String.join(" ", identifiers);
+
             accept(Token.RBRACKET);
-            return new SQLIdentifierExpr(identifier);
+            return new SQLIdentifierExpr(identifier.toString());
         }
         return super.primary();
     }

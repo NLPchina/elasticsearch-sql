@@ -252,8 +252,12 @@ public class SqlParser {
         }
 
         if ( sameAliases.contains(null) ) return null;
-        if ( sameAliases.stream().distinct().count() != 1 ) return null;
-        return sameAliases.get(0);
+        String firstAlias = sameAliases.get(0);
+        //return null if more than one alias
+        for(String alias : sameAliases){
+            if(!alias.equals(firstAlias)) return null;
+        }
+        return firstAlias;
     }
 
 	private void findOrderBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
