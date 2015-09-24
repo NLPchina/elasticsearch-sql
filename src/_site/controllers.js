@@ -1,3 +1,4 @@
+
 var elasticsearchSqlApp = angular.module('elasticsearchSqlApp', ["ngAnimate", "ngSanitize"]);
 
 elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) {
@@ -88,7 +89,8 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 				data += map2csvStr(columns,rows[i],',') ;
 				
 			}
-			window.location='data:text/csv;charset=utf8,' + encodeURIComponent(data);
+			var plain = 'data:text/csv;charset=utf8,' + encodeURIComponent(data);
+			download(plain, "query_result.csv", "text/plain");			
   		return true; 
 	}
 
@@ -109,10 +111,10 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 	}
 	
 	function map2csvStr(columns,arr,op){
-		var data = arr[columns[0]]; 
+		var data = JSON.stringify(arr[columns[0]]); 
 		for(var i=1; i<columns.length ; i++){
 				data += op;
-				data += arr[columns[i]] ;
+				data += JSON.stringify(arr[columns[i]]) ;
 		}
 		return data ;
 	}
