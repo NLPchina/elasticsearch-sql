@@ -168,6 +168,50 @@ public class JoinTests {
     }
 
     @Test
+    public void joinWithAllAliasOnReturnHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithAllAliasOnReturn(false);
+    }
+    @Test
+    public void joinWithAllAliasOnReturnNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithAllAliasOnReturn(true);
+    }
+
+    private void joinWithAllAliasOnReturn(boolean useNestedLoops)  throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+            String query = String.format("select c.name.firstname name,c.parents.father father, h.name house from %s/gotCharacters c " +
+                    "JOIN %s/gotHouses h " +
+                    "on h.name = c.house " +
+                    "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+            if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
+            SearchHit[] hits = joinAndGetHits(query);
+            Assert.assertEquals(1, hits.length);
+
+            Map<String,Object> someMatch =  ImmutableMap.of("name", (Object) "Daenerys", "father", "Aerys", "house", "Targaryen");
+            Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+    @Test
+    public void joinWithSomeAliasOnReturnHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithSomeAliasOnReturn(false);
+    }
+    @Test
+    public void joinWithSomeAliasOnReturnNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithSomeAliasOnReturn(true);
+    }
+
+    private void joinWithSomeAliasOnReturn(boolean useNestedLoops)  throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("select c.name.firstname ,c.parents.father father, h.name house from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.name = c.house " +
+                "where c.name.firstname='Daenerys'", TEST_INDEX,TEST_INDEX);
+        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(1, hits.length);
+
+        Map<String,Object> someMatch =  ImmutableMap.of("c.name.firstname", (Object) "Daenerys", "father", "Aerys", "house", "Targaryen");
+        Assert.assertTrue(hitsContains(hits, someMatch));
+    }
+
+    @Test
     public void joinWithNestedFieldsOnComparisonAndOnReturnHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
         joinWithNestedFieldsOnComparisonAndOnReturn(false);
     }
@@ -329,7 +373,7 @@ public class JoinTests {
                 "ON GEO_INTERSECTS(p2.place,p1.place)",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(2, hits.length);
-        Assert.assertEquals("squareRelated",hits[0].getSource().get("p2.description"));
+        Assert.assertEquals("squareRelated", hits[0].getSource().get("p2.description"));
         Assert.assertEquals("squareRelated",hits[1].getSource().get("p2.description"));
     }
 

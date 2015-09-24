@@ -21,10 +21,7 @@ import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Eliran on 15/9/2015.
@@ -33,9 +30,11 @@ public abstract class ElasticJoinExecutor {
     protected SearchHits results ;
     protected MetaSearchResult metaResults;
     protected final int MAX_RESULTS_ON_ONE_FETCH = 10000;
+    private Set<String> aliasesOnReturn;
 
     protected ElasticJoinExecutor() {
         metaResults = new MetaSearchResult();
+        aliasesOnReturn = new HashSet<>();
     }
 
     public void  sendResponse(RestChannel channel){
@@ -120,7 +119,8 @@ public abstract class ElasticJoinExecutor {
     protected Map<String,Object> mapWithAliases(Map<String, Object> source, String alias) {
         Map<String,Object> mapWithAliases = new HashMap<>();
         for(Map.Entry<String,Object> fieldNameToValue : source.entrySet()) {
-            mapWithAliases.put(alias + "." + fieldNameToValue.getKey(), fieldNameToValue.getValue());
+            if(!aliasesOnReturn.contains(fieldNameToValue.getKey()))
+                mapWithAliases.put(alias + "." + fieldNameToValue.getKey(), fieldNameToValue.getValue());
         }
         return mapWithAliases;
     }
@@ -130,7 +130,13 @@ public abstract class ElasticJoinExecutor {
 
         for(Field field: required){
             String name = field.getName();
-            filteredMap.put(name, deepSearchInMap(fieldsMap, name));
+            String returnName = name;
+            String alias = field.getAlias();
+            if(alias !=null && alias !=""){
+                returnName = alias;
+                aliasesOnReturn.add(alias);
+            }
+            filteredMap.put(returnName, deepSearchInMap(fieldsMap, name));
         }
         fieldsMap.clear();
         fieldsMap.putAll(filteredMap);
