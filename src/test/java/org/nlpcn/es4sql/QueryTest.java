@@ -460,7 +460,7 @@ public class QueryTest {
 
     @Test
     public void filterPolygonTest() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_INTERSECTS(place,'POLYGON ((102 2, 103 2, 103 3, 102 3, 102 2))')", TEST_INDEX));
+        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_INTERSECTS(place,'POLYGON ((102 2, 103 2, 103 3, 102 3, 102 2))')", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
         Assert.assertEquals("bigSquare",result.getSource().get("description"));
@@ -468,14 +468,14 @@ public class QueryTest {
 
     @Test
     public void boundingBox() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_BOUNDING_BOX(center,100.0,1.0,101,0.0)", TEST_INDEX));
+        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_BOUNDING_BOX(center,100.0,1.0,101,0.0)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
         Assert.assertEquals("square",result.getSource().get("description"));
     }
     @Test
     public void geoDistance() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_DISTANCE(center,'1km',100.5,0.500001)", TEST_INDEX));
+        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE(center,'1km',100.5,0.500001)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
         Assert.assertEquals("square",result.getSource().get("description"));
@@ -483,7 +483,7 @@ public class QueryTest {
 
     @Test
     public void geoDistanceRange() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_DISTANCE_RANGE(center,'1m','1km',100.5,0.50001)", TEST_INDEX));
+        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE_RANGE(center,'1m','1km',100.5,0.50001)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
         Assert.assertEquals("square",result.getSource().get("description"));
@@ -491,7 +491,7 @@ public class QueryTest {
 
     @Test
     public void geoCell() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_CELL(center,100.5,0.50001,7)", TEST_INDEX));
+        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_CELL(center,100.5,0.50001,7)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
         Assert.assertEquals("square",result.getSource().get("description"));
@@ -499,7 +499,7 @@ public class QueryTest {
 
     @Test
     public void geoPolygon() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s WHERE GEO_POLYGON(center,100,0,100.5,2,101.0,0)", TEST_INDEX));
+        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_POLYGON(center,100,0,100.5,2,101.0,0)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
         Assert.assertEquals("square",result.getSource().get("description"));

@@ -58,8 +58,11 @@ public class MainTestSuite {
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");
 
-        prepareSpatialIndex();
+        prepareSpatialIndex("location");
         loadBulk("src/test/resources/locations.json");
+
+        prepareSpatialIndex("location2");
+        loadBulk("src/test/resources/locations2.json");
 
         searchDao = new SearchDao(client);
 
@@ -125,9 +128,9 @@ public class MainTestSuite {
 			throw new Exception(String.format("Failed during bulk load of file %s. failure message: %s", jsonPath, response.buildFailureMessage()));
 		}
 	}
-    public static void prepareSpatialIndex(){
+    public static void prepareSpatialIndex(String type){
         String dataMapping = "{\n" +
-                "\t\"location\" :{\n" +
+                "\t\""+type+"\" :{\n" +
                 "\t\t\"properties\":{\n" +
                 "\t\t\t\"place\":{\n" +
                 "\t\t\t\t\"type\":\"geo_shape\",\n" +
@@ -147,7 +150,7 @@ public class MainTestSuite {
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("location").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping).execute().actionGet();
     }
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +

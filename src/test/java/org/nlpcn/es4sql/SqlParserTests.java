@@ -283,6 +283,20 @@ public class SqlParserTests {
         Assert.assertEquals("Test Index",from.getIndex());
         Assert.assertEquals("type1",from.getType());
     }
+
+
+    @Test
+    public void fieldWithSpacesWithinBrackets() throws SqlParseException {
+        String query = "SELECT insert_time FROM name/type1 WHERE [first name] = 'Name'";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> where = select.getWhere().getWheres();
+        Assert.assertEquals(1,where.size());
+        Condition condition = (Condition) where.get(0);
+        Assert.assertEquals("first name",condition.getName());
+        Assert.assertEquals("Name",condition.getValue());
+    }
+
     @Test
     public void twoIndices() throws SqlParseException {
         String query = "SELECT insert_time FROM index1/type1 , index2/type2 WHERE age > 3";

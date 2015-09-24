@@ -322,6 +322,16 @@ public class JoinTests {
         Assert.assertEquals(12, hits.length);
     }
 
+    @Test
+    public void joinWithGeoIntersectNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select p1.description,p2.description from %s/location p1 " +
+                "JOIN %s/location2 p2 " +
+                "ON GEO_INTERSECTS(p2.place,p1.place)",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(2, hits.length);
+        Assert.assertEquals("squareRelated",hits[0].getSource().get("p2.description"));
+        Assert.assertEquals("squareRelated",hits[1].getSource().get("p2.description"));
+    }
 
 
     private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {

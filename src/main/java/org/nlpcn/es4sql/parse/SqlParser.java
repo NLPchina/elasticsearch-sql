@@ -392,11 +392,10 @@ public class SqlParser {
                 fields.add(new Field(condition.getName().replaceFirst(prefix,""),null));
             }
             else {
-                if(! (condition.getValue() instanceof SQLPropertyExpr)){
+                if(! ((condition.getValue() instanceof SQLPropertyExpr)||(condition.getValue() instanceof String))){
                     throw new SqlParseException("conditions on join should be one side is firstTable second Other , condition was:" + condition.toString());
                 }
-                SQLPropertyExpr conditionValue = (SQLPropertyExpr) condition.getValue();
-                String aliasDotValue = conditionValue.toString();
+                String aliasDotValue = condition.getValue().toString();
                 int indexOfDot = aliasDotValue.indexOf(".");
                 String owner = aliasDotValue.substring(0, indexOfDot);
                 if(owner.equals(alias))
@@ -473,8 +472,8 @@ public class SqlParser {
     private void addIfConditionRecursive(Where where, List<Condition> conditions) throws SqlParseException {
         if(where instanceof Condition){
             Condition cond = (Condition) where;
-            if( ! (cond.getValue() instanceof  SQLPropertyExpr)){
-                throw new SqlParseException("conditions on join should be one side is firstTable second Other , condition was:" + cond.toString());
+            if( ! ((cond.getValue() instanceof  SQLPropertyExpr)|| (cond.getValue() instanceof  String))){
+                throw new SqlParseException("conditions on join should be one side is secondTable OPEAR firstTable, condition was:" + cond.toString());
             }
             conditions.add(cond);
         }

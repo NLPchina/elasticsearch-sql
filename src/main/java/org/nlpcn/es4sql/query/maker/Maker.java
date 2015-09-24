@@ -206,7 +206,7 @@ public abstract class Maker {
         case GEO_INTERSECTS:
             String wkt = cond.getValue().toString();
             try {
-                ShapeBuilder shapeBuilder = getShapeBuilderFromWkt(wkt);
+                ShapeBuilder shapeBuilder = getShapeBuilderFromString(wkt);
                 if(isQuery)
                     x = QueryBuilders.geoShapeQuery(cond.getName(), shapeBuilder);
                 else
@@ -266,9 +266,23 @@ public abstract class Maker {
 		return x;
 	}
 
-    private ShapeBuilder getShapeBuilderFromWkt(String wkt) throws IOException {
-        String json = WktToGeoJsonConverter.toGeoJson(trimApostrophes(wkt));
+    private ShapeBuilder getShapeBuilderFromString(String str) throws IOException {
+        String json;
+        if(str.contains("{")) json  = fixJsonFromElastic(str);
+        else json = WktToGeoJsonConverter.toGeoJson(trimApostrophes(str));
+
         return getShapeBuilderFromJson(json);
+    }
+
+    /*
+    * elastic sends {coordinates=[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]], type=Polygon}
+    * proper form is {"coordinates":[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]], "type":"Polygon"}
+     *  */
+    private String fixJsonFromElastic(String elasticJson) {
+        String properJson = elasticJson.replaceAll("=",":");
+        properJson = properJson.replaceAll("(type)(:)([a-zA-Z]+)","\"type\":\"$3\"");
+        properJson = properJson.replaceAll("coordinates","\"coordinates\"");
+        return properJson;
     }
 
     private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {
