@@ -18,6 +18,7 @@ import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
 import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 
 import java.io.IOException;
@@ -31,10 +32,15 @@ public abstract class ElasticJoinExecutor {
     protected MetaSearchResult metaResults;
     protected final int MAX_RESULTS_ON_ONE_FETCH = 10000;
     private Set<String> aliasesOnReturn;
+    private boolean allFieldsReturn;
 
-    protected ElasticJoinExecutor() {
+    protected ElasticJoinExecutor(JoinRequestBuilder requestBuilder) {
         metaResults = new MetaSearchResult();
         aliasesOnReturn = new HashSet<>();
+        List<Field> firstTableReturnedField = requestBuilder.getFirstTable().getReturnedFields();
+        List<Field> secondTableReturnedField = requestBuilder.getSecondTable().getReturnedFields();
+        allFieldsReturn = (firstTableReturnedField == null || firstTableReturnedField.size() == 0)
+                            && (secondTableReturnedField == null || secondTableReturnedField.size() == 0);
     }
 
     public void  sendResponse(RestChannel channel){
@@ -121,13 +127,17 @@ public abstract class ElasticJoinExecutor {
         for(Map.Entry<String,Object> fieldNameToValue : source.entrySet()) {
             if(!aliasesOnReturn.contains(fieldNameToValue.getKey()))
                 mapWithAliases.put(alias + "." + fieldNameToValue.getKey(), fieldNameToValue.getValue());
+            else mapWithAliases.put(fieldNameToValue.getKey(),fieldNameToValue.getValue());
         }
         return mapWithAliases;
     }
 
     protected void  onlyReturnedFields(Map<String, Object> fieldsMap, List<Field> required) {
         HashMap<String,Object> filteredMap = new HashMap<>();
-
+        if(allFieldsReturn) {
+            filteredMap.putAll(fieldsMap);
+            return;
+        }
         for(Field field: required){
             String name = field.getName();
             String returnName = name;

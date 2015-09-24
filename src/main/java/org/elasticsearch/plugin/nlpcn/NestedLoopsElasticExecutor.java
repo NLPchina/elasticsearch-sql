@@ -32,6 +32,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     private final Client client;
 
     public NestedLoopsElasticExecutor(Client client, NestedLoopsElasticRequestBuilder nestedLoops) {
+        super(nestedLoops);
         this.client = client;
         this.nestedLoopsRequest = nestedLoops;
     }

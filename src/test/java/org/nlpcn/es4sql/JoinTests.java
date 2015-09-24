@@ -88,6 +88,25 @@ public class JoinTests {
     }
 
     @Test
+    public void joinWithStarASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithStar(false);
+    }
+
+    private void joinWithStar(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("select * from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.name = c.house ",TEST_INDEX,TEST_INDEX);
+        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(4, hits.length);
+        String house = hits[0].sourceAsMap().get("c.house").toString();
+        boolean someHouse = house.equals("Targaryen") || house.equals( "Stark") || house.equals("Lannister");
+        Assert.assertTrue(someHouse );;
+        String houseName = hits[0].sourceAsMap().get("h.name").toString();
+        Assert.assertEquals(house,houseName);
+    }
+
+    @Test
     public void joinNoConditionButWithWhereHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
         joinNoConditionButWithWhere(false);
     }
@@ -417,5 +436,4 @@ public class JoinTests {
         if(one == null)   return other == null;
         return one.equals(other);
     }
-
 }

@@ -46,6 +46,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
     private final int MAX_RESULTS_FOR_FIRST_TABLE = 100000;
 
     public HashJoinElasticExecutor(Client client,HashJoinElasticRequestBuilder requestBuilder) {
+        super(requestBuilder);
         this.client = client;
         this.requestBuilder = requestBuilder;
         this.useQueryTermsFilterOptimization = requestBuilder.isUseTermFiltersOptimization();
