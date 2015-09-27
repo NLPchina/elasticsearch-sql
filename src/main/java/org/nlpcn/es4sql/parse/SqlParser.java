@@ -39,6 +39,8 @@ public class SqlParser {
 
 		select.setWhere(findWhere(query.getWhere()));
 
+        select.getHints().addAll(parseHints(query.getHints()));
+
 		findLimit(query.getLimit(), select);
 
 		findOrderBy(query, select);

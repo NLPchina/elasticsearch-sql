@@ -35,11 +35,22 @@ public class HintFactory {
             int multiSearchSize = Integer.parseInt(number[0]);
             return new Hint(HintType.NL_MULTISEARCH_SIZE,new Object[]{multiSearchSize});
         }
+        if(hintAsString.startsWith("! USE_SCROLL")){
+            String[] scrollParams = getParamsFromHint(hintAsString,"! USE_SCROLL");
+            int docsPerFetch = 10000;
+            int timeout = 60000;
+            if(scrollParams != null && scrollParams.length ==2) {
+                docsPerFetch = Integer.parseInt(scrollParams[0]);
+                timeout = Integer.parseInt(scrollParams[1]);
+            }
+            return new Hint(HintType.USE_SCROLL, new Object[]{docsPerFetch,timeout});
+        }
         return null;
     }
 
 
     private static String[] getParamsFromHint(String hint, String prefix) {
+        if(!hint.contains("(")) return null;
         String onlyParams = hint.replace(prefix, "").replaceAll("\\s*\\(\\s*","").replaceAll("\\s*\\,\\s*", ",").replaceAll("\\s*\\)\\s*", "");
         return onlyParams.split(",");
     }

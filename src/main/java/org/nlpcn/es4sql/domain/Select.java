@@ -1,5 +1,7 @@
 package org.nlpcn.es4sql.domain;
 
+import org.nlpcn.es4sql.domain.hints.Hint;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +15,7 @@ public class Select extends Query {
 
 	// Using this functions, will cause query to execute as aggregation.
 	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS");
-
+    private List<Hint> hints = new ArrayList<>();
 	private List<Field> fields = new ArrayList<>();
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
@@ -85,6 +87,11 @@ public class Select extends Query {
 
 		fields.add(field);
 	}
+
+    public List<Hint> getHints() {
+        return hints;
+    }
+
 
 }
 

@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql;
 
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.joda.time.DateTime;
@@ -558,9 +559,34 @@ public class QueryTest {
         Assert.assertEquals(1, response.getTotalHits());
     }
 
+
+    @Test
+    public void useScrollNoParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL*/ age,gender,firstname,balance FROM  %s/account LIMIT 2000", TEST_INDEX, TEST_INDEX));
+        Assert.assertNotNull(response.getScrollId());
+        SearchHits hits = response.getHits();
+        Assert.assertEquals(0,hits.getHits().length);
+        Assert.assertEquals(1000,hits.getTotalHits());
+    }
+
+    @Test
+    public void useScrollWithParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL(10,5000)*/ age,gender,firstname,balance FROM  %s/account ", TEST_INDEX, TEST_INDEX));
+        Assert.assertNotNull(response.getScrollId());
+        SearchHits hits = response.getHits();
+        Assert.assertEquals(0,hits.getHits().length);
+        Assert.assertEquals(1000,hits.getTotalHits());
+    }
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
         return ((SearchResponse)select.get()).getHits();
+    }
+
+    private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        return ((SearchResponse)select.get());
     }
 }

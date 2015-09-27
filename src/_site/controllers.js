@@ -8,9 +8,61 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 	$scope.resultsRows = [];
 	$scope.searchLoading = false;
 	$scope.explainLoading = false;
+	$scope.nextLoading = false;
 	$scope.resultExplan = false;
-	
+	$scope.scrollId = null;
+	$scope.gotNext = false;
 
+	$scope.nextSearch = function(){
+		$scope.error = "";
+		$scope.nextLoading = true;
+		$scope.$apply();
+
+
+		if($scope.scrollId == null || $scope.scrollId == "" ){
+			$scope.error = "tryed scrolling with empty scrollId";
+			return;
+		}
+
+		$http.get($scope.url + "_search/scroll?scroll=1m&scroll_id=" + $scope.scrollId)
+		.success(function(data, status, headers, config) {
+          var handler = ResultHandlerFactory.create(data);
+          var body = handler.getBody()
+          
+          if(body.length ==null || body.length == 0){
+          	$scope.gotNext=false;
+          }
+          else 
+          {
+          	  $scope.scrollId = handler.getScrollId();
+          }
+
+          if($scope.resultsRows.length > 0){
+          	$scope.resultsRows = $scope.resultsRows.concat(handler.getBody());
+          }
+          else {
+          	$scope.resultsColumns = handler.getHead();
+            $scope.resultsRows = handler.getBody();
+          
+          }
+
+          
+        })
+        .error(function(data, status, headers, config) {        
+          if(data == "") {
+            $scope.error = "Error occured! response is not avalible.";
+    	  }
+    	  else {
+    	  	$scope.error = JSON.stringify(data);
+    	  	$scope.scrollId = null;
+		  }
+        })
+        .finally(function() {
+          $scope.nextLoading = false;
+          $scope.$apply()    
+        });
+
+	}
 
 	$scope.search = function() {
 		// Reset results and error box
@@ -28,6 +80,10 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
           var handler = ResultHandlerFactory.create(data);
+          if(handler.isScroll){
+          	$scope.gotNext=true;
+          	$scope.scrollId = handler.getScrollId();
+          }
           $scope.resultsColumns = handler.getHead();
           $scope.resultsRows = handler.getBody();
       
