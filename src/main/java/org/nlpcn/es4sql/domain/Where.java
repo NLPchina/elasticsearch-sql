@@ -4,9 +4,13 @@ import java.util.LinkedList;
 
 public class Where {
 
-	public static enum CONN {
-		AND, OR
-	};
+	public enum CONN {
+		AND, OR;
+
+		public CONN negative() {
+			return this == AND ? OR : AND;
+		}
+	}
 
 	public static Where newInstance() {
 		return new Where(CONN.AND);
@@ -30,6 +34,10 @@ public class Where {
 
 	public CONN getConn() {
 		return this.conn;
+	}
+
+	public void setConn(CONN conn) {
+		this.conn = conn;
 	}
 	
 	public LinkedList<Where> getWheres() {

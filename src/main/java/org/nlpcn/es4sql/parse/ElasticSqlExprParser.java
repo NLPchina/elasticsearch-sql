@@ -2,14 +2,14 @@ package org.nlpcn.es4sql.parse;
 
 import com.alibaba.druid.sql.ast.SQLCommentHint;
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLExistsExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLNotExpr;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlExprParser;
-import com.alibaba.druid.sql.dialect.mysql.parser.MySqlLexer;
 import com.alibaba.druid.sql.parser.Lexer;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.Token;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -79,6 +79,30 @@ public class ElasticSqlExprParser extends MySqlExprParser {
 
             accept(Token.RBRACKET);
             return new SQLIdentifierExpr(identifier.toString());
+        }
+        else if (lexer.token() == Token.NOT) {
+            lexer.nextToken();
+            SQLExpr sqlExpr;
+            if (lexer.token() == Token.EXISTS) {
+                lexer.nextToken();
+                accept(Token.LPAREN);
+                sqlExpr = new SQLExistsExpr(createSelectParser().select(), true);
+                accept(Token.RPAREN);
+            } else if (lexer.token() == Token.LPAREN) {
+                lexer.nextToken();
+
+                SQLExpr notTarget = expr();
+
+                accept(Token.RPAREN);
+
+                sqlExpr = new SQLNotExpr(notTarget);
+
+                return primaryRest(sqlExpr);
+            } else {
+                SQLExpr restExpr = relational();
+                sqlExpr = new SQLNotExpr(restExpr);
+            }
+            return sqlExpr;
         }
         return super.primary();
     }
