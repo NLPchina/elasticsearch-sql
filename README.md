@@ -4,6 +4,7 @@ Elasticsearch-SQL
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
 
+**Check out our [wiki!](https://github.com/NLPchina/elasticsearch-sql/wiki)**
 
 
 ## Web frontend overview
@@ -17,7 +18,7 @@ Install as plugin:
 
 ### Elasticsearch 1.6.X
 ````
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.3.5/elasticsearch-sql-1.3.5.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4/elasticsearch-sql-1.4.zip --install sql
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
