@@ -20,7 +20,9 @@ public class Condition extends Where {
 	private Object value;
 
 	private OPEAR opear;
-	
+
+	private String aliasTableName;
+
 	public Condition(CONN conn, String name, OPEAR oper, Object value) throws SqlParseException {
 		super(conn);
 		this.opear = null;

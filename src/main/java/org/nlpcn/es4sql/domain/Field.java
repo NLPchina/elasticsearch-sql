@@ -6,7 +6,7 @@ package org.nlpcn.es4sql.domain;
  * @author ansj
  *
  */
-public class Field {
+public class Field implements  Cloneable{
 
 	protected String name;
 	private String alias;
@@ -36,4 +36,21 @@ public class Field {
 	public String toString() {
 		return this.name;
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) return false;
+        if(obj.getClass() != this.getClass()) return false;
+        Field other = (Field) obj;
+        boolean namesAreEqual = (other.getName() == null && this.name == null )
+                || other.getName().equals(this.name) ;
+        if(!namesAreEqual) return false;
+        return (other.getAlias() == null && this.alias == null )
+                || other.getAlias().equals(this.alias) ;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return new Field(new String(this.name),new String(this.alias));
+    }
 }

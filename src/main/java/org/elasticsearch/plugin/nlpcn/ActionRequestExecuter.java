@@ -7,16 +7,23 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
+import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
+import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
+
+import java.io.IOException;
 
 
 public class ActionRequestExecuter {
 
 	private RestChannel channel;
 	private Client client;
-	private ActionRequest request;
+	private SqlElasticRequestBuilder requestBuilder;
 
-	public ActionRequestExecuter(ActionRequest request, RestChannel channel, final Client client) {
-		this.request = request;
+	public ActionRequestExecuter(SqlElasticRequestBuilder requestBuilder, RestChannel channel, final Client client) {
+		this.requestBuilder = requestBuilder;
 		this.channel = channel;
 		this.client = client;
 	}
@@ -25,16 +32,29 @@ public class ActionRequestExecuter {
 	 * Execute the ActionRequest and returns the REST response using the channel.
 	 */
 	public void execute() throws Exception {
-		request.listenerThreaded(false);
+        ActionRequest request = requestBuilder.request();
+        request.listenerThreaded(false);
 
-		if (request instanceof SearchRequest) {
+        //todo: maby change to instanceof multi?
+        if(requestBuilder instanceof JoinRequestBuilder){
+            executeJoinRequestAndSendResponse();
+        }
+		else if (request instanceof SearchRequest) {
 			client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
 		} else if (request instanceof DeleteByQueryRequest) {
 			client.deleteByQuery((DeleteByQueryRequest) request, new DeleteByQueryRestListener(channel));
 		}
+
+
 		else {
 			throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
 		}
 	}
+
+    private void executeJoinRequestAndSendResponse() throws IOException, SqlParseException {
+        ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client,requestBuilder);
+        executor.run();
+        executor.sendResponse(channel);
+    }
 
 }

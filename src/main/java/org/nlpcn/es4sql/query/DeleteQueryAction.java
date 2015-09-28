@@ -25,13 +25,14 @@ public class DeleteQueryAction extends QueryAction {
 	}
 
 	@Override
-	public DeleteByQueryRequestBuilder explain() throws SqlParseException {
+	public SqlElasticDeleteByQueryRequestBuilder explain() throws SqlParseException {
 		this.request = client.prepareDeleteByQuery();
 		request.setListenerThreaded(false);
 
 		setIndicesAndTypes();
 		setWhere(delete.getWhere());
-		return request;
+        SqlElasticDeleteByQueryRequestBuilder deleteByQueryRequestBuilder = new SqlElasticDeleteByQueryRequestBuilder(request);
+		return deleteByQueryRequestBuilder;
 	}
 
 

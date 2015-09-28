@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -13,6 +14,8 @@ import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
+import org.nlpcn.es4sql.domain.hints.Hint;
+import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.maker.FilterMaker;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
@@ -31,7 +34,7 @@ public class DefaultQueryAction extends QueryAction {
 	}
 
 	@Override
-	public SearchRequestBuilder explain() throws SqlParseException {
+	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 		this.request = client.prepareSearch();
 		request.setListenerThreaded(false);
 		setIndicesAndTypes();
@@ -42,12 +45,34 @@ public class DefaultQueryAction extends QueryAction {
 		setLimit(select.getOffset(), select.getRowCount());
 
 		// set SearchType.
-		request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+        boolean usedScroll = useScrollIfNeeded();
+        if(!usedScroll){
+            request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+        }
 
-		return request;
+        SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
+		return sqlElasticRequestBuilder;
 	}
 
-	/**
+    private boolean useScrollIfNeeded() {
+        Hint scrollHint = null;
+        for(Hint hint: select.getHints()){
+            if(hint.getType() == HintType.USE_SCROLL){
+                scrollHint = hint;
+                break;
+            }
+        }
+        if(scrollHint!=null) {
+            int scrollSize = (Integer) scrollHint.getParams()[0];
+            int timeoutInMilli = (Integer) scrollHint.getParams()[1];
+            request.setSearchType(SearchType.SCAN)
+                    .setScroll(new TimeValue(timeoutInMilli))
+                    .setSize(scrollSize);
+        }
+        return scrollHint !=null ;
+    }
+
+    /**
 	 * Set indices and types to the search request.
 	 */
 	private void setIndicesAndTypes() {
@@ -124,5 +149,7 @@ public class DefaultQueryAction extends QueryAction {
 		}
 	}
 
-
+    public SearchRequestBuilder getRequestBuilder() {
+        return request;
+    }
 }

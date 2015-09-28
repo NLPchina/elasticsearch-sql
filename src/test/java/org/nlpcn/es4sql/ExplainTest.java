@@ -5,7 +5,8 @@ import junit.framework.Assert;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.explain.ExplainManager;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class ExplainTest {
 
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-		ActionRequestBuilder requestBuilder = searchDao.explain(sql);
-		return ExplainManager.explain(requestBuilder);
+        SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql);
+        return requestBuilder.explain();
 	}
 }

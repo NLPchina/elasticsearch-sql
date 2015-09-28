@@ -42,7 +42,18 @@ var DefaultQueryResultHandler = function(data) {
 
   this.data = data
   this.head = createScheme()
+  this.scrollId = data["_scroll_id"]
+  this.isScroll = this.scrollId!=null && this.scrollId!="";
 };
+
+DefaultQueryResultHandler.prototype.isScroll = function() {
+  return this.isScroll;
+};
+
+DefaultQueryResultHandler.prototype.getScrollId = function() {
+  return this.scrollId;
+};
+
 
 DefaultQueryResultHandler.prototype.getHead = function() {
   return this.head
