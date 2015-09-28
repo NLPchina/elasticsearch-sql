@@ -19,6 +19,8 @@ import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
+
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
@@ -188,7 +190,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByDateTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		SearchRequestBuilder result = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
 		System.out.println(result);
 	}
 
@@ -202,7 +204,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countDateRangeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		SearchRequestBuilder result = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
 		System.out.println(result);
 	}
 
@@ -217,14 +219,14 @@ public class AggregationTest {
 	 */
 	@Test
 	public void topHitTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		SearchRequestBuilder result = (SearchRequestBuilder) MainTestSuite.getSearchDao().explain("select topHits('size'=3,age='desc') from bank  group by gender ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select topHits('size'=3,age='desc') from bank  group by gender ");
 		System.out.println(result);
 	}
 
 	private Aggregations query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SearchRequestBuilder select = (SearchRequestBuilder) searchDao.explain(query);
-		return select.get().getAggregations();
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+		return ((SearchResponse)select.get()).getAggregations();
 	}
 
 	@Test
@@ -235,8 +237,8 @@ public class AggregationTest {
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SearchRequestBuilder select = (SearchRequestBuilder) searchDao.explain(query);
-		SearchResponse response = select.get();
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+		SearchResponse response = (SearchResponse) select.get();
 		Aggregations result = response.getAggregations();
 
 		Terms gender = result.get("gender");

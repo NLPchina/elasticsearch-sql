@@ -106,6 +106,9 @@
 
             <button type="button" ng-click="explain()" id="explainButton" class="btn btn-info explain-button" ng-bind-html="getButtonContent(explainLoading,'Explain')" ng-cloak>
             </button>
+
+            <button type="next" ng-click="nextSearch()" id="nextButton" class="btn btn-warning next-button" ng-show="gotNext" ng-bind-html="getButtonContent(nextLoading,'Next')" ng-cloak>
+            </button>
   	      </div>
 
           <!-- Error box, displayed only on errors -->
@@ -172,10 +175,12 @@
   	<script src="vendor/codemirror/addon/hint/sql-hint.js"></script>
 
     <!-- AngularJS -->
+    <script src="vendor/download/download.min.js"></script>
     <script src="vendor/angularjs/angular.min.js"></script>
     <script src="vendor/angularjs/angular-animate.min.js"></script>
     <script src="vendor/angularjs/angular-sanitize.min.js"></script>
 
+      
     <script src="editor.js"></script>
     <script src="query.js"></script>
     <script src="controllers.js"></script>

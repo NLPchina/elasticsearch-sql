@@ -1,0 +1,4 @@
+{"index":{"_type": "dog", "_id":"1"}}
+{"name":"rex","holdersName":"Daenerys","age":2}
+{"index":{"_type": "dog", "_id":"6"}}
+{"name":"snoopy","holdersName":"Hattie","age":4}

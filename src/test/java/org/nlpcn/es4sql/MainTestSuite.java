@@ -25,9 +25,12 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		MethodQueryTest.class,
 		AggregationTest.class,
 		BugTest.class,
+        JoinTests.class,
 		DeleteTest.class,
 		ExplainTest.class,
-        WktToGeoJsonConverterTests.class
+        WktToGeoJsonConverterTests.class,
+        SqlParserTests.class
+
 })
 public class MainTestSuite {
 
@@ -48,12 +51,18 @@ public class MainTestSuite {
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
         loadBulk("src/test/resources/phrases.json");
+        loadBulk("src/test/resources/dogs.json");
+        loadBulk("src/test/resources/peoples.json");
+        loadBulk("src/test/resources/game_of_thrones_complex.json");
 
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");
 
-        prepareSpatialIndex();
+        prepareSpatialIndex("location");
         loadBulk("src/test/resources/locations.json");
+
+        prepareSpatialIndex("location2");
+        loadBulk("src/test/resources/locations2.json");
 
         searchDao = new SearchDao(client);
 
@@ -119,9 +128,9 @@ public class MainTestSuite {
 			throw new Exception(String.format("Failed during bulk load of file %s. failure message: %s", jsonPath, response.buildFailureMessage()));
 		}
 	}
-    public static void prepareSpatialIndex(){
+    public static void prepareSpatialIndex(String type){
         String dataMapping = "{\n" +
-                "\t\"location\" :{\n" +
+                "\t\""+type+"\" :{\n" +
                 "\t\t\"properties\":{\n" +
                 "\t\t\t\"place\":{\n" +
                 "\t\t\t\t\"type\":\"geo_shape\",\n" +
@@ -141,7 +150,7 @@ public class MainTestSuite {
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("location").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping).execute().actionGet();
     }
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
@@ -186,6 +195,5 @@ public class MainTestSuite {
 		System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
 		return new InetSocketTransportAddress(host, Integer.parseInt(port));
 	}
-
 
 }

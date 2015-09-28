@@ -3,6 +3,8 @@ package org.nlpcn.es4sql.query.maker;
 import java.io.IOException;
 import java.util.Set;
 
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.elasticsearch.common.collect.Sets;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
@@ -15,8 +17,7 @@ import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-import org.durid.sql.ast.expr.SQLIdentifierExpr;
-import org.durid.sql.ast.expr.SQLMethodInvokeExpr;
+
 import org.nlpcn.es4sql.spatial.*;
 
 public abstract class Maker {
@@ -121,16 +122,15 @@ public abstract class Maker {
 		case IS:
 		case N:
 		case EQ:
-			if (value instanceof SQLIdentifierExpr) {
-				SQLIdentifierExpr identifier = (SQLIdentifierExpr) value;
-				if(identifier.getName().equalsIgnoreCase("missing")) {
+			if (value == null || value instanceof SQLIdentifierExpr) {
+				if(value == null || ((SQLIdentifierExpr) value).getName().equalsIgnoreCase("missing")) {
 					x = FilterBuilders.missingFilter(name);
 					if (isQuery) {
 						x = QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.missingFilter(name));
 					}
 				}
 				else {
-					throw new SqlParseException(String.format("Cannot recoginze Sql identifer %s", identifier.getName()));
+					throw new SqlParseException(String.format("Cannot recoginze Sql identifer %s", ((SQLIdentifierExpr) value).getName()));
 				}
 				break;
 			} else {
@@ -142,7 +142,7 @@ public abstract class Maker {
 				break;
 			}
 		case LIKE:
-		case NLIKE:
+        case NLIKE:
 			String queryStr = ((String) value).replace('%', '*').replace('_', '?');
 			WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(name, queryStr);
 			x = isQuery ? wildcardQuery : FilterBuilders.queryFilter(wildcardQuery);
@@ -206,7 +206,7 @@ public abstract class Maker {
         case GEO_INTERSECTS:
             String wkt = cond.getValue().toString();
             try {
-                ShapeBuilder shapeBuilder = getShapeBuilderFromWkt(wkt);
+                ShapeBuilder shapeBuilder = getShapeBuilderFromString(wkt);
                 if(isQuery)
                     x = QueryBuilders.geoShapeQuery(cond.getName(), shapeBuilder);
                 else
@@ -266,9 +266,23 @@ public abstract class Maker {
 		return x;
 	}
 
-    private ShapeBuilder getShapeBuilderFromWkt(String wkt) throws IOException {
-        String json = WktToGeoJsonConverter.toGeoJson(trimApostrophes(wkt));
+    private ShapeBuilder getShapeBuilderFromString(String str) throws IOException {
+        String json;
+        if(str.contains("{")) json  = fixJsonFromElastic(str);
+        else json = WktToGeoJsonConverter.toGeoJson(trimApostrophes(str));
+
         return getShapeBuilderFromJson(json);
+    }
+
+    /*
+    * elastic sends {coordinates=[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]], type=Polygon}
+    * proper form is {"coordinates":[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]], "type":"Polygon"}
+     *  */
+    private String fixJsonFromElastic(String elasticJson) {
+        String properJson = elasticJson.replaceAll("=",":");
+        properJson = properJson.replaceAll("(type)(:)([a-zA-Z]+)","\"type\":\"$3\"");
+        properJson = properJson.replaceAll("coordinates","\"coordinates\"");
+        return properJson;
     }
 
     private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {

@@ -1,0 +1,4 @@
+{"index":{"_type": "location2", "_id":"1"}}
+{"description":"square","place":{"type": "Polygon","coordinates": [[ [115.0, 112.0], [116.0, 112.0], [116.0, 113.0],[115.0, 113.0], [115.0, 112.0]]]},"center":{"lat": 0.5, "lon": 100.5 }}
+{"index":{"_type": "location2", "_id":"2"}}
+{"description":"squareRelated","place":{"type": "Polygon","coordinates": [[ [100.0, 0.0], [110.0, 0.0], [110.0, 10.0],[100.0, 10.0], [100.0, 0.0]]]},"center":{"lat": 5.0, "lon": 105.0 }}
