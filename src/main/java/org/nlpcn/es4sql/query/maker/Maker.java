@@ -107,6 +107,27 @@ public abstract class Maker {
 				bqb = FilterBuilders.queryFilter((QueryBuilder) bqb);
 			}
 			break;
+        case "match_term":
+        case "matchterm":
+        case "term":
+            if(isQuery){
+                bqb = QueryBuilders.termQuery(name,value.getParameters().get(0));
+            }
+            else {
+                bqb = FilterBuilders.termFilter(name,value.getParameters().get(0));
+            }
+            break;
+        case "in_terms":
+        case "interms":
+        case "terms":
+            Object[] values = value.getParameters().toArray();
+            if(isQuery){
+                bqb =QueryBuilders.termsQuery(name,values);
+            }
+            else {
+                bqb = FilterBuilders.termsFilter(name,values);
+            }
+            break;
 		default:
 			throw new SqlParseException("it did not support this query method " + value.getMethodName());
 

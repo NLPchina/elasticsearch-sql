@@ -283,8 +283,50 @@ public class QueryTest {
 		}
 	}
 
+    @Test
+    public void inTermsTestWithStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = IN_TERMS(daenerys,eddard) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(2, response.getTotalHits());
+        for(SearchHit hit : hits) {
+            String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+            assertThat(firstname, isOneOf("Daenerys", "Eddard"));
+        }
+    }
 
-	/* TODO when using not in on some field, documents that not contains this
+    @Test
+    public void inTermsTestWithNumbers() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.ofHisName = IN_TERMS(4,2) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(1, response.getTotalHits());
+        SearchHit hit = hits[0];
+        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        Assert.assertEquals("Brandon",firstname);
+    }
+
+
+    @Test
+    public void termQueryWithNumber() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.ofHisName = term(4) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(1, response.getTotalHits());
+        SearchHit hit = hits[0];
+        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        Assert.assertEquals("Brandon",firstname);
+    }
+
+    @Test
+    public void termQueryWithString() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = term(brandon) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(1, response.getTotalHits());
+        SearchHit hit = hits[0];
+        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        Assert.assertEquals("Brandon",firstname);
+    }
+
+
+    /* TODO when using not in on some field, documents that not contains this
 	field will return as well, That may considered a Wrong behaivor.
 	*/
 	@Test
