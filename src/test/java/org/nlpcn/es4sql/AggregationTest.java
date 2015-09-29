@@ -194,6 +194,13 @@ public class AggregationTest {
 		System.out.println(result);
 	}
 
+    @Test
+    public void countGroupByDateTestWithAlias() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM','alias'='myAlias') ");
+        boolean containAlias = result.toString().replaceAll("\\s+","").contains("myAlias\":{\"date_histogram\":{\"field\":\"insert_time\",\"interval\":\"1.5h\",\"format\":\"yyyy-MM\"}}");
+        Assert.assertTrue(containAlias);
+    }
+
 	/**
 	 * 时间范围聚合
 	 *
@@ -223,11 +230,13 @@ public class AggregationTest {
 		System.out.println(result);
 	}
 
+
 	private Aggregations query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
 		return ((SearchResponse)select.get()).getAggregations();
 	}
+
 
 	@Test
 	public void testSubAggregations() throws  Exception {

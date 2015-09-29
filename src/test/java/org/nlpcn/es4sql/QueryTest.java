@@ -206,7 +206,7 @@ public class QueryTest {
 
 	@Test
 	public void notLikeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		SearchHits response = query(String.format("SELECT * FROM %s WHERE firstname NOT LIKE 'amb%%'", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT * FROM %s/account WHERE firstname NOT LIKE 'amb%%'", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// assert we got hits

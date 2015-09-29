@@ -99,7 +99,8 @@ public class AggMaker {
 	}
 
     private AggregationBuilder<?> geohashGrid(MethodField field) throws SqlParseException {
-        GeoHashGridBuilder geoHashGrid = AggregationBuilders.geohashGrid(field.getAlias());
+        String aggName = gettAggNameFromParamsOrAlias(field);
+        GeoHashGridBuilder geoHashGrid = AggregationBuilders.geohashGrid(aggName);
         String value = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
@@ -116,6 +117,8 @@ public class AggMaker {
                 case "shard_size":
                     geoHashGrid.shardSize(Integer.parseInt(value));
                     break;
+                case "alias":
+                    break;
                 default:
                     throw new SqlParseException("geohash grid err or not define field " + kv.toString());
             }
@@ -126,7 +129,8 @@ public class AggMaker {
     private static final String TIME_FARMAT = "yyyy-MM-dd HH:mm:ss";
 
 	private ValuesSourceAggregationBuilder<?> dateRange(MethodField field) {
-		DateRangeBuilder dateRange = AggregationBuilders.dateRange(field.getAlias()).format(TIME_FARMAT);
+        String alias = gettAggNameFromParamsOrAlias(field);
+		DateRangeBuilder dateRange = AggregationBuilders.dateRange(alias).format(TIME_FARMAT);
 
 		String value = null;
 		List<String> ranges = new ArrayList<>();
@@ -142,8 +146,10 @@ public class AggMaker {
 				dateRange.addUnboundedFrom(kv.value);
 				continue;
 			} else if ("to".equals(kv.key)) {
-				dateRange.addUnboundedTo(kv.value);
-				continue;
+                dateRange.addUnboundedTo(kv.value);
+                continue;
+            } else if ("alias".equals(kv.key)){
+              continue;
 			} else {
 				ranges.add(value);
 			}
@@ -164,7 +170,8 @@ public class AggMaker {
 	 * @throws SqlParseException
 	 */
 	private DateHistogramBuilder dateHistogram(MethodField field) throws SqlParseException {
-		DateHistogramBuilder dateHistogram = AggregationBuilders.dateHistogram(field.getAlias()).format(TIME_FARMAT);
+        String alias = gettAggNameFromParamsOrAlias(field);
+		DateHistogramBuilder dateHistogram = AggregationBuilders.dateHistogram(alias).format(TIME_FARMAT);
 		String value = null;
 		for (KVValue kv : field.getParams()) {
 			value = kv.value.toString();
@@ -191,6 +198,8 @@ public class AggMaker {
 			case "pre_offset":
 				dateHistogram.preOffset(value);
 				break;
+                case "alias":
+                    break;
 			default:
 				throw new SqlParseException("date range err or not define field " + kv.toString());
 			}
@@ -198,8 +207,18 @@ public class AggMaker {
 		return dateHistogram;
 	}
 
-	private HistogramBuilder histogram(MethodField field) throws SqlParseException {
-		HistogramBuilder histogram = AggregationBuilders.histogram(field.getAlias());
+    private String gettAggNameFromParamsOrAlias(MethodField field) {
+        String alias = field.getAlias();
+        for (KVValue kv : field.getParams()) {
+            if(kv.key != null &&kv.key.equals("alias"))
+                alias = kv.value.toString();
+        }
+        return alias;
+    }
+
+    private HistogramBuilder histogram(MethodField field) throws SqlParseException {
+        String aggName = gettAggNameFromParamsOrAlias(field);
+		HistogramBuilder histogram = AggregationBuilders.histogram(aggName);
 		String value = null;
 		for (KVValue kv : field.getParams()) {
 			value = kv.value.toString();
@@ -218,6 +237,8 @@ public class AggMaker {
 					if (bounds.length == 2)
 						histogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
 					break;
+                case "alias":
+                    break;
 				case "order":
 					Histogram.Order order = null;
 					switch (value) {
@@ -298,7 +319,8 @@ public class AggMaker {
 	 * @return
 	 */
 	private AbstractAggregationBuilder makeTopHitsAgg(MethodField field) {
-		TopHitsBuilder topHits = AggregationBuilders.topHits(field.getAlias());
+        String alias = gettAggNameFromParamsOrAlias(field);
+		TopHitsBuilder topHits = AggregationBuilders.topHits(alias);
 		List<KVValue> params = field.getParams();
 		for (KVValue kv : params) {
 			switch (kv.key) {
@@ -308,6 +330,8 @@ public class AggMaker {
 			case "size":
 				topHits.setSize((int) kv.value);
 				break;
+            case "alias":
+                    break;
 			default:
 				topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
 				break;
