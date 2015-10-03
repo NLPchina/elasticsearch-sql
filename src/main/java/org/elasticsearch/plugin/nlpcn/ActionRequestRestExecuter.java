@@ -16,13 +16,13 @@ import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 import java.io.IOException;
 
 
-public class ActionRequestExecuter {
+public class ActionRequestRestExecuter {
 
 	private RestChannel channel;
 	private Client client;
 	private SqlElasticRequestBuilder requestBuilder;
 
-	public ActionRequestExecuter(SqlElasticRequestBuilder requestBuilder, RestChannel channel, final Client client) {
+	public ActionRequestRestExecuter(SqlElasticRequestBuilder requestBuilder, RestChannel channel, final Client client) {
 		this.requestBuilder = requestBuilder;
 		this.channel = channel;
 		this.client = client;

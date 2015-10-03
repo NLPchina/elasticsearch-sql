@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql.domain;
 
 import org.nlpcn.es4sql.domain.hints.Hint;
+import org.nlpcn.es4sql.parse.SubQueryExpression;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +22,8 @@ public class Select extends Query {
 	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
 	private int rowCount = 200;
-
+    private boolean containsSubQueries;
+    private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
 
 	public boolean isAgg = false;
@@ -93,5 +95,33 @@ public class Select extends Query {
     }
 
 
+    public void fillSubQueries() {
+        subQueries = new ArrayList<>();
+        Where where = this.getWhere();
+        fillSubQueriesFromWhereRecursive(where);
+    }
+
+    private void fillSubQueriesFromWhereRecursive(Where where) {
+        if(where == null) return;
+        if(where instanceof Condition){
+            Condition condition = (Condition) where;
+            if ( condition.getValue() instanceof SubQueryExpression){
+                this.subQueries.add((SubQueryExpression) condition.getValue());
+                this.containsSubQueries = true;
+            }
+        }
+        else {
+            for(Where innerWhere : where.getWheres())
+                fillSubQueriesFromWhereRecursive(innerWhere);
+        }
+    }
+
+    public boolean containsSubQueries() {
+        return containsSubQueries;
+    }
+
+    public List<SubQueryExpression> getSubQueries() {
+        return subQueries;
+    }
 }
 

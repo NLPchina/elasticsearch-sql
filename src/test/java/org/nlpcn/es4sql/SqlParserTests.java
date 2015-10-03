@@ -31,8 +31,6 @@ public class SqlParserTests {
         parser = new SqlParser();
     }
 
-
-
     @Test
     public void joinParseCheckSelectedFieldsSplit() throws SqlParseException {
         String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
@@ -367,6 +365,26 @@ public class SqlParserTests {
         Assert.assertEquals("a", condition.getName());
         Assert.assertNull(condition.getValue());
     }
+
+    @Test
+    public void innerQueryTest() throws SqlParseException {
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran')",TEST_INDEX,TEST_INDEX);
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Assert.assertTrue(select.containsSubQueries());
+        Assert.assertEquals(1,select.getSubQueries().size());
+    }
+
+    @Test
+    public void innerQueryTestTwoQueries() throws SqlParseException {
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran') and age IN (select name.ofHisName from %s/gotCharacters) ",TEST_INDEX,TEST_INDEX,TEST_INDEX);
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Assert.assertTrue(select.containsSubQueries());
+        Assert.assertEquals(2,select.getSubQueries().size());
+    }
+
+
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();

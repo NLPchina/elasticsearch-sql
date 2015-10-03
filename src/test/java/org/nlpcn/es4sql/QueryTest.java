@@ -1,5 +1,7 @@
 package org.nlpcn.es4sql;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -10,6 +12,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.junit.Assert;
 import org.junit.Test;
+import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
@@ -649,6 +652,31 @@ public class QueryTest {
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 
+    @Test
+    public void innerQueryTest() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'Hattie')",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1,hits.length);
+        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Assert.assertEquals("snoopy",hitAsMap.get("name"));
+        Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
+        Assert.assertEquals(4,hitAsMap.get("age"));
+
+    }
+
+    @Test
+    public void twoSubQueriesTest() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran') and age IN (select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys') ",TEST_INDEX,TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1,hits.length);
+        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Assert.assertEquals("snoopy",hitAsMap.get("name"));
+        Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
+        Assert.assertEquals(4,hitAsMap.get("age"));
+
+    }
+
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
@@ -660,4 +688,5 @@ public class QueryTest {
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
         return ((SearchResponse)select.get());
     }
+
 }

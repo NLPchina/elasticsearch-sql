@@ -31,27 +31,34 @@ public class SqlParser {
 
 		MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) mySqlExpr.getSubQuery().getQuery();
 
-		Select select = new Select();
-
-		findSelect(query, select,null);
-
-		select.getFrom().addAll(findFrom(query.getFrom()));
-
-		select.setWhere(findWhere(query.getWhere()));
-
-        select.getHints().addAll(parseHints(query.getHints()));
-
-		findLimit(query.getLimit(), select);
-
-		findOrderBy(query, select);
-
-		findGroupBy(query, select);
+        Select select = parseSelect(query);
 
 		return select;
 	}
 
+    private Select parseSelect(MySqlSelectQueryBlock query) throws SqlParseException {
+        Select select = new Select();
 
-	public Delete parseDelete(SQLDeleteStatement deleteStatement) throws SqlParseException {
+        findSelect(query, select,null);
+
+        select.getFrom().addAll(findFrom(query.getFrom()));
+
+        select.setWhere(findWhere(query.getWhere()));
+
+        select.fillSubQueries();
+
+        select.getHints().addAll(parseHints(query.getHints()));
+
+        findLimit(query.getLimit(), select);
+
+        findOrderBy(query, select);
+
+        findGroupBy(query, select);
+        return select;
+    }
+
+
+    public Delete parseDelete(SQLDeleteStatement deleteStatement) throws SqlParseException {
 		Delete delete = new Delete();
 
 		delete.getFrom().addAll(findFrom(deleteStatement.getTableSource()));
@@ -134,7 +141,15 @@ public class SqlParser {
 
             Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject);
             where.addWhere(condition);
-        }else {
+        } else if (expr instanceof SQLInSubQueryExpr){
+            SQLInSubQueryExpr sqlIn = (SQLInSubQueryExpr) expr;
+            Select innerSelect = parseSelect((MySqlSelectQueryBlock) sqlIn.getSubQuery().getQuery());
+            if(innerSelect.getFields() == null || innerSelect.getFields().size()!=1)
+                throw new SqlParseException("should only have one return field in subQuery");
+            SubQueryExpression subQueryExpression = new SubQueryExpression(innerSelect);
+            Condition condition = new Condition(CONN.valueOf(opear), sqlIn.getExpr().toString(), sqlIn.isNot() ? "NOT IN" : "IN",subQueryExpression);
+            where.addWhere(condition);
+        } else {
 			throw new SqlParseException("err find condition " + expr.getClass());
 		}
 	}

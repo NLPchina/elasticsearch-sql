@@ -18,6 +18,7 @@ import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 
+import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.spatial.*;
 
 public abstract class Maker {
@@ -39,15 +40,20 @@ public abstract class Maker {
 	 */
 	protected ToXContent make(Condition cond) throws SqlParseException {
 
-		String name = cond.getName();
-		Object value = cond.getValue();
+        String name = cond.getName();
+        Object value = cond.getValue();
 
-		ToXContent x = null;
-		if (value instanceof SQLMethodInvokeExpr) {
-			x = make(cond, name, (SQLMethodInvokeExpr) value);
-		} else {
+        ToXContent x = null;
+
+        if (value instanceof SQLMethodInvokeExpr) {
+            x = make(cond, name, (SQLMethodInvokeExpr) value);
+        }
+        else if (value instanceof SubQueryExpression){
+            x = make(cond,name,((SubQueryExpression)value).getValues());
+        } else {
 			x = make(cond, name, value);
 		}
+
 
 		return x;
 	}
@@ -196,6 +202,7 @@ public abstract class Maker {
 			break;
 		case NIN:
 		case IN:
+            //todo: value is subquery? here or before
 			Object[] values = (Object[]) value;
 			MatchQueryBuilder[] matchQueries = new MatchQueryBuilder[values.length];
 			for(int i = 0; i < values.length; i++) {

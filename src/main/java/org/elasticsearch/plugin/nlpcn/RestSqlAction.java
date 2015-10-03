@@ -1,7 +1,6 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.action.ActionRequest;
-import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
@@ -39,7 +38,7 @@ public class RestSqlAction extends BaseRestHandler {
 			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, jsonExplanation);
 			channel.sendResponse(bytesRestResponse);
 		} else {
-			new ActionRequestExecuter(actionRequestBuilder, channel, client).execute();
+			new ActionRequestRestExecuter(actionRequestBuilder, channel, client).execute();
 		}
 	}
 }
