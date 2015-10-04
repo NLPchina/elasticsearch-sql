@@ -16,9 +16,9 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class Condition extends Where {
 
 	public enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL,IN_TERMS;
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , IDS_QUERY;
 
-        public static Map<String,OPEAR> methodNameToOpear = ImmutableMap.of("in_terms",IN_TERMS,"terms",IN_TERMS);
+        public static Map<String,OPEAR> methodNameToOpear = ImmutableMap.of("in_terms",IN_TERMS,"terms",IN_TERMS,"ids",IDS_QUERY,"ids_query",IDS_QUERY);
         private static BiMap<OPEAR, OPEAR> negatives;
 
 

@@ -276,17 +276,32 @@ public abstract class Maker {
             x = FilterBuilders.geoHashCellFilter(cond.getName()).point(geoHashPoint.getLat(),geoHashPoint.getLon()).precision(cellFilterParams.getPrecision()).neighbors(cellFilterParams.isNeighbors());
             break;
         case IN_TERMS:
-            Object[] termValues;
-            if(value  instanceof SubQueryExpression)
-                termValues = ((SubQueryExpression) value).getValues();
-            else {
-                termValues = (Object[]) value;
-            }
+            Object[] termValues = (Object[]) value;
+            if(termValues.length == 1 && termValues[0] instanceof SubQueryExpression)
+                termValues = ((SubQueryExpression) termValues[0]).getValues();
             if(isQuery){
                 x = QueryBuilders.termsQuery(name,termValues);
             }
             else {
                 x = FilterBuilders.termsFilter(name,termValues);
+            }
+        break;
+        case IDS_QUERY:
+            Object[] idsParameters = (Object[]) value;
+            String[] ids;
+            String type = idsParameters[0].toString();
+            if(idsParameters.length ==2 && idsParameters[1] instanceof SubQueryExpression){
+                Object[] idsFromSubQuery = ((SubQueryExpression) idsParameters[1]).getValues();
+                ids = arrayOfObjectsToStringArray(idsFromSubQuery,0,idsFromSubQuery.length-1);
+            }
+            else {
+                ids =arrayOfObjectsToStringArray(idsParameters,1,idsParameters.length-1);
+            }
+            if(isQuery){
+                x = QueryBuilders.idsQuery(type).addIds(ids);
+            }
+            else {
+                x = FilterBuilders.idsFilter(type).addIds(ids);
             }
         break;
         default:
@@ -296,6 +311,16 @@ public abstract class Maker {
 		x = fixNot(cond, x);
 		return x;
 	}
+
+    private String[] arrayOfObjectsToStringArray(Object[] values, int from, int to) {
+        String[] strings = new String[to - from + 1];
+        int counter =0;
+        for(int i = from ;i<=to;i++){
+            strings[counter] = values[i].toString();
+            counter++;
+        }
+        return strings;
+    }
 
     private ShapeBuilder getShapeBuilderFromString(String str) throws IOException {
         String json;

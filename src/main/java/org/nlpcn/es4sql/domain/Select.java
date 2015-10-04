@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.domain;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,6 +109,15 @@ public class Select extends Query {
             if ( condition.getValue() instanceof SubQueryExpression){
                 this.subQueries.add((SubQueryExpression) condition.getValue());
                 this.containsSubQueries = true;
+            }
+            if(condition.getValue() instanceof Object[]){
+
+                for(Object o : (Object[]) condition.getValue()){
+                    if ( o instanceof SubQueryExpression){
+                        this.subQueries.add((SubQueryExpression) o);
+                        this.containsSubQueries = true;
+                    }
+                }
             }
         }
         else {

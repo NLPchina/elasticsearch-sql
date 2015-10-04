@@ -688,6 +688,43 @@ public class QueryTest {
 
     }
 
+    @Test
+    public void idsQueryOneId() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where _id = IDS_QUERY(dog,1)",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1,hits.length);
+        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Assert.assertEquals("rex",hitAsMap.get("name"));
+        Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
+        Assert.assertEquals(2, hitAsMap.get("age"));
+
+    }
+
+    @Test
+    public void idsQueryMultipleId() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where _id = IDS_QUERY(dog,1,2,3)",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1,hits.length);
+        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Assert.assertEquals("rex",hitAsMap.get("name"));
+        Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
+        Assert.assertEquals(2, hitAsMap.get("age"));
+
+    }
+
+    @Test
+    public void idsQuerySubQueryIds() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where _id = IDS_QUERY(dog,(select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys'))",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1,hits.length);
+        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Assert.assertEquals("rex",hitAsMap.get("name"));
+        Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
+        Assert.assertEquals(2, hitAsMap.get("age"));
+
+    }
+
+
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();

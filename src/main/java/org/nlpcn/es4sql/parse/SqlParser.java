@@ -125,7 +125,7 @@ public class SqlParser {
                 String methodName = method.getMethodName().toLowerCase();
 
                 if(Condition.OPEAR.methodNameToOpear.containsKey(methodName)){
-                    Object methodParametersValue = getMethodValuesWithSubQueries(method);
+                    Object[] methodParametersValue = getMethodValuesWithSubQueries(method);
                     Condition condition = new Condition(CONN.valueOf(opear) ,soExpr.getLeft().toString(), Condition.OPEAR.methodNameToOpear.get(methodName),methodParametersValue);
                     where.addWhere(condition);
                     methodAsOpear = true;
@@ -168,15 +168,26 @@ public class SqlParser {
 		}
 	}
 
-    private Object getMethodValuesWithSubQueries(SQLMethodInvokeExpr method) throws SqlParseException {
+    private Object[] getMethodValuesWithSubQueries(SQLMethodInvokeExpr method) throws SqlParseException {
         List<Object> values = new ArrayList<>();
         boolean foundSubQuery = false;
-        if(method.getParameters().size() == 1 && method.getParameters().get(0) instanceof  SQLQueryExpr){
-            SQLQueryExpr sqlSubQuery = (SQLQueryExpr) method.getParameters().get(0);
-            Select select = parseSelect((MySqlSelectQueryBlock) sqlSubQuery.getSubQuery().getQuery());
-            return new SubQueryExpression(select);
+        for(SQLExpr innerExpr : method.getParameters()){
+            if(innerExpr instanceof SQLQueryExpr){
+                foundSubQuery = true;
+                Select select = parseSelect((MySqlSelectQueryBlock) ((SQLQueryExpr) innerExpr).getSubQuery().getQuery());
+                values.add(new SubQueryExpression(select));
+            }
+            else {
+                values.add(innerExpr);
+            }
+
         }
-        return method.getParameters().toArray();
+        Object[] conditionValues ;
+        if(foundSubQuery)
+            conditionValues = values.toArray();
+        else
+            conditionValues = method.getParameters().toArray();
+        return conditionValues;
     }
 
     private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
