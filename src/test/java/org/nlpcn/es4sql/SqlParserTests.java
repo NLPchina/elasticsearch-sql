@@ -376,6 +376,16 @@ public class SqlParserTests {
     }
 
     @Test
+    public void inTermsSubQueryTest() throws SqlParseException {
+        String query = String.format("select * from %s/dog where holdersName = IN_TERMS (select firstname from %s/account where firstname = 'eliran')",TEST_INDEX,TEST_INDEX);
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Assert.assertTrue(select.containsSubQueries());
+        Assert.assertEquals(1,select.getSubQueries().size());
+    }
+
+
+    @Test
     public void innerQueryTestTwoQueries() throws SqlParseException {
         String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran') and age IN (select name.ofHisName from %s/gotCharacters) ",TEST_INDEX,TEST_INDEX,TEST_INDEX);
         SQLExpr sqlExpr = queryToExpr(query);

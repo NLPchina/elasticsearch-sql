@@ -666,13 +666,25 @@ public class QueryTest {
 
     @Test
     public void twoSubQueriesTest() throws SqlParseException, SQLFeatureNotSupportedException {
-        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran') and age IN (select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys') ",TEST_INDEX,TEST_INDEX,TEST_INDEX);
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'Hattie') and age IN (select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys') ",TEST_INDEX,TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
         Assert.assertEquals("snoopy",hitAsMap.get("name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4,hitAsMap.get("age"));
+
+    }
+
+    @Test
+    public void inTermsSubQueryTest() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where age = IN_TERMS (select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys')",TEST_INDEX,TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1,hits.length);
+        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Assert.assertEquals("snoopy",hitAsMap.get("name"));
+        Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
+        Assert.assertEquals(4, hitAsMap.get("age"));
 
     }
 

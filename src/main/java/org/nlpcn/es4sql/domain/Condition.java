@@ -1,9 +1,11 @@
 package org.nlpcn.es4sql.domain;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.elasticsearch.common.collect.ImmutableMap;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 /**
@@ -14,9 +16,11 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class Condition extends Where {
 
 	public enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL;
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL,IN_TERMS;
 
-		private static BiMap<OPEAR, OPEAR> negatives;
+        public static Map<String,OPEAR> methodNameToOpear = ImmutableMap.of("in_terms",IN_TERMS,"terms",IN_TERMS);
+        private static BiMap<OPEAR, OPEAR> negatives;
+
 
 		static {
 			negatives = HashBiMap.create(7);

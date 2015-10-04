@@ -119,8 +119,22 @@ public class SqlParser {
 	private void explanCond(String opear, SQLExpr expr, Where where) throws SqlParseException {
         if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr soExpr = (SQLBinaryOpExpr) expr;
-            Condition condition = new Condition(CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getOperator().name, parseValue(soExpr.getRight()));
-            where.addWhere(condition);
+            boolean methodAsOpear = false;
+            if(soExpr.getRight() instanceof SQLMethodInvokeExpr){
+                SQLMethodInvokeExpr method = (SQLMethodInvokeExpr) soExpr.getRight();
+                String methodName = method.getMethodName().toLowerCase();
+
+                if(Condition.OPEAR.methodNameToOpear.containsKey(methodName)){
+                    Object methodParametersValue = getMethodValuesWithSubQueries(method);
+                    Condition condition = new Condition(CONN.valueOf(opear) ,soExpr.getLeft().toString(), Condition.OPEAR.methodNameToOpear.get(methodName),methodParametersValue);
+                    where.addWhere(condition);
+                    methodAsOpear = true;
+                }
+            }
+            if(!methodAsOpear){
+                Condition condition = new Condition(CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getOperator().name, parseValue(soExpr.getRight()));
+                where.addWhere(condition);
+            }
         } else if (expr instanceof SQLInListExpr) {
             SQLInListExpr siExpr = (SQLInListExpr) expr;
             Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()));
@@ -154,7 +168,18 @@ public class SqlParser {
 		}
 	}
 
-	private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
+    private Object getMethodValuesWithSubQueries(SQLMethodInvokeExpr method) throws SqlParseException {
+        List<Object> values = new ArrayList<>();
+        boolean foundSubQuery = false;
+        if(method.getParameters().size() == 1 && method.getParameters().get(0) instanceof  SQLQueryExpr){
+            SQLQueryExpr sqlSubQuery = (SQLQueryExpr) method.getParameters().get(0);
+            Select select = parseSelect((MySqlSelectQueryBlock) sqlSubQuery.getSubQuery().getQuery());
+            return new SubQueryExpression(select);
+        }
+        return method.getParameters().toArray();
+    }
+
+    private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
 		Object[] value = new Object[targetList.size()];
 		for (int i = 0; i < targetList.size(); i++) {
 			value[i] = parseValue(targetList.get(i));

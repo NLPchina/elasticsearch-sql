@@ -123,17 +123,6 @@ public abstract class Maker {
                 bqb = FilterBuilders.termFilter(name,value.getParameters().get(0));
             }
             break;
-        case "in_terms":
-        case "interms":
-        case "terms":
-            Object[] values = value.getParameters().toArray();
-            if(isQuery){
-                bqb =QueryBuilders.termsQuery(name,values);
-            }
-            else {
-                bqb = FilterBuilders.termsFilter(name,values);
-            }
-            break;
 		default:
 			throw new SqlParseException("it did not support this query method " + value.getMethodName());
 
@@ -286,6 +275,20 @@ public abstract class Maker {
             Point geoHashPoint = cellFilterParams.getGeohashPoint();
             x = FilterBuilders.geoHashCellFilter(cond.getName()).point(geoHashPoint.getLat(),geoHashPoint.getLon()).precision(cellFilterParams.getPrecision()).neighbors(cellFilterParams.isNeighbors());
             break;
+        case IN_TERMS:
+            Object[] termValues;
+            if(value  instanceof SubQueryExpression)
+                termValues = ((SubQueryExpression) value).getValues();
+            else {
+                termValues = (Object[]) value;
+            }
+            if(isQuery){
+                x = QueryBuilders.termsQuery(name,termValues);
+            }
+            else {
+                x = FilterBuilders.termsFilter(name,termValues);
+            }
+        break;
         default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}
