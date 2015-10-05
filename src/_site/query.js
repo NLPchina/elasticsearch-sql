@@ -113,7 +113,9 @@ var AggregationQueryResultHandler = function(data) {
           obj[field] = bucket[field].value
         }
         else {
-          continue;
+            if(typeof(bucket[field])=="object"){
+                obj[field] = bucket[field];
+            }
         }
       }
       rows.push(obj)

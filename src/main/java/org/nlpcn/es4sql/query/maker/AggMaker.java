@@ -68,6 +68,10 @@ public class AggMaker {
 			return AggregationBuilders.avg(field.getAlias()).field(field.getParams().get(0).toString());
 		case "STATS":
 			return AggregationBuilders.stats(field.getAlias()).field(field.getParams().get(0).toString());
+        case "EXTENDED_STATS":
+                return AggregationBuilders.extendedStats(field.getAlias()).field(field.getParams().get(0).toString());
+        case "PERCENTILES":
+                return AggregationBuilders.percentiles(field.getAlias()).field(field.getParams().get(0).toString());
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
 		case "COUNT":
