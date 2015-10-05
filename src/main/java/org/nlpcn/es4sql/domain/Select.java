@@ -84,7 +84,7 @@ public class Select extends Query {
 			return;
 		}
 
-		if(field instanceof  MethodField && aggsFunctions.contains(field.getName())) {
+		if(field instanceof  MethodField && aggsFunctions.contains(field.getName().toUpperCase())) {
 			isAgg = true;
 		}
 
