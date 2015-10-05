@@ -114,7 +114,7 @@ var AggregationQueryResultHandler = function(data) {
         }
         else {
             if(typeof(bucket[field])=="object"){
-                obj[field] = bucket[field];
+                fillFieldsForSpecificAggregation(obj,bucket[field],field);
             }
         }
       }
@@ -124,6 +124,19 @@ var AggregationQueryResultHandler = function(data) {
     return rows
   }
 
+
+    function fillFieldsForSpecificAggregation(obj,value,field)
+    {
+        for(key in value){
+            if(key == "values"){
+                fillFieldsForSpecificAggregation(obj,value[key],field);
+            }
+            else {
+                obj[field+"." +key] = value[key];
+            }
+        }
+        return;
+    }
 
   function getSubBuckets(bucket) {
     var subBuckets = [];
