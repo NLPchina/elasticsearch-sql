@@ -45,7 +45,8 @@ public class ESActionFactory {
 	 * @return Query object.
 	 */
 	public static QueryAction create(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
-		String firstWord = sql.substring(0, sql.indexOf(' '));
+		sql = sql.replaceAll("\n"," ");
+        String firstWord = sql.substring(0, sql.indexOf(' '));
         switch (firstWord.toUpperCase()) {
 			case "SELECT":
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);

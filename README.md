@@ -19,7 +19,7 @@ Install as plugin:
 
 ### Elasticsearch 1.6.X
 ````
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.1/elasticsearch-sql-1.4.1.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.2/elasticsearch-sql-1.4.2.zip --install sql
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
