@@ -13,7 +13,9 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
+import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
+import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
@@ -77,7 +79,33 @@ public class AggregationTest {
 		assertThat(stats.getAvg(), equalTo(30.171));
 	}
 
-	@Test
+    @Test
+    public void extendedStatsTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        Aggregations result = query(String.format("SELECT EXTENDED_STATS(age) FROM %s/account", TEST_INDEX));
+        ExtendedStats stats = result.get("EXTENDED_STATS(age)");
+        Assert.assertEquals(1000, stats.getCount());
+        assertThat(stats.getMin(),equalTo(20.0));
+        assertThat(stats.getMax(),equalTo(40.0));
+        assertThat(stats.getAvg(),equalTo(30.171));
+        assertThat(stats.getSum(),equalTo(30171.0));
+        assertThat(stats.getSumOfSquares(),equalTo(946393.0));
+        Assert.assertTrue(Math.abs(stats.getStdDeviation()- 6.008640362012022) < 0.0001);
+        Assert.assertTrue(Math.abs(stats.getVariance()- 36.10375899999996) < 0.0001);
+    }
+
+    @Test
+    public void percentileTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        Aggregations result = query(String.format("SELECT PERCENTILES(age) FROM %s/account", TEST_INDEX));
+        Percentiles percentiles = result.get("PERCENTILES(age)");
+        Assert.assertTrue(Math.abs(percentiles.percentile(1.0) - 20.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(5.0) - 21.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(25.0) - 25.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(75.0) - 35.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(95.0) - 39.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(99.0) - 40.0) < 0.001 );
+    }
+
+    @Test
 	public void aliasTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		Aggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s/account", TEST_INDEX));
 		assertThat(result.asMap(), hasKey("mycount"));
