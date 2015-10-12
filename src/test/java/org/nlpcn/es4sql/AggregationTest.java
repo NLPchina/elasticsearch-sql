@@ -303,6 +303,33 @@ public class AggregationTest {
 		Assert.assertEquals(response.getHits().hits().length, 10);
 	}
 
+	@Test
+	public void testSimpleSubAggregations() throws  Exception {
+		final String query = String.format("SELECT * FROM %s/account GROUP BY (gender), (state) LIMIT 0,10", TEST_INDEX);
+
+		SearchDao searchDao = MainTestSuite.getSearchDao();
+		SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+		SearchResponse response = (SearchResponse) select.get();
+		Aggregations result = response.getAggregations();
+
+		Terms gender = result.get("gender");
+		for(Terms.Bucket genderBucket : gender.getBuckets()) {
+			String genderKey = genderBucket.getKey();
+			Assert.assertTrue("Gender should be m or f", genderKey.equals("m") || genderKey.equals("f"));
+		}
+
+		Assert.assertEquals(2, gender.getBuckets().size());
+
+		Terms state = result.get("state");
+		for(Terms.Bucket stateBucket : state.getBuckets()) {
+			if(stateBucket.getKey().equalsIgnoreCase("ak")) {
+				Assert.assertTrue("There are 22 entries for state ak", stateBucket.getDocCount() == 22);
+			}
+		}
+
+		Assert.assertEquals(response.getHits().totalHits(), 1000);
+		Assert.assertEquals(response.getHits().hits().length, 10);
+	}
 
     @Test
     public void geoHashGrid() throws SQLFeatureNotSupportedException, SqlParseException {

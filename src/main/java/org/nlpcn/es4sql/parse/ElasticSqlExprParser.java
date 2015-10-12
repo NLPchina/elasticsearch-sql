@@ -104,6 +104,16 @@ public class ElasticSqlExprParser extends MySqlExprParser {
             }
             return sqlExpr;
         }
-        return super.primary();
+
+        boolean parenWrapped = lexer.token() == Token.LPAREN;
+
+        SQLExpr expr = super.primary();
+
+        // keep track of if the identifier is wrapped in parens
+        if (parenWrapped && expr instanceof SQLIdentifierExpr) {
+            expr = new SQLParensIdentifierExpr((SQLIdentifierExpr) expr);
+        }
+
+        return expr;
     }
 }

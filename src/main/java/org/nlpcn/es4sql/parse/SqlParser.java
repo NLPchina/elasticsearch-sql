@@ -242,23 +242,21 @@ public class SqlParser {
                 sqlExpr = sqlSelectGroupByExpr.getExpr();
             }
 
-             if (!(sqlExpr instanceof SQLIdentifierExpr) &&  !standardGroupBys.isEmpty()) {
-				// flush the standard group bys
-				select.addGroupBy(convertExprsToFields(standardGroupBys));
-				standardGroupBys = new ArrayList<>();
-			}
+            if ((sqlExpr instanceof SQLParensIdentifierExpr || !(sqlExpr instanceof SQLIdentifierExpr)) && !standardGroupBys.isEmpty()) {
+                // flush the standard group bys
+                select.addGroupBy(convertExprsToFields(standardGroupBys));
+                standardGroupBys = new ArrayList<>();
+            }
 
-			if (sqlExpr instanceof SQLIdentifierExpr) {
-				SQLIdentifierExpr identifierExpr = (SQLIdentifierExpr) sqlExpr;
-					// single item without parens (should latch to before or after list)
-					standardGroupBys.add(identifierExpr);
-
+			if (sqlExpr instanceof SQLParensIdentifierExpr) {
+                // single item with parens (should get its own aggregation)
+                select.addGroupBy(FieldMaker.makeField(sqlExpr, null,null));
             } else if (sqlExpr instanceof SQLListExpr) {
 				// multiple items in their own list
 				SQLListExpr listExpr = (SQLListExpr) sqlExpr;
 				select.addGroupBy(convertExprsToFields(listExpr.getItems()));
 			} else {
-				// something else
+				// everything else gets added to the running list of standard group bys
 				standardGroupBys.add(sqlExpr);
 			}
 		}
