@@ -332,6 +332,18 @@ public class SqlParserTests {
         Field field = fields.get(0);
         Assert.assertEquals(field.getName(),"@field");
     }
+
+    @Test
+    public void fieldWithATcharAtSelectOnAgg() throws SqlParseException {
+        String query = "SELECT max(@field) FROM index/type where field2 = 6 ";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertEquals("MAX(@field)",field.toString());
+    }
+
     @Test
     public void fieldWithColonCharAtSelect() throws SqlParseException {
         String query = "SELECT a:b FROM index/type where field2 = 6 ";

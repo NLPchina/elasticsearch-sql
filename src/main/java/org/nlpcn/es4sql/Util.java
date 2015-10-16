@@ -40,7 +40,9 @@ public class Util {
 		} else if (expr instanceof SQLIdentifierExpr) {
 			value = expr.toString();
 		} else if (expr instanceof SQLPropertyExpr) {
-			value = expr.toString();
+            value = expr.toString();
+        }else if (expr instanceof SQLVariantRefExpr ){
+            value = expr.toString();
 		}else if (expr instanceof SQLAllColumnExpr) {
 			value = "*";
 		} else {
