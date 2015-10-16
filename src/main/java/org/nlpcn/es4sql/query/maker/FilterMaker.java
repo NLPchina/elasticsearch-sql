@@ -19,6 +19,9 @@ public class FilterMaker extends Maker {
 	 */
 	public static BoolFilterBuilder explan(Where where) throws SqlParseException {
 		BoolFilterBuilder boolFilter = FilterBuilders.boolFilter();
+		while (where.getWheres().size() == 1) {
+			where = where.getWheres().getFirst();
+		}
 		new FilterMaker().explanWhere(boolFilter, where);
 		return boolFilter;
 	}
