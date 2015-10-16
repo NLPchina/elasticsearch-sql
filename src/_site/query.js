@@ -121,13 +121,19 @@ var AggregationQueryResultHandler = function(data) {
         obj[bucketName] = bucket.key
       }
 
-      for(var field in bucket) {              
-        if(bucket[field].value != undefined) {
-          obj[field] = bucket[field].value
+      for(var field in bucket) { 
+        var bucketValue = bucket[field]             
+        if(bucketValue.value != undefined) {
+          if("value_as_string" in bucket[field]){
+            obj[field] = bucketValue["value_as_string"]
+          }
+          else {
+            obj[field] = bucketValue.value
+          }
         }
         else {
             if(typeof(bucket[field])=="object"){
-                fillFieldsForSpecificAggregation(obj,bucket[field],field);
+                fillFieldsForSpecificAggregation(obj,bucketValue,field);
             }
         }
       }
