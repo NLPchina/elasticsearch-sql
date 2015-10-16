@@ -2,6 +2,7 @@ package org.nlpcn.es4sql.query.join;
 
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import org.elasticsearch.action.ActionRequest;
+import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.common.xcontent.ToXContent;
@@ -67,6 +68,11 @@ public  class JoinRequestBuilder implements SqlElasticRequestBuilder {
     @Override
     public ActionResponse get() {
         return null;
+    }
+
+    @Override
+    public ActionRequestBuilder getBuilder() {
+        return this.firstTable.getRequestBuilder();
     }
 
     public MultiSearchRequest getMulti() {

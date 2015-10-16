@@ -4,13 +4,26 @@ Returns the right Result Handler depend
 on the results */
 var ResultHandlerFactory = {
   "create": function(data) {
-
+    function isSearch(){
+      return "hits" in data
+    }
     // Is query is of aggregation type? (SQL group by)
     function isAggregation() {
       return "aggregations" in data
     }
+    function isDelete(){
+      return "_indices" in data
+    }
 
-    return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data)
+    if(isSearch()){
+      return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data)  
+    }
+
+    if(isDelete()){
+      return new DeleteQueryResultHandler(data);
+    }
+    return new ShowQueryResultHandler(data);
+    
   }
 }
 
@@ -175,3 +188,94 @@ AggregationQueryResultHandler.prototype.getBody = function() {
 };
 
 
+
+
+
+/* ShowQueryResultHandler object
+    for showing mapping in some levels (cluster, index and types)
+*/
+var ShowQueryResultHandler = function(data) {
+
+  var mappingParser = new MappingParser(data);
+  var indices = mappingParser.getIndices();
+  body = [];
+  if(indices.length > 1){
+    this.head = ["index","types"];
+    for(indexOfIndex in indices){
+      var indexToTypes = {};
+      var index = indices[indexOfIndex]
+      indexToTypes["index"] = index;
+      indexToTypes["types"] = mappingParser.getTypes(index);
+      body.push(indexToTypes);
+    }
+  }
+  else {
+    var index  = indices[0];
+    var types = mappingParser.getTypes(index);
+    if(types.length > 1) {
+      this.head = ["type","fields"];
+      for(typeIndex in types){
+        var typeToFields = {};
+        var type = types[typeIndex];
+        typeToFields["type"] = type;
+        typeToFields["fields"] = mappingParser.getFieldsForType(index,type);
+        body.push(typeToFields)
+      }
+    }
+    else {
+      this.head = ["field","type","more"];
+      fieldsWithMapping = mappingParser.getFieldsForTypeWithMapping(index,types[0]);
+      for(field in fieldsWithMapping){
+        fieldRow = {};
+        fieldMapping = fieldsWithMapping[field];
+        fieldRow["field"] = field;
+        fieldRow["type"] = fieldMapping["type"];
+        delete fieldMapping["type"];
+        fieldRow["more"] = fieldMapping;
+        body.push(fieldRow);
+      }
+    }
+  }
+
+  this.body = body;
+  
+};
+
+
+ShowQueryResultHandler.prototype.getHead = function() {
+  return this.head
+};
+
+ShowQueryResultHandler.prototype.getBody = function() {
+  return this.body;
+};
+
+
+
+/* DeleteQueryResultHandler object
+    to show delete result status
+*/
+var DeleteQueryResultHandler = function(data) {
+  this.head = ["index_deleted_from","shards_successful","shards_failed"];
+  body = []
+  deleteData = data["_indices"];
+  for(index in deleteData){
+    deleteStat = {};
+    deleteStat["index_deleted_from"] = index;
+    shardsData = deleteData[index]["_shards"];
+    deleteStat["shards_successful"] = shardsData["successful"];
+    deleteStat["shards_failed"] = shardsData["failed"];
+    body.push(deleteStat);
+  }
+  this.body = body;
+  
+};
+
+
+DeleteQueryResultHandler.prototype.getHead = function() {
+  return this.head;
+};
+
+DeleteQueryResultHandler.prototype.getBody = function() {
+  return this.body;
+};

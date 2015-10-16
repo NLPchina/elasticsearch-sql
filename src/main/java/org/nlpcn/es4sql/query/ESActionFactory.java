@@ -8,16 +8,11 @@ import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.parser.*;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.cluster.routing.allocation.decider.Decision;
 import org.elasticsearch.plugin.nlpcn.ElasticResultHandler;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.nlpcn.es4sql.domain.Delete;
 import org.nlpcn.es4sql.domain.JoinSelect;
 import org.nlpcn.es4sql.domain.Select;
@@ -28,12 +23,9 @@ import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.query.join.ESJoinQueryActionFactory;
 
-import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public class ESActionFactory {
 
@@ -71,7 +63,8 @@ public class ESActionFactory {
 				SQLDeleteStatement deleteStatement = parser.parseDeleteStatement();
 				Delete delete = new SqlParser().parseDelete(deleteStatement);
 				return new DeleteQueryAction(client, delete);
-
+            case "SHOW":
+                return new ShowQueryAction(client,sql);
 			default:
 				throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
 		}

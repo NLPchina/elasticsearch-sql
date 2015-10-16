@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql.query;
 
 import org.elasticsearch.action.ActionRequest;
+import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.common.xcontent.ToXContent;
@@ -40,6 +41,11 @@ public class SqlElasticSearchRequestBuilder implements SqlElasticRequestBuilder 
     @Override
     public ActionResponse get() {
         return requestBuilder.get();
+    }
+
+    @Override
+    public ActionRequestBuilder getBuilder() {
+        return requestBuilder;
     }
 
     @Override

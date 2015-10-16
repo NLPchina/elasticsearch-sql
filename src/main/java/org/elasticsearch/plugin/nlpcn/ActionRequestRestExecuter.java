@@ -1,17 +1,19 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.action.ActionRequest;
+import org.elasticsearch.action.ActionRequestBuilder;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestChannel;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
-import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 
 import java.io.IOException;
 
@@ -28,7 +30,9 @@ public class ActionRequestRestExecuter {
 		this.client = client;
 	}
 
-	/**
+
+
+    /**
 	 * Execute the ActionRequest and returns the REST response using the channel.
 	 */
 	public void execute() throws Exception {
@@ -42,8 +46,12 @@ public class ActionRequestRestExecuter {
 		else if (request instanceof SearchRequest) {
 			client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
 		} else if (request instanceof DeleteByQueryRequest) {
-			client.deleteByQuery((DeleteByQueryRequest) request, new DeleteByQueryRestListener(channel));
-		}
+            ActionRequestBuilder elasticRequestBuilder =  this.requestBuilder.getBuilder();
+            elasticRequestBuilder.execute(new DeleteByQueryRestListener(channel));
+        }
+        else if(request instanceof GetIndexRequest) {
+            this.requestBuilder.getBuilder().execute( new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
+        }
 
 
 		else {
