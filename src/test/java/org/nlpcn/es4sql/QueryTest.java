@@ -220,6 +220,25 @@ public class QueryTest {
 	}
 
 	@Test
+	public void doubleNotTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+		SearchHits response1 = query(String.format("SELECT * FROM %s/account WHERE not gender like 'm' and not gender like 'f'", TEST_INDEX));
+		Assert.assertEquals(0, response1.getTotalHits());
+
+		SearchHits response2 = query(String.format("SELECT * FROM %s/account WHERE not gender like 'm' and gender not like 'f'", TEST_INDEX));
+		Assert.assertEquals(0, response2.getTotalHits());
+
+		SearchHits response3 = query(String.format("SELECT * FROM %s/account WHERE gender not like 'm' and gender not like 'f'", TEST_INDEX));
+		Assert.assertEquals(0, response3.getTotalHits());
+
+		SearchHits response4 = query(String.format("SELECT * FROM %s/account WHERE gender like 'm' and not gender like 'f'", TEST_INDEX));
+		// assert there are results and they all have gender 'm'
+		Assert.assertNotEquals(0, response4.getTotalHits());
+		for (SearchHit hit : response4.getHits()) {
+			Assert.assertEquals("m", hit.getSource().get("gender").toString().toLowerCase());
+		}
+	}
+
+	@Test
 	public void limitTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchHits response = query(String.format("SELECT * FROM %s LIMIT 30", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
@@ -346,8 +365,8 @@ public class QueryTest {
 			}
 		}
 	}
-	
-	
+
+
 	@Test
 	public void dateSearch() throws IOException, SqlParseException, SQLFeatureNotSupportedException, ParseException {
 		DateTimeFormatter formatter = DateTimeFormat.forPattern(DATE_FORMAT);
@@ -429,7 +448,7 @@ public class QueryTest {
 			assertThat(hit.getSource(), hasKey("insert_time"));
 		}
 	}
-	
+
 
 
 	@Test

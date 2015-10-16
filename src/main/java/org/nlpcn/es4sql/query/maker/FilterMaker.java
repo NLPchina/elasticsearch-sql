@@ -19,6 +19,9 @@ public class FilterMaker extends Maker {
 	 */
 	public static BoolFilterBuilder explan(Where where) throws SqlParseException {
 		BoolFilterBuilder boolFilter = FilterBuilders.boolFilter();
+		while (where.getWheres().size() == 1) {
+			where = where.getWheres().getFirst();
+		}
 		new FilterMaker().explanWhere(boolFilter, where);
 		return boolFilter;
 	}
@@ -28,9 +31,6 @@ public class FilterMaker extends Maker {
 	}
 
 	private void explanWhere(BoolFilterBuilder boolFilter, Where where) throws SqlParseException {
-		while (where.getWheres().size() == 1) {
-			where = where.getWheres().getFirst();
-		}
 		if (where instanceof Condition) {
 			addSubFilter(boolFilter, where, (BaseFilterBuilder) make((Condition) where));
 		} else {
