@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.nlpcn</groupId>
     <artifactId>elasticsearch-sql</artifactId>
-    <version>1.4.3</version>
+    <version>1.4.4</version>
     <packaging>jar</packaging>
     <description>Query elasticsearch using SQL</description>
     <name>elasticsearch-sql</name>
@@ -26,6 +26,11 @@
             <id>omershelef</id>
             <name>Omer shelef</name>
             <email>shlaflaf@gmail.com</email>
+        </developer>
+        <developer>
+            <id>eliranmoyal</id>
+            <name>Eliran Moyal</name>
+            <email>eliran.moyal1@gmail.com</email>
         </developer>
     </developers>
 
