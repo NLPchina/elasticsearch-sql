@@ -3,7 +3,7 @@ var elasticsearchSqlApp = angular.module('elasticsearchSqlApp', ["ngAnimate", "n
 
 elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) {
 	$scope.url = getUrl();
-	$scope.error = "";	
+	$scope.error = "";
 	$scope.resultsColumns = [];
 	$scope.resultsRows = [];
 	$scope.searchLoading = false;
@@ -12,6 +12,18 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 	$scope.resultExplan = false;
 	$scope.scrollId = null;
 	$scope.gotNext = false;
+
+	// pull version and put it on the scope
+    $http.get($scope.url).success(function (data) {
+        $http.get($scope.url + "_nodes/" + data.name).success(function (nodeData) {
+            var node = nodeData.nodes[Object.keys(nodeData.nodes)[0]];
+            angular.forEach(node.plugins, function (plugin) {
+                if (plugin.name === "sql") {
+                    $scope.version = plugin.version;
+                }
+            });
+        });
+    });
 
 	$scope.nextSearch = function(){
 		$scope.error = "";
@@ -28,11 +40,11 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		.success(function(data, status, headers, config) {
           var handler = ResultHandlerFactory.create(data);
           var body = handler.getBody()
-          
+
           if(body.length ==null || body.length == 0){
           	$scope.gotNext=false;
           }
-          else 
+          else
           {
           	  $scope.scrollId = handler.getScrollId();
           }
@@ -43,12 +55,12 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
           else {
           	$scope.resultsColumns = handler.getHead();
             $scope.resultsRows = handler.getBody();
-          
+
           }
 
-          
+
         })
-        .error(function(data, status, headers, config) {        
+        .error(function(data, status, headers, config) {
           if(data == "") {
             $scope.error = "Error occured! response is not avalible.";
     	  }
@@ -59,7 +71,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
         })
         .finally(function() {
           $scope.nextLoading = false;
-          $scope.$apply()    
+          $scope.$apply()
         });
 
 	}
@@ -86,9 +98,9 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
           }
           $scope.resultsColumns = handler.getHead();
           $scope.resultsRows = handler.getBody();
-      
+
         })
-        .error(function(data, status, headers, config) {        
+        .error(function(data, status, headers, config) {
           if(data == "") {
             $scope.error = "Error occured! response is not avalible.";
     	  }
@@ -98,10 +110,10 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
         })
         .finally(function() {
           $scope.searchLoading = false;
-          $scope.$apply()    
+          $scope.$apply()
         });
 	}
-	
+
 	$scope.explain = function() {
 		// Reset results and error box
 		$scope.error = "";
@@ -119,7 +131,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 					 $scope.resultExplan = true;
 				   window.explanResult.setValue(JSON.stringify(data, null, "\t"));
         })
-        .error(function(data, status, headers, config) {        
+        .error(function(data, status, headers, config) {
         	$scope.resultExplan = false;
           if(data == "") {
             $scope.error = "Error occured! response is not avalible.";
@@ -130,24 +142,24 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
         })
         .finally(function() {
           $scope.explainLoading = false;
-          $scope.$apply()    
+          $scope.$apply()
         });
 	}
-	
-	
-	
-	$scope.exportCSV = function() {			
+
+
+
+	$scope.exportCSV = function() {
 			var columns = $scope.resultsColumns ;
 			var rows = $scope.resultsRows ;
 			var data =arr2csvStr(columns,',') ;
 			for(var i=0; i<rows.length ; i++){
 				data += "\n";
 				data += map2csvStr(columns,rows[i],',') ;
-				
+
 			}
 			var plain = 'data:text/csv;charset=utf8,' + encodeURIComponent(data);
-			download(plain, "query_result.csv", "text/plain");			
-  		return true; 
+			download(plain, "query_result.csv", "text/plain");
+  		return true;
 	}
 
 	$scope.getButtonContent = function(isLoading , defName) {
@@ -155,19 +167,19 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		var returnValue = isLoading ? loadingContent : defName;
 		return $sce.trustAsHtml(returnValue);
 	}
-	
-	
+
+
 	function arr2csvStr(arr,op){
-		var data = arr[0]; 
+		var data = arr[0];
 		for(var i=1; i<arr.length ; i++){
 				data += op;
 				data += arr[i] ;
 		}
 		return data ;
 	}
-	
+
 	function map2csvStr(columns,arr,op){
-		var data = JSON.stringify(arr[columns[0]]); 
+		var data = JSON.stringify(arr[columns[0]]);
 		for(var i=1; i<columns.length ; i++){
 				data += op;
 				data += JSON.stringify(arr[columns[i]]) ;
@@ -186,7 +198,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 				url = location.protocol+'//' + location.hostname + (location.port ? ':'+location.port : '');
 			}
 		}
-		
+
 		if(url.substr(url.length - 1, 1) != '/') {
 			url += '/'
 		}
@@ -196,5 +208,5 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 
 	function saveUrl() {
 		localStorage.setItem("lasturl", $scope.url);
-	} 
+	}
 });
