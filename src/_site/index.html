@@ -26,16 +26,23 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            
+
+            <li ng-cloak>
+              <a>{{version ? 'Version: ' + version : ''}}</a>
+            </li>
+
+            <li>
+              <form class="navbar-form">
+                <input type="text" id="urlBox" class="form-control" ng-model="url" />
+              </form>
+            </li>
+
             <li id="help_btn" data-toggle="modal" data-target="#help_popup">
               <a title="Help" href="#" data-placement="bottom">Help</a>
             </li>
 
           </ul>
 
-          <form class="navbar-form navbar-right">
-            <input type="text" id="urlBox" class="form-control" ng-model="url" />
-          </form>
         </div>
       </div>
     </nav>
