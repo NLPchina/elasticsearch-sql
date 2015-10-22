@@ -30,7 +30,7 @@ function getFieldsRecursive(fields,fieldsFlatten,prefix){
 			fieldsFlatten[prefix+field] = fieldMapping;
 		}
 		else {
-			getFieldsRecursive(fieldMapping["properties"],fieldsFlatten,field+".");
+			getFieldsRecursive(fieldMapping["properties"],fieldsFlatten,prefix+field+".");
 		}
 	}
 }
