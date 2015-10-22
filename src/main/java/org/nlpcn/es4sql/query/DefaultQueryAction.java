@@ -10,10 +10,7 @@ import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.nlpcn.es4sql.domain.Field;
-import org.nlpcn.es4sql.domain.Order;
-import org.nlpcn.es4sql.domain.Select;
-import org.nlpcn.es4sql.domain.Where;
+import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -23,7 +20,8 @@ import org.nlpcn.es4sql.query.maker.QueryMaker;
 /**
  * Transform SQL query to standard Elasticsearch search query
  */
-public class DefaultQueryAction extends QueryAction {
+public class
+        DefaultQueryAction extends QueryAction {
 
 	private final Select select;
 	private SearchRequestBuilder request;
@@ -40,6 +38,7 @@ public class DefaultQueryAction extends QueryAction {
 		setIndicesAndTypes();
 
 		setFields(select.getFields());
+
 		setWhere(select.getWhere());
 		setSorts(select.getOrderBys());
 		setLimit(select.getOffset(), select.getRowCount());
@@ -89,12 +88,15 @@ public class DefaultQueryAction extends QueryAction {
 	 * Set source filtering on a search request.
 	 * @param fields list of fields to source filter.
 	 */
-	private void setFields(List<Field> fields) {
+	private void setFields(List<Field> fields) throws SqlParseException {
 		if (select.getFields().size() > 0) {
 			ArrayList<String> includeFields = new ArrayList<String>();
 
 			for (Field field : fields) {
-				if (field instanceof Field) {
+                if(field instanceof MethodField){
+                    handleMethodField((MethodField) field);
+                }
+				else if (field instanceof Field) {
 					includeFields.add(field.getName());
 				}
 			}
@@ -103,8 +105,28 @@ public class DefaultQueryAction extends QueryAction {
 		}
 	}
 
+    private void handleMethodField(MethodField field) throws SqlParseException {
+        MethodField method = (MethodField) field;
+        if(method.getName().toLowerCase().equals("script")){
+            handleScriptField(method);
+        }
+    }
 
-	/**
+    private void handleScriptField(MethodField method) throws SqlParseException {
+        List<KVValue> params = method.getParams();
+        if(params.size() == 2){
+            request.addScriptField(params.get(0).value.toString(),params.get(1).value.toString());
+        }
+        else if(params.size() == 3){
+            request.addScriptField(params.get(0).value.toString(),params.get(1).value.toString(),params.get(2).value.toString(),null);
+        }
+        else {
+            throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
+        }
+    }
+
+
+    /**
 	 * Create filters or queries based on
 	 * the Where clause.
 	 * @param where the 'WHERE' part of the SQL query.

@@ -1,147 +1,163 @@
 
 /* ResultHandlerFactory
-Returns the right Result Handler depend
-on the results */
+ Returns the right Result Handler depend
+ on the results */
 var ResultHandlerFactory = {
-  "create": function(data) {
-    function isSearch(){
-      return "hits" in data
-    }
-    // Is query is of aggregation type? (SQL group by)
-    function isAggregation() {
-      return "aggregations" in data
-    }
-    function isDelete(){
-      return "_indices" in data
-    }
+    "create": function(data) {
+        function isSearch(){
+            return "hits" in data
+        }
+        // Is query is of aggregation type? (SQL group by)
+        function isAggregation() {
+            return "aggregations" in data
+        }
+        function isDelete(){
+            return "_indices" in data
+        }
 
-    if(isSearch()){
-      return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data)  
-    }
+        if(isSearch()){
+            return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data)
+        }
 
-    if(isDelete()){
-      return new DeleteQueryResultHandler(data);
+        if(isDelete()){
+            return new DeleteQueryResultHandler(data);
+        }
+        return new ShowQueryResultHandler(data);
+
     }
-    return new ShowQueryResultHandler(data);
-    
-  }
 }
 
 
 
 
 /* DefaultQueryResultHandler object 
-Handle the query result,
-in case of regular query
-(Not aggregation)
-*/
+ Handle the query result,
+ in case of regular query
+ (Not aggregation)
+ */
 var DefaultQueryResultHandler = function(data) {
 
-  // createScheme by traverse hits field
-  function createScheme() {
-    var hits = data.hits.hits
-    scheme = []
-    for(index=0; index<hits.length; index++) {
-      hit = hits[index]
-
-      for(key in hit._source) {
-        if(scheme.indexOf(key) == -1) {
-          scheme.push(key)
+    // createScheme by traverse hits field
+    function createScheme() {
+        var hits = data.hits.hits
+        scheme = []
+        for(index=0; index<hits.length; index++) {
+            hit = hits[index]
+            header = $.extend({},hit._source,hit.fields)
+            for(key in header) {
+                if(scheme.indexOf(key) == -1) {
+                    scheme.push(key)
+                }
+            }
         }
-      }
+        return scheme
     }
-    return scheme
-  }
 
-  this.data = data
-  this.head = createScheme()
-  this.scrollId = data["_scroll_id"]
-  this.isScroll = this.scrollId!=null && this.scrollId!="";
+    this.data = data
+    this.head = createScheme()
+    this.scrollId = data["_scroll_id"]
+    this.isScroll = this.scrollId!=null && this.scrollId!="";
 };
 
 DefaultQueryResultHandler.prototype.isScroll = function() {
-  return this.isScroll;
+    return this.isScroll;
 };
 
 DefaultQueryResultHandler.prototype.getScrollId = function() {
-  return this.scrollId;
+    return this.scrollId;
 };
 
 
 DefaultQueryResultHandler.prototype.getHead = function() {
-  return this.head
+    return this.head
 };
 
 DefaultQueryResultHandler.prototype.getBody = function() {
-  var hits = this.data.hits.hits
-  var body = []
-  for(var i = 0; i < hits.length; i++) {
-    body.push(hits[i]._source)
-  }
-  return body
+    var hits = this.data.hits.hits
+    var body = []
+    for(var i = 0; i < hits.length; i++) {
+        var row = hits[i]._source;
+        if("fields" in hits[i]){
+            addFieldsToRow(row,hits[i])
+        }
+        body.push(row)
+    }
+    return body
 };
 
-
+function addFieldsToRow (row,hit) {
+    for(field in hit.fields){
+        fieldValue = hit.fields[field];
+        if( fieldValue instanceof Array ){
+            if(fieldValue.length > 1)
+                row[field] = fieldValue;
+            else row[field] = fieldValue[0];
+        }
+        else {
+            row[field] = fieldValue;
+        }
+    }
+}
 
 
 
 
 /* AggregationQueryResultHandler object 
-Handle the query result,
-in case of Aggregation query
-(SQL group by)
-*/
+ Handle the query result,
+ in case of Aggregation query
+ (SQL group by)
+ */
 var AggregationQueryResultHandler = function(data) {
 
-  function getRows(bucketName, bucket, additionalColumns) {
-    var rows = []
+    function getRows(bucketName, bucket, additionalColumns) {
+        var rows = []
 
-    var subBuckets = getSubBuckets(bucket)
-    if(subBuckets.length > 0) {
-      for(var i = 0; i < subBuckets.length; i++) {
-        var subBucketName = subBuckets[i]["bucketName"];
-        var subBucket = subBuckets[i]["bucket"];
+        var subBuckets = getSubBuckets(bucket)
+        if(subBuckets.length > 0) {
+            for(var i = 0; i < subBuckets.length; i++) {
+                var subBucketName = subBuckets[i]["bucketName"];
+                var subBucket = subBuckets[i]["bucket"];
 
-        var newAdditionalColumns = {};
-        // bucket without parents.
-        if(bucketName != undefined) {
-          var newColumn = {};
-          newColumn[bucketName] = bucket.key;
-          newAdditionalColumns = $.extend(newColumn, additionalColumns);
-        }
+                var newAdditionalColumns = {};
+                // bucket without parents.
+                if(bucketName != undefined) {
+                    var newColumn = {};
+                    newColumn[bucketName] = bucket.key;
+                    newAdditionalColumns = $.extend(newColumn, additionalColumns);
+                }
 
-        var newRows = getRows(subBucketName, subBucket, newAdditionalColumns)
-        $.merge(rows, newRows);              
-      }
-    }
-
-    else {
-      var obj = $.extend({}, additionalColumns)
-      if(bucketName != undefined) {
-        obj[bucketName] = bucket.key
-      }
-
-      for(var field in bucket) { 
-        var bucketValue = bucket[field]             
-        if(bucketValue.value != undefined) {
-          if("value_as_string" in bucket[field]){
-            obj[field] = bucketValue["value_as_string"]
-          }
-          else {
-            obj[field] = bucketValue.value
-          }
-        }
-        else {
-            if(typeof(bucket[field])=="object"){
-                fillFieldsForSpecificAggregation(obj,bucketValue,field);
+                var newRows = getRows(subBucketName, subBucket, newAdditionalColumns)
+                $.merge(rows, newRows);
             }
         }
-      }
-      rows.push(obj)
-    }
 
-    return rows
-  }
+        else {
+            var obj = $.extend({}, additionalColumns)
+            if(bucketName != undefined) {
+                obj[bucketName] = bucket.key
+            }
+
+            for(var field in bucket) {
+                var bucketValue = bucket[field]
+                if(bucketValue.value != undefined) {
+                    if("value_as_string" in bucket[field]){
+                        obj[field] = bucketValue["value_as_string"]
+                    }
+                    else {
+                        obj[field] = bucketValue.value
+                    }
+                }
+                else {
+                    if(typeof(bucket[field])=="object"){
+                        fillFieldsForSpecificAggregation(obj,bucketValue,field);
+                    }
+                }
+            }
+            rows.push(obj)
+        }
+
+        return rows
+    }
 
 
     function fillFieldsForSpecificAggregation(obj,value,field)
@@ -157,40 +173,40 @@ var AggregationQueryResultHandler = function(data) {
         return;
     }
 
-  function getSubBuckets(bucket) {
-    var subBuckets = [];
-    for(var field in bucket) {
-      var buckets = bucket[field].buckets
-      if(buckets != undefined) {
-        for(var i = 0; i < buckets.length; i++) {
-          subBuckets.push({"bucketName": field, "bucket": buckets[i]})
+    function getSubBuckets(bucket) {
+        var subBuckets = [];
+        for(var field in bucket) {
+            var buckets = bucket[field].buckets
+            if(buckets != undefined) {
+                for(var i = 0; i < buckets.length; i++) {
+                    subBuckets.push({"bucketName": field, "bucket": buckets[i]})
+                }
+            }
         }
-      }
+
+        return subBuckets
     }
 
-    return subBuckets
-  }
-  
 
-  this.data = data
-  this.flattenBuckets = getRows(undefined, data.aggregations, {})
+    this.data = data
+    this.flattenBuckets = getRows(undefined, data.aggregations, {})
 };
 
 AggregationQueryResultHandler.prototype.getHead = function() {
-  head = []
-  for(var i = 0; i < this.flattenBuckets.length; i++) {
-    var keys = Object.keys(this.flattenBuckets[i])
-    for(var j = 0; j < keys.length; j++) {
-      if($.inArray(keys[j], head) == -1) {
-        head.push(keys[j])
-      }
+    head = []
+    for(var i = 0; i < this.flattenBuckets.length; i++) {
+        var keys = Object.keys(this.flattenBuckets[i])
+        for(var j = 0; j < keys.length; j++) {
+            if($.inArray(keys[j], head) == -1) {
+                head.push(keys[j])
+            }
+        }
     }
-  }
-  return head
+    return head
 };
 
 AggregationQueryResultHandler.prototype.getBody = function() {
-  return this.flattenBuckets
+    return this.flattenBuckets
 };
 
 
@@ -198,90 +214,90 @@ AggregationQueryResultHandler.prototype.getBody = function() {
 
 
 /* ShowQueryResultHandler object
-    for showing mapping in some levels (cluster, index and types)
-*/
+ for showing mapping in some levels (cluster, index and types)
+ */
 var ShowQueryResultHandler = function(data) {
 
-  var mappingParser = new MappingParser(data);
-  var indices = mappingParser.getIndices();
-  body = [];
-  if(indices.length > 1){
-    this.head = ["index","types"];
-    for(indexOfIndex in indices){
-      var indexToTypes = {};
-      var index = indices[indexOfIndex]
-      indexToTypes["index"] = index;
-      indexToTypes["types"] = mappingParser.getTypes(index);
-      body.push(indexToTypes);
-    }
-  }
-  else {
-    var index  = indices[0];
-    var types = mappingParser.getTypes(index);
-    if(types.length > 1) {
-      this.head = ["type","fields"];
-      for(typeIndex in types){
-        var typeToFields = {};
-        var type = types[typeIndex];
-        typeToFields["type"] = type;
-        typeToFields["fields"] = mappingParser.getFieldsForType(index,type);
-        body.push(typeToFields)
-      }
+    var mappingParser = new MappingParser(data);
+    var indices = mappingParser.getIndices();
+    body = [];
+    if(indices.length > 1){
+        this.head = ["index","types"];
+        for(indexOfIndex in indices){
+            var indexToTypes = {};
+            var index = indices[indexOfIndex]
+            indexToTypes["index"] = index;
+            indexToTypes["types"] = mappingParser.getTypes(index);
+            body.push(indexToTypes);
+        }
     }
     else {
-      this.head = ["field","type","more"];
-      fieldsWithMapping = mappingParser.getFieldsForTypeWithMapping(index,types[0]);
-      for(field in fieldsWithMapping){
-        fieldRow = {};
-        fieldMapping = fieldsWithMapping[field];
-        fieldRow["field"] = field;
-        fieldRow["type"] = fieldMapping["type"];
-        delete fieldMapping["type"];
-        fieldRow["more"] = fieldMapping;
-        body.push(fieldRow);
-      }
+        var index  = indices[0];
+        var types = mappingParser.getTypes(index);
+        if(types.length > 1) {
+            this.head = ["type","fields"];
+            for(typeIndex in types){
+                var typeToFields = {};
+                var type = types[typeIndex];
+                typeToFields["type"] = type;
+                typeToFields["fields"] = mappingParser.getFieldsForType(index,type);
+                body.push(typeToFields)
+            }
+        }
+        else {
+            this.head = ["field","type","more"];
+            fieldsWithMapping = mappingParser.getFieldsForTypeWithMapping(index,types[0]);
+            for(field in fieldsWithMapping){
+                fieldRow = {};
+                fieldMapping = fieldsWithMapping[field];
+                fieldRow["field"] = field;
+                fieldRow["type"] = fieldMapping["type"];
+                delete fieldMapping["type"];
+                fieldRow["more"] = fieldMapping;
+                body.push(fieldRow);
+            }
+        }
     }
-  }
 
-  this.body = body;
-  
+    this.body = body;
+
 };
 
 
 ShowQueryResultHandler.prototype.getHead = function() {
-  return this.head
+    return this.head
 };
 
 ShowQueryResultHandler.prototype.getBody = function() {
-  return this.body;
+    return this.body;
 };
 
 
 
 /* DeleteQueryResultHandler object
-    to show delete result status
-*/
+ to show delete result status
+ */
 var DeleteQueryResultHandler = function(data) {
-  this.head = ["index_deleted_from","shards_successful","shards_failed"];
-  body = []
-  deleteData = data["_indices"];
-  for(index in deleteData){
-    deleteStat = {};
-    deleteStat["index_deleted_from"] = index;
-    shardsData = deleteData[index]["_shards"];
-    deleteStat["shards_successful"] = shardsData["successful"];
-    deleteStat["shards_failed"] = shardsData["failed"];
-    body.push(deleteStat);
-  }
-  this.body = body;
-  
+    this.head = ["index_deleted_from","shards_successful","shards_failed"];
+    body = []
+    deleteData = data["_indices"];
+    for(index in deleteData){
+        deleteStat = {};
+        deleteStat["index_deleted_from"] = index;
+        shardsData = deleteData[index]["_shards"];
+        deleteStat["shards_successful"] = shardsData["successful"];
+        deleteStat["shards_failed"] = shardsData["failed"];
+        body.push(deleteStat);
+    }
+    this.body = body;
+
 };
 
 
 DeleteQueryResultHandler.prototype.getHead = function() {
-  return this.head;
+    return this.head;
 };
 
 DeleteQueryResultHandler.prototype.getBody = function() {
-  return this.body;
+    return this.body;
 };
