@@ -18,6 +18,8 @@ import org.elasticsearch.search.aggregations.bucket.histogram.HistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.search.aggregations.metrics.MetricsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.Util;
@@ -57,21 +59,37 @@ public class AggMaker {
 	 */
 	public AbstractAggregationBuilder makeFieldAgg(MethodField field, AbstractAggregationBuilder parent) throws SqlParseException {
 		groupMap.put(field.getAlias(), new KVValue("FIELD", parent));
+        ValuesSourceMetricsAggregationBuilder builder;
+        field.setAlias(fixAlias(field.getAlias()));
 		switch (field.getName().toUpperCase()) {
 		case "SUM":
-			return AggregationBuilders.sum(field.getAlias()).field(field.getParams().get(0).toString());
+			builder = AggregationBuilders.sum(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
 		case "MAX":
-			return AggregationBuilders.max(field.getAlias()).field(field.getParams().get(0).toString());
+			builder = AggregationBuilders.max(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
 		case "MIN":
-			return AggregationBuilders.min(field.getAlias()).field(field.getParams().get(0).toString());
+			builder =  AggregationBuilders.min(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
 		case "AVG":
-			return AggregationBuilders.avg(field.getAlias()).field(field.getParams().get(0).toString());
+			builder =  AggregationBuilders.avg(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
 		case "STATS":
-			return AggregationBuilders.stats(field.getAlias()).field(field.getParams().get(0).toString());
+			builder =  AggregationBuilders.stats(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
         case "EXTENDED_STATS":
-                return AggregationBuilders.extendedStats(field.getAlias()).field(field.getParams().get(0).toString());
+            builder =  AggregationBuilders.extendedStats(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
         case "PERCENTILES":
-                return AggregationBuilders.percentiles(field.getAlias()).field(field.getParams().get(0).toString());
+            builder = AggregationBuilders.percentiles(field.getAlias());
+            addFieldOrScriptToAggregation(field, builder);
+            return builder;
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
 		case "COUNT":
@@ -82,7 +100,23 @@ public class AggMaker {
 		}
 	}
 
-	private AggregationBuilder<?> makeRangeGroup(MethodField field) throws SqlParseException {
+    private String fixAlias(String alias) {
+        //because [ is not legal as alias
+        return alias.replaceAll("\\[","(").replaceAll("\\]",")");
+    }
+
+    private void addFieldOrScriptToAggregation(MethodField field, ValuesSourceMetricsAggregationBuilder builder) {
+        KVValue kvValue = field.getParams().get(0);
+        if(kvValue.key==null || !kvValue.key.equals("script") )
+             builder.field(kvValue.toString());
+        else
+        {
+            //todo: support different lang script
+            builder.script(((MethodField)kvValue.value).getParams().get(1).toString());
+        }
+    }
+
+    private AggregationBuilder<?> makeRangeGroup(MethodField field) throws SqlParseException {
 		switch (field.getName().toLowerCase()) {
 		case "range":
 			return rangeBuilder(field);

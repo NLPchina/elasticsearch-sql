@@ -482,6 +482,41 @@ public class SqlParserTests {
     }
 
 
+    @Test
+    public void explicitScriptOnAggregation() throws SqlParseException {
+        String query = "SELECT avg( script('add','doc[\\'field1\\'].value + doc[\\'field2\\'].value') ) FROM index/type";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertTrue(field instanceof MethodField);
+        MethodField avgMethodField = (MethodField) field;
+        Assert.assertEquals("avg",avgMethodField.getName().toLowerCase());
+        Assert.assertEquals(1,avgMethodField.getParams().size());
+        MethodField scriptMethod = (MethodField) avgMethodField.getParams().get(0).value;
+        Assert.assertEquals("script",scriptMethod.getName().toLowerCase());
+        Assert.assertEquals(2,scriptMethod.getParams().size());
+        Assert.assertEquals("doc['field1'].value + doc['field2'].value" ,scriptMethod.getParams().get(1).toString());
+    }
+    @Test
+
+    public void implicitScriptOnAggregation() throws SqlParseException {
+        String query = "SELECT avg(field1 + field2) FROM index/type";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertTrue(field instanceof MethodField);
+        MethodField avgMethodField = (MethodField) field;
+        Assert.assertEquals("avg",avgMethodField.getName().toLowerCase());
+        Assert.assertEquals(1,avgMethodField.getParams().size());
+        MethodField scriptMethod = (MethodField) avgMethodField.getParams().get(0).value;
+        Assert.assertEquals("script",scriptMethod.getName().toLowerCase());
+        Assert.assertEquals(2,scriptMethod.getParams().size());
+        Assert.assertEquals("doc['field1'].value + doc['field2'].value" ,scriptMethod.getParams().get(1).toString());
+    }
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }

@@ -47,6 +47,28 @@ public class AggregationTest {
 		assertThat(sum.getValue(), equalTo(25714837.0));
 	}
 
+    // script on metric aggregation tests. uncomment if your elastic has scripts enable
+//    @Test
+//    public void sumWithScriptTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+//        Aggregations result = query(String.format("SELECT SUM(script('','doc[\\'balance\\'].value + doc[\\'balance\\'].value')) as doubleSum FROM %s/account", TEST_INDEX));
+//        Sum sum = result.get("doubleSum");
+//        assertThat(sum.getValue(), equalTo(25714837.0*2));
+//    }
+//
+//    @Test
+//    public void sumWithImplicitScriptTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+//        Aggregations result = query(String.format("SELECT SUM(balance + balance) as doubleSum FROM %s/account", TEST_INDEX));
+//        Sum sum = result.get("doubleSum");
+//        assertThat(sum.getValue(), equalTo(25714837.0*2));
+//    }
+//
+//    @Test
+//    public void sumWithScriptTestNoAlias() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+//        Aggregations result = query(String.format("SELECT SUM(balance + balance) FROM %s/account", TEST_INDEX));
+//        Sum sum = result.get("SUM(script=script(balance + balance,doc('balance').value + doc('balance').value))");
+//        assertThat(sum.getValue(), equalTo(25714837.0*2));
+//    }
+
 	@Test
 	public void minTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		Aggregations result = query(String.format("SELECT MIN(age) FROM %s/account", TEST_INDEX));
