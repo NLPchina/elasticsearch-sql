@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.junit.Assert;
@@ -414,6 +415,72 @@ public class SqlParserTests {
         Assert.assertEquals(1,select.getFrom().size());
         Assert.assertEquals("data-2015.08.22",select.getFrom().get(0).getIndex());
     }
+
+    @Test
+    public void scriptFiledPlusLiteralTest() throws SqlParseException {
+        String query = "SELECT field1 + 3 FROM index/type";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertTrue(field instanceof MethodField);
+        MethodField scriptMethod = (MethodField) field;
+        Assert.assertEquals("script",scriptMethod.getName().toLowerCase());
+        Assert.assertEquals(2,scriptMethod.getParams().size());
+        Assert.assertEquals("field1 + 3" ,scriptMethod.getParams().get(0).toString());
+        Assert.assertEquals("doc['field1'].value + 3" ,scriptMethod.getParams().get(1).toString());
+    }
+
+    @Test
+    public void scriptFieldPlusFieldTest() throws SqlParseException {
+        String query = "SELECT field1 + field2 FROM index/type";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertTrue(field instanceof MethodField);
+        MethodField scriptMethod = (MethodField) field;
+        Assert.assertEquals("script",scriptMethod.getName().toLowerCase());
+        Assert.assertEquals(2,scriptMethod.getParams().size());
+        Assert.assertEquals("field1 + field2" ,scriptMethod.getParams().get(0).toString());
+        Assert.assertEquals("doc['field1'].value + doc['field2'].value" ,scriptMethod.getParams().get(1).toString());
+    }
+
+
+    @Test
+    public void scriptLiteralPlusLiteralTest() throws SqlParseException {
+        String query = "SELECT 1 + 2  FROM index/type";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertTrue(field instanceof MethodField);
+        MethodField scriptMethod = (MethodField) field;
+        Assert.assertEquals("script",scriptMethod.getName().toLowerCase());
+        Assert.assertEquals(2,scriptMethod.getParams().size());
+        Assert.assertEquals("1 + 2" ,scriptMethod.getParams().get(0).toString());
+        Assert.assertEquals("1 + 2" ,scriptMethod.getParams().get(1).toString());
+    }
+
+    @Test
+    public void scriptFieldPlusFieldWithAliasTest() throws SqlParseException {
+        String query = "SELECT field1 + field2 as myfield FROM index/type";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertEquals(1,fields.size());
+        Field field = fields.get(0);
+        Assert.assertTrue(field instanceof MethodField);
+        MethodField scriptMethod = (MethodField) field;
+        Assert.assertEquals("script",scriptMethod.getName().toLowerCase());
+        Assert.assertEquals(2,scriptMethod.getParams().size());
+        Assert.assertEquals("myfield" ,scriptMethod.getParams().get(0).toString());
+        Assert.assertEquals("doc['field1'].value + doc['field2'].value" ,scriptMethod.getParams().get(1).toString());
+    }
+
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
