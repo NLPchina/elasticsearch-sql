@@ -3,7 +3,7 @@
  Returns the right Result Handler depend
  on the results */
 var ResultHandlerFactory = {
-    "create": function(data) {
+    "create": function(data,isFlat) {
         function isSearch(){
             return "hits" in data
         }
@@ -16,7 +16,7 @@ var ResultHandlerFactory = {
         }
 
         if(isSearch()){
-            return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data)
+            return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data,isFlat)
         }
 
         if(isDelete()){
@@ -35,7 +35,7 @@ var ResultHandlerFactory = {
  in case of regular query
  (Not aggregation)
  */
-var DefaultQueryResultHandler = function(data) {
+var DefaultQueryResultHandler = function(data,isFlat) {
 
     // createScheme by traverse hits field
     function createScheme() {
@@ -44,17 +44,26 @@ var DefaultQueryResultHandler = function(data) {
         for(index=0; index<hits.length; index++) {
             hit = hits[index]
             header = $.extend({},hit._source,hit.fields)
-            for(key in header) {
-                if(scheme.indexOf(key) == -1) {
-                    scheme.push(key)
-                }
+            if(isFlat){
+                findKeysRecursive(scheme,header,"");
             }
+            else {
+                for(key in header) {
+
+                    if(scheme.indexOf(key) == -1) {
+                        scheme.push(key)
+                    }
+                }       
+            }
+            
         }
         return scheme
     }
+    
 
     this.data = data
     this.head = createScheme()
+    this.isFlat = isFlat;
     this.scrollId = data["_scroll_id"]
     this.isScroll = this.scrollId!=null && this.scrollId!="";
 };
@@ -80,10 +89,56 @@ DefaultQueryResultHandler.prototype.getBody = function() {
         if("fields" in hits[i]){
             addFieldsToRow(row,hits[i])
         }
+        if(this.isFlat){
+            row = flatRow(this.head,row);
+        }
         body.push(row)
     }
     return body
 };
+
+DefaultQueryResultHandler.prototype.getTotal = function() {
+    return this.data.hits.total;
+};
+
+DefaultQueryResultHandler.prototype.getCurrentHitsSize = function() {
+    return this.data.hits.hits.length;
+};
+
+function findKeysRecursive (scheme,keys,prefix) {
+        for(key in keys){
+            if(typeof(keys[key])=="object" && (!(keys[key] instanceof Array))){
+                findKeysRecursive(scheme,keys[key],prefix+key+".")
+            }
+            else {
+                if(scheme.indexOf(prefix+key) == -1){
+                    scheme.push(prefix+key);
+                }
+            }
+        }
+    }
+function flatRow (keys,row) {
+    var flattenRow = {}
+    for( i = 0 ; i< keys.length ; i++ ){
+        key = keys[i];
+        splittedKey = key.split(".");
+        var found = true;
+        currentObj = row;
+        for( j = 0 ; j < splittedKey.length ; j++){
+            if(currentObj[splittedKey[j]]==undefined){
+                found = false;
+                break;
+            }
+            else {
+                currentObj = currentObj[splittedKey[j]];
+            }
+        }
+        if(found){
+            flattenRow[key] = currentObj;
+        }
+    }
+    return flattenRow;
+}
 
 function addFieldsToRow (row,hit) {
     for(field in hit.fields){
@@ -210,6 +265,14 @@ AggregationQueryResultHandler.prototype.getBody = function() {
 };
 
 
+AggregationQueryResultHandler.prototype.getTotal = function() {
+    return "?";
+};
+
+AggregationQueryResultHandler.prototype.getCurrentHitsSize = function() {
+  return this.flattenBuckets.length;
+};
+
 
 
 
@@ -272,6 +335,13 @@ ShowQueryResultHandler.prototype.getBody = function() {
     return this.body;
 };
 
+ShowQueryResultHandler.prototype.getTotal = function() {
+    return this.body.length;
+};
+
+ShowQueryResultHandler.prototype.getCurrentHitsSize = function() {
+  return this.body.length;
+};
 
 
 /* DeleteQueryResultHandler object
@@ -301,3 +371,12 @@ DeleteQueryResultHandler.prototype.getHead = function() {
 DeleteQueryResultHandler.prototype.getBody = function() {
     return this.body;
 };
+
+DeleteQueryResultHandler.prototype.getTotal = function() {
+    return 1;
+};
+
+DeleteQueryResultHandler.prototype.getCurrentHitsSize = function() {
+  return 1;
+};
+

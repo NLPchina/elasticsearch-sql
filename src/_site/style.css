@@ -163,6 +163,8 @@ body {
 }
 
 
+
+
 /* Loading button animation */
 .glyphicon-refresh-animate {
     -animation: spin .7s infinite linear;
@@ -177,4 +179,19 @@ body {
 @keyframes spin {
     from { transform: scale(1) rotate(0deg);}
     to { transform: scale(1) rotate(360deg);}
+}
+
+/* result options */
+
+.result_options {
+  padding-top: 5%;
+}
+.delimiter {
+  display: inline;
+  width: 20%;
+  margin-left: 10%;
+}
+
+.delimiterLable {
+ font-weight: 100;
 }

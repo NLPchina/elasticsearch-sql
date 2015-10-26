@@ -102,7 +102,20 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-11 col-md-offset-1 main">
+      <div class="col-sm-3 col-md-1 result_options">
+      <h3> Options </h3>
+          <div class="checkbox">
+      <label><input type="checkbox" ng-model="isFlat" value="">Flat</label>
+    </div>
+    <div class="checkbox">
+      <label><input type="checkbox" ng-model="isAutoSave" value="">AutoSave</label>
+    </div>
+    <div class="">
+      <label class="delimiterLable" >delimiter<input type="text" class="delimiter" name="delimiterText" ng-model="delimiter" maxlength="1" value="," /></label>
+      
+    </div>
+      </div>
+        <div class="col-sm-9 col-md-11 main">
           <h1 class="page-header">SQL Query</h1>
 
           <!-- Query area -->
@@ -126,9 +139,9 @@
           </div>
 
           <!-- Results area, displayed after search -->
-          <div class="fadein" ng-show="resultsColumns.length > 0" ng-cloak>
+          <div class="fadein" ng-show="resultsColumns.length > 0 || showResults" ng-cloak>
           	<div>
-            	<h2 class="sub-header">Results</h2>             		
+            	<h2 class="sub-header">Results {{amountDescription}}</h2>             		
          		</div>
 
             <div class="table-responsive">
