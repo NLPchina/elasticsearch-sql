@@ -20,6 +20,7 @@ import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.aggregations.metrics.MetricsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetricBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.Util;
@@ -92,6 +93,8 @@ public class AggMaker {
             return builder;
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
+        case "SCRIPTED_METRIC":
+            return scriptedMetric(field);
 		case "COUNT":
 			groupMap.put(field.getAlias(), new KVValue("COUNT", parent));
 			return makeCountAgg(field);
@@ -135,6 +138,61 @@ public class AggMaker {
 		}
 
 	}
+
+    private AbstractAggregationBuilder scriptedMetric(MethodField field) throws SqlParseException {
+        String aggName = gettAggNameFromParamsOrAlias(field);
+        ScriptedMetricBuilder scriptedMetricBuilder = AggregationBuilders.scriptedMetric(aggName);
+        Map<String, Object> scriptedMetricParams = field.getParamsAsMap();
+        if(!scriptedMetricParams.containsKey("map_script") && !scriptedMetricParams.containsKey("map_script_id") && !scriptedMetricParams.containsKey("map_script_file")){
+            throw new SqlParseException("scripted metric parameters must contain map_script/map_script_id/map_script_file parameter");
+        }
+        for(Map.Entry<String,Object> param : scriptedMetricParams.entrySet()) {
+            String paramValue = param.getValue().toString();
+            switch (param.getKey().toLowerCase()) {
+                case "map_script":
+                    scriptedMetricBuilder.mapScript(paramValue);
+                    break;
+                case "map_script_id":
+                    scriptedMetricBuilder.mapScriptId(paramValue);
+                    break;
+                case "map_script_file":
+                    scriptedMetricBuilder.mapScriptFile(paramValue);
+                    break;
+                case "init_script":
+                    scriptedMetricBuilder.initScript(paramValue);
+                    break;
+                case "init_script_id":
+                    scriptedMetricBuilder.initScriptId(paramValue);
+                    break;
+                case "init_script_file":
+                    scriptedMetricBuilder.initScriptFile(paramValue);
+                    break;
+                case "combine_script":
+                    scriptedMetricBuilder.combineScript(paramValue);
+                    break;
+                case "combine_script_id":
+                    scriptedMetricBuilder.combineScriptId(paramValue);
+                    break;
+                case "combine_script_file":
+                    scriptedMetricBuilder.combineScriptFile(paramValue);
+                    break;
+                case "reduce_script":
+                    scriptedMetricBuilder.reduceScript(paramValue);
+                    break;
+                case "reduce_script_id":
+                    scriptedMetricBuilder.reduceScriptId(paramValue);
+                    break;
+                case "reduce_script_file":
+                    scriptedMetricBuilder.reduceScriptFile(paramValue);
+                    break;
+                case "alias":
+                    break;
+                default:
+                    throw new SqlParseException("scripted_metric err or not define field " + param.getKey());
+            }
+        }
+            return scriptedMetricBuilder;
+    }
 
     private AggregationBuilder<?> geohashGrid(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);

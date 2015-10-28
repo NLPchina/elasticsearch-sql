@@ -14,6 +14,7 @@ import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
+import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
@@ -47,7 +48,8 @@ public class AggregationTest {
 		assertThat(sum.getValue(), equalTo(25714837.0));
 	}
 
-    // script on metric aggregation tests. uncomment if your elastic has scripts enable
+    // script on metric aggregation tests. uncomment if your elastic has scripts enable (disabled by default)
+    //todo: find a way to check if scripts are enabled
 //    @Test
 //    public void sumWithScriptTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 //        Aggregations result = query(String.format("SELECT SUM(script('','doc[\\'balance\\'].value + doc[\\'balance\\'].value')) as doubleSum FROM %s/account", TEST_INDEX));
@@ -67,6 +69,15 @@ public class AggregationTest {
 //        Aggregations result = query(String.format("SELECT SUM(balance + balance) FROM %s/account", TEST_INDEX));
 //        Sum sum = result.get("SUM(script=script(balance + balance,doc('balance').value + doc('balance').value))");
 //        assertThat(sum.getValue(), equalTo(25714837.0*2));
+//    }
+//
+//    @Test
+//    public void scriptedMetricAggregation() throws SQLFeatureNotSupportedException, SqlParseException {
+//        Aggregations result = query ("select scripted_metric('map_script'='if(doc[\\'balance\\'].value > 49670){ if(!_agg.containsKey(\\'ages\\')) { _agg.put(\\'ages\\',doc[\\'age\\'].value); } " +
+//                "else { _agg.put(\\'ages\\',_agg.get(\\'ages\\')+doc[\\'age\\'].value); }}'," +
+//                "'reduce_script'='sumThem = 0; for (a in _aggs) { if(a.containsKey(\\'ages\\')){ sumThem += a.get(\\'ages\\');} }; return sumThem;') as wierdSum from " + TEST_INDEX + "/account");
+//        ScriptedMetric metric = result.get("wierdSum");
+//        Assert.assertEquals(136L,metric.aggregation());
 //    }
 
 	@Test
