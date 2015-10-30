@@ -37,13 +37,13 @@ public class HintFactory {
         }
         if(hintAsString.startsWith("! USE_SCROLL")){
             String[] scrollParams = getParamsFromHint(hintAsString,"! USE_SCROLL");
-            int docsPerFetch = 10000;
+            int docsPerShardFetch = 50;
             int timeout = 60000;
             if(scrollParams != null && scrollParams.length ==2) {
-                docsPerFetch = Integer.parseInt(scrollParams[0]);
+                docsPerShardFetch = Integer.parseInt(scrollParams[0]);
                 timeout = Integer.parseInt(scrollParams[1]);
             }
-            return new Hint(HintType.USE_SCROLL, new Object[]{docsPerFetch,timeout});
+            return new Hint(HintType.USE_SCROLL, new Object[]{docsPerShardFetch,timeout});
         }
         return null;
     }
