@@ -237,8 +237,8 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
            recieved = handler.getBody()
           if(body.length > 0){
             body = body.concat(recieved);
-            //todo: extend head?
-            head = handler.getHead();
+
+            head = $.extend(head,handler.getHead());
           }
           else {
             body = recieved;
