@@ -12,7 +12,8 @@
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
-
+    <link rel="stylesheet" type="text/css" href="vendor/dataTables/css/jquery.dataTables.min.css"/>
+ 
   </head>
 
   <body ng-app="elasticsearchSqlApp" ng-controller="MainController">
@@ -108,8 +109,12 @@
       <label><input type="checkbox" ng-model="isFlat" value="">Flat</label>
     </div>
     <div class="checkbox">
-      <label><input type="checkbox" ng-model="isAutoSave" value="">AutoSave</label>
+      <label><input type="checkbox" ng-model="useOldTable" ng-change="onChangeTablePresnterType()" value="">useOldTable</label>
     </div>
+    <div class="checkbox">
+      <label><input type="checkbox" ng-model="isAutoSave" value="">AutoExportCSV</label>
+    </div>
+    
     <div class="">
       <label class="delimiterLable" >delimiter<input type="text" class="delimiter" name="delimiterText" ng-model="delimiter" maxlength="1" value="," /></label>
       
@@ -120,15 +125,16 @@
 
           <!-- Query area -->
           <div class="search-area">
-          	<textarea id="queryTextarea">SELECT * FROM myindex</textarea> 
+          	<textarea id="queryTextarea">SELECT * FROM sql_test</textarea> 
   	        <button type="button" ng-click="search()" id="searchButton" class="btn btn-success search-button" ng-bind-html="getButtonContent(searchLoading,'Search')" ng-cloak>
             </button>
 
             <button type="button" ng-click="explain()" id="explainButton" class="btn btn-info explain-button" ng-bind-html="getButtonContent(explainLoading,'Explain')" ng-cloak>
             </button>
-
-            <button type="next" ng-click="nextSearch()" id="nextButton" class="btn btn-warning next-button" ng-show="gotNext" ng-bind-html="getButtonContent(nextLoading,'Next')" ng-cloak>
+            <button type="next" ng-click="nextSearch()" id="nextButton" class="btn btn-warning next-button" ng-disabled="!gotNext" ng-bind-html="getButtonContent(nextLoading,'Scroll <span class=\'glyphicon glyphicon-cloud-download\'></span>')" ng-cloak> 
             </button>
+            <button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-primary " ng-cloak>Export CSV <span class="glyphicon glyphicon-share"></span></button>
+            
   	      </div>
 
           <!-- Error box, displayed only on errors -->
@@ -141,12 +147,12 @@
           <!-- Results area, displayed after search -->
           <div class="fadein" ng-show="resultsColumns.length > 0 || showResults" ng-cloak>
           	<div>
-            	<h2 class="sub-header">Results {{amountDescription}}</h2>             		
+            	<h2 class="sub-header">Results ({{amountDescription}})</h2>             		
          		</div>
 
-            <div class="table-responsive">
+            <div class="table-responsive" id ="searchResultZone">
               <table class="table table-striped" id="searchResult">
-                <thead>
+                <!-- <thead>
                   <tr id="tableHead">
                     <th ng-repeat="column in resultsColumns">{{column}}</th>
                   </tr>
@@ -157,11 +163,11 @@
                       {{row[column]}}
                     </td>
                   </tr>
-                </tbody>
+                </tbody> -->
               </table>
             </div>
 
-            <button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-primary btn-sm" ng-cloak>Export CSV <span class="glyphicon glyphicon-share"></span></button>
+          
           </div>
 
           <!-- explan area , displayed after explan -->
@@ -181,9 +187,11 @@
 
     <!-- Jquery include -->
     <script src="vendor/jquery/jquery-2.1.1.min.js"></script>
+    
 
     <!-- Bootstrap core JavaScript -->
-    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="vendor/dataTables/js/jquery.dataTables.min.js"></script>
+
 
     <!-- CodeMirror includes -->
   	<script src="vendor/codemirror/lib/codemirror.js"></script>
@@ -199,10 +207,12 @@
     <script src="vendor/angularjs/angular.min.js"></script>
     <script src="vendor/angularjs/angular-animate.min.js"></script>
     <script src="vendor/angularjs/angular-sanitize.min.js"></script>
+    
 
-      
+    <script src="table_presenter.js"></script>  
     <script src="editor.js"></script>
     <script src="mapping_parser.js"></script>
+
     <script src="query.js"></script>
     <script src="controllers.js"></script>
 

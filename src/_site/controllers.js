@@ -1,24 +1,30 @@
 
 var elasticsearchSqlApp = angular.module('elasticsearchSqlApp', ["ngAnimate", "ngSanitize"]);
 
-elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) {
+elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$compile) {
 	scroll_url = "_search/scroll?scroll=1m&scroll_id=";
 	$scope.url = getUrl();
 	$scope.showResults = false;
 	$scope.error = "";
-	$scope.resultsColumns = [];
+	$scope.resultsColumns =[];
 	$scope.resultsRows = [];
 	$scope.searchLoading = false;
 	$scope.explainLoading = false;
 	$scope.nextLoading = false;
 	$scope.resultExplan = false;
-	$scope.scrollId = null;
+	$scope.scrollId = undefined;
+  $scope.amountDescription = "";
+  var fetched = 0;
+  var total = 0 ;
+  //checkboxes
 	$scope.gotNext = false;
+  $scope.useOldTable = false;
 	$scope.delimiter = ',';
-	$scope.amountDescription = "";
-	var fetched = 0;
-	var total = 0 ;
-	// pull version and put it on the scope
+	
+  var tablePresenter = new TablePresenter('searchResult','#searchResultZone');
+
+
+ 	// pull version and put it on the scope
     $http.get($scope.url).success(function (data) {
         $http.get($scope.url + "_nodes/" + data.name).success(function (nodeData) {
             var node = nodeData.nodes[Object.keys(nodeData.nodes)[0]];
@@ -30,73 +36,12 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
         });
     });
 
-    function searchTillEndAndExportCsv (scrollId) {
-    	//todo: get total amount show fetched/total
-    	head = []
-    	body = []
-    	$scope.showResults = true;
-    	callScrollAndFillBodyTillEnd(scrollId,head,body,true);
-    }
-    function updateDescription (handler) {
-    	total = handler.getTotal();
-        fetched += handler.getCurrentHitsSize();
-        $scope.amountDescription = fetched + "/" + total 
-    }
-    function callScrollAndFillBodyTillEnd (scrollId,head,body,firstTime) {
-		var url = $scope.url + scroll_url + scrollId;
-    	$http.get(url)
-		.success(function(data, status, headers, config) {
-
-          var handler = ResultHandlerFactory.create(data,$scope.isFlat);
-          	
-          	updateDescription(handler);
-           recieved = handler.getBody()
-          if(body.length > 0){
-          	body = body.concat(recieved);
-          	//todo: extend head?
-          	head = handler.getHead();
-          }
-          else {
-          	body = recieved;
-            head = handler.getHead();
-
-          }
-          if(recieved == undefined || recieved.length == undefined || recieved.length == 0){
-          	if(firstTime){
-          	 callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false);
-          	}
-          	else {
-          		exportCSVWithoutScope(head,body);
-          	}
-          }
-          else {
-          	callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false);
-          }
-
-
-        })
-        .error(function(data, status, headers, config) {
-          if(data == "") {
-            $scope.error = "Error occured! response is not avalible.";
-    	  }
-    	  else {
-    	  	$scope.error = JSON.stringify(data);
-    	  	$scope.scrollId = undefined;
-		  }
-        })
-        .finally(function() {
-          $scope.nextLoading = false;
-          $scope.$apply()
-        });
-
-
-    	// body...
-    }
 
 	$scope.nextSearch = function(){
 		$scope.error = "";
 		$scope.nextLoading = true;
 		$scope.$apply();
+    var needToBuildTable = false;
 
 
 		if($scope.scrollId == undefined || $scope.scrollId == "" ){
@@ -119,12 +64,13 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
           }
 
           if($scope.resultsRows.length > 0){
+            tablePresenter.addRows(handler.getBody());
           	$scope.resultsRows = $scope.resultsRows.concat(handler.getBody());
           }
           else {
           	$scope.resultsColumns = handler.getHead();
             $scope.resultsRows = handler.getBody();
-
+            needToBuildTable = true; 
           }
 
 
@@ -135,12 +81,16 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
     	  }
     	  else {
     	  	$scope.error = JSON.stringify(data);
-    	  	$scope.scrollId = null;
+    	  	$scope.scrollId = undefined;
 		  }
         })
         .finally(function() {
           $scope.nextLoading = false;
-          $scope.$apply()
+          $scope.$apply();
+          if(needToBuildTable) {
+            tablePresenter.createOrReplace($scope.resultsColumns,$scope.resultsRows);
+          }
+
         });
 
 	}
@@ -154,12 +104,12 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		$scope.resultsColumns = [];
 		$scope.resultsRows = [];
 		$scope.searchLoading = true;
-		$scope.$apply();
+		
 		$scope.resultExplan = false;
-
+    $scope.$apply();
 		saveUrl()
 
-        var query = window.editor.getValue();
+    var query = window.editor.getValue();
 
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
@@ -185,6 +135,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
             else {
                 $scope.resultsColumns = handler.getHead();
                 $scope.resultsRows = handler.getBody();
+
             }
           }
         })
@@ -198,7 +149,11 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
         })
         .finally(function() {
           $scope.searchLoading = false;
-          $scope.$apply()
+          $scope.$apply();
+          if($scope.resultsColumns.length >0){
+            tablePresenter.createOrReplace($scope.resultsColumns,$scope.resultsRows);
+          }
+          
         });
 	}
 
@@ -246,6 +201,82 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce) 
 		download(plain, "query_result.csv", "text/plain");
   		return true;
 	}
+
+      $scope.onChangeTablePresnterType = function(){
+      //value = ?
+      value = $scope.useOldTable;
+      tablePresenter.destroy();
+      tablePresenter.changeTableType(value,$compile,$scope);
+    }
+   
+    function searchTillEndAndExportCsv (scrollId) {
+      //todo: get total amount show fetched/total
+      head = []
+      body = []
+      $scope.showResults = true;
+      callScrollAndFillBodyTillEnd(scrollId,head,body,true);
+    }
+    function updateDescription (handler) {
+        total = handler.getTotal();
+        fetched += handler.getCurrentHitsSize();
+        if(total == undefined){
+          $scope.amountDescription = fetched  
+        }
+        else {
+          $scope.amountDescription = fetched + "/" + total   
+        }
+    }
+    function callScrollAndFillBodyTillEnd (scrollId,head,body,firstTime) {
+    var url = $scope.url + scroll_url + scrollId;
+      $http.get(url)
+    .success(function(data, status, headers, config) {
+
+          var handler = ResultHandlerFactory.create(data,$scope.isFlat);
+            
+            updateDescription(handler);
+           recieved = handler.getBody()
+          if(body.length > 0){
+            body = body.concat(recieved);
+            //todo: extend head?
+            head = handler.getHead();
+          }
+          else {
+            body = recieved;
+            head = handler.getHead();
+
+          }
+          if(recieved == undefined || recieved.length == undefined || recieved.length == 0){
+            if(firstTime){
+             callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false);
+            }
+            else {
+              exportCSVWithoutScope(head,body);
+            }
+          }
+          else {
+            callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false);
+          }
+
+
+        })
+        .error(function(data, status, headers, config) {
+          if(data == "") {
+            $scope.error = "Error occured! response is not avalible.";
+        }
+        else {
+          $scope.error = JSON.stringify(data);
+          $scope.scrollId = undefined;
+      }
+        })
+        .finally(function() {
+          $scope.nextLoading = false;
+          $scope.$apply()
+        });
+
+
+      // body...
+    }
+
 
 
 	$scope.exportCSV = function() {

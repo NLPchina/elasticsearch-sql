@@ -116,6 +116,13 @@ body {
   margin-top: 10px;
 }
 
+#exportCSV {
+  float:left;
+  margin-top: 10px;
+  height: 100%;
+}
+
+
 .explain-button {
   float:right;
   margin-right: 25px;
@@ -125,6 +132,7 @@ body {
 
 .next-button {
   float:left;
+  margin-right:25px;
   margin-top: 10px;
 }
 
@@ -194,4 +202,9 @@ body {
 
 .delimiterLable {
  font-weight: 100;
+}
+
+
+#searchResultZone{
+  width: 80%;
 }

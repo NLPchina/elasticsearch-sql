@@ -65,7 +65,7 @@ var DefaultQueryResultHandler = function(data,isFlat) {
     this.head = createScheme()
     this.isFlat = isFlat;
     this.scrollId = data["_scroll_id"]
-    this.isScroll = this.scrollId!=null && this.scrollId!="";
+    this.isScroll = this.scrollId!=undefined && this.scrollId!="";
 };
 
 DefaultQueryResultHandler.prototype.isScroll = function() {
@@ -189,7 +189,14 @@ var AggregationQueryResultHandler = function(data) {
         else {
             var obj = $.extend({}, additionalColumns)
             if(bucketName != undefined) {
-                obj[bucketName] = bucket.key
+                if(bucketName != undefined) {
+                    if("key_as_string" in bucket){
+                        obj[bucketName] = bucket["key_as_string"]
+                    }
+                    else {
+                        obj[bucketName] = bucket.key
+                    }
+                }
             }
 
             for(var field in bucket) {
@@ -266,7 +273,7 @@ AggregationQueryResultHandler.prototype.getBody = function() {
 
 
 AggregationQueryResultHandler.prototype.getTotal = function() {
-    return "?";
+    return undefined;
 };
 
 AggregationQueryResultHandler.prototype.getCurrentHitsSize = function() {
