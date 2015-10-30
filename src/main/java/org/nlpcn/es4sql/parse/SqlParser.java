@@ -425,6 +425,7 @@ public class SqlParser {
         tableOnJoin.setConnectedFields(getConnectedFields(conditions, alias));
         tableOnJoin.setSelectedFields(new ArrayList<Field>(tableOnJoin.getFields()));
         tableOnJoin.setAlias(alias);
+        tableOnJoin.fillSubQueries();
     }
 
     private List<Field> getConnectedFields(List<Condition> conditions, String alias) throws SqlParseException {

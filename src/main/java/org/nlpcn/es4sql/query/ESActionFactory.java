@@ -44,18 +44,13 @@ public class ESActionFactory {
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
                 if(isJoin(sqlExpr,sql)){
                     JoinSelect joinSelect = new SqlParser().parseJoinSelect(sqlExpr);
+                    handleSubQueries(client, joinSelect.getFirstTable());
+                    handleSubQueries(client, joinSelect.getSecondTable());
                     return ESJoinQueryActionFactory.createJoinAction(client, joinSelect);
                 }
                 else {
                     Select select = new SqlParser().parseSelect(sqlExpr);
-
-                    if (select.containsSubQueries())
-                    {
-                        for(SubQueryExpression subQueryExpression : select.getSubQueries()){
-                            QueryAction queryAction = handleSelect(client, subQueryExpression.getSelect());
-                            executeAndFillSubQuery(client , subQueryExpression,queryAction);
-                        }
-                    }
+                    handleSubQueries(client, select);
                     return handleSelect(client, select);
                 }
 			case "DELETE":
@@ -69,6 +64,16 @@ public class ESActionFactory {
 				throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
 		}
 	}
+
+    private static void handleSubQueries(Client client, Select select) throws SqlParseException {
+        if (select.containsSubQueries())
+        {
+            for(SubQueryExpression subQueryExpression : select.getSubQueries()){
+                QueryAction queryAction = handleSelect(client, subQueryExpression.getSelect());
+                executeAndFillSubQuery(client , subQueryExpression,queryAction);
+            }
+        }
+    }
 
     private static void executeAndFillSubQuery(Client client , SubQueryExpression subQueryExpression,QueryAction queryAction) throws SqlParseException {
         List<Object> values = new ArrayList<>();

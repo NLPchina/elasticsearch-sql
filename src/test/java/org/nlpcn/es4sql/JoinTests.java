@@ -395,6 +395,16 @@ public class JoinTests {
         Assert.assertEquals("squareRelated", hits[0].getSource().get("p2.description"));
         Assert.assertEquals("squareRelated",hits[1].getSource().get("p2.description"));
     }
+    @Test
+    public void joinWithInQuery() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.gender ,c.name.firstname, h.name,h.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h on h.name = c.house" +
+                " where c.name.firstname in (select holdersName from %s/dog)", TEST_INDEX, TEST_INDEX, TEST_INDEX);
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(1, hits.length);
+        Assert.assertEquals("Daenerys", hits[0].getSource().get("c.name.firstname"));
+    }
+
 
 
     private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {
@@ -431,6 +441,7 @@ public class JoinTests {
         }
         return false;
     }
+
 
     private boolean equalsWithNullCheck(Object one, Object other) {
         if(one == null)   return other == null;
