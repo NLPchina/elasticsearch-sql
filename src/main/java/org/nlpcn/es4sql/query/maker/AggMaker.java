@@ -146,8 +146,20 @@ public class AggMaker {
         if(!scriptedMetricParams.containsKey("map_script") && !scriptedMetricParams.containsKey("map_script_id") && !scriptedMetricParams.containsKey("map_script_file")){
             throw new SqlParseException("scripted metric parameters must contain map_script/map_script_id/map_script_file parameter");
         }
+        HashMap<String,Object> scriptAdditionalParams = new HashMap<>();
+        HashMap<String,Object> reduceScriptAdditionalParams = new HashMap<>();
         for(Map.Entry<String,Object> param : scriptedMetricParams.entrySet()) {
             String paramValue = param.getValue().toString();
+            if(param.getKey().startsWith("@")){
+                if(param.getKey().startsWith("@reduce_")){
+                    reduceScriptAdditionalParams.put(param.getKey().replace("@reduce_",""),param.getValue());
+                }
+                else{
+                    scriptAdditionalParams.put(param.getKey().replace("@",""),param.getValue());
+                }
+               continue;
+            }
+
             switch (param.getKey().toLowerCase()) {
                 case "map_script":
                     scriptedMetricBuilder.mapScript(paramValue);
@@ -191,7 +203,14 @@ public class AggMaker {
                     throw new SqlParseException("scripted_metric err or not define field " + param.getKey());
             }
         }
-            return scriptedMetricBuilder;
+        if(scriptAdditionalParams.size() > 0){
+            scriptAdditionalParams.put("_agg",new HashMap<>());
+            scriptedMetricBuilder.params(scriptAdditionalParams);
+        }
+
+        if(reduceScriptAdditionalParams.size() > 0)
+            scriptedMetricBuilder.reduceParams(reduceScriptAdditionalParams);
+        return scriptedMetricBuilder;
     }
 
     private AggregationBuilder<?> geohashGrid(MethodField field) throws SqlParseException {

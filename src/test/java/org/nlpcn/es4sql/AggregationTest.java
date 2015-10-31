@@ -79,8 +79,40 @@ public class AggregationTest {
 //        ScriptedMetric metric = result.get("wierdSum");
 //        Assert.assertEquals(136L,metric.aggregation());
 //    }
+//
+//    @Test
+//    public void scriptedMetricConcatWithStringParamAndReduceParamAggregation() throws SQLFeatureNotSupportedException, SqlParseException {
+//        String query = "select scripted_metric(\n" +
+//                "  'init_script' = '_agg[\"concat\"]=[] ',\n" +
+//                "  'map_script'='_agg.concat.add(doc[field].value)' ,\n" +
+//                "  'combine_script'='return _agg.concat.join(delim);',\t\t\t\t\n" +
+//                "  'reduce_script'='_aggs.removeAll(\"\"); return _aggs.join(delim)'," +
+//                "'@field' = 'name.firstname' , '@delim'=';',@reduce_delim =';' ) as all_characters \n" +
+//                "from "+TEST_INDEX+"/gotCharacters";
+//        Aggregations result = query (query);
+//        ScriptedMetric metric = result.get("all_characters");
+//        List<String> names = Arrays.asList(metric.aggregation().toString().split(";"));
+//
+//
+//        Assert.assertEquals(4,names.size());
+//        String[] expectedNames = new String[]{"brandon","daenerys","eddard","jaime"};
+//        for(String name : expectedNames){
+//            Assert.assertTrue("not contains:" + name,names.contains(name));
+//        }
+//    }
+//
+//    @Test
+//    public void scriptedMetricAggregationWithNumberParams() throws SQLFeatureNotSupportedException, SqlParseException {
+//        Aggregations result = query ("select scripted_metric('map_script'='if(doc[\\'balance\\'].value > 49670){ if(!_agg.containsKey(\\'ages\\')) { _agg.put(\\'ages\\',doc[\\'age\\'].value+x); } " +
+//                "else { _agg.put(\\'ages\\',_agg.get(\\'ages\\')+doc[\\'age\\'].value+x); }}'," +
+//                "'reduce_script'='sumThem = 0; for (a in _aggs) { if(a.containsKey(\\'ages\\')){ sumThem += a.get(\\'ages\\');} }; return sumThem;'" +
+//                ",'@x'=3) as wierdSum from " + TEST_INDEX + "/account");
+//        ScriptedMetric metric = result.get("wierdSum");
+//        Assert.assertEquals(148L,metric.aggregation());
+//    }
+//
 
-	@Test
+    @Test
 	public void minTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		Aggregations result = query(String.format("SELECT MIN(age) FROM %s/account", TEST_INDEX));
 		Min min = result.get("MIN(age)");
