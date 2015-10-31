@@ -9,7 +9,7 @@ var TablePresenter = function(tableId,tableZoneSelector) {
 
 TablePresenter.prototype.addRows = function(rows) {
 	if(this.oldTable) return;
-	table.rows.add(createRows(rows)).draw();
+	this.table.rows.add(createRows(rows)).draw();
 };
 
 TablePresenter.prototype.createOrReplace = function(columns,rows) {
