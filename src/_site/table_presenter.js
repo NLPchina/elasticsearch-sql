@@ -21,7 +21,7 @@ TablePresenter.prototype.createOrReplace = function(columns,rows) {
     
     dataTableRows = createRows(rows);
 
-    this.table = $('#searchResult').DataTable(
+    this.table = $(this.tableSelector).DataTable(
     {
     	"aaData": dataTableRows,
     	"aoColumns": dataTablesColumns,
