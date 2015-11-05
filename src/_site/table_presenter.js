@@ -27,6 +27,7 @@ TablePresenter.prototype.createOrReplace = function(columns,rows) {
     	"aoColumns": dataTablesColumns,
     	"destroy": true,
     	"scrollX": true,
+        "order": [],
     	"lengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]]
     });
 };
