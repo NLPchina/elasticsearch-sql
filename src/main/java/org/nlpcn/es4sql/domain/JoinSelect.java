@@ -14,8 +14,9 @@ public class JoinSelect {
 
     private TableOnJoinSelect firstTable;
     private TableOnJoinSelect secondTable;
-    private List<Condition> connectedConditions;
+    private Where connectedWhere;
     private List<Hint> hints;
+    private List<Condition> connectedConditions;
     private int totalLimit;
 
     private final int DEAFULT_NUM_OF_RESULTS = 200;
@@ -31,12 +32,12 @@ public class JoinSelect {
     }
 
 
-    public List<Condition> getConnectedConditions() {
-        return connectedConditions;
+    public Where getConnectedWhere() {
+        return connectedWhere;
     }
 
-    public void setConnectedConditions(List<Condition> connectedConditions) {
-        this.connectedConditions = connectedConditions;
+    public void setConnectedWhere(Where connectedWhere) {
+        this.connectedWhere = connectedWhere;
     }
 
     public TableOnJoinSelect getFirstTable() {
@@ -67,6 +68,14 @@ public class JoinSelect {
 
     public int getTotalLimit() {
         return totalLimit;
+    }
+
+    public List<Condition> getConnectedConditions() {
+        return connectedConditions;
+    }
+
+    public void setConnectedConditions(List<Condition> connectedConditions) {
+        this.connectedConditions = connectedConditions;
     }
 
     public void setTotalLimit(int totalLimit) {

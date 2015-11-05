@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.query.join;
 import org.elasticsearch.client.Client;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.JoinSelect;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -23,11 +24,9 @@ public class ESNestedLoopsQueryAction extends ESJoinQueryAction {
     @Override
     protected void fillSpecificRequestBuilder(JoinRequestBuilder requestBuilder) throws SqlParseException {
         NestedLoopsElasticRequestBuilder nestedBuilder = (NestedLoopsElasticRequestBuilder) requestBuilder;
-        List<Condition> connectedConditions = joinSelect.getConnectedConditions();
+        Where where = joinSelect.getConnectedWhere();
+        nestedBuilder.setConnectedWhere(where);
 
-        for(Condition c : connectedConditions){
-            nestedBuilder.addConditionMapping(c);
-        }
     }
 
     @Override

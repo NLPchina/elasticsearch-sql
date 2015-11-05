@@ -379,9 +379,10 @@ public class SqlParser {
         String firstTableAlias = joinedFrom.get(0).getAlias();
         String secondTableAlias = joinedFrom.get(1).getAlias();
         Map<String, Where> aliasToWhere = splitAndFindWhere(query.getWhere(), firstTableAlias, secondTableAlias);
-
-        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias), joinSelect.getConnectedConditions());
-        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), joinSelect.getConnectedConditions());
+        List<Condition> connectedConditions = getConditionsFlatten(joinSelect.getConnectedWhere());
+        joinSelect.setConnectedConditions(connectedConditions);
+        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias), connectedConditions);
+        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), connectedConditions);
 
         updateJoinLimit(query.getLimit(), joinSelect);
 
@@ -407,8 +408,11 @@ public class SqlParser {
 
     private JoinSelect createBasicJoinSelectAccordingToTableSource(SQLJoinTableSource joinTableSource) throws SqlParseException {
         JoinSelect joinSelect = new JoinSelect();
-        List<Condition> conditions = getJoinConditionsFlatten(joinTableSource);
-        joinSelect.setConnectedConditions(conditions);
+        if(joinTableSource.getCondition() != null ) {
+            Where where = Where.newInstance();
+            parseWhere(joinTableSource.getCondition(), where);
+            joinSelect.setConnectedWhere(where);
+        }
         SQLJoinTableSource.JoinType joinType = joinTableSource.getJoinType();
         joinSelect.setJoinType(joinType);
         return joinSelect;
@@ -460,6 +464,13 @@ public class SqlParser {
         if(from.getCondition() == null ) return conditions;
         Where where = Where.newInstance();
         parseWhere(from.getCondition(), where);
+        addIfConditionRecursive(where, conditions);
+        return conditions;
+    }
+
+    private List<Condition> getConditionsFlatten(Where where) throws SqlParseException {
+        List<Condition> conditions = new ArrayList<>();
+        if(where == null) return conditions;
         addIfConditionRecursive(where, conditions);
         return conditions;
     }

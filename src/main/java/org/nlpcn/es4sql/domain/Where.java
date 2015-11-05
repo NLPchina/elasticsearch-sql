@@ -2,7 +2,7 @@ package org.nlpcn.es4sql.domain;
 
 import java.util.LinkedList;
 
-public class Where {
+public class Where implements Cloneable{
 
 	public enum CONN {
 		AND, OR;
@@ -54,6 +54,13 @@ public class Where {
 		}
 		
 	}
-	
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Where clonedWhere = new Where(this.getConn());
+        for (Where innerWhere : this.getWheres()){
+            clonedWhere.addWhere((Where)innerWhere.clone());
+        }
+        return clonedWhere;
+    }
 }

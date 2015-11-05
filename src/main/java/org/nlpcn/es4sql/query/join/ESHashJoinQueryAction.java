@@ -23,7 +23,7 @@ public class ESHashJoinQueryAction extends ESJoinQueryAction {
         String t1Alias = joinSelect.getFirstTable().getAlias();
         String t2Alias = joinSelect.getSecondTable().getAlias();
 
-        List<Map.Entry<Field, Field>> comparisonFields = getComparisonFields(t1Alias, t2Alias,joinSelect.getConnectedConditions());
+        List<List<Map.Entry<Field, Field>>> comparisonFields = getComparisonFields(t1Alias, t2Alias,joinSelect.getConnectedWhere());
 
         ((HashJoinElasticRequestBuilder) requestBuilder).setT1ToT2FieldsComparison(comparisonFields);
     }
@@ -65,6 +65,46 @@ public class ESHashJoinQueryAction extends ESJoinQueryAction {
             comparisonFields.add(new AbstractMap.SimpleEntry<Field, Field>(t1Field, t2Field));
         }
         return comparisonFields;
+    }
+
+    private List<List<Map.Entry<Field, Field>>> getComparisonFields(String t1Alias, String t2Alias, Where connectedWhere) throws SqlParseException {
+        List<List<Map.Entry<Field,Field>>> comparisonFields = new ArrayList<>();
+        //where is AND with lots of conditions.
+        if(connectedWhere == null) return  comparisonFields;
+        boolean allAnds = true;
+        for(Where innerWhere : connectedWhere.getWheres()){
+            if(innerWhere.getConn() == Where.CONN.OR) {
+                allAnds = false;
+                break;
+            }
+        }
+        if(allAnds)
+        {
+            List<Map.Entry<Field, Field>> innerComparisonFields = getComparisonFieldsFromWhere(t1Alias, t2Alias, connectedWhere);
+            comparisonFields.add(innerComparisonFields);
+        }
+        else {
+            for(Where innerWhere : connectedWhere.getWheres()){
+                comparisonFields.add(getComparisonFieldsFromWhere(t1Alias,t2Alias,innerWhere));
+            }
+        }
+        //todo: where is condition. is it possible?
+
+        return comparisonFields;
+    }
+
+    private List<Map.Entry<Field, Field>> getComparisonFieldsFromWhere(String t1Alias, String t2Alias, Where where) throws SqlParseException {
+        List<Condition> conditions = new ArrayList<>();
+        if(where instanceof Condition)
+            conditions.add((Condition) where);
+        else {
+            for (Where innerWhere : where.getWheres()) {
+                if (!(innerWhere instanceof Condition))
+                    throw new SqlParseException("if connectedCondition is AND than all inner wheres should be Conditions ");
+                conditions.add((Condition) innerWhere);
+            }
+        }
+        return getComparisonFields(t1Alias, t2Alias, conditions);
     }
 
     private String removeAlias(String field, String alias) {

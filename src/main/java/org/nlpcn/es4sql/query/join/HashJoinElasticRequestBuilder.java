@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class HashJoinElasticRequestBuilder  extends JoinRequestBuilder {
 
-    private List<Map.Entry<Field,Field>> t1ToT2FieldsComparison;
+    private List<List<Map.Entry<Field,Field>>> t1ToT2FieldsComparison;
     private boolean useTermFiltersOptimization;
 
     public HashJoinElasticRequestBuilder() {
@@ -31,11 +31,11 @@ public class HashJoinElasticRequestBuilder  extends JoinRequestBuilder {
       return "HashJoin "+ super.explain();
     }
 
-    public List<Map.Entry<Field, Field>> getT1ToT2FieldsComparison() {
+    public List<List<Map.Entry<Field,Field>>> getT1ToT2FieldsComparison() {
         return t1ToT2FieldsComparison;
     }
 
-    public void setT1ToT2FieldsComparison(List<Map.Entry<Field, Field>> t1ToT2FieldsComparison) {
+    public void setT1ToT2FieldsComparison(List<List<Map.Entry<Field,Field>>> t1ToT2FieldsComparison) {
         this.t1ToT2FieldsComparison = t1ToT2FieldsComparison;
     }
 

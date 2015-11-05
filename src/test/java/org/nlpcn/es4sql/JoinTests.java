@@ -407,6 +407,44 @@ public class JoinTests {
 
 
 
+    @Test
+    public void joinWithOrHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithOr(false);
+    }
+    @Test
+    public void joinWithOrNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithOr(true);
+    }
+
+    private void joinWithOr(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select d.name , c.name.firstname from %s/gotCharacters c " +
+                "JOIN %s/dog d on d.holdersName = c.name.firstname" +
+                " OR d.age = c.name.ofHisName"
+                ,  TEST_INDEX, TEST_INDEX);
+        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(2, hits.length);
+        Map<String,Object> oneMatch =  ImmutableMap.of("c.name.firstname", (Object) "Daenerys", "d.name", "rex");
+        Map<String,Object> secondMatch =  ImmutableMap.of("c.name.firstname", (Object) "Brandon", "d.name", "snoopy");
+        Assert.assertTrue("hits contains daenerys",hitsContains(hits, oneMatch));
+        Assert.assertTrue("hits contains brandon",hitsContains(hits, secondMatch));
+    }
+
+    @Test
+    public void joinWithOrWithTermsFilterOpt() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select /*! HASH_WITH_TERMS_FILTER*/ d.name , c.name.firstname from %s/gotCharacters c " +
+                "JOIN %s/dog d on d.holdersName = c.name.firstname" +
+                " OR d.age = c.name.ofHisName"
+                ,  TEST_INDEX, TEST_INDEX);
+
+        String explainedQuery = hashJoinRunAndExplain(query);
+        boolean containsHoldersNamesTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"holdersName\":[\"jaime\",\"daenerys\",\"eddard\",\"brandon\"]}");
+        Assert.assertTrue(containsHoldersNamesTerms);
+        boolean containsAgesTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"age\":[1,1,4]");
+        Assert.assertTrue(containsAgesTerms);
+    }
+
+
     private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query);
@@ -441,7 +479,6 @@ public class JoinTests {
         }
         return false;
     }
-
 
     private boolean equalsWithNullCheck(Object one, Object other) {
         if(one == null)   return other == null;

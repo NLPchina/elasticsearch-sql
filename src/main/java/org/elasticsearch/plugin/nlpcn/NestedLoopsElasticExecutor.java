@@ -46,7 +46,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
         Where originalSecondTableWhere = secondTableSelect.getWhere();
 
         orderConditions(nestedLoopsRequest.getFirstTable().getAlias(),nestedLoopsRequest.getSecondTable().getAlias());
-        Collection<Condition> conditions = nestedLoopsRequest.getT1FieldToCondition().values();
+
 
         FetchWithScrollResponse fetchWithScrollResponse = firstFetch(this.nestedLoopsRequest.getFirstTable());
         SearchResponse firstTableResponse = fetchWithScrollResponse.getResponse();
@@ -62,7 +62,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
             int currentHitsIndex = 0 ;
 
             while(!finishedMultiSearches){
-                MultiSearchRequest multiSearchRequest = createMultiSearchRequest(multiSearchMaxSize, conditions, hits, secondTableSelect, originalSecondTableWhere, currentHitsIndex);
+                MultiSearchRequest multiSearchRequest = createMultiSearchRequest(multiSearchMaxSize, nestedLoopsRequest.getConnectedWhere(), hits, secondTableSelect, originalSecondTableWhere, currentHitsIndex);
                 int multiSearchSize = multiSearchRequest.requests().size();
                 currentCombinedResults = combineResultsFromMultiResponses(combinedResults, totalLimit, currentCombinedResults, hits, currentHitsIndex, multiSearchRequest);
                 currentHitsIndex += multiSearchSize;
@@ -126,17 +126,29 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
         return searchHit;
     }
 
-    private MultiSearchRequest createMultiSearchRequest(int multiSearchMaxSize, Collection<Condition> conditions, SearchHit[] hits, Select secondTableSelect, Where originalWhere, int currentIndex) throws SqlParseException {
+    private MultiSearchRequest createMultiSearchRequest(int multiSearchMaxSize, Where connectedWhere, SearchHit[] hits, Select secondTableSelect, Where originalWhere, int currentIndex) throws SqlParseException {
         MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
         for(int i = currentIndex  ; i < currentIndex  + multiSearchMaxSize && i< hits.length ; i++ ){
             Map<String, Object> hitFromFirstTableAsMap = hits[i].sourceAsMap();
             Where newWhere = Where.newInstance();
             if(originalWhere!=null) newWhere.addWhere(originalWhere);
-            for(Condition c : conditions){
-                Object value = deepSearchInMap(hitFromFirstTableAsMap,c.getValue().toString());
-                Condition conditionWithValue = new Condition(Where.CONN.AND,c.getName(),c.getOpear(),value);
-                newWhere.addWhere(conditionWithValue);
+            if(connectedWhere!=null){
+                Where connectedWhereCloned = null;
+                try {
+                    connectedWhereCloned = (Where) connectedWhere.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+                updateValuesOnWhereConditions(hitFromFirstTableAsMap,connectedWhereCloned);
+                newWhere.addWhere(connectedWhereCloned);
             }
+
+
+//            for(Condition c : conditions){
+//                Object value = deepSearchInMap(hitFromFirstTableAsMap,c.getValue().toString());
+//                Condition conditionWithValue = new Condition(Where.CONN.AND,c.getName(),c.getOpear(),value);
+//                newWhere.addWhere(conditionWithValue);
+//            }
             //using the 2nd table select and DefaultAction because we can't just change query on request (need to create lot of requests)
             if(newWhere.getWheres().size() != 0) {
                 secondTableSelect.setWhere(newWhere);
@@ -150,6 +162,17 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
             multiSearchRequest.add(secondTableRequest);
         }
         return multiSearchRequest;
+    }
+
+    private void updateValuesOnWhereConditions(Map<String, Object> hit, Where where) {
+        if(where instanceof Condition){
+            Condition c = (Condition) where;
+            Object value = deepSearchInMap(hit,c.getValue().toString());
+            c.setValue(value);
+        }
+        for(Where innerWhere : where.getWheres()){
+            updateValuesOnWhereConditions(hit,innerWhere);
+        }
     }
 
     private FetchWithScrollResponse firstFetch(TableInJoinRequestBuilder tableRequest) {
@@ -176,13 +199,30 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     }
 
     private void orderConditions(String t1Alias, String t2Alias) {
-        Collection<Condition> conditions = nestedLoopsRequest.getT1FieldToCondition().values();
-        for(Condition c : conditions){
-            //TODO: support all orders and for each OPEAR find his related OPEAR (< is > , EQ is EQ ,etc..)
+        orderConditionRecursive(t1Alias,t2Alias,nestedLoopsRequest.getConnectedWhere());
+//        Collection<Condition> conditions = nestedLoopsRequest.getT1FieldToCondition().values();
+//        for(Condition c : conditions){
+//            //TODO: support all orders and for each OPEAR find his related OPEAR (< is > , EQ is EQ ,etc..)
+//            if(!c.getName().startsWith(t2Alias+".") || !c.getValue().toString().startsWith(t1Alias +"."))
+//                throw new RuntimeException("On NestedLoops currently only supported Ordered conditions (t2.field2 OPEAR t1.field1) , badCondition was:" + c);
+//            c.setName(c.getName().replaceFirst(t2Alias+".",""));
+//            c.setValue(c.getValue().toString().replaceFirst(t1Alias+ ".", ""));
+//        }
+    }
+
+    private void orderConditionRecursive(String t1Alias, String t2Alias, Where where) {
+        if(where == null) return;
+        if(where instanceof Condition){
+            Condition c = (Condition) where;
             if(!c.getName().startsWith(t2Alias+".") || !c.getValue().toString().startsWith(t1Alias +"."))
                 throw new RuntimeException("On NestedLoops currently only supported Ordered conditions (t2.field2 OPEAR t1.field1) , badCondition was:" + c);
             c.setName(c.getName().replaceFirst(t2Alias+".",""));
             c.setValue(c.getValue().toString().replaceFirst(t1Alias+ ".", ""));
+            return;
+        }
+        else {
+            for (Where innerWhere : where.getWheres())
+                orderConditionRecursive(t1Alias,t2Alias,innerWhere);
         }
     }
 

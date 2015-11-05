@@ -175,4 +175,14 @@ public class Condition extends Where {
 		}
 	}
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        try {
+            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue());
+            return clonedCondition;
+        } catch (SqlParseException e) {
+
+        }
+        return null;
+    }
 }
