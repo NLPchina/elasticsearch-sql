@@ -3,16 +3,13 @@ package org.elasticsearch.plugin.nlpcn;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
-import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.SqlElasticDeleteByQueryRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
 
@@ -45,7 +42,7 @@ public class ActionRequestRestExecuter {
         }
 		else if (request instanceof SearchRequest) {
 			client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
-		} else if (request instanceof DeleteByQueryRequest) {
+		} else if (requestBuilder instanceof SqlElasticDeleteByQueryRequestBuilder) {
             ActionRequestBuilder elasticRequestBuilder =  this.requestBuilder.getBuilder();
             elasticRequestBuilder.execute(new DeleteByQueryRestListener(channel));
         }
