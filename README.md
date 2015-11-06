@@ -1,6 +1,7 @@
 Elasticsearch-SQL
 =================
-[![Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**1.X** [![1.X Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.org/NLPchina/elasticsearch-sql) <br>
+**2.X** [![2.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
