@@ -8,10 +8,12 @@ jdk:
 before_install:
   - wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.0.0/elasticsearch-2.0.0.deb && sudo dpkg -i --force-confnew elasticsearch-2.0.0.deb
   - sudo /usr/share/elasticsearch/bin/plugin install delete-by-query
+
 services:
   - elasticsearch
 
 
 script:
+  - sleep 10
   - ulimit -a
   - mvn test
