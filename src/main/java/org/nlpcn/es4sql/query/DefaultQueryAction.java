@@ -6,15 +6,15 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.maker.FilterMaker;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 /**
@@ -34,7 +34,6 @@ public class
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 		this.request = client.prepareSearch();
-		request.setListenerThreaded(false);
 		setIndicesAndTypes();
 
 		setFields(select.getFields());
@@ -115,10 +114,10 @@ public class
     private void handleScriptField(MethodField method) throws SqlParseException {
         List<KVValue> params = method.getParams();
         if(params.size() == 2){
-            request.addScriptField(params.get(0).value.toString(),params.get(1).value.toString());
+            request.addScriptField(params.get(0).value.toString(),new Script(params.get(1).value.toString()));
         }
         else if(params.size() == 3){
-            request.addScriptField(params.get(0).value.toString(),params.get(1).value.toString(),params.get(2).value.toString(),null);
+            request.addScriptField(params.get(0).value.toString(),new Script(params.get(1).value.toString(), ScriptService.ScriptType.INLINE,params.get(2).value.toString(),null));
         }
         else {
             throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
@@ -134,13 +133,8 @@ public class
 	 */
 	private void setWhere(Where where) throws SqlParseException {
 		if (where != null) {
-			if (select.isQuery) {
-				BoolQueryBuilder boolQuery = QueryMaker.explan(where);
-				request.setQuery(boolQuery);
-			} else {
-				BoolFilterBuilder boolFilter = FilterMaker.explan(where);
-				request.setQuery(QueryBuilders.filteredQuery(null, boolFilter));
-			}
+            BoolQueryBuilder boolQuery = QueryMaker.explan(where);
+            request.setQuery(boolQuery);
 		}
 	}
 

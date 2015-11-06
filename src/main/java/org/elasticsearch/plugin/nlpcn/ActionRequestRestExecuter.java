@@ -5,6 +5,7 @@ import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
+import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -37,7 +38,6 @@ public class ActionRequestRestExecuter {
 	 */
 	public void execute() throws Exception {
         ActionRequest request = requestBuilder.request();
-        request.listenerThreaded(false);
 
         //todo: maby change to instanceof multi?
         if(requestBuilder instanceof JoinRequestBuilder){

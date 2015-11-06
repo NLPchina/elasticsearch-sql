@@ -6,13 +6,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.ValuesSourceAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGridBuilder;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
+
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
@@ -115,7 +118,7 @@ public class AggMaker {
         else
         {
             //todo: support different lang script
-            builder.script(((MethodField)kvValue.value).getParams().get(1).toString());
+            builder.script(new Script(((MethodField)kvValue.value).getParams().get(1).toString()));
         }
     }
 
@@ -159,43 +162,44 @@ public class AggMaker {
                 }
                continue;
             }
+            if(reduceScriptAdditionalParams.size() == 0) reduceScriptAdditionalParams = null;
 
             switch (param.getKey().toLowerCase()) {
                 case "map_script":
-                    scriptedMetricBuilder.mapScript(paramValue);
+                    scriptedMetricBuilder.mapScript(new Script(paramValue));
                     break;
                 case "map_script_id":
-                    scriptedMetricBuilder.mapScriptId(paramValue);
+                    scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.INDEXED,null,null));
                     break;
                 case "map_script_file":
-                    scriptedMetricBuilder.mapScriptFile(paramValue);
+                    scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.FILE,null,null));
                     break;
                 case "init_script":
-                    scriptedMetricBuilder.initScript(paramValue);
+                    scriptedMetricBuilder.initScript(new Script(paramValue));
                     break;
                 case "init_script_id":
-                    scriptedMetricBuilder.initScriptId(paramValue);
+                    scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.INDEXED,null,null));
                     break;
                 case "init_script_file":
-                    scriptedMetricBuilder.initScriptFile(paramValue);
+                    scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.FILE,null,null));
                     break;
                 case "combine_script":
-                    scriptedMetricBuilder.combineScript(paramValue);
+                    scriptedMetricBuilder.combineScript(new Script(paramValue));
                     break;
                 case "combine_script_id":
-                    scriptedMetricBuilder.combineScriptId(paramValue);
+                    scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.INDEXED,null,null));
                     break;
                 case "combine_script_file":
-                    scriptedMetricBuilder.combineScriptFile(paramValue);
+                    scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.FILE,null,null));
                     break;
                 case "reduce_script":
-                    scriptedMetricBuilder.reduceScript(paramValue);
+                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.INLINE,null,reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_id":
-                    scriptedMetricBuilder.reduceScriptId(paramValue);
+                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.INDEXED,null,reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_file":
-                    scriptedMetricBuilder.reduceScriptFile(paramValue);
+                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.FILE,null,reduceScriptAdditionalParams));
                     break;
                 case "alias":
                     break;
@@ -208,8 +212,6 @@ public class AggMaker {
             scriptedMetricBuilder.params(scriptAdditionalParams);
         }
 
-        if(reduceScriptAdditionalParams.size() > 0)
-            scriptedMetricBuilder.reduceParams(reduceScriptAdditionalParams);
         return scriptedMetricBuilder;
     }
 
@@ -292,7 +294,7 @@ public class AggMaker {
 			value = kv.value.toString();
 			switch (kv.key.toLowerCase()) {
 			case "interval":
-				dateHistogram.interval(new DateHistogram.Interval(kv.value.toString()));
+				dateHistogram.interval(new DateHistogramInterval(kv.value.toString()));
 				break;
 			case "field":
 				dateHistogram.field(value);
@@ -301,19 +303,10 @@ public class AggMaker {
 				dateHistogram.format(value);
 				break;
 			case "time_zone":
-			case "pre_zone":
-				dateHistogram.preZone(value);
+				dateHistogram.timeZone(value);
 				break;
-			case "post_zone":
-				dateHistogram.postZone(value);
-				break;
-			case "post_offset":
-				dateHistogram.postOffset(value);
-				break;
-			case "pre_offset":
-				dateHistogram.preOffset(value);
-				break;
-                case "alias":
+
+            case "alias":
                     break;
 			default:
 				throw new SqlParseException("date range err or not define field " + kv.toString());

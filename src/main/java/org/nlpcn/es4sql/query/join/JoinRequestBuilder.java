@@ -45,7 +45,6 @@ public  class JoinRequestBuilder implements SqlElasticRequestBuilder {
         multi = new MultiSearchRequest();
         multi.add(firstTable.getRequestBuilder());
         multi.add(secondTable.getRequestBuilder());
-        multi.listenerThreaded(false);
     }
 
     @Override

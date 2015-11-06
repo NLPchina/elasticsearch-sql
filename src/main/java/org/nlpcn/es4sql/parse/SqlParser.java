@@ -553,8 +553,9 @@ public class SqlParser {
 				cond.setOpear(cond.getOpear().negative());
 			} else {
 				negateWhere(sub);
+                sub.setConn(sub.getConn().negative());
 			}
-			sub.setConn(sub.getConn().negative());
+
 		}
 	}
 

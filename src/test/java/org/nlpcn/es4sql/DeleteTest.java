@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import sun.applet.Main;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -46,7 +47,6 @@ public class DeleteTest {
 	@Test
 	public void deleteWithConditionTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		delete(String.format("DELETE FROM %s/phrase WHERE phrase = 'quick fox here' ", TEST_INDEX));
-
 		// Assert no results exist for this type.
 		SearchRequestBuilder request = MainTestSuite.getClient().prepareSearch(TEST_INDEX);
 		request.setTypes("phrase");
@@ -58,5 +58,7 @@ public class DeleteTest {
 	private void delete(String deleteStatement) throws SqlParseException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
 		searchDao.explain(deleteStatement).get();
+        searchDao.getClient().admin().indices().prepareRefresh(TEST_INDEX).get();
+
 	}
 }

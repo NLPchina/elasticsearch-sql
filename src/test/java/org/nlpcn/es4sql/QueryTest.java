@@ -5,11 +5,13 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.joda.time.DateTime;
-import org.elasticsearch.common.joda.time.format.DateTimeFormat;
-import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
+
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.support.format.ValueFormatter;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.domain.Select;
@@ -388,11 +390,11 @@ public class QueryTest {
         DateTimeFormatter formatter = DateTimeFormat.forPattern(TS_DATE_FORMAT);
         DateTime dateToCompare = new DateTime(2015, 3, 15, 0, 0, 0);
 
-        SearchHits response = query(String.format("SELECT insert_time FROM %s/odbc WHERE insert_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX));
+        SearchHits response = query(String.format("SELECT odbc_time FROM %s/odbc WHERE odbc_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX));
         SearchHit[] hits = response.getHits();
         for(SearchHit hit : hits) {
             Map<String, Object> source = hit.getSource();
-			String insertTimeStr = (String) source.get("insert_time");
+			String insertTimeStr = (String) source.get("odbc_time");
 			insertTimeStr = insertTimeStr.replace("{ts '", "").replace("'}", "");
 
             DateTime insertTime = formatter.parseDateTime(insertTimeStr);
@@ -427,25 +429,25 @@ public class QueryTest {
 
 	@Test
 	public void missFilterSearch() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
-		SearchHits response = query(String.format("SELECT * FROM %s/phrase WHERE insert_time IS missing", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase WHERE insert_time2 IS missing", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// should be 2 according to the data.
 		Assert.assertEquals(response.getTotalHits(), 2);
 		for(SearchHit hit : hits) {
-			assertThat(hit.getSource(), not(hasKey("insert_time")));
+			assertThat(hit.getSource(), not(hasKey("insert_time2")));
 		}
 	}
 
 	@Test
 	public void notMissFilterSearch() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
-		SearchHits response = query(String.format("SELECT * FROM %s/phrase WHERE insert_time IS NOT missing", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT * FROM %s/phrase WHERE insert_time2 IS NOT missing", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 
 		// should be 2 according to the data.
 		Assert.assertEquals(response.getTotalHits(), 2);
 		for(SearchHit hit : hits) {
-			assertThat(hit.getSource(), hasKey("insert_time"));
+			assertThat(hit.getSource(), hasKey("insert_time2"));
 		}
 	}
 
