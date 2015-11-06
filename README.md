@@ -30,7 +30,7 @@ Versions
 ````
 ### Elasticsearch 2.0.0
 ````
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/2.0.0/elasticsearch-sql-2.0.0.zip --install sql
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.0.0/elasticsearch-sql-2.0.0.zip 
 ````
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
