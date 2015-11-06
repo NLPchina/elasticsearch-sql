@@ -16,12 +16,22 @@ You can also use ES functions in SQL.
 ## SETUP
 
 Install as plugin:
+Versions
+------------
 
-### Elasticsearch 1.6.X
+| elasticsearch version | latest version | remarks                        |
+| --------------------- | -------------  | -----------------------------  |
+| 1.X	                | 1.4.5          | tested against elastic 1.4-1.6 |
+| 2.0.0                 | 2.0.0          | delete commands not supported  |
+
+### Elasticsearch 1.X
 ````
 ./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.5/elasticsearch-sql-1.4.5.zip --install sql
 ````
-
+### Elasticsearch 2.0.0
+````
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/2.0.0/elasticsearch-sql-2.0.0.zip --install sql
+````
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
 ## Basic Usage
