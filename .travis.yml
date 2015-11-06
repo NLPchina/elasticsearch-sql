@@ -13,6 +13,6 @@ services:
 
 
 script:
-  - /usr/share/elasticsearch/bin/plugin -i delete-by-query
+  - /usr/share/elasticsearch/bin/plugin install delete-by-query
   - ulimit -a
   - mvn test
