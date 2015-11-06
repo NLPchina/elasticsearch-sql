@@ -2,12 +2,17 @@ package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
+import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
+import org.elasticsearch.rest.action.support.RestToXContentListener;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticDeleteByQueryRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
@@ -43,8 +48,7 @@ public class ActionRequestRestExecuter {
 		else if (request instanceof SearchRequest) {
 			client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
 		} else if (requestBuilder instanceof SqlElasticDeleteByQueryRequestBuilder) {
-            ActionRequestBuilder elasticRequestBuilder =  this.requestBuilder.getBuilder();
-            elasticRequestBuilder.execute(new DeleteByQueryRestListener(channel));
+            throw new UnsupportedOperationException("currently not support delete on elastic 2.0.0");
         }
         else if(request instanceof GetIndexRequest) {
             this.requestBuilder.getBuilder().execute( new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
