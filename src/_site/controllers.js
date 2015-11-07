@@ -153,6 +153,10 @@ function updateWithScrollIfNeeded (query) {
 		saveUrl()
 
     var query = window.editor.getValue();
+    var selectedQuery = window.editor.getSelection();
+    if(selectedQuery != "" && selectedQuery != undefined){
+      query = selectedQuery;
+    }
     query = updateWithScrollIfNeeded(query);
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
