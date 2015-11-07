@@ -10,7 +10,7 @@
     <title>Elasticsearch-sql client</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
     <link href="style.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="vendor/dataTables/css/jquery.dataTables.min.css"/>
  
@@ -65,6 +65,7 @@
             Write your SQL query and run it against elasticsearch. The results will be displayed in the table. You can use autocomple to write
             your queries easier.
           </p>
+          <p> Enter our <a href="https://github.com/NLPchina/elasticsearch-sql/wiki">Wiki</a> for more Information on how to query </p>
 
           <div class="keyboardSection">
             <h4>Keyboard tips</h4>
@@ -103,24 +104,60 @@
 
     <div class="container-fluid">
       <div class="row">
-      <div class="col-sm-3 col-md-1 result_options">
-      <h3> Options </h3>
+        <div class="col-sm-4 col-md-2 result_options panel-group" id="accordion">
+        <h3>Options <button class="btn btn-link" ng-click="saveConfigToStorage()"><span class="glyphicon glyphicon-floppy-disk"></span></button></h3>
+         <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+             <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+          Show Settings </span>
+        </a>
+        </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse">
+      <div class="panel-body">
+         <div class="checkbox">
+            <label><input type="checkbox" ng-model="config.isFlat" value="">Flat Results</label>
+          </div>
           <div class="checkbox">
-      <label><input type="checkbox" ng-model="isFlat" value="">Flat</label>
-    </div>
-    <div class="checkbox">
-      <label><input type="checkbox" ng-model="useOldTable" ng-change="onChangeTablePresnterType()" value="">useOldTable</label>
-    </div>
-    <div class="checkbox">
-      <label><input type="checkbox" ng-model="isAutoSave" value="">AutoExportCSV</label>
-    </div>
-    
-    <div class="">
-      <label class="delimiterLable" >delimiter<input type="text" class="delimiter" name="delimiterText" ng-model="delimiter" maxlength="1" value="," /></label>
-      
-    </div>
+            <label><input type="checkbox" ng-model="config.useOldTable" ng-change="onChangeTablePresnterType()" value="">Old Table</label>
+          </div>
+          <div class="checkbox">
+            <label><input type="checkbox" ng-model="config.alwaysScroll" ng-change="alwatsScrollChanged()" value="">always scroll</label>
+          </div>
+          <div class="">
+            <label class="scrollSizeLable">scroll per shard<input type="text" class="scrollSize" name="scrollSizeText" ng-model="config.scrollSize" maxlength="5" value="10" /></label>
+          </div>
       </div>
-        <div class="col-sm-9 col-md-11 main">
+    </div>
+    </div>
+    <div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">
+             <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+          Download Settings
+        </a>
+        </h4>
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse">
+      <div class="panel-body">
+                      <div class="checkbox">
+            <label><input type="checkbox" ng-model="config.isAutoSave" value="">AutoExportCSV</label>
+          </div>
+          
+          <div class="">
+            <label class="delimiterLable" >delimiter<input type="text" class="delimiter" name="delimiterText" ng-model="config.delimiter" maxlength="1" value="," /></label>
+          </div>
+      </div>
+    </div>
+    </div>
+
+
+    </div>
+
+            
+      
+        <div class="col-sm-8 col-md-10 main">
           <h1 class="page-header">SQL Query</h1>
 
           <!-- Query area -->
@@ -131,10 +168,14 @@
 
             <button type="button" ng-click="explain()" id="explainButton" class="btn btn-info explain-button" ng-bind-html="getButtonContent(explainLoading,'Explain')" ng-cloak>
             </button>
-            <button type="next" ng-click="nextSearch()" id="nextButton" class="btn btn-warning next-button" ng-disabled="!gotNext" ng-bind-html="getButtonContent(nextLoading,'Scroll <span class=\'glyphicon glyphicon-cloud-download\'></span>')" ng-cloak> 
-            </button>
-            <button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-primary " ng-cloak>Export CSV <span class="glyphicon glyphicon-share"></span></button>
+
             
+            <button type="button" ng-click="exportCSV()" id="exportCSV" class="btn btn-primary " ng-cloak>Export CSV <span class="glyphicon glyphicon-share"></span></button>
+            <button type="next" ng-click="nextSearch()" id="nextButton" class="btn btn-warning next-button" ng-disabled="!gotNext" ng-bind-html="getButtonContent(nextLoading,'<span class=\'glyphicon rotate-glyph glyphicon-step-forward\'></span>')" ng-cloak> 
+            </button>
+            <button type="fetchAll" ng-click="fetchAll()" id="fetchAllButton" class="btn btn-warning next-button" ng-disabled="!gotNext" ng-bind-html="getButtonContent(fetchAllLoading ,'<span class=\'glyphicon rotate-glyph glyphicon-fast-forward\'></span>')" ng-cloak> 
+            </button>
+
   	      </div>
 
           <!-- Error box, displayed only on errors -->
@@ -186,12 +227,12 @@
 
 
     <!-- Jquery include -->
-    <script src="vendor/jquery/jquery-2.1.1.min.js"></script>
+  <script src="vendor/jquery/jquery-2.1.4.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     
 
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/dataTables/js/jquery.dataTables.min.js"></script>
-
 
     <!-- CodeMirror includes -->
   	<script src="vendor/codemirror/lib/codemirror.js"></script>

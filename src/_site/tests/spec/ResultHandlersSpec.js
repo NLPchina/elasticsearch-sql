@@ -97,6 +97,8 @@ describe("AggregationQueryResultHandler", function() {
   var nestedAggregationResult;
   var expectedBody4nestedAggregation;
 
+  var statsAggregationResult;
+  var expectedBody4statsAggregation;
 
   beforeAll(function() {
   	jasmine.getJSONFixtures().fixturesPath = 'resources';
@@ -106,6 +108,9 @@ describe("AggregationQueryResultHandler", function() {
 
     nestedAggregationResult = getJSONFixture('nestedAggregationResult.json');
     expectedBody4nestedAggregation = getJSONFixture('expectedBody4nestedAggregation.json');
+
+    statsAggregationResult = getJSONFixture('statsAggResult.json');
+    expectedBody4statsAggregation = getJSONFixture('expectedBody4statsAgg.json');
   });
 
   it("should return the expected head for simple aggregation", function() {
@@ -135,6 +140,20 @@ describe("AggregationQueryResultHandler", function() {
     var handler = new AggregationQueryResultHandler(nestedAggregationResult);
     var body = handler.getBody();
     expect(angular.equals(body, expectedBody4nestedAggregation)).toBe(true);
+  });
+
+  it("should return the expected head for stats aggregation", function() {
+    var handler = new AggregationQueryResultHandler(statsAggregationResult);
+    var expectedHead = ["stat.count", "stat.min", "stat.max", "stat.avg","stat.sum"];
+    
+    var head = handler.getHead();
+    expect(isSetsEquals(expectedHead, head)).toBe(true);
+  });
+
+  it("should return the expected body for stats aggregation", function() {  
+    var handler = new AggregationQueryResultHandler(statsAggregationResult);
+    var body = handler.getBody();
+    expect(angular.equals(body, expectedBody4statsAggregation)).toBe(true);
   });
 
 });

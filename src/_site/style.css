@@ -132,7 +132,7 @@ body {
 
 .next-button {
   float:left;
-  margin-right:25px;
+  margin-left:5px;
   margin-top: 10px;
 }
 
@@ -192,7 +192,7 @@ body {
 /* result options */
 
 .result_options {
-  padding-top: 5%;
+  padding-top: 2%;
 }
 .delimiter {
   display: inline;
@@ -204,7 +204,36 @@ body {
  font-weight: 100;
 }
 
+.scrollSize {
+  display: inline;
+  width: 30%;
+  margin-left: 10%;
+}
+
+.scrollSizeLable {
+ font-weight: 100;
+}
 
 #searchResultZone{
   width: 80%;
+}
+
+/* accordion */
+.panel-heading .accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+    float: right;        /* adjust as needed */
+    color: grey;         /* adjust as needed */
+}
+.panel-heading .accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+}
+
+.rotate-glyph {
+  -webkit-transform:rotate(90deg) scaleX(1.5) ;
+  -moz-transform:rotate(90deg) scaleX(1.5) ;
+  -o-transform:rotate(90deg) scaleX(1.5) ;
+  -ms-transform:rotate(90deg) scaleX(1.5); 
 }
