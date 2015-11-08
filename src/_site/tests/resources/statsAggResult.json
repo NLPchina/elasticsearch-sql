@@ -1,0 +1,1 @@
+{"took":6,"timed_out":false,"_shards":{"total":5,"successful":5,"failed":0},"hits":{"total":50,"max_score":1.0,"hits":[{"_index":"timestamp","_type":"times","_id":"AVCvurKgxk2KAr3C2ywG","_score":1.0,"_source":{}}]},"aggregations":{"stat":{"count":50,"min":2.0,"max":967.0,"avg":500.44,"sum":25022.0}}}

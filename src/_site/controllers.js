@@ -11,18 +11,41 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
 	$scope.searchLoading = false;
 	$scope.explainLoading = false;
 	$scope.nextLoading = false;
+  $scope.fetchAllLoading = false;
 	$scope.resultExplan = false;
+  
 	$scope.scrollId = undefined;
   $scope.amountDescription = "";
+  var optionsKey = "essql-options";
   var fetched = 0;
   var total = 0 ;
   //checkboxes
-	$scope.gotNext = false;
-  $scope.useOldTable = false;
-	$scope.delimiter = ',';
+  $scope.gotNext = false;
+  $scope.config = loadOptionsFromStorageOrDefault();
 	
   var tablePresenter = new TablePresenter('searchResult','#searchResultZone');
-
+  
+  /* todo move to class - options handler */
+  $scope.saveConfigToStorage = function () {
+    localStorage.setItem(optionsKey,JSON.stringify($scope.config));
+  }
+  function loadOptionsFromStorageOrDefault () {
+    var defaultOptions = {
+      isFlat : false,
+      useOldTable : false,
+      scrollSize : 10,
+      alwaysScroll : false,
+      isAutoSave : false,
+      delimiter : ','
+    }
+    if (typeof(Storage) !== "undefined") {
+      options = localStorage.getItem(optionsKey);
+      if(options!=undefined)
+        return JSON.parse(options);
+      else
+        return defaultOptions;
+    } 
+  }
 
  	// pull version and put it on the scope
     $http.get($scope.url).success(function (data) {
@@ -36,7 +59,13 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
         });
     });
 
+/* todo move to class fetch*/
+$scope.fetchAll = function(){
 
+  $scope.showResults = true;
+
+  callScrollAndFillBodyTillEnd($scope.scrollId,$scope.resultsColumns,$scope.resultsRows,true,false,true);
+}
 	$scope.nextSearch = function(){
 		$scope.error = "";
 		$scope.nextLoading = true;
@@ -51,7 +80,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
 
 		$http.get($scope.url + scroll_url + $scope.scrollId)
 		.success(function(data, status, headers, config) {
-          var handler = ResultHandlerFactory.create(data,$scope.isFlat);
+          var handler = ResultHandlerFactory.create(data,$scope.config.isFlat);
           updateDescription(handler);
           var body = handler.getBody()
 
@@ -95,6 +124,19 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
 
 	}
 
+function updateWithScrollIfNeeded (query) {
+  if(!$scope.config.alwaysScroll)
+      return query;
+  if(query.indexOf("USE_SCROLL")!=-1)
+    return query;
+  var scrollHint = "/*! USE_SCROLL("+$scope.config.scrollSize+","+120000+") */";
+  if(query.indexOf("select") !=-1)
+    return query.replace("select","select " + scrollHint);
+  if(query.indexOf("SELECT") !=-1)
+    return query.replace("SELECT","select " + scrollHint);
+  return query;
+}
+
 	$scope.search = function() {
 		// Reset results and error box
 		$scope.error = "";
@@ -106,19 +148,24 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
 		$scope.searchLoading = true;
 		
 		$scope.resultExplan = false;
+    tablePresenter.destroy();
     $scope.$apply();
 		saveUrl()
 
     var query = window.editor.getValue();
-
+    var selectedQuery = window.editor.getSelection();
+    if(selectedQuery != "" && selectedQuery != undefined){
+      query = selectedQuery;
+    }
+    query = updateWithScrollIfNeeded(query);
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
-          var handler = ResultHandlerFactory.create(data,$scope.isFlat);
+          var handler = ResultHandlerFactory.create(data,$scope.config.isFlat);
           updateDescription(handler);
           if(handler.isScroll){
-          	
+          	$scope.showResults=true;
           	$scope.scrollId = handler.getScrollId();
-          	if($scope.isAutoSave){
+          	if($scope.config.isAutoSave){
           		searchTillEndAndExportCsv($scope.scrollId);
           	}
           	else {
@@ -128,7 +175,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
           
           else {
 
-          	if($scope.isAutoSave){
+          	if($scope.config.isAutoSave){
                 $scope.showResults=true;
           		exportCSVWithoutScope(handler.getHead(),handler.getBody());
           	}
@@ -191,7 +238,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
 
 
 	 function exportCSVWithoutScope(columns,rows) {
-		var delimiter = $scope.delimiter;
+		var delimiter = $scope.config.delimiter;
 		var data =arr2csvStr(columns,delimiter) ;
 		for(var i=0; i<rows.length ; i++){
 		data += "\n";
@@ -204,7 +251,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
 
       $scope.onChangeTablePresnterType = function(){
       //value = ?
-      value = $scope.useOldTable;
+      value = $scope.config.useOldTable;
       tablePresenter.destroy();
       tablePresenter.changeTableType(value,$compile,$scope);
     }
@@ -214,7 +261,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
       head = []
       body = []
       $scope.showResults = true;
-      callScrollAndFillBodyTillEnd(scrollId,head,body,true);
+      callScrollAndFillBodyTillEnd(scrollId,head,body,true,true,false);
     }
     function updateDescription (handler) {
         total = handler.getTotal();
@@ -223,10 +270,13 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
           $scope.amountDescription = fetched  
         }
         else {
+          if(total == fetched){
+            $scope.gotNext = false;
+          }
           $scope.amountDescription = fetched + "/" + total   
         }
     }
-    function callScrollAndFillBodyTillEnd (scrollId,head,body,firstTime) {
+    function callScrollAndFillBodyTillEnd (scrollId,head,body,firstTime,needToExport,updatePresenter) {
     var url = $scope.url + scroll_url + scrollId;
       $http.get(url)
     .success(function(data, status, headers, config) {
@@ -239,22 +289,29 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
             body = body.concat(recieved);
 
             head = $.extend(head,handler.getHead());
+            if(updatePresenter){
+              tablePresenter.addRows(recieved);
+            }
           }
           else {
             body = recieved;
             head = handler.getHead();
-
+            if(updatePresenter){
+             tablePresenter.createOrReplace(head,body);
+            }
           }
           if(recieved == undefined || recieved.length == undefined || recieved.length == 0){
             if(firstTime){
-             callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false);
+             callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false,needToExport,updatePresenter);
             }
             else {
-              exportCSVWithoutScope(head,body);
+              if(needToExport){
+                exportCSVWithoutScope(head,body);
+              }
             }
           }
           else {
-            callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false);
+            callScrollAndFillBodyTillEnd(handler.getScrollId(),head,body,false,needToExport,updatePresenter);
           }
 
 

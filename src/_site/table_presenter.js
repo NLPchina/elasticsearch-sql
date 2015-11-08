@@ -12,6 +12,8 @@ TablePresenter.prototype.addRows = function(rows) {
 	this.table.rows.add(createRows(rows)).draw();
 };
 
+
+
 TablePresenter.prototype.createOrReplace = function(columns,rows) {
 	if(this.oldTable) return;
 
@@ -27,7 +29,7 @@ TablePresenter.prototype.createOrReplace = function(columns,rows) {
     	"aoColumns": dataTablesColumns,
     	"destroy": true,
     	"scrollX": true,
-        "order": [],
+    	"order": [],
     	"lengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]]
     });
 };
