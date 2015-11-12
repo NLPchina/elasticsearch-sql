@@ -170,6 +170,12 @@ function updateWithScrollIfNeeded (query) {
           	}
           	else {
           		$scope.gotNext=true;
+                scrollBudy = handler.getBody();
+                //not using scan type
+                if(scrollBudy.length >0 ){
+                    $scope.resultsColumns = handler.getHead();
+                    $scope.resultsRows = scrollBudy;
+                }
           	}
           }
           

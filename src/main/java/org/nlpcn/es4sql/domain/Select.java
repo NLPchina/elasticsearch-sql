@@ -133,5 +133,9 @@ public class Select extends Query {
     public List<SubQueryExpression> getSubQueries() {
         return subQueries;
     }
+
+    public boolean isOrderdSelect(){
+        return this.getOrderBys()!=null && this.getOrderBys().size() >0 ;
+    }
 }
 
