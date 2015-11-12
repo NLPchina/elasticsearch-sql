@@ -50,7 +50,13 @@ public class FilterMaker extends Maker {
 	 * @param subFilter
 	 */
 	private void addSubFilter(BoolFilterBuilder boolFilter, Where where, BaseFilterBuilder subFilter) {
-		if (where.getConn() == CONN.AND) {
+		if(where instanceof Condition){
+            Condition condition = (Condition) where;
+            if(condition.isNested()){
+                subFilter = FilterBuilders.nestedFilter(condition.getNestedPath(),subFilter);
+            }
+        }
+        if (where.getConn() == CONN.AND) {
 			boolFilter.must(subFilter);
 		} else {
 			boolFilter.should(subFilter);

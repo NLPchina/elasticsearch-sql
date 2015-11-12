@@ -49,9 +49,11 @@ public class Condition extends Where {
 
 	private OPEAR opear;
 
-	private String aliasTableName;
+    private boolean isNested;
 
-	public Condition(CONN conn, String name, OPEAR oper, Object value) throws SqlParseException {
+	private String nestedPath;
+
+	public Condition(CONN conn, String name, OPEAR oper, Object value,boolean isNested , String nestedPath) throws SqlParseException {
 		super(conn);
 		this.opear = null;
 
@@ -60,10 +62,18 @@ public class Condition extends Where {
 		this.value = value;
 		
 		this.opear = oper ;
+
+        this.isNested = isNested;
+
+        this.nestedPath = nestedPath;
 	}
 
-	public Condition(CONN conn, String name, String oper, Object value) throws SqlParseException {
+	public Condition(CONN conn, String name, String oper, Object value,boolean isNested,String nestedPath) throws SqlParseException {
 		super(conn);
+
+        this.isNested = isNested;
+
+        this.nestedPath = nestedPath;
 
 		this.opear = null;
 
@@ -165,20 +175,43 @@ public class Condition extends Where {
 		this.opear = opear;
 	}
 
-	@Override
-	public String toString() {
+    public boolean isNested() {
+        return isNested;
+    }
 
+    public void setNested(boolean isNested) {
+        this.isNested = isNested;
+    }
+
+    public String getNestedPath() {
+        return nestedPath;
+    }
+
+    public void setNestedPath(String nestedPath) {
+        this.nestedPath = nestedPath;
+    }
+
+    @Override
+	public String toString() {
+        String result = "";
+        if(this.isNested()){
+            result = "nested condition ";
+            if(this.getNestedPath()!=null){
+                result+="on path:" + this.getNestedPath() + " ";
+            }
+        }
 		if (value instanceof Object[]) {
-			return this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
+			result += this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
 		} else {
-			return this.conn + " " + this.name + " " + this.opear + " " + this.value;
+			result += this.conn + " " + this.name + " " + this.opear + " " + this.value;
 		}
+        return result;
 	}
 
     @Override
     public Object clone() throws CloneNotSupportedException {
         try {
-            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue());
+            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue(),this.isNested(),this.getNestedPath());
             return clonedCondition;
         } catch (SqlParseException e) {
 
