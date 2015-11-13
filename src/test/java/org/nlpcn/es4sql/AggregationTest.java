@@ -9,6 +9,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
+import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -406,5 +407,30 @@ public class AggregationTest {
             Assert.assertEquals(1,bucket.getDocCount());
         }
     }
+
+    @Test
+    public void groupByOnNestedFieldTest() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY nested(message.info)", TEST_INDEX));
+        InternalNested nested = result.get("message.infoNested");
+        Terms infos = nested.getAggregations().get("message.info");
+        Assert.assertEquals(3,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            String key = bucket.getKey();
+            long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
+            if(key.equalsIgnoreCase("a")) {
+                Assert.assertEquals(2, count);
+            }
+            else if(key.equalsIgnoreCase("c")) {
+                Assert.assertEquals(2, count);
+            }
+            else if(key.equalsIgnoreCase("b")) {
+                Assert.assertEquals(1, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: a OR b OR c . found: %s", key));
+            }
+        }
+    }
+
 
 }

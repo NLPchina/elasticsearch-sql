@@ -30,6 +30,10 @@ public class FieldMaker {
         } else if (expr instanceof SQLAllColumnExpr) {
 		} else if (expr instanceof SQLMethodInvokeExpr) {
 			SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
+            NestedType nestedType = new NestedType();
+            if(nestedType.tryFillFromExpr(mExpr)){
+                return handleIdentifier(nestedType,alias,tableAlias);
+            }
 			return makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias);
 		} else if (expr instanceof SQLAggregateExpr) {
 			SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
@@ -39,6 +43,13 @@ public class FieldMaker {
 		}
 		return null;
 	}
+
+    private static Field handleIdentifier(NestedType nestedType, String alias, String tableAlias) {
+        Field field = handleIdentifier(new SQLIdentifierExpr(nestedType.field), alias, tableAlias);
+        field.setNested(true);
+        field.setNestedPath(nestedType.path);
+        return field;
+    }
 
     private static Field makeScriptMethodField(SQLBinaryOpExpr binaryExpr, String alias) throws SqlParseException {
         List<SQLExpr> params = new ArrayList<>();

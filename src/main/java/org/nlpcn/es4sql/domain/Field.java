@@ -10,6 +10,8 @@ public class Field implements  Cloneable{
 
 	protected String name;
 	private String alias;
+    private boolean isNested;
+    private String nestedPath;
 
 	public Field(String name, String alias) {
 		this.name = name;
@@ -32,7 +34,23 @@ public class Field implements  Cloneable{
 		this.alias = alias;
 	}
 
-	@Override
+    public boolean isNested() {
+        return isNested;
+    }
+
+    public void setNested(boolean isNested) {
+        this.isNested = isNested;
+    }
+
+    public String getNestedPath() {
+        return nestedPath;
+    }
+
+    public void setNestedPath(String nestedPath) {
+        this.nestedPath = nestedPath;
+    }
+
+    @Override
 	public String toString() {
 		return this.name;
 	}

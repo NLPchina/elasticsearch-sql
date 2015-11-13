@@ -11,6 +11,8 @@ import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -56,7 +58,16 @@ public class AggregationQueryAction extends QueryAction {
 					((TermsBuilder) lastAgg).size(select.getRowCount());
 				}
 
-				request.addAggregation(lastAgg);
+                if(field.isNested()){
+                    NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "Nested")
+                            .path(field.getNestedPath())
+                            .subAggregation(lastAgg);
+                    request.addAggregation(nestedBuilder);
+                }
+                else {
+                    request.addAggregation(lastAgg);
+                }
+
 
 				for (int i = 1; i < groupBy.size(); i++) {
 					field = groupBy.get(i);
@@ -65,7 +76,17 @@ public class AggregationQueryAction extends QueryAction {
 						((TermsBuilder) subAgg).size(0);
 					}
 
-					lastAgg.subAggregation(subAgg);
+                    if(field.isNested()){
+                        NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "Nested")
+                                .path(field.getNestedPath())
+                                .subAggregation(subAgg);
+                        lastAgg.subAggregation(nestedBuilder);
+
+                    }
+                    else {
+                        lastAgg.subAggregation(subAgg);
+                    }
+
 					lastAgg = subAgg;
 				}
 			}
@@ -111,7 +132,16 @@ public class AggregationQueryAction extends QueryAction {
         return sqlElasticRequestBuilder;
 	}
 
-	private boolean isASC(Order order) {
+    private AggregationBuilder<?> updateAggIfNested(AggregationBuilder<?> lastAgg, Field field) {
+        if(field.isNested()){
+            lastAgg = AggregationBuilders.nested(field.getName() + "Nested")
+                    .path(field.getNestedPath())
+                    .subAggregation(lastAgg);
+        }
+        return lastAgg;
+    }
+
+    private boolean isASC(Order order) {
 		return "ASC".equals(order.getType());
 	}
 
