@@ -157,13 +157,30 @@ function addFieldsToRow (row,hit) {
 
 
 
+
+function removeNestedAndFilters (aggs) {
+    for(field in aggs)
+    {
+        if (field.endsWith("@NESTED") || field.endsWith("@FILTER")){
+            delete aggs[field]["doc_count"];
+            delete aggs[field]["key"];
+            leftField = Object.keys(aggs[field])[0];
+            aggs[leftField] = aggs[field][leftField];
+            delete aggs[field];
+            removeNestedAndFilters(aggs);
+        }
+        if(typeof(aggs[field])=="object"){
+            removeNestedAndFilters(aggs[field]);
+        }
+    }
+}
 /* AggregationQueryResultHandler object 
  Handle the query result,
  in case of Aggregation query
  (SQL group by)
  */
 var AggregationQueryResultHandler = function(data) {
-
+    removeNestedAndFilters(data.aggregations);
     function getRows(bucketName, bucket, additionalColumns) {
         var rows = []
 
@@ -200,7 +217,13 @@ var AggregationQueryResultHandler = function(data) {
             }
 
             for(var field in bucket) {
+
                 var bucketValue = bucket[field]
+                if(bucketValue.buckets != undefined ){
+                    var newRows = getRows(subBucketName, bucketValue, newAdditionalColumns);
+                    $.merge(rows, newRows);
+                    continue;
+                }
                 if(bucketValue.value != undefined) {
                     if("value_as_string" in bucket[field]){
                         obj[field] = bucketValue["value_as_string"]
@@ -210,8 +233,17 @@ var AggregationQueryResultHandler = function(data) {
                     }
                 }
                 else {
-                    if(typeof(bucket[field])=="object"){
-                        fillFieldsForSpecificAggregation(obj,bucketValue,field);
+                    if(typeof(bucketValue)=="object"){
+                        /*subBuckets = getSubBuckets(bucketValue);
+                        if(subBuckets.length >0){
+                             var newRows = getRows(subBucketName, {"buckets":subBuckets}, newAdditionalColumns);
+                            $.merge(rows, newRows);
+                            continue;
+                        }*/
+
+                        
+                           fillFieldsForSpecificAggregation(obj,bucketValue,field);
+                        
                     }
                 }
             }
@@ -223,7 +255,8 @@ var AggregationQueryResultHandler = function(data) {
 
 
     function fillFieldsForSpecificAggregation(obj,value,field)
-    {
+    {   
+
         for(key in value){
             if(key == "values"){
                 fillFieldsForSpecificAggregation(obj,value[key],field);
@@ -242,6 +275,15 @@ var AggregationQueryResultHandler = function(data) {
             if(buckets != undefined) {
                 for(var i = 0; i < buckets.length; i++) {
                     subBuckets.push({"bucketName": field, "bucket": buckets[i]})
+                }
+            }
+            else {
+                innerAgg = bucket[field];
+                for(var innerField in innerAgg){
+                    if(typeof(innerAgg[innerField])=="object"){
+                        innerBuckets = getSubBuckets(innerAgg[innerField]);
+                        $.merge(subBuckets,innerBuckets);
+                    }    
                 }
             }
         }

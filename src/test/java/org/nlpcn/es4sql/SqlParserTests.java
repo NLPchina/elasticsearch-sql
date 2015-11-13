@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
@@ -578,6 +579,76 @@ public class SqlParserTests {
         Assert.assertTrue("condition should be nested",field.isNested());
         Assert.assertEquals("message",field.getNestedPath());
         Assert.assertEquals("message.name",field.getName());
+    }
+
+    @Test
+    public void filterAggTestNoAlias() throws SqlParseException {
+        String query = "select * from myIndex group by a , filter(  a > 3 AND b='3' )";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<List<Field>> groupBys = select.getGroupBys();
+        Assert.assertEquals(1,groupBys.size());
+        Field aAgg = groupBys.get(0).get(0);
+        Assert.assertEquals("a",aAgg.getName());
+        Field field = groupBys.get(0).get(1);
+        Assert.assertTrue("filter field should be method field",field instanceof MethodField);
+        MethodField filterAgg = (MethodField) field;
+        Assert.assertEquals("filter", filterAgg.getName());
+        Map<String, Object> params = filterAgg.getParamsAsMap();
+        Assert.assertEquals(2, params.size());
+        Object alias = params.get("alias");
+        Assert.assertEquals("filter(a > 3 AND b = '3')@FILTER",alias);
+
+        Assert.assertTrue(params.get("where") instanceof Where);
+        Where where  = (Where) params.get("where");
+        Assert.assertEquals(2,where.getWheres().size());
+    }
+
+    @Test
+    public void filterAggTestWithAlias() throws SqlParseException {
+        String query = "select * from myIndex group by a , filter(myFilter, a > 3 AND b='3' )";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<List<Field>> groupBys = select.getGroupBys();
+        Assert.assertEquals(1,groupBys.size());
+        Field aAgg = groupBys.get(0).get(0);
+        Assert.assertEquals("a",aAgg.getName());
+        Field field = groupBys.get(0).get(1);
+        Assert.assertTrue("filter field should be method field",field instanceof MethodField);
+        MethodField filterAgg = (MethodField) field;
+        Assert.assertEquals("filter", filterAgg.getName());
+        Map<String, Object> params = filterAgg.getParamsAsMap();
+        Assert.assertEquals(2, params.size());
+        Object alias = params.get("alias");
+        Assert.assertEquals("myFilter@FILTER",alias);
+
+        Assert.assertTrue(params.get("where") instanceof Where);
+        Where where  = (Where) params.get("where");
+        Assert.assertEquals(2,where.getWheres().size());
+    }
+
+
+    @Test
+    public void filterAggTestWithAliasAsString() throws SqlParseException {
+        String query = "select * from myIndex group by a , filter('my filter', a > 3 AND b='3' )";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<List<Field>> groupBys = select.getGroupBys();
+        Assert.assertEquals(1,groupBys.size());
+        Field aAgg = groupBys.get(0).get(0);
+        Assert.assertEquals("a",aAgg.getName());
+        Field field = groupBys.get(0).get(1);
+        Assert.assertTrue("filter field should be method field",field instanceof MethodField);
+        MethodField filterAgg = (MethodField) field;
+        Assert.assertEquals("filter", filterAgg.getName());
+        Map<String, Object> params = filterAgg.getParamsAsMap();
+        Assert.assertEquals(2, params.size());
+        Object alias = params.get("alias");
+        Assert.assertEquals("my filter@FILTER",alias);
+
+        Assert.assertTrue(params.get("where") instanceof Where);
+        Where where  = (Where) params.get("where");
+        Assert.assertEquals(2,where.getWheres().size());
     }
 
 

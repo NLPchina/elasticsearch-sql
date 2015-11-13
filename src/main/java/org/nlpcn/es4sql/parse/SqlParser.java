@@ -92,7 +92,7 @@ public class SqlParser {
         return  method.getMethodName().toLowerCase().equals("nested");
     }
 
-    private void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
+    public void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
 		if (expr instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) expr)) {
 			SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
 			routeCond(bExpr, bExpr.getLeft(), where);
@@ -282,7 +282,7 @@ public class SqlParser {
                 sqlExpr = sqlSelectGroupByExpr.getExpr();
             }
 
-            if ((sqlExpr instanceof SQLParensIdentifierExpr || !(sqlExpr instanceof SQLIdentifierExpr)) && !standardGroupBys.isEmpty()) {
+            if ((sqlExpr instanceof SQLParensIdentifierExpr || !(sqlExpr instanceof SQLIdentifierExpr|| sqlExpr instanceof SQLMethodInvokeExpr)) && !standardGroupBys.isEmpty()) {
                 // flush the standard group bys
                 select.addGroupBy(convertExprsToFields(standardGroupBys));
                 standardGroupBys = new ArrayList<>();
