@@ -113,16 +113,6 @@ public abstract class Maker {
 				bqb = FilterBuilders.queryFilter((QueryBuilder) bqb);
 			}
 			break;
-        case "match_term":
-        case "matchterm":
-        case "term":
-            if(isQuery){
-                bqb = QueryBuilders.termQuery(name,value.getParameters().get(0));
-            }
-            else {
-                bqb = FilterBuilders.termFilter(name,value.getParameters().get(0));
-            }
-            break;
 		default:
 			throw new SqlParseException("it did not support this query method " + value.getMethodName());
 
@@ -284,6 +274,16 @@ public abstract class Maker {
             }
             else {
                 x = FilterBuilders.termsFilter(name,termValues);
+            }
+        break;
+
+        case TERM:
+            Object term  =( (Object[]) value)[0];
+            if(isQuery){
+                x = QueryBuilders.termQuery(name,term);
+            }
+            else {
+                x = FilterBuilders.termFilter(name,term);
             }
         break;
         case IDS_QUERY:

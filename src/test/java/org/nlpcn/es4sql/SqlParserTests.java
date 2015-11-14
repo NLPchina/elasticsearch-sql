@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
+import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
 import org.nlpcn.es4sql.parse.SqlParser;
+import org.nlpcn.es4sql.query.maker.FilterMaker;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -692,6 +694,24 @@ public class SqlParserTests {
 
     }
 
+    @Test
+    public void termsWithStringTest() throws SqlParseException {
+        String query = "select * from x where y = IN_TERMS('a','b')";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Object[] values = (Object[]) condition.getValue();
+        Assert.assertEquals("a",values[0]);
+        Assert.assertEquals("b",values[1]);
+    }
+
+    @Test
+    public void termWithStringTest() throws SqlParseException {
+        String query = "select * from x where y = TERM('a')";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Object[] values = (Object[]) condition.getValue();
+        Assert.assertEquals("a",values[0]);
+    }
 
 
     private SQLExpr queryToExpr(String query) {

@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql.domain;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.BiMap;
@@ -16,12 +17,22 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class Condition extends Where {
 
 	public enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , IDS_QUERY;
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , TERM , IDS_QUERY;
 
-        public static Map<String,OPEAR> methodNameToOpear = ImmutableMap.of("in_terms",IN_TERMS,"terms",IN_TERMS,"ids",IDS_QUERY,"ids_query",IDS_QUERY);
+        public static Map<String,OPEAR> methodNameToOpear;
+
         private static BiMap<OPEAR, OPEAR> negatives;
 
-
+        static {
+            methodNameToOpear = new HashMap<>();
+            methodNameToOpear.put("term",TERM);
+            methodNameToOpear.put("matchterm",TERM);
+            methodNameToOpear.put("match_term",TERM);
+            methodNameToOpear.put("terms",IN_TERMS);
+            methodNameToOpear.put("in_terms",IN_TERMS);
+            methodNameToOpear.put("ids",IDS_QUERY);
+            methodNameToOpear.put("ids_query",IDS_QUERY);
+        }
 		static {
 			negatives = HashBiMap.create(7);
 			negatives.put(EQ, N);
