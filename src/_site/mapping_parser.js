@@ -29,7 +29,7 @@ function getFieldsRecursive(fields,fieldsFlatten,prefix){
 		if("type" in fieldMapping){
 			fieldsFlatten[prefix+field] = fieldMapping;
 		}
-		else {
+		if(!("type" in fieldMapping) || fieldMapping.type == "nested") {
 			getFieldsRecursive(fieldMapping["properties"],fieldsFlatten,prefix+field+".");
 		}
 	}

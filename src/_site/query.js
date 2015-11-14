@@ -357,7 +357,8 @@ var ShowQueryResultHandler = function(data) {
             }
         }
         else {
-            this.head = ["field","type","more"];
+            this.head = ["field","type"];
+            anyFieldContainsMore = false;
             fieldsWithMapping = mappingParser.getFieldsForTypeWithMapping(index,types[0]);
             for(field in fieldsWithMapping){
                 fieldRow = {};
@@ -365,9 +366,14 @@ var ShowQueryResultHandler = function(data) {
                 fieldRow["field"] = field;
                 fieldRow["type"] = fieldMapping["type"];
                 delete fieldMapping["type"];
-                fieldRow["more"] = fieldMapping;
+                if(!$.isEmptyObject(fieldMapping)){
+                    anyFieldContainsMore = true;
+                    fieldRow["more"] = fieldMapping;
+                }
                 body.push(fieldRow);
             }
+            if(anyFieldContainsMore) this.head.push("more");
+
         }
     }
 
