@@ -14,7 +14,6 @@ import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintFactory;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
 /**
@@ -350,24 +349,29 @@ public class SqlParser {
 			return;
 		}
 		List<SQLSelectOrderByItem> items = orderBy.getItems();
-		List<String> lists = new ArrayList<>();
-		for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
-			SQLExpr expr = sqlSelectOrderByItem.getExpr();
-			lists.add(FieldMaker.makeField(expr, null,null).toString());
-			if (sqlSelectOrderByItem.getType() == null) {
-				sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
-			}
-			String type = sqlSelectOrderByItem.getType().toString();
-			for (String name : lists) {
-				name = name.replace("`", "");
-				select.addOrderBy(name, type);
-			}
-			lists.clear();
-		}
 
-	}
+        addOrderByToSelect(select, items, null);
 
-	private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {
+    }
+
+    private void addOrderByToSelect(Select select, List<SQLSelectOrderByItem> items, String alias) throws SqlParseException {
+        for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
+            SQLExpr expr = sqlSelectOrderByItem.getExpr();
+            String orderByName = FieldMaker.makeField(expr, null, null).toString();
+
+            if (sqlSelectOrderByItem.getType() == null) {
+                sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
+            }
+            String type = sqlSelectOrderByItem.getType().toString();
+
+            orderByName = orderByName.replace("`", "");
+            if(alias!=null) orderByName = orderByName.replaceFirst(alias+"\\.","");
+            select.addOrderBy(orderByName, type);
+
+        }
+    }
+
+    private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {
 
 		if (limit == null) {
 			return;
@@ -419,15 +423,36 @@ public class SqlParser {
         String firstTableAlias = joinedFrom.get(0).getAlias();
         String secondTableAlias = joinedFrom.get(1).getAlias();
         Map<String, Where> aliasToWhere = splitAndFindWhere(query.getWhere(), firstTableAlias, secondTableAlias);
+        Map<String, List<SQLSelectOrderByItem>> aliasToOrderBy = splitAndFindOrder(query.getOrderBy(), firstTableAlias, secondTableAlias);
         List<Condition> connectedConditions = getConditionsFlatten(joinSelect.getConnectedWhere());
         joinSelect.setConnectedConditions(connectedConditions);
-        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias), connectedConditions);
-        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), connectedConditions);
+        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias),aliasToOrderBy.get(firstTableAlias), connectedConditions);
+        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), aliasToOrderBy.get(secondTableAlias),connectedConditions);
 
         updateJoinLimit(query.getLimit(), joinSelect);
 
         //todo: throw error feature not supported:  no group bys on joins ?
         return joinSelect;
+    }
+
+    private Map<String, List<SQLSelectOrderByItem>> splitAndFindOrder(SQLOrderBy orderBy, String firstTableAlias, String secondTableAlias) throws SqlParseException {
+        Map<String,List<SQLSelectOrderByItem>> aliasToOrderBys = new HashMap<>();
+        aliasToOrderBys.put(firstTableAlias,new ArrayList<SQLSelectOrderByItem>());
+        aliasToOrderBys.put(secondTableAlias,new ArrayList<SQLSelectOrderByItem>());
+        if(orderBy == null) return aliasToOrderBys;
+        List<SQLSelectOrderByItem> orderByItems = orderBy.getItems();
+        for(SQLSelectOrderByItem orderByItem : orderByItems){
+            if(orderByItem.getExpr().toString().startsWith(firstTableAlias+".")){
+                aliasToOrderBys.get(firstTableAlias).add(orderByItem);
+            }
+            else if(orderByItem.getExpr().toString().startsWith(secondTableAlias+".")){
+                aliasToOrderBys.get(secondTableAlias).add(orderByItem);
+            }
+            else
+                throw new SqlParseException("order by field on join request should have alias before, got " + orderByItem.getExpr().toString());
+
+        }
+        return aliasToOrderBys;
     }
 
     private void updateJoinLimit(MySqlSelectQueryBlock.Limit limit, JoinSelect joinSelect) {
@@ -463,9 +488,9 @@ public class SqlParser {
         return splitWheres(where, firstTableAlias, secondTableAlias);
     }
 
-    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin,MySqlSelectQueryBlock query, From tableFrom,  Where where, List<Condition> conditions) throws SqlParseException {
+    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin, MySqlSelectQueryBlock query, From tableFrom, Where where, List<SQLSelectOrderByItem> orderBys, List<Condition> conditions) throws SqlParseException {
         String alias = tableFrom.getAlias();
-        fillBasicTableSelectJoin(tableOnJoin, tableFrom, where, query);
+        fillBasicTableSelectJoin(tableOnJoin, tableFrom, where,orderBys, query);
         tableOnJoin.setConnectedFields(getConnectedFields(conditions, alias));
         tableOnJoin.setSelectedFields(new ArrayList<Field>(tableOnJoin.getFields()));
         tableOnJoin.setAlias(alias);
@@ -493,10 +518,11 @@ public class SqlParser {
         return fields;
     }
 
-    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from,  Where where, MySqlSelectQueryBlock query) throws SqlParseException {
+    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from, Where where, List<SQLSelectOrderByItem> orderBys, MySqlSelectQueryBlock query) throws SqlParseException {
         select.getFrom().add(from);
         findSelect(query, select,from.getAlias());
         select.setWhere(where);
+        addOrderByToSelect(select, orderBys,from.getAlias());
     }
 
     private List<Condition> getJoinConditionsFlatten(SQLJoinTableSource from) throws SqlParseException {
