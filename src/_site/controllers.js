@@ -216,8 +216,11 @@ function updateWithScrollIfNeeded (query) {
 		$scope.resultsColumns = [];
 		$scope.resultsRows = [];
 		$scope.explainLoading = true;
+        $scope.showResults = false;
+        tablePresenter.destroy();
+        $scope.resultExplan = true;
 		$scope.$apply();
-		$scope.resultExplan = true;
+
 
 		saveUrl()
 
