@@ -35,7 +35,7 @@ public class FieldMaker {
             if(methodName.toLowerCase().equals("nested")){
                 NestedType nestedType = new NestedType();
                 if(nestedType.tryFillFromExpr(mExpr)){
-                    return handleIdentifier(nestedType,alias,tableAlias);
+                    return handleIdentifier(nestedType, alias, tableAlias);
                 }
             }
             else  if (methodName.toLowerCase().equals("filter")){
@@ -46,10 +46,11 @@ public class FieldMaker {
 			SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
 			return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias);
 		} else {
-			throw new SqlParseException("unknow field name : " + expr);
+			throw new SqlParseException("unknown field name : " + expr);
 		}
 		return null;
 	}
+
 
     private static Field makeFilterMethodField(SQLMethodInvokeExpr filterMethod,String alias) throws SqlParseException {
         List<SQLExpr> parameters = filterMethod.getParameters();
@@ -64,8 +65,7 @@ public class FieldMaker {
             filterAlias = "filter(" + exprToCheck.toString().replaceAll("\n"," ") +")";
         }
         if(parametersSize == 2){
-            //todo: function extendedToString - if sqlString remove ''
-            filterAlias = extendedToString(parameters.get(0));
+            filterAlias = Util.extendedToString(parameters.get(0));
             exprToCheck = parameters.get(1);
         }
         Where where = Where.newInstance();
@@ -78,12 +78,7 @@ public class FieldMaker {
         return  new MethodField("filter", methodParameters,  null, alias);
     }
 
-    private static String extendedToString(SQLExpr sqlExpr) {
-        if(sqlExpr instanceof SQLTextLiteralExpr){
-            return ((SQLTextLiteralExpr) sqlExpr).getText();
-        }
-        return sqlExpr.toString();
-    }
+
 
     private static Field handleIdentifier(NestedType nestedType, String alias, String tableAlias) {
         Field field = handleIdentifier(new SQLIdentifierExpr(nestedType.field), alias, tableAlias);

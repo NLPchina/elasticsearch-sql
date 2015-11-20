@@ -4,13 +4,28 @@ package org.nlpcn.es4sql.spatial;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.parser.SQLParseException;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Eliran on 1/8/2015.
  */
 public class SpatialParamsFactory {
+    public static Set<String> allowedMethods ;
+    static {
+        allowedMethods = new HashSet<>();
+        allowedMethods.add("GEO_INTERSECTS");
+        allowedMethods.add("GEO_BOUNDING_BOX");
+        allowedMethods.add("GEO_DISTANCE");
+        allowedMethods.add("GEO_DISTANCE_RANGE");
+        allowedMethods.add("GEO_POLYGON");
+        allowedMethods.add("GEO_CELL");
+    }
+    public static boolean isAllowedMethod(String name){
+        return allowedMethods.contains(name);
+    }
     public static Object generateSpatialParamsObject(String methodName,List<SQLExpr> params){
         switch(methodName){
             case "GEO_INTERSECTS":

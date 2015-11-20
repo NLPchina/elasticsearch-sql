@@ -85,6 +85,10 @@ public class MainTestSuite {
                     "              \"info\": {\n" +
                     "                \"type\": \"string\",\n" +
                     "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"author\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
                     "              }\n" +
                     "            }\n" +
                     "          },\n" +

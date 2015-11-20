@@ -1,8 +1,8 @@
 {"index":{"_type": "nestedType", "_id":"1"}}
-{"message":{"info":"a"},"myNum":1}
+{"message":{"info":"a","author":"e"},"myNum":1}
 {"index":{"_type": "nestedType", "_id":"2"}}
-{"message":{"info":"b"},"myNum":2}
+{"message":{"info":"b","author":"f"},"myNum":2}
 {"index":{"_type": "nestedType", "_id":"3"}}
-{"message":{"info":"c"},"myNum":3}
+{"message":{"info":"c","author":"g"},"myNum":3}
 {"index":{"_type": "nestedType", "_id":"4"}}
-{"message":[{"info":"c"},{"info":"a"}],"myNum":4}
+{"message":[{"info":"c","author":"h"},{"info":"a","author":"i"}],"myNum":4}
