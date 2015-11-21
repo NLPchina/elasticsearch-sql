@@ -1,6 +1,7 @@
 Elasticsearch-SQL
 =================
-[![Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**1.X** [![1.X Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.org/NLPchina/elasticsearch-sql) <br>
+**2.X** [![2.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -16,12 +17,22 @@ You can also use ES functions in SQL.
 ## SETUP
 
 Install as plugin:
+Versions
+------------
 
-### Elasticsearch 1.6.X
-````
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.5/elasticsearch-sql-1.4.5.zip --install sql
-````
+| elasticsearch version | latest version | remarks                        |
+| --------------------- | -------------  | -----------------------------  |
+| 1.X	                | 1.4.6          | tested against elastic 1.4-1.6 |
+| 2.0.0                 | 2.0.1          | delete commands not supported  |
 
+### Elasticsearch 1.X
+````
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.6/elasticsearch-sql-1.4.6.zip --install sql
+````
+### Elasticsearch 2.0.0
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.0.1/elasticsearch-sql-2.0.1.zip 
+````
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
 ## Basic Usage

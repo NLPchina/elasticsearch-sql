@@ -669,6 +669,19 @@ public class QueryTest {
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 
+
+    @Test
+    public void useScrollWithOrderByAndParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL(5,50000)*/ age,gender,firstname,balance FROM  %s/account order by age", TEST_INDEX, TEST_INDEX));
+        Assert.assertNotNull(response.getScrollId());
+        SearchHits hits = response.getHits();
+        Assert.assertEquals(5,hits.getHits().length);
+        Assert.assertEquals(1000,hits.getTotalHits());
+        for(SearchHit hit : hits){
+            Assert.assertEquals(20,hit.sourceAsMap().get("age"));
+        }
+    }
+
     @Test
     public void innerQueryTest() throws SqlParseException, SQLFeatureNotSupportedException {
         String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'Hattie')",TEST_INDEX,TEST_INDEX);
