@@ -14,6 +14,7 @@ import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintFactory;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
 /**
@@ -80,10 +81,18 @@ public class SqlParser {
 
 
 	private boolean isCond(SQLBinaryOpExpr expr) {
-		return expr.getLeft() instanceof SQLIdentifierExpr || expr.getLeft() instanceof SQLPropertyExpr || expr.getLeft() instanceof SQLVariantRefExpr;
+        SQLExpr leftSide = expr.getLeft();
+        if(leftSide instanceof SQLMethodInvokeExpr){
+            return isAllowedMethodOnConditionLeft((SQLMethodInvokeExpr) leftSide);
+        }
+		return leftSide instanceof SQLIdentifierExpr || leftSide instanceof SQLPropertyExpr || leftSide instanceof SQLVariantRefExpr;
 	}
 
-	private void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
+    private boolean isAllowedMethodOnConditionLeft(SQLMethodInvokeExpr method) {
+        return  method.getMethodName().toLowerCase().equals("nested");
+    }
+
+    private void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
 		if (expr instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) expr)) {
 			SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
 			routeCond(bExpr, bExpr.getLeft(), where);
@@ -120,29 +129,48 @@ public class SqlParser {
         if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr soExpr = (SQLBinaryOpExpr) expr;
             boolean methodAsOpear = false;
+            boolean nestedFieldCondition = false;
+            String nestedPath = null ;
+            NestedType nestedType = new NestedType();
+            if(tryFillNested(soExpr.getLeft(),nestedType)){
+                soExpr.setLeft(new SQLIdentifierExpr(nestedType.field));
+                nestedFieldCondition = true;
+                nestedPath = nestedType.path ;
+            }
+
             if(soExpr.getRight() instanceof SQLMethodInvokeExpr){
                 SQLMethodInvokeExpr method = (SQLMethodInvokeExpr) soExpr.getRight();
                 String methodName = method.getMethodName().toLowerCase();
 
                 if(Condition.OPEAR.methodNameToOpear.containsKey(methodName)){
                     Object[] methodParametersValue = getMethodValuesWithSubQueries(method);
-                    Condition condition = new Condition(CONN.valueOf(opear) ,soExpr.getLeft().toString(), Condition.OPEAR.methodNameToOpear.get(methodName),methodParametersValue);
+                    Condition condition = new Condition(CONN.valueOf(opear) ,soExpr.getLeft().toString(), Condition.OPEAR.methodNameToOpear.get(methodName),methodParametersValue,nestedFieldCondition,nestedPath);
                     where.addWhere(condition);
                     methodAsOpear = true;
                 }
             }
             if(!methodAsOpear){
-                Condition condition = new Condition(CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getOperator().name, parseValue(soExpr.getRight()));
+                Condition condition = new Condition(CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getOperator().name, parseValue(soExpr.getRight()),nestedFieldCondition,nestedPath);
                 where.addWhere(condition);
             }
         } else if (expr instanceof SQLInListExpr) {
             SQLInListExpr siExpr = (SQLInListExpr) expr;
-            Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()));
+            NestedType nestedType = new NestedType();
+            String leftSide = siExpr.getExpr().toString();
+            if(tryFillNested(siExpr.getExpr(),nestedType)){
+                leftSide = nestedType.field;
+            }
+            Condition condition = new Condition(CONN.valueOf(opear), leftSide, siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()),nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         } else if (expr instanceof SQLBetweenExpr) {
             SQLBetweenExpr between = ((SQLBetweenExpr) expr);
-            Condition condition = new Condition(CONN.valueOf(opear), between.getTestExpr().toString(), between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[]{parseValue(between.beginExpr),
-                    parseValue(between.endExpr)});
+            String leftSide = between.getTestExpr().toString();
+            NestedType nestedType = new NestedType();
+            if(tryFillNested(between.getTestExpr(),nestedType)){
+                leftSide = nestedType.field;
+            }
+            Condition condition = new Condition(CONN.valueOf(opear), leftSide, between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[]{parseValue(between.beginExpr),
+                    parseValue(between.endExpr)},nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         }
         else if (expr instanceof SQLMethodInvokeExpr) {
@@ -151,9 +179,14 @@ public class SqlParser {
 
             String methodName = methodExpr.getMethodName();
             String fieldName = methodParameters.get(0).toString();
+            NestedType nestedType = new NestedType();
+            if(tryFillNested(methodParameters.get(0),nestedType)){
+                fieldName = nestedType.field;
+            }
+
             Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
 
-            Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject);
+            Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject,nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         } else if (expr instanceof SQLInSubQueryExpr){
             SQLInSubQueryExpr sqlIn = (SQLInSubQueryExpr) expr;
@@ -161,12 +194,41 @@ public class SqlParser {
             if(innerSelect.getFields() == null || innerSelect.getFields().size()!=1)
                 throw new SqlParseException("should only have one return field in subQuery");
             SubQueryExpression subQueryExpression = new SubQueryExpression(innerSelect);
-            Condition condition = new Condition(CONN.valueOf(opear), sqlIn.getExpr().toString(), sqlIn.isNot() ? "NOT IN" : "IN",subQueryExpression);
+            String leftSide = sqlIn.getExpr().toString();
+            NestedType nestedType = new NestedType();
+            if(tryFillNested(sqlIn.getExpr(),nestedType)){
+                leftSide = nestedType.field;
+            }
+            Condition condition = new Condition(CONN.valueOf(opear), leftSide, sqlIn.isNot() ? "NOT IN" : "IN",subQueryExpression,nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         } else {
 			throw new SqlParseException("err find condition " + expr.getClass());
 		}
 	}
+
+    private boolean tryFillNested(SQLExpr expr,NestedType nestedType) throws SqlParseException {
+        if (!(expr instanceof SQLMethodInvokeExpr)) return false;
+        SQLMethodInvokeExpr method = (SQLMethodInvokeExpr) expr;
+        if (!method.getMethodName().toLowerCase().equals("nested")) return false;
+
+        List<SQLExpr> parameters = method.getParameters();
+        if (parameters.size() != 2 && parameters.size() != 1)
+            throw new SqlParseException("on nested object only allowed 2 parameters (field,path) or 1 parameter (field) ");
+
+        String field = parameters.get(0).toString();
+        nestedType.field = field;
+        if (parameters.size() == 1) {
+            //calc path myself..
+            if (!field.contains("."))
+                throw new SqlParseException("nested should contain . on their field name");
+            int lastDot = field.lastIndexOf(".");
+            nestedType.path = field.substring(0, lastDot);
+        } else if (parameters.size() == 2) {
+            nestedType.path = parameters.get(1).toString();
+        }
+
+        return true;
+    }
 
     private Object[] getMethodValuesWithSubQueries(SQLMethodInvokeExpr method) throws SqlParseException {
         List<Object> values = new ArrayList<>();

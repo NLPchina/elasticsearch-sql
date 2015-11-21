@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.domain;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -16,7 +17,8 @@ import org.nlpcn.es4sql.exception.SqlParseException;
  */
 public class Condition extends Where {
 
-	public enum OPEAR {
+
+    public enum OPEAR {
 		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , IDS_QUERY;
 
         public static Map<String,OPEAR> methodNameToOpear = ImmutableMap.of("in_terms", IN_TERMS, "terms", IN_TERMS, "ids", IDS_QUERY, "ids_query", IDS_QUERY);
@@ -50,9 +52,19 @@ public class Condition extends Where {
 
 	private OPEAR opear;
 
-	private String aliasTableName;
+    private boolean isNested;
 
-	public Condition(CONN conn, String name, OPEAR oper, Object value) throws SqlParseException {
+	private String nestedPath;
+
+    public Condition(CONN conn, String name, OPEAR opear, SQLExpr sqlExpr) throws SqlParseException {
+        this(conn, name, opear, sqlExpr, false, null);
+    }
+
+    public Condition(CONN conn, String name, String opear, SQLExpr sqlExpr) throws SqlParseException {
+        this(conn, name, opear, sqlExpr, false, null);
+    }
+
+    public Condition(CONN conn, String name, OPEAR oper, Object value,boolean isNested , String nestedPath) throws SqlParseException {
 		super(conn);
 		this.opear = null;
 
@@ -61,10 +73,18 @@ public class Condition extends Where {
 		this.value = value;
 		
 		this.opear = oper ;
+
+        this.isNested = isNested;
+
+        this.nestedPath = nestedPath;
 	}
 
-	public Condition(CONN conn, String name, String oper, Object value) throws SqlParseException {
+	public Condition(CONN conn, String name, String oper, Object value,boolean isNested,String nestedPath) throws SqlParseException {
 		super(conn);
+
+        this.isNested = isNested;
+
+        this.nestedPath = nestedPath;
 
 		this.opear = null;
 
@@ -166,20 +186,43 @@ public class Condition extends Where {
 		this.opear = opear;
 	}
 
-	@Override
-	public String toString() {
+    public boolean isNested() {
+        return isNested;
+    }
 
+    public void setNested(boolean isNested) {
+        this.isNested = isNested;
+    }
+
+    public String getNestedPath() {
+        return nestedPath;
+    }
+
+    public void setNestedPath(String nestedPath) {
+        this.nestedPath = nestedPath;
+    }
+
+    @Override
+	public String toString() {
+        String result = "";
+        if(this.isNested()){
+            result = "nested condition ";
+            if(this.getNestedPath()!=null){
+                result+="on path:" + this.getNestedPath() + " ";
+            }
+        }
 		if (value instanceof Object[]) {
-			return this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
+			result += this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
 		} else {
-			return this.conn + " " + this.name + " " + this.opear + " " + this.value;
+			result += this.conn + " " + this.name + " " + this.opear + " " + this.value;
 		}
+        return result;
 	}
 
     @Override
     public Object clone() throws CloneNotSupportedException {
         try {
-            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue());
+            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue(),this.isNested(),this.getNestedPath());
             return clonedCondition;
         } catch (SqlParseException e) {
 

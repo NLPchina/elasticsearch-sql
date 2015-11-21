@@ -75,6 +75,9 @@ public class MainTestSuite {
         prepareSpatialIndex("location2");
         loadBulk("src/test/resources/locations2.json");
 
+        prepareNestedTypeIndex();
+        loadBulk("src/test/resources/nested_objects.json");
+
         searchDao = new SearchDao(client);
 
         //refresh to make sure all the docs will return on queries
@@ -83,8 +86,31 @@ public class MainTestSuite {
 		System.out.println("Finished the setup process...");
 	}
 
+    private static void prepareNestedTypeIndex() {
 
-	@AfterClass
+            String dataMapping = "{ \"nestedType\": {\n" +
+                    "        \"properties\": {\n" +
+                    "          \"message\": {\n" +
+                    "            \"type\": \"nested\",\n" +
+                    "            \"properties\": {\n" +
+                    "              \"info\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "              }\n" +
+                    "            }\n" +
+                    "          },\n" +
+                    "          \"myNum\": {\n" +
+                    "            \"type\": \"long\"\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }}";
+
+            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping).execute().actionGet();
+    }
+
+
+    @AfterClass
 	public static void tearDown() {
 		System.out.println("teardown process...");
 	}

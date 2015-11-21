@@ -754,7 +754,29 @@ public class QueryTest {
 
     }
 
+    @Test
+    public void nestedEqualsTestFieldNormalField() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info)='b'", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
 
+    @Test
+    public void nestedEqualsTestFieldInsideArrays() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) = 'a'", TEST_INDEX));
+        Assert.assertEquals(2, response.getTotalHits());
+    }
+
+    @Test
+    public void nestedOnInQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) in ('a','b')", TEST_INDEX));
+        Assert.assertEquals(3, response.getTotalHits());
+    }
+
+    @Test
+    public void nestedOnInTermsQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) = IN_TERMS(a,b)", TEST_INDEX));
+        Assert.assertEquals(3, response.getTotalHits());
+    }
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
