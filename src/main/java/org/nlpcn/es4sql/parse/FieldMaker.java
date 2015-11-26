@@ -146,11 +146,19 @@ public class FieldMaker {
                 }
             } else if(object instanceof SQLMethodInvokeExpr) {
                 SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) object;
-                if(mExpr.getMethodName().toLowerCase().equals("script")){
+                String methodName = mExpr.getMethodName().toLowerCase();
+                if(methodName.equals("script")){
                     KVValue script = new KVValue("script", makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias));
                     paramers.add(script);
                 }
-                else throw new SqlParseException("only support script as nested functions");
+                else if(methodName.equals("nested")){
+                    NestedType nestedType = new NestedType();
+                    if(!nestedType.tryFillFromExpr(object)){
+                        throw new SqlParseException("failed parsing nested expr " + object);
+                    }
+                    paramers.add(new KVValue("nested",nestedType));
+                }
+                else throw new SqlParseException("only support script/nested as inner functions");
             }else {
 				paramers.add(new KVValue(Util.expr2Object(object)));
 			}

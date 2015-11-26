@@ -15,6 +15,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
@@ -29,6 +30,8 @@ import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.parse.NestedType;
+import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 
 public class AggMaker {
 
@@ -74,32 +77,25 @@ public class AggMaker {
 		switch (field.getName().toUpperCase()) {
 		case "SUM":
 			builder = AggregationBuilders.sum(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
 		case "MAX":
 			builder = AggregationBuilders.max(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
 		case "MIN":
 			builder =  AggregationBuilders.min(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
 		case "AVG":
 			builder =  AggregationBuilders.avg(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
 		case "STATS":
 			builder =  AggregationBuilders.stats(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
         case "EXTENDED_STATS":
             builder =  AggregationBuilders.extendedStats(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
         case "PERCENTILES":
             builder = AggregationBuilders.percentiles(field.getAlias());
-            addFieldOrScriptToAggregation(field, builder);
-            return builder;
+            return addFieldOrScriptToAggregation(field, builder);
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
         case "SCRIPTED_METRIC":
@@ -117,34 +113,40 @@ public class AggMaker {
         return alias.replaceAll("\\[","(").replaceAll("\\]",")");
     }
 
-    private void addFieldOrScriptToAggregation(MethodField field, ValuesSourceMetricsAggregationBuilder builder) {
+    private AbstractAggregationBuilder addFieldOrScriptToAggregation(MethodField field, ValuesSourceMetricsAggregationBuilder builder) {
         KVValue kvValue = field.getParams().get(0);
-        if(kvValue.key==null || !kvValue.key.equals("script") )
-             builder.field(kvValue.toString());
-        else
-        {
+        if(kvValue.key!=null && kvValue.key.equals("script") ){
             //todo: support different lang script
-            builder.script(((MethodField)kvValue.value).getParams().get(1).toString());
+           return builder.script(((MethodField)kvValue.value).getParams().get(1).toString());
         }
+        else  if (kvValue.key!=null && kvValue.key.equals("nested")){
+            NestedType nestedType = (NestedType) kvValue.value;
+            builder.field(nestedType.field);
+            return AggregationBuilders.nested(nestedType.field+"@NESTED").path(nestedType.path).subAggregation(builder);
+        }
+        return builder.field(kvValue.toString());
     }
 
     private AggregationBuilder<?> makeRangeGroup(MethodField field) throws SqlParseException {
+
+        AggregationBuilder<?> aggregationBuilder;
 		switch (field.getName().toLowerCase()) {
 		case "range":
-			return rangeBuilder(field);
+            aggregationBuilder = rangeBuilder(field);break;
 		case "date_histogram":
-			return dateHistogram(field);
+            aggregationBuilder = dateHistogram(field);break;
 		case "date_range":
-			return dateRange(field);
+            aggregationBuilder = dateRange(field);break;
 		case "month":
-			return dateRange(field);
+            aggregationBuilder = dateRange(field);break;
 		case "histogram":
-			return histogram(field);
+            aggregationBuilder = histogram(field);break;
         case "geohash_grid":
-            return geohashGrid(field);
+            aggregationBuilder = geohashGrid(field);break;
 		default:
 			throw new SqlParseException("can define this method " + field);
 		}
+       return aggregationBuilder;
 
 	}
 
@@ -207,6 +209,7 @@ public class AggMaker {
                     scriptedMetricBuilder.reduceScriptFile(paramValue);
                     break;
                 case "alias":
+                case "nested":
                     break;
                 default:
                     throw new SqlParseException("scripted_metric err or not define field " + param.getKey());
@@ -242,6 +245,7 @@ public class AggMaker {
                     geoHashGrid.shardSize(Integer.parseInt(value));
                     break;
                 case "alias":
+                case "nested":
                     break;
                 default:
                     throw new SqlParseException("geohash grid err or not define field " + kv.toString());
@@ -323,6 +327,7 @@ public class AggMaker {
 				dateHistogram.preOffset(value);
 				break;
                 case "alias":
+                case "nested":
                     break;
 			default:
 				throw new SqlParseException("date range err or not define field " + kv.toString());
@@ -362,6 +367,7 @@ public class AggMaker {
 						histogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
 					break;
                 case "alias":
+                case "nested":
                     break;
 				case "order":
 					Histogram.Order order = null;
@@ -455,7 +461,8 @@ public class AggMaker {
 				topHits.setSize((int) kv.value);
 				break;
             case "alias":
-                    break;
+            case "nested":
+                break;
 			default:
 				topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
 				break;
