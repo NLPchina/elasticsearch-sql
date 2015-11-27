@@ -30,6 +30,7 @@ import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 public class AggMaker {
@@ -45,7 +46,15 @@ public class AggMaker {
 	 */
 	public AggregationBuilder<?> makeGroupAgg(Field field) throws SqlParseException {
 		if (field instanceof MethodField) {
-			return makeRangeGroup((MethodField) field);
+
+            MethodField methodField = (MethodField) field;
+            if(methodField.getName().equals("filter")){
+                Map<String, Object> paramsAsMap = methodField.getParamsAsMap();
+                Where where = (Where) paramsAsMap.get("where");
+                return AggregationBuilders.filter(paramsAsMap.get("alias").toString()).
+                        filter(FilterMaker.explan(where));
+            }
+            return makeRangeGroup(methodField);
 		} else {
 			TermsBuilder termsBuilder = AggregationBuilders.terms(field.getName()).field(field.getName());
 			groupMap.put(field.getName(), new KVValue("KEY", termsBuilder));

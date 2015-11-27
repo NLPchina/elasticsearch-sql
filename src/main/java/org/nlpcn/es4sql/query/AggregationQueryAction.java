@@ -59,9 +59,14 @@ public class AggregationQueryAction extends QueryAction {
 				}
 
                 if(field.isNested()){
-                    NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "Nested")
-                            .path(field.getNestedPath())
-                            .subAggregation(lastAgg);
+                    NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "@NESTED")
+                            .path(field.getNestedPath());
+                    if(insertFilterIfExistsAfter(lastAgg, groupBy, nestedBuilder,1)){
+                        groupBy.remove(1);
+                    }
+                    else {
+                        nestedBuilder.subAggregation(lastAgg);
+                    }
                     request.addAggregation(nestedBuilder);
                 }
                 else {
@@ -77,9 +82,16 @@ public class AggregationQueryAction extends QueryAction {
 					}
 
                     if(field.isNested()){
-                        NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "Nested")
-                                .path(field.getNestedPath())
-                                .subAggregation(subAgg);
+
+                        NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "@NESTED")
+                                .path(field.getNestedPath());
+                        if(insertFilterIfExistsAfter(subAgg, groupBy, nestedBuilder,i+1)){
+                            groupBy.remove(i+1);
+                            i++;
+                        }
+                        else {
+                            nestedBuilder.subAggregation(subAgg);
+                        }
                         lastAgg.subAggregation(nestedBuilder);
 
                     }
@@ -131,6 +143,16 @@ public class AggregationQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
 	}
+
+    private boolean insertFilterIfExistsAfter(AggregationBuilder<?> agg, List<Field> groupBy, NestedBuilder builder, int nextPosition) throws SqlParseException {
+        if(groupBy.size() <= nextPosition) return false;
+        Field filterFieldCandidate = groupBy.get(nextPosition);
+        if(! (filterFieldCandidate instanceof MethodField)) return false;
+        MethodField methodField = (MethodField) filterFieldCandidate;
+        if(!methodField.getName().toLowerCase().equals("filter")) return false;
+        builder.subAggregation(aggMaker.makeGroupAgg(filterFieldCandidate).subAggregation(agg));
+        return true;
+    }
 
     private AggregationBuilder<?> updateAggIfNested(AggregationBuilder<?> lastAgg, Field field) {
         if(field.isNested()){

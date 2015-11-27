@@ -9,6 +9,7 @@ import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.ast.*;
 /**
@@ -30,11 +31,17 @@ public class FieldMaker {
         } else if (expr instanceof SQLAllColumnExpr) {
 		} else if (expr instanceof SQLMethodInvokeExpr) {
 			SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
-            NestedType nestedType = new NestedType();
-            if(nestedType.tryFillFromExpr(mExpr)){
-                return handleIdentifier(nestedType,alias,tableAlias);
+            String methodName = mExpr.getMethodName();
+            if(methodName.toLowerCase().equals("nested")){
+                NestedType nestedType = new NestedType();
+                if(nestedType.tryFillFromExpr(mExpr)){
+                    return handleIdentifier(nestedType,alias,tableAlias);
+                }
             }
-			return makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias);
+            else  if (methodName.toLowerCase().equals("filter")){
+                return makeFilterMethodField(mExpr,alias);
+            }
+            return makeMethodField(methodName, mExpr.getParameters(), null, alias);
 		} else if (expr instanceof SQLAggregateExpr) {
 			SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
 			return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias);
@@ -43,6 +50,40 @@ public class FieldMaker {
 		}
 		return null;
 	}
+
+    private static Field makeFilterMethodField(SQLMethodInvokeExpr filterMethod,String alias) throws SqlParseException {
+        List<SQLExpr> parameters = filterMethod.getParameters();
+        int parametersSize = parameters.size();
+        if(parametersSize != 1  && parametersSize !=2){
+            throw new SqlParseException("filter group by field should only have one or 2 parameters filter(Expr) or filter(name,Expr)");
+        }
+        String filterAlias = filterMethod.getMethodName();
+        SQLExpr exprToCheck = null;
+        if(parametersSize == 1){
+            exprToCheck = parameters.get(0);
+            filterAlias = "filter(" + exprToCheck.toString().replaceAll("\n"," ") +")";
+        }
+        if(parametersSize == 2){
+            //todo: function extendedToString - if sqlString remove ''
+            filterAlias = extendedToString(parameters.get(0));
+            exprToCheck = parameters.get(1);
+        }
+        Where where = Where.newInstance();
+        new SqlParser().parseWhere(exprToCheck,where);
+        if(where.getWheres().size() == 0)
+            throw new SqlParseException("unable to parse filter where.");
+        List<KVValue> methodParameters = new ArrayList<>();
+        methodParameters.add(new KVValue("where",where));
+        methodParameters.add(new KVValue("alias",filterAlias+"@FILTER"));
+        return  new MethodField("filter", methodParameters,  null, alias);
+    }
+
+    private static String extendedToString(SQLExpr sqlExpr) {
+        if(sqlExpr instanceof SQLTextLiteralExpr){
+            return ((SQLTextLiteralExpr) sqlExpr).getText();
+        }
+        return sqlExpr.toString();
+    }
 
     private static Field handleIdentifier(NestedType nestedType, String alias, String tableAlias) {
         Field field = handleIdentifier(new SQLIdentifierExpr(nestedType.field), alias, tableAlias);
@@ -98,7 +139,7 @@ public class FieldMaker {
 		List<KVValue> paramers = new LinkedList<>();
 		for (SQLExpr object : arguments) {
             if (object instanceof SQLBinaryOpExpr) {
-                //todo: if operator is different from equal ....
+
                 SQLBinaryOpExpr binaryOpExpr = (SQLBinaryOpExpr) object;
                 if(!binaryOpExpr.getOperator().getName().equals("=")){
                     paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr,null)));
