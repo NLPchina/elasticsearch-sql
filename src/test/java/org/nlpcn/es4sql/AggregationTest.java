@@ -441,7 +441,7 @@ public class AggregationTest {
         Terms gender = filter.getAggregations().get("gender");
 
         for(Terms.Bucket bucket : gender.getBuckets()) {
-            String key = bucket.getKey();
+            String key = bucket.getKey().toString();
             long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
             if(key.equalsIgnoreCase("m")) {
                 Assert.assertEquals(507, count);
@@ -461,7 +461,7 @@ public class AggregationTest {
         Terms infos = filter.getAggregations().get("message.info");
         Assert.assertEquals(1,infos.getBuckets().size());
         for(Terms.Bucket bucket : infos.getBuckets()) {
-            String key = bucket.getKey();
+            String key = bucket.getKey().toString();
             long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
             if(key.equalsIgnoreCase("a")) {
                 Assert.assertEquals(2, count);

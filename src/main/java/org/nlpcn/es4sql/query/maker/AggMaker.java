@@ -52,7 +52,7 @@ public class AggMaker {
                 Map<String, Object> paramsAsMap = methodField.getParamsAsMap();
                 Where where = (Where) paramsAsMap.get("where");
                 return AggregationBuilders.filter(paramsAsMap.get("alias").toString()).
-                        filter(FilterMaker.explan(where));
+                        filter(QueryMaker.explan(where));
             }
             return makeRangeGroup(methodField);
 		} else {
