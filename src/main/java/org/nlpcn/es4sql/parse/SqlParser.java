@@ -132,7 +132,7 @@ public class SqlParser {
             boolean nestedFieldCondition = false;
             String nestedPath = null ;
             NestedType nestedType = new NestedType();
-            if(tryFillNested(soExpr.getLeft(),nestedType)){
+            if(nestedType.tryFillFromExpr(soExpr.getLeft())){
                 soExpr.setLeft(new SQLIdentifierExpr(nestedType.field));
                 nestedFieldCondition = true;
                 nestedPath = nestedType.path ;
@@ -157,7 +157,7 @@ public class SqlParser {
             SQLInListExpr siExpr = (SQLInListExpr) expr;
             NestedType nestedType = new NestedType();
             String leftSide = siExpr.getExpr().toString();
-            if(tryFillNested(siExpr.getExpr(),nestedType)){
+            if(nestedType.tryFillFromExpr(siExpr.getExpr())){
                 leftSide = nestedType.field;
             }
             Condition condition = new Condition(CONN.valueOf(opear), leftSide, siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()),nestedType.field!=null,nestedType.path);
@@ -166,7 +166,7 @@ public class SqlParser {
             SQLBetweenExpr between = ((SQLBetweenExpr) expr);
             String leftSide = between.getTestExpr().toString();
             NestedType nestedType = new NestedType();
-            if(tryFillNested(between.getTestExpr(),nestedType)){
+            if(nestedType.tryFillFromExpr(between.getTestExpr())){
                 leftSide = nestedType.field;
             }
             Condition condition = new Condition(CONN.valueOf(opear), leftSide, between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[]{parseValue(between.beginExpr),
@@ -180,7 +180,7 @@ public class SqlParser {
             String methodName = methodExpr.getMethodName();
             String fieldName = methodParameters.get(0).toString();
             NestedType nestedType = new NestedType();
-            if(tryFillNested(methodParameters.get(0),nestedType)){
+            if(nestedType.tryFillFromExpr(methodParameters.get(0))){
                 fieldName = nestedType.field;
             }
 
@@ -196,7 +196,7 @@ public class SqlParser {
             SubQueryExpression subQueryExpression = new SubQueryExpression(innerSelect);
             String leftSide = sqlIn.getExpr().toString();
             NestedType nestedType = new NestedType();
-            if(tryFillNested(sqlIn.getExpr(),nestedType)){
+            if(nestedType.tryFillFromExpr(sqlIn.getExpr())){
                 leftSide = nestedType.field;
             }
             Condition condition = new Condition(CONN.valueOf(opear), leftSide, sqlIn.isNot() ? "NOT IN" : "IN",subQueryExpression,nestedType.field!=null,nestedType.path);
@@ -206,29 +206,7 @@ public class SqlParser {
 		}
 	}
 
-    private boolean tryFillNested(SQLExpr expr,NestedType nestedType) throws SqlParseException {
-        if (!(expr instanceof SQLMethodInvokeExpr)) return false;
-        SQLMethodInvokeExpr method = (SQLMethodInvokeExpr) expr;
-        if (!method.getMethodName().toLowerCase().equals("nested")) return false;
 
-        List<SQLExpr> parameters = method.getParameters();
-        if (parameters.size() != 2 && parameters.size() != 1)
-            throw new SqlParseException("on nested object only allowed 2 parameters (field,path) or 1 parameter (field) ");
-
-        String field = parameters.get(0).toString();
-        nestedType.field = field;
-        if (parameters.size() == 1) {
-            //calc path myself..
-            if (!field.contains("."))
-                throw new SqlParseException("nested should contain . on their field name");
-            int lastDot = field.lastIndexOf(".");
-            nestedType.path = field.substring(0, lastDot);
-        } else if (parameters.size() == 2) {
-            nestedType.path = parameters.get(1).toString();
-        }
-
-        return true;
-    }
 
     private Object[] getMethodValuesWithSubQueries(SQLMethodInvokeExpr method) throws SqlParseException {
         List<Object> values = new ArrayList<>();

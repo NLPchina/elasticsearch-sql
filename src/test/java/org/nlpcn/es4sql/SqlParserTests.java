@@ -558,6 +558,29 @@ public class SqlParserTests {
         Assert.assertEquals("message.name",condition.getName());
     }
 
+    @Test
+    public void nestedFieldOnGroupByNoPath() throws SqlParseException {
+        String query = "select * from myIndex group by nested(message.name)";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field field = select.getGroupBys().get(0).get(0);
+        Assert.assertTrue("condition should be nested",field.isNested());
+        Assert.assertEquals("message",field.getNestedPath());
+        Assert.assertEquals("message.name",field.getName());
+    }
+
+    @Test
+    public void nestedFieldOnGroupByWithPath() throws SqlParseException {
+        String query = "select * from myIndex group by nested(message.name,message)";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field field = select.getGroupBys().get(0).get(0);
+        Assert.assertTrue("condition should be nested",field.isNested());
+        Assert.assertEquals("message",field.getNestedPath());
+        Assert.assertEquals("message.name",field.getName());
+    }
+
+
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
