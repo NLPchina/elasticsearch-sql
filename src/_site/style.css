@@ -167,8 +167,13 @@ body {
 
 /* Initial state when showing */
 .fadein.ng-hide {
-  opacity: 0;  
+    -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0s;
+    -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0s;
+    -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0s;
+    transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0s;
+    opacity: 0;
 }
+
 
 
 
