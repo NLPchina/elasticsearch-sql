@@ -49,8 +49,8 @@ public class MainTestSuite {
 	@BeforeClass
 	public static void setUp() throws Exception {
 
-        Settings settings = Settings.builder().put("plugin.types", DeleteByQueryPlugin.class.getName()).build();
-        client = TransportClient.builder().settings(settings).build().addTransportAddress(getTransportAddress());
+        client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).build().addTransportAddress(getTransportAddress());
+
 
 		NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
 		String clusterName = nodeInfos.getClusterName().value();
