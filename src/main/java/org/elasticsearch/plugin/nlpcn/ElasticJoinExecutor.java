@@ -1,12 +1,16 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import com.google.common.collect.ImmutableMap;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.StringText;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
+
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
@@ -20,6 +24,7 @@ import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
 import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
 
 import java.io.IOException;
 import java.util.*;
@@ -173,25 +178,29 @@ public abstract class ElasticJoinExecutor {
     protected void addUnmatchedResults(List<InternalSearchHit> combinedResults, Collection<SearchHitsResult> firstTableSearchHits, List<Field> secondTableReturnedFields,int currentNumOfIds, int totalLimit,String t1Alias,String t2Alias) {
         boolean limitReached = false;
         for(SearchHitsResult hitsResult : firstTableSearchHits){
-            if(!hitsResult.isMatchedWithOtherTable()){
-                for(SearchHit hit: hitsResult.getSearchHits() ) {
+            if(!hitsResult.isMatchedWithOtherTable())
+                for (InternalSearchHit hit : hitsResult.getSearchHits()) {
 
                     //todo: decide which id to put or type. or maby its ok this way. just need to doc.
-                    addUnmachedResult(combinedResults, secondTableReturnedFields, currentNumOfIds, t1Alias, t2Alias, hit);
+                    InternalSearchHit unmachedResult = createUnmachedResult(secondTableReturnedFields, hit.docId(), t1Alias, t2Alias, hit);
+                    combinedResults.add(unmachedResult);
                     currentNumOfIds++;
-                    if(currentNumOfIds >= totalLimit){
+                    if (currentNumOfIds >= totalLimit) {
                         limitReached = true;
                         break;
                     }
 
                 }
-            }
             if(limitReached) break;
         }
     }
 
-    protected void addUnmachedResult(List<InternalSearchHit> combinedResults, List<Field> secondTableReturnedFields, int currentNumOfIds, String t1Alias, String t2Alias, SearchHit hit) {
-        InternalSearchHit searchHit = new InternalSearchHit(currentNumOfIds, hit.id() + "|0", new StringText(hit.getType() + "|null"), hit.getFields());
+    protected InternalSearchHit createUnmachedResult( List<Field> secondTableReturnedFields, int docId, String t1Alias, String t2Alias, SearchHit hit) {
+        String unmatchedId = hit.id() + "|0";
+        StringText unamatchedType = new StringText(hit.getType() + "|null");
+
+        InternalSearchHit searchHit = new InternalSearchHit(docId, unmatchedId, unamatchedType, hit.getFields());
+
         searchHit.sourceRef(hit.getSourceRef());
         searchHit.sourceAsMap().clear();
         searchHit.sourceAsMap().putAll(hit.sourceAsMap());
@@ -199,7 +208,7 @@ public abstract class ElasticJoinExecutor {
 
         mergeSourceAndAddAliases(emptySecondTableHitSource, searchHit,t1Alias,t2Alias);
 
-        combinedResults.add(searchHit);
+        return searchHit;
     }
 
     protected Map<String, Object> createNullsSource(List<Field> secondTableReturnedFields) {
@@ -215,6 +224,19 @@ public abstract class ElasticJoinExecutor {
         this.metaResults.addFailedShards(searchResponse.getFailedShards());
         this.metaResults.addTotalNumOfShards(searchResponse.getTotalShards());
         this.metaResults.updateTimeOut(searchResponse.isTimedOut());
+    }
+
+    protected SearchResponse scrollOneTimeWithMax(Client client,TableInJoinRequestBuilder tableRequest) {
+        SearchResponse responseWithHits;SearchRequestBuilder scrollRequest = tableRequest.getRequestBuilder()
+                .setScroll(new TimeValue(60000))
+                .setSize(MAX_RESULTS_ON_ONE_FETCH);
+        boolean ordered = tableRequest.getOriginalSelect().isOrderdSelect();
+        if(!ordered) scrollRequest.setSearchType(SearchType.SCAN);
+        responseWithHits = scrollRequest.get();
+        //on ordered select - not using SCAN , elastic returns hits on first scroll
+        if(!ordered)
+            responseWithHits = client.prepareSearchScroll(responseWithHits.getScrollId()).setScroll(new TimeValue(600000)).get();
+        return responseWithHits;
     }
 
 

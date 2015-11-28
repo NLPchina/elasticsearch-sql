@@ -446,6 +446,29 @@ public class JoinTests {
     }
 
 
+    @Test
+    public void joinWithOrderbyFirstTableHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithOrderFirstTable(false);
+    }
+    @Test
+    public void joinWithOrderbyFirstTableNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        joinWithOrderFirstTable(true);
+    }
+    private void joinWithOrderFirstTable(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("select c.name.firstname , d.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses d on d.name = c.house " +
+                "order by c.name.firstname"
+                ,  TEST_INDEX, TEST_INDEX);
+        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
+        SearchHit[] hits = joinAndGetHits(query);
+        Assert.assertEquals(4, hits.length);
+        Assert.assertEquals("Brandon",hits[0].sourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Daenerys",hits[1].sourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Eddard",hits[2].sourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Jaime",hits[3].sourceAsMap().get("c.name.firstname"));
+    }
+
+
     private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query);

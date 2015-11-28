@@ -650,6 +650,47 @@ public class SqlParserTests {
         Where where  = (Where) params.get("where");
         Assert.assertEquals(2,where.getWheres().size());
     }
+    @Test
+    public void doubleOrderByTest() throws SqlParseException {
+        String query = "select * from indexName order by a asc, b desc";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Order> orderBys = select.getOrderBys();
+        Assert.assertEquals(2,orderBys.size());
+        Assert.assertEquals("a",orderBys.get(0).getName());
+        Assert.assertEquals("ASC",orderBys.get(0).getType());
+
+        Assert.assertEquals("b",orderBys.get(1).getName());
+        Assert.assertEquals("DESC",orderBys.get(1).getType());
+    }
+
+    @Test
+    public void parseJoinWithOneTableOrderByAttachToCorrectTable() throws SqlParseException {
+        String query = String.format("select c.name.firstname , d.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses d on d.name = c.house " +
+                "order by c.name.firstname"
+                ,  TEST_INDEX, TEST_INDEX);
+
+        JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
+        Assert.assertTrue("first table should be ordered",joinSelect.getFirstTable().isOrderdSelect());
+        Assert.assertFalse("second table should not be ordered", joinSelect.getSecondTable().isOrderdSelect());
+
+    }
+
+    @Test
+    public void parseJoinWithOneTableOrderByRemoveAlias() throws SqlParseException {
+        String query = String.format("select c.name.firstname , d.words from %s/gotCharacters c " +
+                "JOIN %s/gotHouses d on d.name = c.house " +
+                "order by c.name.firstname"
+                ,  TEST_INDEX, TEST_INDEX);
+
+        JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
+        List<Order> orderBys = joinSelect.getFirstTable().getOrderBys();
+        Assert.assertEquals(1,orderBys.size());
+        Order order = orderBys.get(0);
+        Assert.assertEquals("name.firstname", order.getName());
+
+    }
 
 
 
