@@ -97,11 +97,6 @@ public abstract class Maker {
 			MatchQueryBuilder matchPhraseQuery = QueryBuilders.matchPhraseQuery(name, paramer.value);
 			bqb = Paramer.fullParamer(matchPhraseQuery, paramer);
 			break;
-        case "match_term":
-        case "matchterm":
-        case "term":
-            bqb = QueryBuilders.termQuery(name,value.getParameters().get(0));
-            break;
 		default:
 			throw new SqlParseException("it did not support this query method " + value.getMethodName());
 
@@ -216,6 +211,10 @@ public abstract class Maker {
                 termValues = ((SubQueryExpression) termValues[0]).getValues();
             x = QueryBuilders.termsQuery(name,termValues);
         break;
+        case TERM:
+            Object term  =( (Object[]) value)[0];
+            x = QueryBuilders.termQuery(name,term);
+            break;
         case IDS_QUERY:
             Object[] idsParameters = (Object[]) value;
             String[] ids;

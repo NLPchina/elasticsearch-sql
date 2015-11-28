@@ -304,8 +304,18 @@ public class QueryTest {
 	}
 
     @Test
-    public void inTermsTestWithStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+    public void inTermsTestWithIdentifiersTreatLikeStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = IN_TERMS(daenerys,eddard) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(2, response.getTotalHits());
+        for(SearchHit hit : hits) {
+            String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+            assertThat(firstname, isOneOf("Daenerys", "Eddard"));
+        }
+    }
+    @Test
+    public void inTermsTestWithStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = IN_TERMS('daenerys','eddard') LIMIT 1000", TEST_INDEX));
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(2, response.getTotalHits());
         for(SearchHit hit : hits) {
@@ -336,8 +346,18 @@ public class QueryTest {
     }
 
     @Test
-    public void termQueryWithString() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+    public void termQueryWithStringIdentifier() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = term(brandon) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(1, response.getTotalHits());
+        SearchHit hit = hits[0];
+        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        Assert.assertEquals("Brandon",firstname);
+    }
+
+    @Test
+    public void termQueryWithStringLiteral() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = term('brandon') LIMIT 1000", TEST_INDEX));
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(1, response.getTotalHits());
         SearchHit hit = hits[0];

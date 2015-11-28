@@ -42,7 +42,7 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 })
 public class MainTestSuite {
 
-    
+
 	private static TransportClient client;
 	private static SearchDao searchDao;
 

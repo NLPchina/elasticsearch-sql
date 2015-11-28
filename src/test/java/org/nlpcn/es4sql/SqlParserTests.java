@@ -692,6 +692,24 @@ public class SqlParserTests {
 
     }
 
+    @Test
+    public void termsWithStringTest() throws SqlParseException {
+        String query = "select * from x where y = IN_TERMS('a','b')";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Object[] values = (Object[]) condition.getValue();
+        Assert.assertEquals("a",values[0]);
+        Assert.assertEquals("b",values[1]);
+    }
+
+    @Test
+    public void termWithStringTest() throws SqlParseException {
+        String query = "select * from x where y = TERM('a')";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Object[] values = (Object[]) condition.getValue();
+        Assert.assertEquals("a",values[0]);
+    }
 
 
     private SQLExpr queryToExpr(String query) {

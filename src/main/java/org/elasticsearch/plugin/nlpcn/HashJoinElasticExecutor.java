@@ -76,12 +76,13 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                     t2Alias);
         }
         if(firstTableRequest.getOriginalSelect().isOrderdSelect()){
-            combinedResult.sort(new Comparator<InternalSearchHit>() {
+            Collections.sort(combinedResult,new Comparator<InternalSearchHit>() {
                 @Override
                 public int compare(InternalSearchHit o1, InternalSearchHit o2) {
                     return o1.docId() - o2.docId();
                 }
             });
+
         }
         return combinedResult;
     }
