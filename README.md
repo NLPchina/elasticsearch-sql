@@ -55,7 +55,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 
 
 
-## SQL Usuage
+## SQL Usage
 
 * Query
 

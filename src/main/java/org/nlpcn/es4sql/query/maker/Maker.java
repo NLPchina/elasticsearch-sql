@@ -15,6 +15,7 @@ import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 
@@ -227,6 +228,15 @@ public abstract class Maker {
                 ids =arrayOfObjectsToStringArray(idsParameters,1,idsParameters.length-1);
             }
             x = QueryBuilders.idsQuery(type).addIds(ids);
+        break;
+        case NESTED_COMPLEX:
+            if(value == null || ! (value instanceof Where) )
+                throw new SqlParseException("unsupported nested condition");
+            Where where = (Where) value;
+            BoolQueryBuilder nestedFilter = QueryMaker.explan(where);
+
+            x = QueryBuilders.nestedQuery(name,nestedFilter);
+
         break;
         default:
 			throw new SqlParseException("not define type " + cond.getName());

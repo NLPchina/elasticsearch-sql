@@ -711,6 +711,18 @@ public class SqlParserTests {
         Assert.assertEquals("a",values[0]);
     }
 
+    @Test
+    public void complexNestedTest() throws SqlParseException {
+        String query = "select * from x where nested('y',y.b = 'a' and y.c  = 'd') ";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Assert.assertEquals(Condition.OPEAR.NESTED_COMPLEX,condition.getOpear());
+        Assert.assertEquals("y",condition.getName());
+        Assert.assertTrue(condition.getValue() instanceof Where);
+        Where where = (Where) condition.getValue();
+        Assert.assertEquals(2,where.getWheres().size());
+    }
+
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();

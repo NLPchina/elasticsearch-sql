@@ -173,20 +173,37 @@ public class SqlParser {
             where.addWhere(condition);
         }
         else if (expr instanceof SQLMethodInvokeExpr) {
+
             SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
             List<SQLExpr> methodParameters = methodExpr.getParameters();
 
             String methodName = methodExpr.getMethodName();
-            String fieldName = methodParameters.get(0).toString();
-            NestedType nestedType = new NestedType();
-            if(nestedType.tryFillFromExpr(methodParameters.get(0))){
-                fieldName = nestedType.field;
+            if(SpatialParamsFactory.isAllowedMethod(methodName)){
+
+                String fieldName = methodParameters.get(0).toString();
+                NestedType nestedType = new NestedType();
+                if (nestedType.tryFillFromExpr(methodParameters.get(0))) {
+                    fieldName = nestedType.field;
+                }
+
+                Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
+
+                Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject, nestedType.field != null, nestedType.path);
+                where.addWhere(condition);
             }
 
-            Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
+            else if (methodName.toLowerCase().equals("nested")){
+                NestedType nestedType = new NestedType();
+                if(!nestedType.tryFillFromExpr(expr)){
+                    throw new SqlParseException("could not fill nested from expr:"+expr);
+                }
+                Condition condition = new Condition(CONN.valueOf(opear),nestedType.path,methodName.toUpperCase(),nestedType.where);
+                where.addWhere(condition);
 
-            Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject,nestedType.field!=null,nestedType.path);
-            where.addWhere(condition);
+            }
+            else {
+                throw new SqlParseException("unsupported method: " + methodName);
+            }
         } else if (expr instanceof SQLInSubQueryExpr){
             SQLInSubQueryExpr sqlIn = (SQLInSubQueryExpr) expr;
             Select innerSelect = parseSelect((MySqlSelectQueryBlock) sqlIn.getSubQuery().getQuery());

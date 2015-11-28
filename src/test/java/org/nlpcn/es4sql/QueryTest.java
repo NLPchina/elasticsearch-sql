@@ -793,6 +793,17 @@ public class QueryTest {
     }
 
     @Test
+    public void complexNestedQueryBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested('message',message.info = 'a' and message.author ='i' ) ", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+    @Test
+    public void complexNestedQueryNotBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested('message',message.info = 'a' and message.author ='h' ) ", TEST_INDEX));
+        Assert.assertEquals(0, response.getTotalHits());
+    }
+
+    @Test
     public void nestedOnInTermsQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) = IN_TERMS(a,b)", TEST_INDEX));
         Assert.assertEquals(3, response.getTotalHits());

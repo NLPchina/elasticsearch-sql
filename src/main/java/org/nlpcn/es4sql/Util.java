@@ -72,4 +72,11 @@ public class Util {
 		return ds;
 	}
 
+
+    public static String extendedToString(SQLExpr sqlExpr) {
+        if(sqlExpr instanceof SQLTextLiteralExpr){
+            return ((SQLTextLiteralExpr) sqlExpr).getText();
+        }
+        return sqlExpr.toString();
+    }
 }
