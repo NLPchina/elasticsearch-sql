@@ -59,7 +59,7 @@ public class AggregationQueryAction extends QueryAction {
 				}
 
                 if(field.isNested()){
-                    NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "@NESTED")
+                    NestedBuilder nestedBuilder = AggregationBuilders.nested(getNestedAggName(field))
                             .path(field.getNestedPath());
                     if(insertFilterIfExistsAfter(lastAgg, groupBy, nestedBuilder,1)){
                         groupBy.remove(1);
@@ -73,7 +73,6 @@ public class AggregationQueryAction extends QueryAction {
                     request.addAggregation(lastAgg);
                 }
 
-
 				for (int i = 1; i < groupBy.size(); i++) {
 					field = groupBy.get(i);
 					AggregationBuilder<?> subAgg = aggMaker.makeGroupAgg(field);
@@ -83,7 +82,7 @@ public class AggregationQueryAction extends QueryAction {
 
                     if(field.isNested()){
 
-                        NestedBuilder nestedBuilder = AggregationBuilders.nested(field.getName() + "@NESTED")
+                        NestedBuilder nestedBuilder = AggregationBuilders.nested(getNestedAggName(field))
                                 .path(field.getNestedPath());
                         if(insertFilterIfExistsAfter(subAgg, groupBy, nestedBuilder,i+1)){
                             groupBy.remove(i+1);
@@ -143,6 +142,18 @@ public class AggregationQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
 	}
+
+    private String getNestedAggName(Field field) {
+        String prefix;
+        if(field instanceof MethodField){
+            prefix = field.getNestedPath();
+        }
+        else {
+            prefix = field.getName();
+        }
+        return prefix + "@NESTED";
+    }
+
 
     private boolean insertFilterIfExistsAfter(AggregationBuilder<?> agg, List<Field> groupBy, NestedBuilder builder, int nextPosition) throws SqlParseException {
         if(groupBy.size() <= nextPosition) return false;

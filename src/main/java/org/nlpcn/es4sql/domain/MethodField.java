@@ -53,4 +53,14 @@ public class MethodField extends Field {
 		this.option = option;
 	}
 
+    @Override
+    public boolean isNested() {
+        return this.getParamsAsMap().containsKey("nested");
+    }
+
+    @Override
+    public String getNestedPath() {
+        if(!this.isNested()) return null;
+        return this.getParamsAsMap().get("nested").toString();
+    }
 }

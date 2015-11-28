@@ -101,6 +101,9 @@ public class MainTestSuite {
                     "              \"author\": {\n" +
                     "                \"type\": \"string\",\n" +
                     "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"dayOfWeek\": {\n" +
+                    "                \"type\": \"long\"\n" +
                     "              }\n" +
                     "            }\n" +
                     "          },\n" +

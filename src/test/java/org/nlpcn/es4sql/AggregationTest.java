@@ -11,6 +11,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
@@ -471,6 +472,46 @@ public class AggregationTest {
                 throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
             }
         }
+    }
+
+    @Test
+    public void minOnNestedField() throws Exception {
+        Aggregations result = query(String.format("SELECT min(nested(message.dayOfWeek)) as minDays FROM %s/nestedType", TEST_INDEX));
+        InternalNested nested = result.get("message.dayOfWeek@NESTED");
+        Min mins = nested.getAggregations().get("minDays");
+        Assert.assertEquals(1.0,mins.getValue(),0.0001);
+
+    }
+
+    @Test
+    public void sumOnNestedField() throws Exception {
+        Aggregations result = query(String.format("SELECT sum(nested(message.dayOfWeek)) as sumDays FROM %s/nestedType", TEST_INDEX));
+        InternalNested nested = result.get("message.dayOfWeek@NESTED");
+        Sum sum = nested.getAggregations().get("sumDays");
+        Assert.assertEquals(13.0,sum.getValue(),0.0001);
+
+    }
+
+    @Test
+    public void histogramOnNestedField() throws Exception {
+        Aggregations result = query(String.format("select count(*) from %s/nestedType group by histogram('field'='message.dayOfWeek','nested'='message','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX));
+        InternalNested nested  = result.get("message@NESTED");
+        Histogram histogram = nested.getAggregations().get("someAlias");
+        for(Histogram.Bucket bucket : histogram.getBuckets()){
+            long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = bucket.getKey().toString();
+            if(key.equals("0") || key.equals("4")){
+                Assert.assertEquals(2,count);
+            }
+            else if (key.equals("2")){
+                Assert.assertEquals(1,count);
+            }
+            else{
+                Assert.assertTrue("only 0 2 4 keys are allowed got:" + key,false);
+            }
+        }
+
+
     }
 
 
