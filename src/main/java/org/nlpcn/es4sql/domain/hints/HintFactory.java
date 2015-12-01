@@ -45,6 +45,10 @@ public class HintFactory {
             }
             return new Hint(HintType.USE_SCROLL, new Object[]{docsPerShardFetch,timeout});
         }
+        if(hintAsString.startsWith("! IGNORE_UNAVAILABLE")){
+            return new Hint(HintType.IGNORE_UNAVAILABLE,null);
+        }
+
         return null;
     }
 

@@ -139,6 +139,7 @@ public class AggregationQueryAction extends QueryAction {
 		setLimit(select.getOffset(), select.getRowCount());
 
 		request.setSearchType(SearchType.DEFAULT);
+        updateWithIndicesOptionsIfNeeded(select,request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
 	}
