@@ -1,8 +1,11 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.elasticsearch.common.collect.Sets;
@@ -12,13 +15,16 @@ import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.*;
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
+import org.nlpcn.es4sql.domain.Query;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 
+import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.spatial.*;
 
@@ -317,7 +323,20 @@ public abstract class Maker {
                 x = FilterBuilders.nestedFilter(name,nestedFilter);
             }
         break;
-        default:
+        case SCRIPT:
+            ScriptFilter scriptFilter = (ScriptFilter) value;
+            if(isQuery) {
+                throw new SqlParseException("script on where is only for filter");
+            }
+            else {
+                ScriptFilterBuilder scriptFilterBuilder = FilterBuilders.scriptFilter(scriptFilter.getScript());
+                if(scriptFilter.containsParameters()){
+                    scriptFilterBuilder.params(scriptFilter.getArgs());
+                }
+                x = scriptFilterBuilder;
+            }
+        break;
+            default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}
 

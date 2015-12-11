@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -13,6 +14,8 @@ import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
+import org.nlpcn.es4sql.parse.FieldMaker;
+import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.maker.FilterMaker;
 
@@ -724,6 +727,38 @@ public class SqlParserTests {
         Where where = (Where) condition.getValue();
         Assert.assertEquals(2,where.getWheres().size());
     }
+
+    @Test
+    public void scriptOnFilterNoParams() throws SqlParseException {
+        String query = "select * from x where script('doc[\\'field\\'].date.hourOfDay == 3') ";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Assert.assertEquals(Condition.OPEAR.SCRIPT,condition.getOpear());
+        Assert.assertEquals(null,condition.getName());
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) condition.getValue();
+        Assert.assertEquals("doc['field'].date.hourOfDay == 3",scriptFilter.getScript());
+        Assert.assertFalse(scriptFilter.containsParameters());
+    }
+
+    @Test
+    public void scriptOnFilterWithParams() throws SqlParseException {
+        String query = "select * from x where script('doc[\\'field\\'].date.hourOfDay == x','x'=3) ";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Assert.assertEquals(Condition.OPEAR.SCRIPT,condition.getOpear());
+        Assert.assertEquals(null,condition.getName());
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) condition.getValue();
+        Assert.assertEquals("doc['field'].date.hourOfDay == x",scriptFilter.getScript());
+        Assert.assertTrue(scriptFilter.containsParameters());
+        Map<String, Object> args = scriptFilter.getArgs();
+        Assert.assertEquals(1, args.size());
+        Assert.assertTrue(args.containsKey("x"));
+        Assert.assertEquals(3, args.get("x"));
+
+    }
+
 
 
     private SQLExpr queryToExpr(String query) {
