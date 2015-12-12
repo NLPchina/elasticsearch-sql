@@ -12,7 +12,9 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
+import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
+import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -21,6 +23,7 @@ import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
+import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
@@ -512,6 +515,140 @@ public class AggregationTest {
 
 
     }
+
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedAndEmptyPath() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField,'')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("someField@NESTED");
+            Terms terms = reverseNested.getAggregations().get("someField");
+            Terms.Bucket internalBucket = terms.getBuckets().get(0);
+
+            long count = ((ValueCount) internalBucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = internalBucket.getKey();
+            if(key.equalsIgnoreCase("b")) {
+                Assert.assertEquals(2, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
+            }
+        }
+    }
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedNoPath() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField)", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("someField@NESTED");
+            Terms terms = reverseNested.getAggregations().get("someField");
+            Terms.Bucket internalBucket = terms.getBuckets().get(0);
+
+            long count = ((ValueCount) internalBucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = internalBucket.getKey();
+            if(key.equalsIgnoreCase("b")) {
+                Assert.assertEquals(2, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
+            }
+        }
+    }
+
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedOnHistogram() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='myNum','reverse_nested'='','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("someAlias@NESTED");
+            InternalHistogram histogram = reverseNested.getAggregations().get("someAlias");
+            Assert.assertEquals(2, histogram.getBuckets().size());
+
+        }
+    }
+
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterAndSumOnReverseNestedField() throws Exception {
+        Aggregations result = query(String.format("SELECT sum(reverse_nested(myNum)) bla FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("myNum@NESTED");
+            InternalSum sum = reverseNested.getAggregations().get("bla");
+            Assert.assertEquals(5.0,sum.getValue(),0.000001);
+
+        }
+    }
+
+
+    @Test
+    public void reverseAnotherNestedGroupByOnNestedFieldWithFilterTestWithReverseNestedNoPath() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(comment.data,'~comment')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("comment.data@NESTED_REVERSED");
+            InternalNested innerNested = reverseNested.getAggregations().get("comment.data@NESTED");
+            Terms terms = innerNested.getAggregations().get("comment.data");
+            Terms.Bucket internalBucket = terms.getBuckets().get(0);
+
+            long count = ((ValueCount) internalBucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = internalBucket.getKey();
+            if(key.equalsIgnoreCase("ab")) {
+                Assert.assertEquals(2, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
+            }
+        }
+    }
+
+    @Test
+    public void reverseAnotherNestedGroupByOnNestedFieldWithFilterTestWithReverseNestedOnHistogram() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='comment.likes','reverse_nested'='~comment','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("~comment@NESTED_REVERSED");
+            InternalNested innerNested = reverseNested.getAggregations().get("~comment@NESTED");
+            InternalHistogram histogram = innerNested.getAggregations().get("someAlias");
+            Assert.assertEquals(2, histogram.getBuckets().size());
+
+        }
+    }
+
+    @Test
+    public void reverseAnotherNestedGroupByOnNestedFieldWithFilterAndSumOnReverseNestedField() throws Exception {
+        Aggregations result = query(String.format("SELECT sum(reverse_nested(comment.likes,'~comment')) bla FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("comment.likes@NESTED_REVERSED");
+            InternalNested innerNested = reverseNested.getAggregations().get("comment.likes@NESTED");
+            InternalSum sum = innerNested.getAggregations().get("bla");
+            Assert.assertEquals(4.0,sum.getValue(),0.000001);
+
+        }
+    }
+
+
 
 
 

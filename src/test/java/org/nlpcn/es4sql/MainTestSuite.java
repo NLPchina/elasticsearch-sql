@@ -95,8 +95,24 @@ public class MainTestSuite {
                     "              }\n" +
                     "            }\n" +
                     "          },\n" +
+                    "          \"comment\": {\n" +
+                    "            \"type\": \"nested\",\n" +
+                    "            \"properties\": {\n" +
+                    "              \"data\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"likes\": {\n" +
+                    "                \"type\": \"long\"\n" +
+                    "              }\n" +
+                    "            }\n" +
+                    "          },\n" +
                     "          \"myNum\": {\n" +
                     "            \"type\": \"long\"\n" +
+                    "          },\n" +
+                    "          \"someField\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
                     "          }\n" +
                     "        }\n" +
                     "      }\n" +
