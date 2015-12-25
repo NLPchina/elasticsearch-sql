@@ -768,7 +768,7 @@ public class SqlParserTests {
         Where where = wheres.get(0);
         Assert.assertEquals(Condition.class,where.getClass());
         Condition condition = (Condition) where;
-        int i=1;
+        Assert.assertEquals("3", condition.getName());
     }
 
     private SQLExpr queryToExpr(String query) {
