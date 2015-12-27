@@ -22,9 +22,15 @@ public class CSVResultRestExecutor implements RestExecutor {
         if(params.containsKey("flat")){
             flat = Boolean.parseBoolean(params.get("flat"));
         }
-        String separator = params.getOrDefault("separator",",");
+        String separator = ",";
+        if(params.containsKey("separator")){
+         separator = params.get("separator");
+        }
         CSVResult result  = CSVResultsExtractor.extractResults(queryResult,flat,separator);
-        String newLine = params.getOrDefault("newLine","\n");
+        String newLine = "\n";
+        if(params.containsKey("newLine")){
+         newLine = params.get("newLine");
+        }
         String csvString = buildString(separator, result, newLine);
         BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, csvString);
         channel.sendResponse(bytesRestResponse);
