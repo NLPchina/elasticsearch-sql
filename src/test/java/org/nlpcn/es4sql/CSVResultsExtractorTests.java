@@ -4,6 +4,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
+import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -14,10 +15,11 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
-import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 /**
@@ -27,7 +29,7 @@ public class CSVResultsExtractorTests {
 
 
     @Test
-    public void simpleSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
        String query = String.format("select name,age from %s/dog order by age",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -45,7 +47,7 @@ public class CSVResultsExtractorTests {
 
 
     @Test
-    public void simpleSearchResultWithNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleSearchResultWithNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select name,house from %s/gotCharacters",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -68,7 +70,7 @@ public class CSVResultsExtractorTests {
 
 
     @Test
-    public void simpleSearchResultWithNestedOneFieldNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleSearchResultWithNestedOneFieldNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select name.firstname,house from %s/gotCharacters",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -87,7 +89,7 @@ public class CSVResultsExtractorTests {
     }
 
     @Test
-    public void simpleSearchResultWithNestedTwoFieldsFromSameNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleSearchResultWithNestedTwoFieldsFromSameNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select name.firstname,name.lastname,house from %s/gotCharacters", TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -110,7 +112,7 @@ public class CSVResultsExtractorTests {
     }
 
     @Test
-    public void simpleSearchResultWithNestedWithFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleSearchResultWithNestedWithFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select name.firstname,house from %s/gotCharacters",TEST_INDEX);
         CSVResult csvResult = getCsvResult(true, query);
 
@@ -128,7 +130,7 @@ public class CSVResultsExtractorTests {
 
     }
     @Test
-    public void joinSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void joinSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select c.gender , h.name,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h " +
                 "on h.name = c.house ",TEST_INDEX,TEST_INDEX);
@@ -154,7 +156,7 @@ public class CSVResultsExtractorTests {
     }
 
     @Test
-    public void simpleNumericValueAgg() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleNumericValueAgg() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select count(*) from %s/dog ",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -169,7 +171,7 @@ public class CSVResultsExtractorTests {
 
     }
     @Test
-    public void simpleNumericValueAggWithAlias() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void simpleNumericValueAggWithAlias() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select avg(age) as myAlias from %s/dog ",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -185,7 +187,7 @@ public class CSVResultsExtractorTests {
     }
 
     @Test
-    public void twoNumericAggWithAlias() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void twoNumericAggWithAlias() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select count(*) as count, avg(age) as myAlias from %s/dog ",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -208,7 +210,7 @@ public class CSVResultsExtractorTests {
     }
 
     @Test
-    public void aggAfterTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void aggAfterTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
@@ -223,7 +225,7 @@ public class CSVResultsExtractorTests {
 
     }
     @Test
-    public void aggAfterTwoTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void aggAfterTwoTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("SELECT COUNT(*) FROM %s/account where age in (35,36) GROUP BY gender,age",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
@@ -241,7 +243,7 @@ public class CSVResultsExtractorTests {
 
     }
     @Test
-    public void multipleAggAfterTwoTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void multipleAggAfterTwoTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("SELECT COUNT(*) , sum(balance) FROM %s/account where age in (35,36) GROUP BY gender,age",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
@@ -261,7 +263,7 @@ public class CSVResultsExtractorTests {
     }
 
     @Test
-    public void dateHistogramTest() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    public void dateHistogramTest() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select count(*) from %s/online" +
                 " group by date_histogram('field'='insert_time','interval'='4d','alias'='days')",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
@@ -278,16 +280,77 @@ public class CSVResultsExtractorTests {
 
     }
 
+    @Test
+    public void statsAggregationTest() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("SELECT STATS(age) FROM %s/account", TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(5, headers.size());
+        Assert.assertEquals("STATS(age).count", headers.get(0));
+        Assert.assertEquals("STATS(age).sum", headers.get(1));
+        Assert.assertEquals("STATS(age).avg", headers.get(2));
+        Assert.assertEquals("STATS(age).min", headers.get(3));
+        Assert.assertEquals("STATS(age).max", headers.get(4));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(1, lines.size());
+        Assert.assertEquals("1000.0,30171.0,30.171,20.0,40.0", lines.get(0));
+
+    }
+
+    @Test
+    public void extendedStatsAggregationTest() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("SELECT EXTENDED_STATS(age) FROM %s/account", TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(8, headers.size());
+        Assert.assertEquals("EXTENDED_STATS(age).count", headers.get(0));
+        Assert.assertEquals("EXTENDED_STATS(age).sum", headers.get(1));
+        Assert.assertEquals("EXTENDED_STATS(age).avg", headers.get(2));
+        Assert.assertEquals("EXTENDED_STATS(age).min", headers.get(3));
+        Assert.assertEquals("EXTENDED_STATS(age).max", headers.get(4));
+        Assert.assertEquals("EXTENDED_STATS(age).sumOfSquares", headers.get(5));
+        Assert.assertEquals("EXTENDED_STATS(age).variance", headers.get(6));
+        Assert.assertEquals("EXTENDED_STATS(age).stdDeviation", headers.get(7));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(1, lines.size());
+        String line = lines.get(0);
+        Assert.assertTrue(line.startsWith("1000.0,30171.0,30.171,20.0,40.0,946393.0"));
+        Assert.assertTrue(line.contains(",6.008"));
+        Assert.assertTrue(line.contains(",36.103"));
+    }
+
+    @Test
+    public void percentileAggregationTest() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("select percentiles(age) as per from %s/account where age > 31", TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(7, headers.size());
+        Assert.assertEquals("per.1.0", headers.get(0));
+        Assert.assertEquals("per.5.0", headers.get(1));
+        Assert.assertEquals("per.25.0", headers.get(2));
+        Assert.assertEquals("per.50.0", headers.get(3));
+        Assert.assertEquals("per.75.0", headers.get(4));
+        Assert.assertEquals("per.95.0", headers.get(5));
+        Assert.assertEquals("per.99.0", headers.get(6));
+
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(1, lines.size());
+        Assert.assertEquals("32.0,32.0,34.0,36.0,38.0,40.0,40.0",lines.get(0));
+    }
+
+
 
     /* todo: more tests:
-    * multi_numeric extended_stats , stats , percentiles.
     * filter/nested and than metric
     * histogram
     * geo
      */
 
 
-    private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+    private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution =  QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
