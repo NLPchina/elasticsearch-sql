@@ -191,13 +191,19 @@ public class CSVResultsExtractorTests {
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(2, headers.size());
-        Assert.assertEquals("count", headers.get(0));
-        Assert.assertEquals("myAlias", headers.get(1));
+
+        Assert.assertTrue(headers.contains("count"));
+        Assert.assertTrue(headers.contains("myAlias"));
 
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(1, lines.size());
-        Assert.assertEquals("2.0,3.0", lines.get(0));
+        if(headers.get(0).equals("count")) {
+            Assert.assertEquals("2.0,3.0", lines.get(0));
+        }
+        else {
+            Assert.assertEquals("3.0,2.0", lines.get(0));
+        }
 
     }
 
@@ -242,15 +248,15 @@ public class CSVResultsExtractorTests {
         Assert.assertEquals(4, headers.size());
         Assert.assertEquals("gender", headers.get(0));
         Assert.assertEquals("age", headers.get(1));
-        Assert.assertEquals("COUNT(*)", headers.get(2));
-        Assert.assertEquals("SUM(balance)", headers.get(3));
+        Assert.assertTrue(headers.get(2).equals("COUNT(*)") || headers.get(2).equals("SUM(balance)"));
+        Assert.assertTrue(headers.get(3).equals("COUNT(*)") || headers.get(3).equals("SUM(balance)"));
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(4, lines.size());
-        Assert.assertTrue("m,36,31.0,647425.0", lines.contains("m,36,31.0,647425.0"));
-        Assert.assertTrue("m,35,28.0,678337.0", lines.contains("m,35,28.0,678337.0"));
-        Assert.assertTrue("f,36,21.0,505660.0", lines.contains("f,36,21.0,505660.0"));
-        Assert.assertTrue("f,35,24.0,472771.0", lines.contains("f,35,24.0,472771.0"));
+        Assert.assertTrue("m,36,31.0,647425.0", lines.contains("m,36,31.0,647425.0") || lines.contains("m,36,647425.0,31.0"));
+        Assert.assertTrue("m,35,28.0,678337.0", lines.contains("m,35,28.0,678337.0") || lines.contains("m,35,678337.0,28.0"));
+        Assert.assertTrue("f,36,21.0,505660.0", lines.contains("f,36,21.0,505660.0") || lines.contains("f,36,505660.0,21.0"));
+        Assert.assertTrue("f,35,24.0,472771.0", lines.contains("f,35,24.0,472771.0") || lines.contains("f,35,472771.0,24.0"));
 
     }
 
