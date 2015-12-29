@@ -118,12 +118,24 @@ public class AggMaker {
         if (kvValue.key != null && kvValue.key.equals("script")){
             return builder.script(new Script(((MethodField) kvValue.value).getParams().get(1).toString()));
         }
-        else if (kvValue.key != null && kvValue.key.equals("nested"))
-        {
+        else  if (kvValue.key!=null && ( kvValue.key.equals("nested") || kvValue.key.equals("reverse_nested")) ) {
             NestedType nestedType = (NestedType) kvValue.value;
-                        builder.field(nestedType.field);
-            return AggregationBuilders.nested(nestedType.field+"@NESTED").path(nestedType.path).subAggregation(builder);
-
+            builder.field(nestedType.field);
+            AggregationBuilder nestedBuilder;
+            String nestedAggName = nestedType.field + "@NESTED";
+            if (nestedType.isReverse()) {
+                if (nestedType.path != null && nestedType.path.startsWith("~")) {
+                    String realPath = nestedType.path.substring(1);
+                    nestedBuilder = AggregationBuilders.nested(nestedAggName).path(realPath);
+                    nestedBuilder = nestedBuilder.subAggregation(builder);
+                    return AggregationBuilders.reverseNested(nestedAggName + "_REVERSED").subAggregation(nestedBuilder);
+                } else {
+                    nestedBuilder = AggregationBuilders.reverseNested(nestedAggName).path(nestedType.path);
+                }
+            } else {
+                nestedBuilder = AggregationBuilders.nested(nestedAggName).path(nestedType.path);
+            }
+            return nestedBuilder.subAggregation(builder);
         }
 
         return builder.field(kvValue.toString());
@@ -210,6 +222,7 @@ public class AggMaker {
                     break;
                 case "alias":
                 case "nested":
+                case "reverse_nested":
                     break;
                 default:
                     throw new SqlParseException("scripted_metric err or not define field " + param.getKey());
@@ -244,6 +257,7 @@ public class AggMaker {
                     break;
                 case "alias":
                 case "nested":
+                case "reverse_nested":
                     break;
                 default:
                     throw new SqlParseException("geohash grid err or not define field " + kv.toString());
@@ -317,7 +331,8 @@ public class AggMaker {
 
             case "alias":
             case "nested":
-                    break;
+            case "reverse_nested":
+                break;
 			default:
 				throw new SqlParseException("date range err or not define field " + kv.toString());
 			}
@@ -357,6 +372,7 @@ public class AggMaker {
 					break;
                 case "alias":
                 case "nested":
+                case "reverse_nested":
                     break;
 				case "order":
 					Histogram.Order order = null;
@@ -451,6 +467,7 @@ public class AggMaker {
 				break;
             case "alias":
             case "nested":
+            case "reverse_nested":
                 break;
 			default:
 				topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));

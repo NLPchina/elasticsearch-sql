@@ -32,7 +32,7 @@ public class FieldMaker {
 		} else if (expr instanceof SQLMethodInvokeExpr) {
 			SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
             String methodName = mExpr.getMethodName();
-            if(methodName.toLowerCase().equals("nested")){
+            if(methodName.toLowerCase().equals("nested") ||methodName.toLowerCase().equals("reverse_nested")  ){
                 NestedType nestedType = new NestedType();
                 if(nestedType.tryFillFromExpr(mExpr)){
                     return handleIdentifier(nestedType, alias, tableAlias);
@@ -82,8 +82,7 @@ public class FieldMaker {
 
     private static Field handleIdentifier(NestedType nestedType, String alias, String tableAlias) {
         Field field = handleIdentifier(new SQLIdentifierExpr(nestedType.field), alias, tableAlias);
-        field.setNested(true);
-        field.setNestedPath(nestedType.path);
+        field.setNested(nestedType);
         return field;
     }
 
@@ -151,7 +150,7 @@ public class FieldMaker {
                     KVValue script = new KVValue("script", makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias));
                     paramers.add(script);
                 }
-                else if(methodName.equals("nested")){
+                else if(methodName.equals("nested") || methodName.equals("reverse_nested")){
                     NestedType nestedType = new NestedType();
                     if(!nestedType.tryFillFromExpr(object)){
                         throw new SqlParseException("failed parsing nested expr " + object);
