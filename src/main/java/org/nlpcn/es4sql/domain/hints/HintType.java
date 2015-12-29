@@ -12,6 +12,6 @@ public enum HintType
     JOIN_LIMIT,
     USE_NESTED_LOOPS,
     NL_MULTISEARCH_SIZE,
-    USE_SCROLL;
-
+    USE_SCROLL,
+    IGNORE_UNAVAILABLE;
 }

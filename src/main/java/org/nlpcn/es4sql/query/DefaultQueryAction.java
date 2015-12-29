@@ -46,6 +46,7 @@ public class
         if(!usedScroll){
             request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
         }
+        updateWithIndicesOptionsIfNeeded(select,request);
 
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 		return sqlElasticRequestBuilder;
