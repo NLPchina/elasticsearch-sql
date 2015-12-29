@@ -16,7 +16,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class Condition extends Where {
 
     public enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , TERM , IDS_QUERY,NESTED_COMPLEX;
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , TERM , IDS_QUERY,NESTED_COMPLEX , SCRIPT;
 
         public static Map<String,OPEAR> methodNameToOpear;
 
@@ -165,6 +165,9 @@ public class Condition extends Where {
             break;
         case "NESTED":
             this.opear = OPEAR.NESTED_COMPLEX;
+            break;
+        case "SCRIPT":
+            this.opear = OPEAR.SCRIPT;
             break;
         default:
 			throw new SqlParseException(oper + " is err!");

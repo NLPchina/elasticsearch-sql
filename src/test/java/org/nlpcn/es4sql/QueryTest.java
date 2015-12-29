@@ -827,6 +827,24 @@ public class QueryTest {
         Assert.assertTrue(response.getTotalHits() > 0);
     }
 
+    //todo: find a way to check if scripts are enabled , uncomment before deploy.
+//    @Test
+//    public void scriptFilterNoParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+//        SearchHits response = query(String.format("SELECT insert_time FROM %s/online where script('doc[\\'insert_time\''].date.hourOfDay==16') " +
+//                "and insert_time <'2014-08-21T00:00:00.000Z'", TEST_INDEX));
+//        Assert.assertEquals(237,response.getTotalHits() );
+//
+//    }
+//
+//    @Test
+//    public void scriptFilterWithParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+//        SearchHits response = query(String.format("SELECT insert_time FROM %s/online where script('doc[\\'insert_time\''].date.hourOfDay==x','x'=16) " +
+//                "and insert_time <'2014-08-21T00:00:00.000Z'", TEST_INDEX));
+//        Assert.assertEquals(237,response.getTotalHits() );
+//
+//    }
+
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
