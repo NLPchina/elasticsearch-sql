@@ -5,6 +5,9 @@ import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -149,11 +152,140 @@ public class CSVResultsExtractorTests {
         );
 
     }
+
+    @Test
+    public void simpleNumericValueAgg() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("select count(*) from %s/dog ",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(1, headers.size());
+        Assert.assertEquals("COUNT(*)", headers.get(0));
+
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(1, lines.size());
+        Assert.assertEquals("2.0", lines.get(0));
+
+    }
+    @Test
+    public void simpleNumericValueAggWithAlias() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("select avg(age) as myAlias from %s/dog ",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(1, headers.size());
+        Assert.assertEquals("myAlias", headers.get(0));
+
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(1, lines.size());
+        Assert.assertEquals("3.0", lines.get(0));
+
+    }
+
+    @Test
+    public void twoNumericAggWithAlias() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("select count(*) as count, avg(age) as myAlias from %s/dog ",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(2, headers.size());
+        Assert.assertEquals("count", headers.get(0));
+        Assert.assertEquals("myAlias", headers.get(1));
+
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(1, lines.size());
+        Assert.assertEquals("2.0,3.0", lines.get(0));
+
+    }
+
+    @Test
+    public void aggAfterTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(2, headers.size());
+        Assert.assertEquals("gender", headers.get(0));
+        Assert.assertEquals("COUNT(*)", headers.get(1));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(2, lines.size());
+        Assert.assertTrue("m,507.0", lines.contains("m,507.0"));
+        Assert.assertTrue("f,493.0", lines.contains("f,493.0"));
+
+    }
+    @Test
+    public void aggAfterTwoTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("SELECT COUNT(*) FROM %s/account where age in (35,36) GROUP BY gender,age",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(3, headers.size());
+        Assert.assertEquals("gender", headers.get(0));
+        Assert.assertEquals("age", headers.get(1));
+        Assert.assertEquals("COUNT(*)", headers.get(2));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(4, lines.size());
+        Assert.assertTrue("m,36,31.0", lines.contains("m,36,31.0"));
+        Assert.assertTrue("m,35,28.0", lines.contains("m,36,31.0"));
+        Assert.assertTrue("f,36,21.0", lines.contains("f,36,21.0"));
+        Assert.assertTrue("f,35,24.0", lines.contains("f,35,24.0"));
+
+    }
+    @Test
+    public void multipleAggAfterTwoTermsGroupBy() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("SELECT COUNT(*) , sum(balance) FROM %s/account where age in (35,36) GROUP BY gender,age",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(4, headers.size());
+        Assert.assertEquals("gender", headers.get(0));
+        Assert.assertEquals("age", headers.get(1));
+        Assert.assertEquals("COUNT(*)", headers.get(2));
+        Assert.assertEquals("SUM(balance)", headers.get(3));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(4, lines.size());
+        Assert.assertTrue("m,36,31.0,647425.0", lines.contains("m,36,31.0,647425.0"));
+        Assert.assertTrue("m,35,28.0,678337.0", lines.contains("m,35,28.0,678337.0"));
+        Assert.assertTrue("f,36,21.0,505660.0", lines.contains("f,36,21.0,505660.0"));
+        Assert.assertTrue("f,35,24.0,472771.0", lines.contains("f,35,24.0,472771.0"));
+
+    }
+
+    @Test
+    public void dateHistogramTest() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
+        String query = String.format("select count(*) from %s/online" +
+                " group by date_histogram('field'='insert_time','interval'='4d','alias'='days')",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(2, headers.size());
+        Assert.assertEquals("days", headers.get(0));
+        Assert.assertEquals("COUNT(*)", headers.get(1));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(3, lines.size());
+        Assert.assertTrue("2014-08-14 00:00:00,477.0", lines.contains("2014-08-14 00:00:00,477.0"));
+        Assert.assertTrue("2014-08-18 00:00:00,5664.0", lines.contains("2014-08-18 00:00:00,5664.0"));
+        Assert.assertTrue("2014-08-22 00:00:00,3795.0", lines.contains("2014-08-22 00:00:00,3795.0"));
+
+    }
+
+
+    /* todo: more tests:
+    * multi_numeric extended_stats , stats , percentiles.
+    * filter/nested and than metric
+    * histogram
+    * geo
+     */
+
+
     private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
-        SearchHits searchHits = (SearchHits) QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return CSVResultsExtractor.extractResults(searchHits, flat, ",");
+        Object execution =  QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
+        return new CSVResultsExtractor().extractResults(execution, flat, ",");
     }
 
 

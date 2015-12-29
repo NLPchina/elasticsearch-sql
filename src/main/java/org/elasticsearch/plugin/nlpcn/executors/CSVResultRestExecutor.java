@@ -26,7 +26,7 @@ public class CSVResultRestExecutor implements RestExecutor {
         if(params.containsKey("separator")){
          separator = params.get("separator");
         }
-        CSVResult result  = CSVResultsExtractor.extractResults(queryResult,flat,separator);
+        CSVResult result  = new CSVResultsExtractor().extractResults(queryResult,flat,separator);
         String newLine = "\n";
         if(params.containsKey("newLine")){
          newLine = params.get("newLine");
