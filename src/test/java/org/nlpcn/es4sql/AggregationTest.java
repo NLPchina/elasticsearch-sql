@@ -235,7 +235,7 @@ public class AggregationTest {
         Assert.assertEquals(2,gender.getBuckets().size());
         for(Terms.Bucket genderBucket : gender.getBuckets()) {
 
-            String genderKey = genderBucket.getKey();
+            String genderKey = genderBucket.getKey().toString();
             buckets.put(genderKey, new HashSet<Integer>());
             Terms ageBuckets = genderBucket.getAggregations().get("ageAgg");
             Assert.assertEquals(3,ageBuckets.getBuckets().size());
