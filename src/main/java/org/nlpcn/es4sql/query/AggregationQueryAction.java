@@ -25,6 +25,8 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
+import org.nlpcn.es4sql.domain.hints.Hint;
+import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.maker.AggMaker;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
@@ -137,7 +139,8 @@ public class AggregationQueryAction extends QueryAction {
 				}
 			}
 		}
-		setLimit(select.getOffset(), select.getRowCount());
+        
+		setLimit(getLimitFromHint());
 
 		request.setSearchType(SearchType.DEFAULT);
         updateWithIndicesOptionsIfNeeded(select,request);
@@ -263,11 +266,20 @@ public class AggregationQueryAction extends QueryAction {
 		}
 	}
 
-	private void setLimit(int from, int size) {
-		request.setFrom(from);
+	private void setLimit( int size) {
+		request.setFrom(0);
 
 		if (size > -1) {
 			request.setSize(size);
 		}
 	}
+
+    public int getLimitFromHint() {
+        for(Hint hint : this.select.getHints()){
+            if(hint.getType() == HintType.DOCS_WITH_AGGREGATION){
+                return (int) hint.getParams()[0];
+            }
+        }
+        return 0;
+    }
 }

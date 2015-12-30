@@ -332,21 +332,24 @@ public class AggregationTest {
 
 
 	private Aggregations query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		return ((SearchResponse)select.get()).getAggregations();
 	}
 
+    private SqlElasticSearchRequestBuilder getSearchRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        return (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+    }
 
-	@Test
+
+    @Test
 	public void testSubAggregations() throws  Exception {
 		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
-		final String query = String.format("SELECT * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
+		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */ * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		SearchResponse response = (SearchResponse) select.get();
 		Aggregations result = response.getAggregations();
 
@@ -377,10 +380,9 @@ public class AggregationTest {
 
 	@Test
 	public void testSimpleSubAggregations() throws  Exception {
-		final String query = String.format("SELECT * FROM %s/account GROUP BY (gender), (state) LIMIT 0,10", TEST_INDEX);
+		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */ * FROM %s/account GROUP BY (gender), (state) ", TEST_INDEX);
 
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		SearchResponse response = (SearchResponse) select.get();
 		Aggregations result = response.getAggregations();
 
@@ -650,6 +652,21 @@ public class AggregationTest {
     }
 
 
+    @Test
+    public void docsReturnedTestWithoutDocsHint() throws Exception {
+        String query = String.format("SELECT count(*) from %s/account", TEST_INDEX);
+        SqlElasticSearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(query);
+        SearchResponse response = (SearchResponse) searchRequestBuilder.get();
+        Assert.assertEquals(0,response.getHits().getHits().length);
+    }
+
+    @Test
+    public void docsReturnedTestWithDocsHint() throws Exception {
+        String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */ count(*) from %s/account",TEST_INDEX);
+        SqlElasticSearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(query);
+        SearchResponse response = (SearchResponse) searchRequestBuilder.get();
+        Assert.assertEquals(10,response.getHits().getHits().length);
+    }
 
 
 

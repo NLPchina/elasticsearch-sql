@@ -48,6 +48,12 @@ public class HintFactory {
         if(hintAsString.startsWith("! IGNORE_UNAVAILABLE")){
             return new Hint(HintType.IGNORE_UNAVAILABLE,null);
         }
+        if(hintAsString.startsWith("! DOCS_WITH_AGGREGATION")) {
+            String[] number = getParamsFromHint(hintAsString,"! DOCS_WITH_AGGREGATION");
+            //todo: check if numbers etc..
+            int docsWithAggregation = Integer.parseInt(number[0]);
+            return new Hint(HintType.DOCS_WITH_AGGREGATION,new Object[]{docsWithAggregation});
+        }
 
         return null;
     }
