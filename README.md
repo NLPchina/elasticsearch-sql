@@ -1,7 +1,8 @@
 Elasticsearch-SQL
 =================
 **1.X** [![1.X Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.org/NLPchina/elasticsearch-sql) <br>
-**2.X** [![2.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.0.0** [![2.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)<br>
+**2.1.0** [![2.1.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)<br>
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -20,18 +21,23 @@ Install as plugin:
 Versions
 ------------
 
-| elasticsearch version | latest version | remarks                        |
-| --------------------- | -------------  | -----------------------------  |
-| 1.X	                | 1.4.6          | tested against elastic 1.4-1.6 |
-| 2.0.0                 | 2.0.1          | delete commands not supported  |
+| elasticsearch version | latest version | remarks                        | branch     |
+| --------------------- | -------------  | -----------------------------  | ---------- |
+| 1.X	                | 1.4.7          | tested against elastic 1.4-1.6 | master     |
+| 2.0.0                 | 2.0.2          | delete commands not supported  | elastic2.0 |
+| 2.1.0                 | 2.1.0          | delete commands not supported  | elastic2.1 |
 
 ### Elasticsearch 1.X
 ````
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.6/elasticsearch-sql-1.4.6.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.7/elasticsearch-sql-1.4.7.zip --install sql
 ````
 ### Elasticsearch 2.0.0
 ````
-./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.0.1/elasticsearch-sql-2.0.1.zip 
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.0.2/elasticsearch-sql-2.0.2.zip 
+````
+### Elasticsearch 2.1.0
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.1.0/elasticsearch-sql-2.1.0.zip 
 ````
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 

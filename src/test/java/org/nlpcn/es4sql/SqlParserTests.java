@@ -12,6 +12,8 @@ import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
+import org.nlpcn.es4sql.parse.FieldMaker;
+import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SqlParser;
 
 import java.io.IOException;
@@ -723,6 +725,48 @@ public class SqlParserTests {
         Assert.assertEquals(2,where.getWheres().size());
     }
 
+    @Test
+    public void scriptOnFilterNoParams() throws SqlParseException {
+        String query = "select * from x where script('doc[\\'field\\'].date.hourOfDay == 3') ";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Assert.assertEquals(Condition.OPEAR.SCRIPT,condition.getOpear());
+        Assert.assertEquals(null,condition.getName());
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) condition.getValue();
+        Assert.assertEquals("doc['field'].date.hourOfDay == 3",scriptFilter.getScript());
+        Assert.assertFalse(scriptFilter.containsParameters());
+    }
+
+    @Test
+    public void scriptOnFilterWithParams() throws SqlParseException {
+        String query = "select * from x where script('doc[\\'field\\'].date.hourOfDay == x','x'=3) ";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Condition condition = (Condition) select.getWhere().getWheres().get(0);
+        Assert.assertEquals(Condition.OPEAR.SCRIPT,condition.getOpear());
+        Assert.assertEquals(null,condition.getName());
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) condition.getValue();
+        Assert.assertEquals("doc['field'].date.hourOfDay == x",scriptFilter.getScript());
+        Assert.assertTrue(scriptFilter.containsParameters());
+        Map<String, Object> args = scriptFilter.getArgs();
+        Assert.assertEquals(1, args.size());
+        Assert.assertTrue(args.containsKey("x"));
+        Assert.assertEquals(3, args.get("x"));
+
+    }
+
+    @Test
+    public void fieldsAsNumbersOnWhere() throws SqlParseException {
+        String query = "select * from x where ['3'] > 2";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        LinkedList<Where> wheres = select.getWhere().getWheres();
+        Assert.assertEquals(1, wheres.size());
+        Where where = wheres.get(0);
+        Assert.assertEquals(Condition.class,where.getClass());
+        Condition condition = (Condition) where;
+        Assert.assertEquals("3", condition.getName());
+    }
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();

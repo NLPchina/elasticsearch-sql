@@ -62,7 +62,7 @@ public class ShowTest {
 
     private GetIndexResponse runShowQuery(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query);
+        SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query).explain();
         return (GetIndexResponse) requestBuilder.get();
 
     }

@@ -9,6 +9,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -200,6 +201,14 @@ public class SqlParser {
                 Condition condition = new Condition(CONN.valueOf(opear),nestedType.path,methodName.toUpperCase(),nestedType.where);
                 where.addWhere(condition);
 
+            }
+            else if (methodName.toLowerCase().equals("script")){
+                ScriptFilter scriptFilter = new ScriptFilter();
+                if(!scriptFilter.tryParseFromMethodExpr(methodExpr)){
+                    throw new SqlParseException("could not parse script filter");
+                }
+                Condition condition = new Condition(CONN.valueOf(opear),null,"SCRIPT",scriptFilter);
+                where.addWhere(condition);
             }
             else {
                 throw new SqlParseException("unsupported method: " + methodName);

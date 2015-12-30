@@ -32,13 +32,13 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		QueryTest.class,
 		MethodQueryTest.class,
 		AggregationTest.class,
-		BugTest.class,
         JoinTests.class,
 		DeleteTest.class,
 		ExplainTest.class,
         WktToGeoJsonConverterTests.class,
         SqlParserTests.class,
-        ShowTest.class
+        ShowTest.class,
+        CSVResultsExtractorTests.class
 })
 public class MainTestSuite {
 
@@ -107,8 +107,24 @@ public class MainTestSuite {
                     "              }\n" +
                     "            }\n" +
                     "          },\n" +
+                    "          \"comment\": {\n" +
+                    "            \"type\": \"nested\",\n" +
+                    "            \"properties\": {\n" +
+                    "              \"data\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"likes\": {\n" +
+                    "                \"type\": \"long\"\n" +
+                    "              }\n" +
+                    "            }\n" +
+                    "          },\n" +
                     "          \"myNum\": {\n" +
                     "            \"type\": \"long\"\n" +
+                    "          },\n" +
+                    "          \"someField\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
                     "          }\n" +
                     "        }\n" +
                     "      }\n" +

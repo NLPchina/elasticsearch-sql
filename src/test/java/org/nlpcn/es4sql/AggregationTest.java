@@ -12,7 +12,9 @@ import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
+import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
+import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
@@ -21,6 +23,7 @@ import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
+import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
@@ -221,8 +224,30 @@ public class AggregationTest {
 		Assert.assertEquals(expectedAges, buckets.get("f"));
 	}
 
+    @Test
+    public void multipleGroupBysWithSize() throws Exception {
+        Set expectedAges = new HashSet<Integer>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
 
-	@Test
+        Map<String, Set<Integer>> buckets = new HashMap<>();
+
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender, terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX));
+        Terms gender = result.get("gender");
+        Assert.assertEquals(2,gender.getBuckets().size());
+        for(Terms.Bucket genderBucket : gender.getBuckets()) {
+
+            String genderKey = genderBucket.getKey().toString();
+            buckets.put(genderKey, new HashSet<Integer>());
+            Terms ageBuckets = genderBucket.getAggregations().get("ageAgg");
+            Assert.assertEquals(3,ageBuckets.getBuckets().size());
+
+        }
+
+
+    }
+
+
+
+    @Test
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		ArrayList<Long> agesCount = new ArrayList<>();
 
@@ -287,13 +312,13 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByDateTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ").explain();
 		System.out.println(result);
 	}
 
     @Test
     public void countGroupByDateTestWithAlias() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM','alias'='myAlias') ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM','alias'='myAlias') ").explain();
         boolean containAlias = result.toString().replaceAll("\\s+","").contains("myAlias\":{\"date_histogram\":{\"field\":\"insert_time\",\"interval\":\"1.5h\",\"format\":\"yyyy-MM\"}}");
         Assert.assertTrue(containAlias);
     }
@@ -308,7 +333,7 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countDateRangeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select online from online  group by date_range(field='insert_time','format'='yyyy-MM-dd' ,'2014-08-18','2014-08-17','now-8d','now-7d','now-6d','now') ").explain();
 		System.out.println(result);
 	}
 
@@ -323,27 +348,31 @@ public class AggregationTest {
 	 */
 	@Test
 	public void topHitTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select topHits('size'=3,age='desc') from bank  group by gender ");
+        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select topHits('size'=3,age='desc') from bank  group by gender ").explain();
 		System.out.println(result);
 	}
 
 
 	private Aggregations query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		return ((SearchResponse)select.get()).getAggregations();
 	}
 
+    private SqlElasticSearchRequestBuilder getSearchRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        return (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
+    }
 
-	@Test
+
+    @Test
 	public void testSubAggregations() throws  Exception {
 		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
-		final String query = String.format("SELECT * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
+		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */" +
+                " * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		SearchResponse response = (SearchResponse) select.get();
 		Aggregations result = response.getAggregations();
 
@@ -374,10 +403,9 @@ public class AggregationTest {
 
 	@Test
 	public void testSimpleSubAggregations() throws  Exception {
-		final String query = String.format("SELECT * FROM %s/account GROUP BY (gender), (state) LIMIT 0,10", TEST_INDEX);
+		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */ * FROM %s/account GROUP BY (gender), (state) ", TEST_INDEX);
 
-		SearchDao searchDao = MainTestSuite.getSearchDao();
-		SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		SearchResponse response = (SearchResponse) select.get();
 		Aggregations result = response.getAggregations();
 
@@ -512,6 +540,155 @@ public class AggregationTest {
         }
 
 
+    }
+
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedAndEmptyPath() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField,'')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("someField@NESTED");
+            Terms terms = reverseNested.getAggregations().get("someField");
+            Terms.Bucket internalBucket = terms.getBuckets().get(0);
+
+            long count = ((ValueCount) internalBucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = internalBucket.getKey().toString();
+            if(key.equalsIgnoreCase("b")) {
+                Assert.assertEquals(2, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
+            }
+        }
+    }
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedNoPath() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField)", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("someField@NESTED");
+            Terms terms = reverseNested.getAggregations().get("someField");
+            Terms.Bucket internalBucket = terms.getBuckets().get(0);
+
+            long count = ((ValueCount) internalBucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = internalBucket.getKey().toString();
+            if(key.equalsIgnoreCase("b")) {
+                Assert.assertEquals(2, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
+            }
+        }
+    }
+
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedOnHistogram() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='myNum','reverse_nested'='','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("someAlias@NESTED");
+            InternalHistogram histogram = reverseNested.getAggregations().get("someAlias");
+            Assert.assertEquals(3, histogram.getBuckets().size());
+
+        }
+    }
+
+    @Test
+    public void reverseToRootGroupByOnNestedFieldWithFilterAndSumOnReverseNestedField() throws Exception {
+        Aggregations result = query(String.format("SELECT sum(reverse_nested(myNum)) bla FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("myNum@NESTED");
+            InternalSum sum = reverseNested.getAggregations().get("bla");
+            Assert.assertEquals(5.0,sum.getValue(),0.000001);
+
+        }
+    }
+
+
+    @Test
+    public void reverseAnotherNestedGroupByOnNestedFieldWithFilterTestWithReverseNestedNoPath() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(comment.data,'~comment')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("comment.data@NESTED_REVERSED");
+            InternalNested innerNested = reverseNested.getAggregations().get("comment.data@NESTED");
+            Terms terms = innerNested.getAggregations().get("comment.data");
+            Terms.Bucket internalBucket = terms.getBuckets().get(0);
+
+            long count = ((ValueCount) internalBucket.getAggregations().get("COUNT(*)")).getValue();
+            String key = internalBucket.getKey().toString();
+            if(key.equalsIgnoreCase("ab")) {
+                Assert.assertEquals(2, count);
+            }
+            else {
+                throw new Exception(String.format("Unexpected key. expected: only a . found: %s", key));
+            }
+        }
+    }
+
+    @Test
+    public void reverseAnotherNestedGroupByOnNestedFieldWithFilterTestWithReverseNestedOnHistogram() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='comment.likes','reverse_nested'='~comment','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("~comment@NESTED_REVERSED");
+            InternalNested innerNested = reverseNested.getAggregations().get("~comment@NESTED");
+            InternalHistogram histogram = innerNested.getAggregations().get("someAlias");
+            Assert.assertEquals(2, histogram.getBuckets().size());
+
+        }
+    }
+
+    @Test
+    public void reverseAnotherNestedGroupByOnNestedFieldWithFilterAndSumOnReverseNestedField() throws Exception {
+        Aggregations result = query(String.format("SELECT sum(reverse_nested(comment.likes,'~comment')) bla FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX));
+        InternalNested nested = result.get("message.info@NESTED");
+        InternalFilter filter = nested.getAggregations().get("myFilter@FILTER");
+        Terms infos = filter.getAggregations().get("message.info");
+        Assert.assertEquals(1,infos.getBuckets().size());
+        for(Terms.Bucket bucket : infos.getBuckets()) {
+            InternalReverseNested reverseNested = bucket.getAggregations().get("comment.likes@NESTED_REVERSED");
+            InternalNested innerNested = reverseNested.getAggregations().get("comment.likes@NESTED");
+            InternalSum sum = innerNested.getAggregations().get("bla");
+            Assert.assertEquals(4.0,sum.getValue(),0.000001);
+
+        }
+    }
+
+
+    @Test
+    public void docsReturnedTestWithoutDocsHint() throws Exception {
+        String query = String.format("SELECT count(*) from %s/account", TEST_INDEX);
+        SqlElasticSearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(query);
+        SearchResponse response = (SearchResponse) searchRequestBuilder.get();
+        Assert.assertEquals(0,response.getHits().getHits().length);
+    }
+
+    @Test
+    public void docsReturnedTestWithDocsHint() throws Exception {
+        String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */ count(*) from %s/account",TEST_INDEX);
+        SqlElasticSearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(query);
+        SearchResponse response = (SearchResponse) searchRequestBuilder.get();
+        Assert.assertEquals(10,response.getHits().getHits().length);
     }
 
 

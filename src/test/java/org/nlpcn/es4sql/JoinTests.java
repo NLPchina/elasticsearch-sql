@@ -471,7 +471,7 @@ public class JoinTests {
 
     private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query);
+        HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query).explain();
         HashJoinElasticExecutor executor = new HashJoinElasticExecutor(searchDao.getClient(),  explain);
         executor.run();
         return explain.explain();
@@ -479,7 +479,7 @@ public class JoinTests {
 
     private SearchHit[] joinAndGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticRequestBuilder explain = searchDao.explain(query);
+        SqlElasticRequestBuilder explain = searchDao.explain(query).explain();
         ElasticJoinExecutor executor  = ElasticJoinExecutor.createJoinExecutor(searchDao.getClient(),explain);
         executor.run();
         return executor.getHits().getHits();
