@@ -756,7 +756,17 @@ public class SqlParserTests {
 
     }
 
-
+    @Test
+    public void fieldsAsNumbersOnWhere() throws SqlParseException {
+        String query = "select * from x where ['3'] > 2";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        LinkedList<Where> wheres = select.getWhere().getWheres();
+        Assert.assertEquals(1, wheres.size());
+        Where where = wheres.get(0);
+        Assert.assertEquals(Condition.class,where.getClass());
+        Condition condition = (Condition) where;
+        int i=1;
+    }
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
