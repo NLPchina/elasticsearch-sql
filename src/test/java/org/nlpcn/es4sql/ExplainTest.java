@@ -46,7 +46,7 @@ public class ExplainTest {
 
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql);
+        SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
         return requestBuilder.explain();
 	}
 }
