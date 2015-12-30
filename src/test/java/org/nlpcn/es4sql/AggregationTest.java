@@ -224,8 +224,30 @@ public class AggregationTest {
 		Assert.assertEquals(expectedAges, buckets.get("f"));
 	}
 
+    @Test
+    public void multipleGroupBysWithSize() throws Exception {
+        Set expectedAges = new HashSet<Integer>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
 
-	@Test
+        Map<String, Set<Integer>> buckets = new HashMap<>();
+
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender, terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX));
+        Terms gender = result.get("gender");
+        Assert.assertEquals(2,gender.getBuckets().size());
+        for(Terms.Bucket genderBucket : gender.getBuckets()) {
+
+            String genderKey = genderBucket.getKey();
+            buckets.put(genderKey, new HashSet<Integer>());
+            Terms ageBuckets = genderBucket.getAggregations().get("ageAgg");
+            Assert.assertEquals(3,ageBuckets.getBuckets().size());
+
+        }
+
+
+    }
+
+
+
+    @Test
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		ArrayList<Long> agesCount = new ArrayList<>();
 
@@ -345,7 +367,8 @@ public class AggregationTest {
     @Test
 	public void testSubAggregations() throws  Exception {
 		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
-		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */ * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
+		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */" +
+                " * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 

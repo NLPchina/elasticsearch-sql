@@ -155,11 +155,40 @@ public class AggMaker {
 			return histogram(field);
         case "geohash_grid":
             return geohashGrid(field);
+        case "terms":
+                return termsAgg(field);
 		default:
 			throw new SqlParseException("can define this method " + field);
 		}
 
 	}
+
+    private AggregationBuilder<?> termsAgg(MethodField field) throws SqlParseException {
+        String aggName = gettAggNameFromParamsOrAlias(field);
+        TermsBuilder terms = AggregationBuilders.terms(aggName);
+        String value = null;
+        for (KVValue kv : field.getParams()) {
+            value = kv.value.toString();
+            switch (kv.key.toLowerCase()) {
+                case "field":
+                    terms.field(value);
+                    break;
+                case "size":
+                    terms.size(Integer.parseInt(value));
+                    break;
+                case "shard_size":
+                    terms.shardSize(Integer.parseInt(value));
+                    break;
+                case "alias":
+                case "nested":
+                case "reverse_nested":
+                    break;
+                default:
+                    throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
+            }
+        }
+        return terms;
+    }
 
     private AbstractAggregationBuilder scriptedMetric(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
