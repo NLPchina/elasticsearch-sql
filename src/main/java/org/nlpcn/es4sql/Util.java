@@ -79,4 +79,15 @@ public class Util {
         }
         return sqlExpr.toString();
     }
+
+    public static String[] concatStringsArrays(String[] a1,String[] a2){
+        String[] strings = new String[a1.length + a2.length];
+        for(int i=0;i<a1.length;i++){
+            strings[i] = a1[i];
+        }
+        for(int i = 0;i<a2.length;i++){
+            strings[a1.length+i] = a2[i];
+        }
+        return strings;
+    }
 }
