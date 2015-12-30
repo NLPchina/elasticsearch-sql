@@ -253,7 +253,7 @@ public abstract class Maker {
             if(scriptFilter.containsParameters()){
                 params = scriptFilter.getArgs();
             }
-            x = QueryBuilders.scriptQuery(new Script(scriptFilter.getScript(), ScriptService.ScriptType.INLINE, null, params));
+            x = QueryBuilders.scriptQuery(new Script(scriptFilter.getScript(), scriptFilter.getScriptType(), null, params));
         break;
             default:
 			throw new SqlParseException("not define type " + cond.getName());
