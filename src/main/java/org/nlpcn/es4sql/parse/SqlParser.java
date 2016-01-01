@@ -83,13 +83,13 @@ public class SqlParser {
 	private boolean isCond(SQLBinaryOpExpr expr) {
         SQLExpr leftSide = expr.getLeft();
         if(leftSide instanceof SQLMethodInvokeExpr){
-            return isAllowedMethodOnConditionLeft((SQLMethodInvokeExpr) leftSide);
+            return isAllowedMethodOnConditionLeft((SQLMethodInvokeExpr) leftSide,expr.getOperator());
         }
 		return leftSide instanceof SQLIdentifierExpr || leftSide instanceof SQLPropertyExpr || leftSide instanceof SQLVariantRefExpr;
 	}
 
-    private boolean isAllowedMethodOnConditionLeft(SQLMethodInvokeExpr method) {
-        return  method.getMethodName().toLowerCase().equals("nested");
+    private boolean isAllowedMethodOnConditionLeft(SQLMethodInvokeExpr method, SQLBinaryOperator operator) {
+        return  method.getMethodName().toLowerCase().equals("nested") && !operator.isLogical();
     }
 
     public void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
