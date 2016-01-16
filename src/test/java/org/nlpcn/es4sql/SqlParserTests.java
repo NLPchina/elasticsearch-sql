@@ -771,6 +771,15 @@ public class SqlParserTests {
         Assert.assertEquals("3", condition.getName());
     }
 
+    @Test
+    public void likeTestWithEscaped() throws SqlParseException {
+        String query = "select * from x where name like '[_]hey_%[%]'";
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        BoolFilterBuilder explan = FilterMaker.explan(select.getWhere());
+        String filterAsString = explan.toString();
+        Assert.assertTrue(filterAsString.contains("_hey?*%"));
+    }
+
 
     @Test
     public void complexNestedAndOtherQuery() throws SqlParseException {

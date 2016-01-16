@@ -156,7 +156,9 @@ public abstract class Maker {
 			}
 		case LIKE:
         case NLIKE:
-			String queryStr = ((String) value).replace('%', '*').replace('_', '?');
+			String queryStr = ((String) value).replace("[%]","ESCAPEDPERCENTAGE").replace("[_]","ESCAPEDUNDERSCORE");
+            queryStr = queryStr.replace('%', '*').replace('_', '?');
+            queryStr = queryStr.replace("ESCAPEDPERCENTAGE","%").replace("ESCAPEDUNDERSCORE","_");
 			WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(name, queryStr);
 			x = isQuery ? wildcardQuery : FilterBuilders.queryFilter(wildcardQuery);
 			break;
