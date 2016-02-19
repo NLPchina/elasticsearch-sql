@@ -3,7 +3,7 @@
  Returns the right Result Handler depend
  on the results */
 var ResultHandlerFactory = {
-    "create": function(data,isFlat) {
+    "create": function(data,isFlat,showScore,showType) {
         function isSearch(){
             return "hits" in data
         }
@@ -16,7 +16,8 @@ var ResultHandlerFactory = {
         }
 
         if(isSearch()){
-            return isAggregation() ? new AggregationQueryResultHandler(data) : new DefaultQueryResultHandler(data,isFlat)
+            return isAggregation() ? new AggregationQueryResultHandler(data) : 
+            new DefaultQueryResultHandler(data,isFlat,showScore,showType)
         }
 
         if(isDelete()){
@@ -35,7 +36,7 @@ var ResultHandlerFactory = {
  in case of regular query
  (Not aggregation)
  */
-var DefaultQueryResultHandler = function(data,isFlat) {
+var DefaultQueryResultHandler = function(data,isFlat,showScore,showType) {
 
     // createScheme by traverse hits field
     function createScheme() {
@@ -47,6 +48,7 @@ var DefaultQueryResultHandler = function(data,isFlat) {
             if(isFlat){
                 findKeysRecursive(scheme,header,"");
             }
+
             else {
                 for(key in header) {
 
@@ -57,6 +59,12 @@ var DefaultQueryResultHandler = function(data,isFlat) {
             }
             
         }
+        if(showType){
+            scheme.push("_type");
+        }
+        if(showScore){
+            scheme.push("_score");
+        }
         return scheme
     }
     
@@ -64,7 +72,9 @@ var DefaultQueryResultHandler = function(data,isFlat) {
     this.data = data
     this.head = createScheme()
     this.isFlat = isFlat;
-    this.scrollId = data["_scroll_id"]
+    this.showScore = showScore;
+    this.showType = showType;
+    this.scrollId = data["_scroll_id"];
     this.isScroll = this.scrollId!=undefined && this.scrollId!="";
 };
 
@@ -91,6 +101,12 @@ DefaultQueryResultHandler.prototype.getBody = function() {
         }
         if(this.isFlat){
             row = flatRow(this.head,row);
+        }
+        if(this.showType){
+            row["_type"] = hits[i]._type
+        }
+        if(this.showScore){
+            row["_score"] = hits[i]._score
         }
         body.push(row)
     }
