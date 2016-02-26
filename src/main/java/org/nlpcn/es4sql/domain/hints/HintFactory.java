@@ -54,6 +54,10 @@ public class HintFactory {
             int docsWithAggregation = Integer.parseInt(number[0]);
             return new Hint(HintType.DOCS_WITH_AGGREGATION,new Object[]{docsWithAggregation});
         }
+        if(hintAsString.startsWith("! ROUTINGS")) {
+            String[] hints = getParamsFromHint(hintAsString,"! ROUTINGS");
+            return new Hint(HintType.ROUTINGS,hints);
+        }
 
         return null;
     }
