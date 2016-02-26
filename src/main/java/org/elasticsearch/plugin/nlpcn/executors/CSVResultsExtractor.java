@@ -26,9 +26,13 @@ import java.util.*;
  * Created by Eliran on 27/12/2015.
  */
 public class CSVResultsExtractor {
+    private final boolean includeType;
+    private final boolean includeScore;
     private int currentLineIndex;
 
-    public CSVResultsExtractor() {
+    public CSVResultsExtractor(boolean includeScore, boolean includeType) {
+        this.includeScore = includeScore;
+        this.includeType = includeType;
         this.currentLineIndex = 0;
     }
 
@@ -231,7 +235,19 @@ public class CSVResultsExtractor {
         for(SearchHit hit : hits){
             Map<String, Object> doc = hit.sourceAsMap();
             mergeHeaders(csvHeaders,doc,flat);
+            if(this.includeScore){
+                doc.put("_score",hit.score());
+            }
+            if(this.includeType){
+                doc.put("_type",hit.type());
+            }
             docsAsMap.add(doc);
+        }
+        if (this.includeScore){
+            csvHeaders.add("_score");
+        }
+        if (this.includeType){
+            csvHeaders.add("_type");
         }
         return new ArrayList<>(csvHeaders);
     }
