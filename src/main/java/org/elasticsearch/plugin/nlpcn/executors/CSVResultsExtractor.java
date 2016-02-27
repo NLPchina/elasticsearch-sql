@@ -4,6 +4,7 @@ import com.sun.org.apache.xpath.internal.operations.Mult;
 import org.elasticsearch.cluster.routing.allocation.decider.Decision;
 import org.elasticsearch.common.base.Joiner;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -234,7 +235,11 @@ public class CSVResultsExtractor {
         Set<String> csvHeaders = new HashSet<>();
         for(SearchHit hit : hits){
             Map<String, Object> doc = hit.sourceAsMap();
-            mergeHeaders(csvHeaders,doc,flat);
+            Map<String, SearchHitField> fields = hit.getFields();
+            for(SearchHitField searchHitField : fields.values()){
+                doc.put(searchHitField.getName(),searchHitField.value());
+            }
+            mergeHeaders(csvHeaders, doc, flat);
             if(this.includeScore){
                 doc.put("_score",hit.score());
             }
