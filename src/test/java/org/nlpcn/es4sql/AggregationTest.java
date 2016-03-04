@@ -17,6 +17,7 @@ import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
+import org.elasticsearch.search.aggregations.metrics.geobounds.InternalGeoBounds;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
@@ -437,6 +438,16 @@ public class AggregationTest {
             Assert.assertTrue(bucket.getKey().equals("w2fsm") || bucket.getKey().equals("w0p6y") );
             Assert.assertEquals(1,bucket.getDocCount());
         }
+    }
+
+    @Test
+    public void geoBounds() throws SQLFeatureNotSupportedException, SqlParseException {
+        Aggregations result = query(String.format("SELECT * FROM %s/location GROUP BY geo_bounds(field='center',alias='bounds') ", TEST_INDEX));
+        InternalGeoBounds bounds = result.get("bounds");
+        Assert.assertEquals(0.5,bounds.bottomRight().getLat(),0.001);
+        Assert.assertEquals(105.0,bounds.bottomRight().getLon(),0.001);
+        Assert.assertEquals(5.0,bounds.topLeft().getLat(),0.001);
+        Assert.assertEquals(100.5,bounds.topLeft().getLon(),0.001);
     }
 
     @Test

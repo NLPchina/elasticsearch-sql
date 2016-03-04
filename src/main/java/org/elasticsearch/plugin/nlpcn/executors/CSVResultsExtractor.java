@@ -14,11 +14,13 @@ import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.metrics.MetricsAggregator;
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
+import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBounds;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
+import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
 import org.nlpcn.es4sql.Util;
 
 import java.util.*;
@@ -59,8 +61,6 @@ public class CSVResultsExtractor {
             //todo: need to handle more options for aggregations:
             //Aggregations that inhrit from base
             //ScriptedMetric
-            //TopHits
-            //GeoBounds
 
             return new CSVResult(headers,csvLines);
 
@@ -82,12 +82,21 @@ public class CSVResultsExtractor {
         //we want to skip singleBucketAggregations (nested,reverse_nested,filters)
         if(aggregation instanceof SingleBucketAggregation){
             Aggregations singleBucketAggs = ((SingleBucketAggregation) aggregation).getAggregations();
-            handleAggregations(singleBucketAggs,headers,lines);
+            handleAggregations(singleBucketAggs, headers, lines);
             return;
         }
         if(aggregation instanceof NumericMetricsAggregation){
-            handleNumericMetricAggregation(headers,lines.get(currentLineIndex),aggregation);
+            handleNumericMetricAggregation(headers, lines.get(currentLineIndex), aggregation);
             return;
+        }
+        if(aggregation instanceof GeoBounds){
+            handleGeoBoundsAggregation(headers, lines, (GeoBounds) aggregation);
+            return;
+        }
+        if(aggregation instanceof TopHits){
+            //todo: handle this . it returns hits... maby back to normal?
+            //todo: read about this usages
+            // TopHits topHitsAggregation = (TopHits) aggregation;
         }
         if(aggregation instanceof MultiBucketsAggregation){
             MultiBucketsAggregation bucketsAggregation = (MultiBucketsAggregation) aggregation;
@@ -121,6 +130,20 @@ public class CSVResultsExtractor {
             }
         }
 
+    }
+
+    private void handleGeoBoundsAggregation(List<String> headers, List<List<String>> lines, GeoBounds geoBoundsAggregation) {
+        String geoBoundAggName = geoBoundsAggregation.getName();
+        headers.add(geoBoundAggName+".topLeft.lon");
+        headers.add(geoBoundAggName+".topLeft.lat");
+        headers.add(geoBoundAggName+".bottomRight.lon");
+        headers.add(geoBoundAggName+".bottomRight.lat");
+        List<String> line = lines.get(this.currentLineIndex);
+        line.add(String.valueOf(geoBoundsAggregation.topLeft().getLon()));
+        line.add(String.valueOf(geoBoundsAggregation.topLeft().getLat()));
+        line.add(String.valueOf(geoBoundsAggregation.bottomRight().getLon()));
+        line.add(String.valueOf(geoBoundsAggregation.bottomRight().getLat()));
+        lines.add(line);
     }
 
     private  List<String> fillHeaderAndCreateLineForNumericAggregations(Aggregations aggregations, List<String> header) throws CsvExtractorException {
@@ -241,7 +264,7 @@ public class CSVResultsExtractor {
             }
             mergeHeaders(csvHeaders, doc, flat);
             if(this.includeScore){
-                doc.put("_score",hit.score());
+                doc.put("_score", hit.score());
             }
             if(this.includeType){
                 doc.put("_type",hit.type());

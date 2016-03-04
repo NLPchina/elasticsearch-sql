@@ -21,6 +21,7 @@ import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.aggregations.metrics.MetricsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsBuilder;
 import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetricBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -159,6 +160,8 @@ public class AggMaker {
             aggregationBuilder = histogram(field);break;
         case "geohash_grid":
             aggregationBuilder = geohashGrid(field);break;
+        case "geo_bounds":
+                aggregationBuilder = geoBounds(field);break;
         case "terms":
                 aggregationBuilder = termsAgg(field);break;
 		default:
@@ -167,6 +170,30 @@ public class AggMaker {
        return aggregationBuilder;
 
 	}
+
+    private AggregationBuilder<?> geoBounds(MethodField field) throws SqlParseException {
+        String aggName = gettAggNameFromParamsOrAlias(field);
+        GeoBoundsBuilder boundsBuilder = AggregationBuilders.geoBounds(aggName);
+        String value = null;
+        for (KVValue kv : field.getParams()) {
+            value = kv.value.toString();
+            switch (kv.key.toLowerCase()) {
+                case "field":
+                    boundsBuilder.field(value);
+                    break;
+                case "wrap_longitude":
+                    boundsBuilder.wrapLongitude(Boolean.getBoolean(value));
+                    break;
+                case "alias":
+                case "nested":
+                case "reverse_nested":
+                    break;
+                default:
+                    throw new SqlParseException("geo_bounds err or not define field " + kv.toString());
+            }
+        }
+        return boundsBuilder;
+    }
 
     private AggregationBuilder<?> termsAgg(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
