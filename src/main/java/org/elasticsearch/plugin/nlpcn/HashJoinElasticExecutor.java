@@ -5,7 +5,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.text.StringText;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -161,7 +161,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
 
 
 
-                            InternalSearchHit searchHit = new InternalSearchHit(matchingHit.docId(), combinedId, new StringText(matchingHit.getType() + "|" + secondTableHit.getType()), matchingHit.getFields());
+                            InternalSearchHit searchHit = new InternalSearchHit(matchingHit.docId(), combinedId, new Text(matchingHit.getType() + "|" + secondTableHit.getType()), matchingHit.getFields());
                             searchHit.sourceRef(matchingHit.getSourceRef());
                             searchHit.sourceAsMap().clear();
                             searchHit.sourceAsMap().putAll(matchingHit.sourceAsMap());
@@ -208,7 +208,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                 String key = getComparisonKey(t1ToT2FieldsComparison, hit, true, optimizationTermsFilterStructure.get(comparisonID));
 
                 //int docid , id
-                InternalSearchHit searchHit = new InternalSearchHit(resultIds, hit.id(), new StringText(hit.getType()), hit.getFields());
+                InternalSearchHit searchHit = new InternalSearchHit(resultIds, hit.id(), new Text(hit.getType()), hit.getFields());
                 searchHit.sourceRef(hit.getSourceRef());
 
                 onlyReturnedFields(searchHit.sourceAsMap(), firstTableRequest.getReturnedFields());

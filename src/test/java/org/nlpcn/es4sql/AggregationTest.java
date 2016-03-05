@@ -457,7 +457,7 @@ public class AggregationTest {
         InternalGeoHashGrid grid = result.get("geohash_grid(field=center,precision=5)");
         Collection<GeoHashGrid.Bucket> buckets = grid.getBuckets();
         for (GeoHashGrid.Bucket bucket : buckets) {
-            Assert.assertTrue(bucket.getKey().toString().equals("[4.9658203125, 104.9853515625]") || bucket.getKey().toString().equals("[0.4833984375, 100.458984375]") );
+            Assert.assertTrue(bucket.getKey().toString().equals("4.9658203125,104.9853515625") || bucket.getKey().toString().equals("0.4833984375,100.458984375") );
             Assert.assertEquals(1,bucket.getDocCount());
         }
     }

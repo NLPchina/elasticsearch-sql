@@ -131,15 +131,15 @@ public class CSVResultsExtractorTests {
     }
     @Test
     public void joinSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
-        String query = String.format("select c.gender , h.name,h.words from %s/gotCharacters c " +
+        String query = String.format("select c.gender , h.hname,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h " +
-                "on h.name = c.house ",TEST_INDEX,TEST_INDEX);
+                "on h.hname = c.house ",TEST_INDEX,TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3, headers.size());
         Assert.assertTrue("c.gender should be on headers", headers.contains("c.gender"));
-        Assert.assertTrue("h.words should be on headers", headers.contains("h.words"));
+        Assert.assertTrue("h.hname should be on headers", headers.contains("h.hname"));
         Assert.assertTrue("h.words should be on headers", headers.contains("h.words"));
 
         List<String> lines = csvResult.getLines();
