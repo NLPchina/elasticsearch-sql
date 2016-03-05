@@ -484,7 +484,7 @@ public class SqlParser {
          }
     }
 
-    private List<Hint> parseHints(List<SQLCommentHint> sqlHints) {
+    private List<Hint> parseHints(List<SQLCommentHint> sqlHints) throws SqlParseException {
         List<Hint> hints = new ArrayList<>();
         for (SQLCommentHint sqlHint : sqlHints) {
             Hint hint = HintFactory.getHintFromString(sqlHint.getText());
