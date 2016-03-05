@@ -28,6 +28,7 @@ Versions
 | 2.0.0                 | 2.0.3          | delete commands not supported  | elastic2.0   |
 | 2.1.0                 | 2.1.0.1        | delete commands not supported  | elastic2.1   |
 | 2.1.1                 | 2.1.1          | delete commands not supported  | elastic2.1.1 |
+| 2.2.0                 | 2.2.0          | delete commands not supported  | elastic2.2.0 |
 
 ### Elasticsearch 1.X
 ````
@@ -44,6 +45,10 @@ Versions
 ### Elasticsearch 2.1.1
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.1.1/elasticsearch-sql-2.1.1.zip 
+````
+### Elasticsearch 2.2.0
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.2.0/elasticsearch-sql-2.2.0.zip 
 ````
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
