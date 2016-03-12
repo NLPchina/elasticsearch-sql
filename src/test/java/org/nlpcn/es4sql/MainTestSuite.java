@@ -50,6 +50,7 @@ public class MainTestSuite {
 		deleteQuery(TEST_INDEX);
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
+        preparePhrasesIndex();
         loadBulk("src/test/resources/phrases.json");
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
@@ -74,6 +75,19 @@ public class MainTestSuite {
 
 		System.out.println("Finished the setup process...");
 	}
+
+    private static void preparePhrasesIndex() {
+        String dataMapping = "{  \"phrase\": {" +
+                " \"properties\": {\n" +
+                "          \"phrase\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"store\": true\n" +
+                "          }" +
+                "       }"+
+                "   }" +
+                "}";
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping).execute().actionGet();
+    }
 
     private static void prepareNestedTypeIndex() {
 

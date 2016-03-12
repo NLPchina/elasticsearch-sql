@@ -69,14 +69,20 @@ public class HintFactory {
             String[] heighlights = getParamsFromHint(hintAsString,"! HIGHLIGHT");
             ArrayList hintParams = new ArrayList();
             hintParams.add(heighlights[0]);
-            if(heighlights.length == 2){
-                String heighlightParam = heighlights[1];
-                heighlightParam = heighlightParam.replaceAll(" , ", "\n");
+            if(heighlights.length > 1 ){
+                StringBuilder builder = new StringBuilder();
+                for(int i=1;i<heighlights.length;i++){
+                    if(i!=1){
+                        builder.append("\n");
+                    }
+                    builder.append(heighlights[i]);
+                }
+                String heighlightParam = builder.toString();
                 YAMLFactory yamlFactory = new YAMLFactory();
-                YAMLParser parser1 = null;
+                YAMLParser yamlParser = null;
                 try {
-                parser1 = yamlFactory.createParser(heighlightParam.toCharArray());
-                YamlXContentParser yamlXContentParser = new YamlXContentParser(parser1);
+                yamlParser = yamlFactory.createParser(heighlightParam.toCharArray());
+                YamlXContentParser yamlXContentParser = new YamlXContentParser(yamlParser);
                 Map<String, Object> map = yamlXContentParser.map();
                 hintParams.add(map);
                 } catch (IOException e) {

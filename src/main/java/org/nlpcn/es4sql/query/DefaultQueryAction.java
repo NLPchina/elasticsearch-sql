@@ -48,6 +48,7 @@ public class
             request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
         }
         updateRequestWithIndexAndRoutingOptions(select, request);
+        updateRequestWithHighlight(select, request);
 
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
