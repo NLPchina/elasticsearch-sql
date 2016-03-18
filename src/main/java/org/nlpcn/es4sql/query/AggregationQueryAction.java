@@ -137,7 +137,8 @@ public class AggregationQueryAction extends QueryAction {
 			}
 		}
         
-		setLimit(getLimitFromHint());
+
+        setLimitFromHint(this.select.getHints());
 
 		request.setSearchType(SearchType.DEFAULT);
         updateRequestWithIndexAndRoutingOptions(select, request);
@@ -263,20 +264,27 @@ public class AggregationQueryAction extends QueryAction {
 		}
 	}
 
-	private void setLimit( int size) {
-		request.setFrom(0);
-
-		if (size > -1) {
-			request.setSize(size);
-		}
-	}
-
-    public int getLimitFromHint() {
-        for(Hint hint : this.select.getHints()){
-            if(hint.getType() == HintType.DOCS_WITH_AGGREGATION){
-                return (int) hint.getParams()[0];
+    private void setLimitFromHint(List<Hint> hints) {
+        int from = 0;
+        int size = 0;
+        for (Hint hint : hints) {
+            if (hint.getType() == HintType.DOCS_WITH_AGGREGATION) {
+                Integer[] params = (Integer[]) hint.getParams();
+                if (params.length > 1) {
+                    // if 2 or more are given, use the first as the from and the second as the size
+                    // so it is the same as LIMIT from,size
+                    // except written as /*! DOCS_WITH_AGGREGATION(from,size) */
+                    from = params[0];
+                    size = params[1];
+                } else if (params.length == 1) {
+                    // if only 1 parameter is given, use it as the size with a from of 0
+                    size = params[0];
+                }
+                break;
             }
         }
-        return 0;
+        request.setFrom(from);
+        request.setSize(size);
     }
+
 }

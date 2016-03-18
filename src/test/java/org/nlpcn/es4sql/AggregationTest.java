@@ -374,6 +374,30 @@ public class AggregationTest {
 
 
     @Test
+    public void testFromSizeWithAggregations() throws Exception {
+        final String query1 = String.format("SELECT /*! DOCS_WITH_AGGREGATION(0,1) */" +
+                " account_number FROM %s/account GROUP BY gender", TEST_INDEX);
+        SearchResponse response1 = (SearchResponse) getSearchRequestBuilder(query1).get();
+
+        Assert.assertEquals(1, response1.getHits().getHits().length);
+        Terms gender1 = response1.getAggregations().get("gender");
+        Assert.assertEquals(2, gender1.getBuckets().size());
+        Object account1 = response1.getHits().getHits()[0].getSource().get("account_number");
+
+        final String query2 = String.format("SELECT /*! DOCS_WITH_AGGREGATION(1,1) */" +
+                " account_number FROM %s/account GROUP BY gender", TEST_INDEX);
+        SearchResponse response2 = (SearchResponse) getSearchRequestBuilder(query2).get();
+
+        Assert.assertEquals(1, response2.getHits().getHits().length);
+        Terms gender2 = response2.getAggregations().get("gender");
+        Assert.assertEquals(2, gender2.getBuckets().size());
+        Object account2 = response2.getHits().getHits()[0].getSource().get("account_number");
+
+        Assert.assertEquals(response1.getHits().getTotalHits(), response2.getHits().getTotalHits());
+        Assert.assertNotEquals(account1, account2);
+    }
+
+    @Test
 	public void testSubAggregations() throws  Exception {
 		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
 		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */" +
