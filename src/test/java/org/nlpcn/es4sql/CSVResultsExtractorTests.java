@@ -383,12 +383,27 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(lines.get(0).contains(",account,1.0"));
         Assert.assertTrue(lines.get(1).contains(",account,1.0"));
     }
+
     /* todo: more tests:
     * filter/nested and than metric
     * histogram
     * geo
      */
 
+/* test for scripted fields
+    @Test
+    public void scriptedField() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("select age+1 as agePlusOne ,age , firstname from %s/account where age =  31 limit 1", TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query,false,false);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(3,headers.size());
+        Assert.assertTrue(headers.contains("agePlusOne"));
+        Assert.assertTrue(headers.contains("age"));
+        Assert.assertTrue(headers.contains("firstname"));
+        List<String> lines = csvResult.getLines();
+        Assert.assertTrue(lines.get(0).contains("32,31") || lines.get(0).contains("32.0,31.0"));
+    }
+*/
 
     private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         return getCsvResult(flat,query,false,false);
