@@ -86,7 +86,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
         for(int j =0 ; j < responses.length && currentCombinedResults < totalLimit ; j++){
             SearchHit hitFromFirstTable = hits[currentIndex+j];
-            onlyReturnedFields(hitFromFirstTable.sourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields());
+            onlyReturnedFields(hitFromFirstTable.sourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields(),nestedLoopsRequest.getFirstTable().getOriginalSelect().isSelectAll());
 
             SearchResponse multiItemResponse = responses[j].getResponse();
             updateMetaSearchResults(multiItemResponse);
@@ -114,7 +114,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     }
 
     private InternalSearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
-        onlyReturnedFields(matchedHit.sourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields());
+        onlyReturnedFields(matchedHit.sourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
         InternalSearchHit searchHit = new InternalSearchHit(currentCombinedResults, hitFromFirstTable.id() + "|" + matchedHit.getId(), new StringText(hitFromFirstTable.getType() + "|" + matchedHit.getType()), hitFromFirstTable.getFields());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
         searchHit.sourceAsMap().clear();
