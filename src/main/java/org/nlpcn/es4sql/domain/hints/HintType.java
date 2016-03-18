@@ -15,5 +15,6 @@ public enum HintType
     USE_SCROLL,
     IGNORE_UNAVAILABLE,
     DOCS_WITH_AGGREGATION,
-    ROUTINGS;
+    ROUTINGS,
+    HIGHLIGHT;
 }

@@ -4,6 +4,7 @@ import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.search.highlight.HighlightBuilder;
 import org.nlpcn.es4sql.domain.Query;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -11,6 +12,7 @@ import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Abstract class. used to transform Select object (Represents SQL query) to
@@ -46,8 +48,87 @@ public abstract class QueryAction {
     }
 
 
+    protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
 
-	/**
+        //? here Map<String,Object> HEIGHLIGHT('field',JSON) ?
+
+        for(Hint hint : select.getHints()){
+            if(hint.getType() == HintType.HIGHLIGHT){
+                HighlightBuilder.Field highlightField = parseHeiglightField(hint.getParams());
+                if(highlightField != null){
+                    request.addHighlightedField(highlightField);
+                }
+            }
+        }
+    }
+
+    protected HighlightBuilder.Field parseHeiglightField(Object[] params)
+    {
+        if(params == null || params.length == 0 || params.length > 2){
+            //todo: exception.
+        }
+        HighlightBuilder.Field field = new HighlightBuilder.Field(params[0].toString());
+        if(params.length == 1){
+            return field;
+        }
+        Map<String,Object> heighlightParams = (Map<String,Object>) params[1];
+
+        for (Map.Entry<String,Object> param : heighlightParams.entrySet()){
+            switch (param.getKey()){
+                case "boundary_chars":
+                    //todo: array.
+                    field.boundaryChars((char[]) param.getValue());
+                    break;
+                case "boundary_max_scan":
+                    field.boundaryMaxScan((Integer) param.getValue());
+                    break;
+                case "force_source":
+                    field.forceSource((Boolean) param.getValue());
+                    break;
+                case "fragmenter":
+                    field.fragmenter((String) param.getValue());
+                    break;
+                case "fragment_offset":
+                    field.fragmentOffset((Integer) param.getValue());
+                    break;
+                case "fragment_size":
+                    field.fragmentSize((Integer) param.getValue());
+                    break;
+                case "highlight_filter":
+                    field.highlightFilter((Boolean) param.getValue());
+                    break;
+                case "matched_fields":
+                    field.matchedFields((String[]) param.getValue());
+                    break;
+                case "no_match_size":
+                    field.noMatchSize((Integer) param.getValue());
+                    break;
+                case "num_of_fragments":
+                    field.numOfFragments((Integer) param.getValue());
+                    break;
+                case "order":
+                    field.order((String) param.getValue());
+                    break;
+                case "phrase_limit":
+                    field.phraseLimit((Integer) param.getValue());
+                    break;
+                case "post_tags":
+                    field.postTags((String[]) param.getValue());
+                    break;
+                case "pre_tags":
+                    field.preTags((String[]) param.getValue());
+                    break;
+                case "require_field_match":
+                    field.requireFieldMatch((Boolean) param.getValue());
+                    break;
+
+            }
+        }
+        return field;
+    }
+
+
+    /**
 	 * Prepare the request, and return ES request.
 	 * @return ActionRequestBuilder (ES request)
 	 * @throws SqlParseException
