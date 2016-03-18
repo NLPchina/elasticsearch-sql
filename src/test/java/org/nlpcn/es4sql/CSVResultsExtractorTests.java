@@ -338,7 +338,7 @@ public class CSVResultsExtractorTests {
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(1, lines.size());
-        Assert.assertEquals("32.0,32.0,34.0,36.0,38.0,40.0,40.0",lines.get(0));
+        Assert.assertEquals("32.0,32.0,34.0,36.0,38.0,40.0,40.0", lines.get(0));
     }
 
     @Test
@@ -351,6 +351,7 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
+        System.out.println(lines.get(0));
         Assert.assertTrue(lines.get(0).contains(",account"));
         Assert.assertTrue(lines.get(1).contains(",account"));
     }
@@ -360,7 +361,7 @@ public class CSVResultsExtractorTests {
         String query = String.format("select age , firstname from %s/account where age > 31 limit 2", TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query,true,false);
         List<String> headers = csvResult.getHeaders();
-        Assert.assertEquals(3,headers.size());
+        Assert.assertEquals(3, headers.size());
         Assert.assertTrue(headers.contains("age"));
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_score"));
@@ -374,14 +375,14 @@ public class CSVResultsExtractorTests {
         String query = String.format("select age , firstname from %s/account where age > 31 limit 2", TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query,true,true);
         List<String> headers = csvResult.getHeaders();
-        Assert.assertEquals(4,headers.size());
+        Assert.assertEquals(4, headers.size());
         Assert.assertTrue(headers.contains("age"));
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_score"));
         Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
-        Assert.assertTrue(lines.get(0).contains(",account,1.0"));
-        Assert.assertTrue(lines.get(1).contains(",account,1.0"));
+        Assert.assertTrue(lines.get(0).contains(",account,1.0") || lines.get(0).contains(",account,1"));
+        Assert.assertTrue(lines.get(1).contains(",account,1.0") || lines.get(1).contains(",account,1"));
     }
 
     /* todo: more tests:
