@@ -413,12 +413,21 @@ public class SqlParserTests {
     }
 
     @Test
-    public void indexWithDotsAndHyphen() throws SqlParseException {
+     public void indexWithDotsAndHyphen() throws SqlParseException {
         String query = "select * from data-2015.08.22";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Assert.assertEquals(1,select.getFrom().size());
         Assert.assertEquals("data-2015.08.22",select.getFrom().get(0).getIndex());
+    }
+
+    @Test
+    public void indexWithSemiColons() throws SqlParseException {
+        String query = "select * from some;index";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Assert.assertEquals(1,select.getFrom().size());
+        Assert.assertEquals("some;index",select.getFrom().get(0).getIndex());
     }
 
     @Test
