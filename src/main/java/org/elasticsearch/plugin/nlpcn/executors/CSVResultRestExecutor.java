@@ -18,16 +18,14 @@ public class CSVResultRestExecutor implements RestExecutor {
     @Override
     public void execute(Client client, Map<String, String> params, QueryAction queryAction, RestChannel channel) throws Exception {
         Object queryResult = QueryActionElasticExecutor.executeAnyAction(client, queryAction);
-        boolean flat = false;
-        if(params.containsKey("flat")){
-            flat = Boolean.parseBoolean(params.get("flat"));
-        }
+
+        boolean flat = getBooleanOrDefault(params,"flat",false);
         String separator = ",";
         if(params.containsKey("separator")){
          separator = params.get("separator");
         }
-        boolean includeScore = Boolean.getBoolean(params.getOrDefault("_score", "false"));
-        boolean includeType = Boolean.getBoolean(params.getOrDefault("_type", "false"));
+        boolean includeScore = getBooleanOrDefault(params,"_score",false);
+        boolean includeType = getBooleanOrDefault(params,"_type",false);
         CSVResult result  = new CSVResultsExtractor(includeScore,includeType).extractResults(queryResult,flat,separator);
         String newLine = "\n";
         if(params.containsKey("newLine")){
@@ -36,6 +34,14 @@ public class CSVResultRestExecutor implements RestExecutor {
         String csvString = buildString(separator, result, newLine);
         BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, csvString);
         channel.sendResponse(bytesRestResponse);
+    }
+
+    private boolean getBooleanOrDefault(Map<String, String> params, String param, boolean defaultValue) {
+        boolean flat = defaultValue;
+        if(params.containsKey(param)){
+            flat = Boolean.parseBoolean(params.get(param));
+        }
+        return flat;
     }
 
     private String buildString(String separator, CSVResult result, String newLine) {
