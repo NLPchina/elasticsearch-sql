@@ -269,13 +269,14 @@ public class CSVResultsExtractor {
             }
             docsAsMap.add(doc);
         }
+        ArrayList<String> headersList = new ArrayList<>(csvHeaders);
         if (this.includeScore){
-            csvHeaders.add("_score");
+            headersList.add("_score");
         }
         if (this.includeType){
-            csvHeaders.add("_type");
+            headersList.add("_type");
         }
-        return new ArrayList<>(csvHeaders);
+        return headersList;
     }
 
     private String findFieldValue(String header, Map<String, Object> doc, boolean flat, String separator) {
