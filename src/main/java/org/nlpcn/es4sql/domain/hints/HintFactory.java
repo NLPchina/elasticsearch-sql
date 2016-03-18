@@ -57,6 +57,10 @@ public class HintFactory {
             }
             return new Hint(HintType.DOCS_WITH_AGGREGATION, params);
         }
+        if(hintAsString.startsWith("! ROUTINGS")) {
+            String[] hints = getParamsFromHint(hintAsString,"! ROUTINGS");
+            return new Hint(HintType.ROUTINGS,hints);
+        }
 
         return null;
     }

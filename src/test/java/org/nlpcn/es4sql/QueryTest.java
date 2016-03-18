@@ -827,6 +827,20 @@ public class QueryTest {
         Assert.assertTrue(response.getTotalHits() > 0);
     }
 
+    @Test
+    public void routingRequestOneRounting() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SqlElasticSearchRequestBuilder request = getRequestBuilder(String.format("SELECT /*! ROUTINGS(hey) */ * FROM %s/account ", TEST_INDEX));
+        SearchRequestBuilder searchRequestBuilder = (SearchRequestBuilder) request.getBuilder();
+        Assert.assertEquals("hey",searchRequestBuilder.request().routing());
+    }
+
+    @Test
+    public void routingRequestMultipleRountings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SqlElasticSearchRequestBuilder request = getRequestBuilder(String.format("SELECT /*! ROUTINGS(hey,bye) */ * FROM %s/account ", TEST_INDEX));
+        SearchRequestBuilder searchRequestBuilder = (SearchRequestBuilder) request.getBuilder();
+        Assert.assertEquals("hey,bye",searchRequestBuilder.request().routing());
+    }
+
     //todo: find a way to check if scripts are enabled , uncomment before deploy.
 //    @Test
 //    public void scriptFilterNoParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
@@ -849,6 +863,12 @@ public class QueryTest {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
         return ((SearchResponse)select.get()).getHits();
+    }
+
+
+    private SqlElasticSearchRequestBuilder getRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        return  (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
     }
 
     private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
