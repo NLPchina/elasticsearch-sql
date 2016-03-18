@@ -782,7 +782,7 @@ public class SqlParserTests {
 
     @Test
     public void likeTestWithEscaped() throws SqlParseException {
-        String query = "select * from x where name like '[_]hey_%[%]'";
+        String query = "select * from x where name like '&UNDERSCOREhey_%&PERCENT'";
         Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
         BoolFilterBuilder explan = FilterMaker.explan(select.getWhere());
         String filterAsString = explan.toString();
