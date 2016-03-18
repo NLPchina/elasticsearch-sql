@@ -351,7 +351,6 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
-        System.out.println(lines.get(0));
         Assert.assertTrue(lines.get(0).contains(",account") || lines.get(0).contains("account,"));
         Assert.assertTrue(lines.get(1).contains(",account")|| lines.get(1).contains("account,"));
     }
@@ -381,6 +380,7 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(headers.contains("_score"));
         Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
+        System.out.println(lines.get(0));
         Assert.assertTrue(lines.get(0).contains("account,1.0") || lines.get(0).contains("1.0,account"));
         Assert.assertTrue(lines.get(1).contains("account,1.0") || lines.get(1).contains("1.0,account"));
     }
