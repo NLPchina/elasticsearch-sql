@@ -179,6 +179,14 @@ public class AggregationTest {
     }
 
     @Test
+    public void percentileTestSpecific() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        Aggregations result = query(String.format("SELECT PERCENTILES(age,25.0,75.0) x FROM %s/account", TEST_INDEX));
+        Percentiles percentiles = result.get("x");
+        Assert.assertTrue(Math.abs(percentiles.percentile(25.0) - 25.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(75.0) - 35.0) < 0.001 );
+    }
+
+    @Test
 	public void aliasTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		Aggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s/account", TEST_INDEX));
 		assertThat(result.asMap(), hasKey("mycount"));
