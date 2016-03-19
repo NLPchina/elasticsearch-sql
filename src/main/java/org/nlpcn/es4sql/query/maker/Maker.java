@@ -140,9 +140,9 @@ public abstract class Maker {
 			}
 		case LIKE:
         case NLIKE:
-			String queryStr = ((String) value).replace("[%]","ESCAPEDPERCENTAGE").replace("[_]","ESCAPEDUNDERSCORE");
+			String queryStr = ((String) value);
             queryStr = queryStr.replace('%', '*').replace('_', '?');
-            queryStr = queryStr.replace("ESCAPEDPERCENTAGE","%").replace("ESCAPEDUNDERSCORE","_");
+            queryStr = queryStr.replace("&PERCENT","%").replace("&UNDERSCORE","_");
 			x = QueryBuilders.wildcardQuery(name, queryStr);
 			break;
 		case GT:
