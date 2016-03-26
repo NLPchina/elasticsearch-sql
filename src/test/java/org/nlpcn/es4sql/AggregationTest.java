@@ -17,6 +17,7 @@ import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
+import org.elasticsearch.search.aggregations.metrics.geobounds.InternalGeoBounds;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
@@ -178,6 +179,14 @@ public class AggregationTest {
     }
 
     @Test
+    public void percentileTestSpecific() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        Aggregations result = query(String.format("SELECT PERCENTILES(age,25.0,75.0) x FROM %s/account", TEST_INDEX));
+        Percentiles percentiles = result.get("x");
+        Assert.assertTrue(Math.abs(percentiles.percentile(25.0) - 25.0) < 0.001 );
+        Assert.assertTrue(Math.abs(percentiles.percentile(75.0) - 35.0) < 0.001 );
+    }
+
+    @Test
 	public void aliasTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		Aggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s/account", TEST_INDEX));
 		assertThat(result.asMap(), hasKey("mycount"));
@@ -245,6 +254,16 @@ public class AggregationTest {
 
     }
 
+    @Test
+    public void termsWithSize() throws Exception {
+
+        Map<String, Set<Integer>> buckets = new HashMap<>();
+
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX));
+        Terms gender = result.get("ageAgg");
+        Assert.assertEquals(3,gender.getBuckets().size());
+
+    }
 
 
     @Test
@@ -460,6 +479,16 @@ public class AggregationTest {
             Assert.assertTrue(bucket.getKey().toString().equals("4.9658203125,104.9853515625") || bucket.getKey().toString().equals("0.4833984375,100.458984375") );
             Assert.assertEquals(1,bucket.getDocCount());
         }
+    }
+
+    @Test
+    public void geoBounds() throws SQLFeatureNotSupportedException, SqlParseException {
+        Aggregations result = query(String.format("SELECT * FROM %s/location GROUP BY geo_bounds(field='center',alias='bounds') ", TEST_INDEX));
+        InternalGeoBounds bounds = result.get("bounds");
+        Assert.assertEquals(0.5,bounds.bottomRight().getLat(),0.001);
+        Assert.assertEquals(105.0,bounds.bottomRight().getLon(),0.001);
+        Assert.assertEquals(5.0,bounds.topLeft().getLat(),0.001);
+        Assert.assertEquals(100.5,bounds.topLeft().getLon(),0.001);
     }
 
     @Test

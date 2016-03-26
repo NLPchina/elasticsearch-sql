@@ -137,9 +137,9 @@ public abstract class ElasticJoinExecutor {
         return mapWithAliases;
     }
 
-    protected void  onlyReturnedFields(Map<String, Object> fieldsMap, List<Field> required) {
+    protected void  onlyReturnedFields(Map<String, Object> fieldsMap, List<Field> required,boolean allRequired) {
         HashMap<String,Object> filteredMap = new HashMap<>();
-        if(allFieldsReturn) {
+        if(allFieldsReturn || allRequired) {
             filteredMap.putAll(fieldsMap);
             return;
         }
@@ -214,7 +214,9 @@ public abstract class ElasticJoinExecutor {
     protected Map<String, Object> createNullsSource(List<Field> secondTableReturnedFields) {
         Map<String,Object> nulledSource = new HashMap<>();
         for(Field field : secondTableReturnedFields){
-            nulledSource.put(field.getName(),null);
+            if(!field.getName().equals("*")){
+                nulledSource.put(field.getName(),null);
+            }
         }
         return nulledSource;
     }

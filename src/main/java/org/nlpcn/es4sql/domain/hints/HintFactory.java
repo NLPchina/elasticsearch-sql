@@ -1,14 +1,22 @@
 package org.nlpcn.es4sql.domain.hints;
 
+
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
+import org.elasticsearch.common.xcontent.yaml.YamlXContentParser;
+import org.nlpcn.es4sql.exception.SqlParseException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Eliran on 5/9/2015.
  */
 public class HintFactory {
 
-    public static Hint getHintFromString(String hintAsString){
+    public static Hint getHintFromString(String hintAsString) throws SqlParseException {
         if(hintAsString.startsWith("! USE_NESTED_LOOPS") || hintAsString.startsWith("! USE_NL")){
             return new Hint(HintType.USE_NESTED_LOOPS,null);
         }
@@ -56,6 +64,36 @@ public class HintFactory {
                 params[i] = Integer.parseInt(number[i]);
             }
             return new Hint(HintType.DOCS_WITH_AGGREGATION, params);
+        }
+        if(hintAsString.startsWith("! ROUTINGS")) {
+            String[] routings = getParamsFromHint(hintAsString,"! ROUTINGS");
+            return new Hint(HintType.ROUTINGS,routings);
+        }
+        if(hintAsString.startsWith("! HIGHLIGHT")) {
+            String[] heighlights = getParamsFromHint(hintAsString,"! HIGHLIGHT");
+            ArrayList hintParams = new ArrayList();
+            hintParams.add(heighlights[0]);
+            if(heighlights.length > 1 ){
+                StringBuilder builder = new StringBuilder();
+                for(int i=1;i<heighlights.length;i++){
+                    if(i!=1){
+                        builder.append("\n");
+                    }
+                    builder.append(heighlights[i]);
+                }
+                String heighlightParam = builder.toString();
+                YAMLFactory yamlFactory = new YAMLFactory();
+                YAMLParser yamlParser = null;
+                try {
+                yamlParser = yamlFactory.createParser(heighlightParam.toCharArray());
+                YamlXContentParser yamlXContentParser = new YamlXContentParser(yamlParser);
+                Map<String, Object> map = yamlXContentParser.map();
+                hintParams.add(map);
+                } catch (IOException e) {
+                    throw new SqlParseException("could not parse heighlight hint: " + e.getMessage());
+                }
+            }
+            return new Hint(HintType.HIGHLIGHT,hintParams.toArray());
         }
 
         return null;

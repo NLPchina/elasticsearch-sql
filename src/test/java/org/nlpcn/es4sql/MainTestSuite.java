@@ -33,7 +33,7 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		MethodQueryTest.class,
 		AggregationTest.class,
         JoinTests.class,
-//		DeleteTest.class,
+		DeleteTest.class,
 		ExplainTest.class,
         WktToGeoJsonConverterTests.class,
         SqlParserTests.class,
@@ -52,7 +52,7 @@ public class MainTestSuite {
         client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).build().addTransportAddress(getTransportAddress());
 
 
-		NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
+        NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
 		String clusterName = nodeInfos.getClusterName().value();
 		System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
 
@@ -62,6 +62,7 @@ public class MainTestSuite {
         }
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
+        preparePhrasesIndex();
         loadBulk("src/test/resources/phrases.json");
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
@@ -86,6 +87,19 @@ public class MainTestSuite {
 
 		System.out.println("Finished the setup process...");
 	}
+
+    private static void preparePhrasesIndex() {
+        String dataMapping = "{  \"phrase\": {" +
+                " \"properties\": {\n" +
+                "          \"phrase\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"store\": true\n" +
+                "          }" +
+                "       }"+
+                "   }" +
+                "}";
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping).execute().actionGet();
+    }
 
     private static void prepareNestedTypeIndex() {
 

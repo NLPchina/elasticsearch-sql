@@ -10,12 +10,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedBuilder;
-import org.elasticsearch.search.aggregations.bucket.nested.ReverseNested;
-import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -59,7 +56,8 @@ public class AggregationQueryAction extends QueryAction {
 				Field field = groupBy.get(0);
 				lastAgg = aggMaker.makeGroupAgg(field);
 
-				if (lastAgg != null && lastAgg instanceof TermsBuilder) {
+				if (lastAgg != null && lastAgg instanceof TermsBuilder && !(field instanceof MethodField )) {
+
 					((TermsBuilder) lastAgg).size(select.getRowCount());
 				}
 
@@ -143,7 +141,7 @@ public class AggregationQueryAction extends QueryAction {
 		setLimitFromHint(this.select.getHints());
 
 		request.setSearchType(SearchType.DEFAULT);
-        updateWithIndicesOptionsIfNeeded(select,request);
+        updateRequestWithIndexAndRoutingOptions(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
 	}

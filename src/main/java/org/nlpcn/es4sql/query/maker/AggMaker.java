@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query.maker;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,6 +23,8 @@ import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsBuilder;
+import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesBuilder;
 import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetricBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -95,6 +98,7 @@ public class AggMaker {
             return addFieldToAgg(field, builder);
         case "PERCENTILES":
             builder = AggregationBuilders.percentiles(field.getAlias());
+            addSpecificPercentiles((PercentilesBuilder) builder,field.getParams());
             return addFieldToAgg(field, builder);
 		case "TOPHITS":
 			return makeTopHitsAgg(field);
@@ -107,6 +111,26 @@ public class AggMaker {
 			throw new SqlParseException("the agg function not to define !");
 		}
 	}
+
+    private void addSpecificPercentiles(PercentilesBuilder percentilesBuilder, List<KVValue> params) {
+        List<Double> percentiles = new ArrayList<>();
+        for(KVValue kValue : params ){
+            if(kValue.value.getClass().equals(BigDecimal.class)){
+                BigDecimal percentile = (BigDecimal) kValue.value;
+                percentiles.add(percentile.doubleValue());
+
+            }
+        }
+        if(percentiles.size() > 0) {
+            double[] percentilesArr = new double[percentiles.size()];
+            int i=0;
+            for (Double percentile : percentiles){
+                percentilesArr[i] = percentile;
+                i++;
+            }
+            percentilesBuilder.percentiles(percentilesArr);
+        }
+    }
 
     private String fixAlias(String alias) {
         //because [ is not legal as alias
@@ -155,6 +179,8 @@ public class AggMaker {
 			return histogram(field);
         case "geohash_grid":
             return geohashGrid(field);
+        case "geo_bounds":
+            return geoBounds(field);
         case "terms":
                 return termsAgg(field);
 		default:
@@ -162,6 +188,30 @@ public class AggMaker {
 		}
 
 	}
+
+    private AggregationBuilder<?> geoBounds(MethodField field) throws SqlParseException {
+        String aggName = gettAggNameFromParamsOrAlias(field);
+        GeoBoundsBuilder boundsBuilder = AggregationBuilders.geoBounds(aggName);
+        String value = null;
+        for (KVValue kv : field.getParams()) {
+            value = kv.value.toString();
+            switch (kv.key.toLowerCase()) {
+                case "field":
+                    boundsBuilder.field(value);
+                    break;
+                case "wrap_longitude":
+                    boundsBuilder.wrapLongitude(Boolean.getBoolean(value));
+                    break;
+                case "alias":
+                case "nested":
+                case "reverse_nested":
+                    break;
+                default:
+                    throw new SqlParseException("geo_bounds err or not define field " + kv.toString());
+            }
+        }
+        return boundsBuilder;
+    }
 
     private AggregationBuilder<?> termsAgg(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
@@ -178,6 +228,9 @@ public class AggMaker {
                     break;
                 case "shard_size":
                     terms.shardSize(Integer.parseInt(value));
+                    break;
+                case "min_doc_count":
+                    terms.minDocCount(Integer.parseInt(value));
                     break;
                 case "alias":
                 case "nested":

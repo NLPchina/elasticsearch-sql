@@ -8,9 +8,13 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
+import org.elasticsearch.search.highlight.HighlightField;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.domain.Select;
@@ -827,6 +831,20 @@ public class QueryTest {
         Assert.assertTrue(response.getTotalHits() > 0);
     }
 
+    @Test
+    public void routingRequestOneRounting() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SqlElasticSearchRequestBuilder request = getRequestBuilder(String.format("SELECT /*! ROUTINGS(hey) */ * FROM %s/account ", TEST_INDEX));
+        SearchRequestBuilder searchRequestBuilder = (SearchRequestBuilder) request.getBuilder();
+        Assert.assertEquals("hey",searchRequestBuilder.request().routing());
+    }
+
+    @Test
+    public void routingRequestMultipleRountings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SqlElasticSearchRequestBuilder request = getRequestBuilder(String.format("SELECT /*! ROUTINGS(hey,bye) */ * FROM %s/account ", TEST_INDEX));
+        SearchRequestBuilder searchRequestBuilder = (SearchRequestBuilder) request.getBuilder();
+        Assert.assertEquals("hey,bye",searchRequestBuilder.request().routing());
+    }
+
     //todo: find a way to check if scripts are enabled , uncomment before deploy.
 //    @Test
 //    public void scriptFilterNoParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
@@ -845,10 +863,31 @@ public class QueryTest {
 //    }
 
 
+    @Test
+    public void highlightPreTagsAndPostTags() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        String query = String.format("select /*! HIGHLIGHT(phrase,pre_tags : ['<b>'], post_tags : ['</b>']  ) */ " +
+                "* from %s/phrase " +
+                "where phrase like 'fox' " +
+                "order by _score",TEST_INDEX);
+        SearchHits hits = query(query);
+        for (SearchHit hit : hits){
+            HighlightField phrase = hit.getHighlightFields().get("phrase");
+            String highlightPhrase = phrase.getFragments()[0].string();
+            Assert.assertTrue(highlightPhrase.contains("<b>fox</b>"));
+        }
+
+    }
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
         return ((SearchResponse)select.get()).getHits();
+    }
+
+
+    private SqlElasticSearchRequestBuilder getRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        return  (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
     }
 
     private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
