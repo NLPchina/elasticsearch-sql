@@ -56,7 +56,7 @@ public class AggregationQueryAction extends QueryAction {
 				Field field = groupBy.get(0);
 				lastAgg = aggMaker.makeGroupAgg(field);
 
-				if (lastAgg != null && lastAgg instanceof TermsBuilder) {
+				if (lastAgg != null && lastAgg instanceof TermsBuilder && !(field instanceof MethodField )) {
 					((TermsBuilder) lastAgg).size(select.getRowCount());
 				}
 
