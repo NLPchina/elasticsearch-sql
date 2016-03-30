@@ -229,6 +229,9 @@ public class AggMaker {
                 case "shard_size":
                     terms.shardSize(Integer.parseInt(value));
                     break;
+                case "min_doc_count":
+                    terms.minDocCount(Integer.parseInt(value));
+                    break;
                 case "alias":
                 case "nested":
                 case "reverse_nested":

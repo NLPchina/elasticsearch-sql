@@ -255,6 +255,15 @@ public class AggregationTest {
     }
 
 
+    @Test
+    public void termsWithSize() throws Exception {
+
+
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX));
+        Terms gender = result.get("ageAgg");
+        Assert.assertEquals(3,gender.getBuckets().size());
+
+    }
 
     @Test
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
