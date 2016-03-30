@@ -52,6 +52,10 @@ Versions
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.1.1.1/elasticsearch-sql-2.1.1.1.zip 
 ````
+### Elasticsearch 2.1.2
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.1.2.0/elasticsearch-sql-2.1.2.0.zip 
+````
 ### Elasticsearch 2.2.0
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.2.0.1/elasticsearch-sql-2.2.0.1.zip 
