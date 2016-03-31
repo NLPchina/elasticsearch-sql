@@ -40,8 +40,8 @@ public class CSVResultsExtractorTests {
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(2, lines.size());
-        Assert.assertEquals("rex,2", lines.get(0));
-        Assert.assertEquals("snoopy,4", lines.get(1));
+        Assert.assertTrue("rex,2".equals(lines.get(0)) || "2,rex".equals(lines.get(0)) );
+        Assert.assertTrue("snoopy,4".equals(lines.get(1)) || "4,snoopy".equals(lines.get(1)) );
 
     }
 
