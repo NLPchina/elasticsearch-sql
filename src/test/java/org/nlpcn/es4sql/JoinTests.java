@@ -35,7 +35,7 @@ public class JoinTests {
     }
 
     private void joinParseCheckSelectedFieldsSplit(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = "SELECT a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
+        String query = "SELECT a.firstname ,a.lastname , a.gender ,d.dog_name  FROM elasticsearch-sql_test_index/people a " +
                 " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
                 " WHERE " +
                 " (a.age > 10 OR a.balance > 2000)" +
@@ -45,9 +45,9 @@ public class JoinTests {
         Assert.assertEquals(2, hits.length);
 
         Map<String,Object> oneMatch = ImmutableMap.of("a.firstname", (Object) "Daenerys", "a.lastname", "Targaryen",
-                "a.gender", "M", "d.name", "rex");
+                "a.gender", "M", "d.dog_name", "rex");
         Map<String,Object> secondMatch = ImmutableMap.of("a.firstname", (Object) "Hattie", "a.lastname", "Bond",
-                "a.gender", "M", "d.name", "snoopy");
+                "a.gender", "M", "d.dog_name", "snoopy");
 
         Assert.assertTrue(hitsContains(hits, oneMatch));
         Assert.assertTrue(hitsContains(hits,secondMatch));
@@ -55,7 +55,7 @@ public class JoinTests {
 
     @Test
     public void joinParseWithHintsCheckSelectedFieldsSplitHASH() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = "SELECT /*! HASH_WITH_TERMS_FILTER*/ a.firstname ,a.lastname , a.gender ,d.name  FROM elasticsearch-sql_test_index/people a " +
+        String query = "SELECT /*! HASH_WITH_TERMS_FILTER*/ a.firstname ,a.lastname , a.gender ,d.dog_name  FROM elasticsearch-sql_test_index/people a " +
                 " JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
                 " WHERE " +
                 " (a.age > 10 OR a.balance > 2000)" +
@@ -418,22 +418,22 @@ public class JoinTests {
     }
 
     private void joinWithOr(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("select d.name , c.name.firstname from %s/gotCharacters c " +
+        String query = String.format("select d.dog_name , c.name.firstname from %s/gotCharacters c " +
                 "JOIN %s/dog d on d.holdersName = c.name.firstname" +
                 " OR d.age = c.name.ofHisName"
                 ,  TEST_INDEX, TEST_INDEX);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(2, hits.length);
-        Map<String,Object> oneMatch =  ImmutableMap.of("c.name.firstname", (Object) "Daenerys", "d.name", "rex");
-        Map<String,Object> secondMatch =  ImmutableMap.of("c.name.firstname", (Object) "Brandon", "d.name", "snoopy");
+        Map<String,Object> oneMatch =  ImmutableMap.of("c.name.firstname", (Object) "Daenerys", "d.dog_name", "rex");
+        Map<String,Object> secondMatch =  ImmutableMap.of("c.name.firstname", (Object) "Brandon", "d.dog_name", "snoopy");
         Assert.assertTrue("hits contains daenerys",hitsContains(hits, oneMatch));
         Assert.assertTrue("hits contains brandon",hitsContains(hits, secondMatch));
     }
 
     @Test
     public void joinWithOrWithTermsFilterOpt() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("select /*! HASH_WITH_TERMS_FILTER*/ d.name , c.name.firstname from %s/gotCharacters c " +
+        String query = String.format("select /*! HASH_WITH_TERMS_FILTER*/ d.dog_name , c.name.firstname from %s/gotCharacters c " +
                 "JOIN %s/dog d on d.holdersName = c.name.firstname" +
                 " OR d.age = c.name.ofHisName"
                 , TEST_INDEX, TEST_INDEX);

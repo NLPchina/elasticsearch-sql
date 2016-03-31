@@ -718,7 +718,7 @@ public class QueryTest {
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
-        Assert.assertEquals("snoopy",hitAsMap.get("name"));
+        Assert.assertEquals("snoopy",hitAsMap.get("dog_name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4,hitAsMap.get("age"));
 
@@ -730,7 +730,7 @@ public class QueryTest {
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
-        Assert.assertEquals("snoopy",hitAsMap.get("name"));
+        Assert.assertEquals("snoopy",hitAsMap.get("dog_name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4,hitAsMap.get("age"));
 
@@ -742,7 +742,7 @@ public class QueryTest {
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
-        Assert.assertEquals("snoopy",hitAsMap.get("name"));
+        Assert.assertEquals("snoopy",hitAsMap.get("dog_name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4, hitAsMap.get("age"));
 
@@ -754,7 +754,7 @@ public class QueryTest {
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
-        Assert.assertEquals("rex",hitAsMap.get("name"));
+        Assert.assertEquals("rex",hitAsMap.get("dog_name"));
         Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
         Assert.assertEquals(2, hitAsMap.get("age"));
 
@@ -766,7 +766,7 @@ public class QueryTest {
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
-        Assert.assertEquals("rex",hitAsMap.get("name"));
+        Assert.assertEquals("rex",hitAsMap.get("dog_name"));
         Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
         Assert.assertEquals(2, hitAsMap.get("age"));
 
@@ -778,7 +778,7 @@ public class QueryTest {
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
         Map<String, Object> hitAsMap = hits[0].sourceAsMap();
-        Assert.assertEquals("rex",hitAsMap.get("name"));
+        Assert.assertEquals("rex",hitAsMap.get("dog_name"));
         Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
         Assert.assertEquals(2, hitAsMap.get("age"));
 

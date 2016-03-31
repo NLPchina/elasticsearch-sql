@@ -30,12 +30,12 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
-       String query = String.format("select name,age from %s/dog order by age",TEST_INDEX);
+       String query = String.format("select dog_name,age from %s/dog order by age",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(2, headers.size());
-        Assert.assertTrue("name should be on headers", headers.contains("name"));
+        Assert.assertTrue("name should be on headers", headers.contains("dog_name"));
         Assert.assertTrue("age should be on headers", headers.contains("age"));
 
         List<String> lines = csvResult.getLines();
