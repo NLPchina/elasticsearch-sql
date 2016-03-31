@@ -8,6 +8,7 @@ Elasticsearch-SQL
 **2.1.2** [![2.1.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.1.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.2.0** [![2.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.2.1** [![2.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.3.0** [![2.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -35,6 +36,7 @@ Versions
 | 2.1.2                 | 2.1.2.0        | delete commands not supported  | elastic2.1.2 |
 | 2.2.0                 | 2.2.0.1        | delete commands not supported  | elastic2.2.0 |
 | 2.2.1                 | 2.2.1.0        | delete commands not supported  | elastic2.2.1 |
+| 2.3.0                 | 2.3.0.0        | delete commands not supported  | elastic2.3.0 |
 
 ### Elasticsearch 1.X
 ````
@@ -64,6 +66,11 @@ Versions
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.2.1.0/elasticsearch-sql-2.2.1.0.zip 
 ````
+### Elasticsearch 2.3.0
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.3.0.0/elasticsearch-sql-2.3.0.0.zip 
+````
+
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
 ## Basic Usage
