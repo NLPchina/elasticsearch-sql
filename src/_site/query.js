@@ -170,14 +170,10 @@ function addFieldsToRow (row,hit) {
     }
 }
 
-
-
-
-
 function removeNestedAndFilters (aggs) {
     for(field in aggs)
     {
-        if (field.endsWith("@NESTED") || field.endsWith("@FILTER") || field.endsWith("@NESTED_REVERSED")){
+        if (field.endsWith("@NESTED") || field.endsWith("@FILTER") || field.endsWith("@NESTED_REVERSED") || field.endsWith("@CHILDREN")){
             delete aggs[field]["doc_count"];
             delete aggs[field]["key"];
             leftField = Object.keys(aggs[field])[0];
