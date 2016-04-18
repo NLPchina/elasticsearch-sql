@@ -796,17 +796,18 @@ public class QueryTest {
         Assert.assertEquals(2, response.getTotalHits());
     }
 
-    @Test
-    public void nestedOnInQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
-        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) in ('a','b')", TEST_INDEX));
-        Assert.assertEquals(3, response.getTotalHits());
-    }
+//    @Test
+//    public void nestedOnInQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+//        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) in ('a','b')", TEST_INDEX));
+//        Assert.assertEquals(3, response.getTotalHits());
+//    }
 
     @Test
     public void complexNestedQueryBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested('message',message.info = 'a' and message.author ='i' ) ", TEST_INDEX));
         Assert.assertEquals(1, response.getTotalHits());
     }
+
     @Test
     public void complexNestedQueryNotBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested('message',message.info = 'a' and message.author ='h' ) ", TEST_INDEX));
@@ -817,6 +818,36 @@ public class QueryTest {
     public void nestedOnInTermsQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) = IN_TERMS(a,b)", TEST_INDEX));
         Assert.assertEquals(3, response.getTotalHits());
+    }
+
+    @Test
+    public void childrenEqualsTestFieldNormalField() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/parentType where children(childrenType, info)='b'", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+
+    @Test
+    public void childrenOnInQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+    	SearchHits response = query(String.format("SELECT * FROM %s/parentType where children(childrenType, info) in ('a','b')", TEST_INDEX));
+    	Assert.assertEquals(2, response.getTotalHits());
+    }
+
+    @Test
+    public void complexChildrenQueryBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/parentType where children(childrenType, info = 'a' and author ='e' ) ", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+
+    @Test
+    public void complexChildrenQueryNotBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/parentType where children(childrenType, info = 'a' and author ='j' ) ", TEST_INDEX));
+        Assert.assertEquals(0, response.getTotalHits());
+    }
+
+    @Test
+    public void childrenOnInTermsQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/parentType where children(childrenType, info) = IN_TERMS(a,b)", TEST_INDEX));
+        Assert.assertEquals(2, response.getTotalHits());
     }
 
     @Test
