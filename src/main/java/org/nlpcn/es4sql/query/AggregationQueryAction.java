@@ -80,7 +80,8 @@ public class AggregationQueryAction extends QueryAction {
                     else {
                     	childrenBuilder.subAggregation(lastAgg);
                     }
-                    request.addAggregation(wrapNestedIfNeeded(childrenBuilder, field.isChildren()));                	
+
+                    request.addAggregation(childrenBuilder);                	
                 }
                 else {
                     request.addAggregation(lastAgg);
@@ -95,15 +96,28 @@ public class AggregationQueryAction extends QueryAction {
 
                     if(field.isNested()){
                         AggregationBuilder nestedBuilder = createNestedAggregation(field);
-                        if(insertFilterIfExistsAfter(subAgg, groupBy, nestedBuilder,i+1)){
-                            groupBy.remove(i+1);
+
+                        if(insertFilterIfExistsAfter(subAgg, groupBy, nestedBuilder,i + 1)){
+                            groupBy.remove(i + 1);
                             i++;
                         }
                         else {
                             nestedBuilder.subAggregation(subAgg);
                         }
-                        lastAgg.subAggregation(wrapNestedIfNeeded(nestedBuilder,field.isReverseNested()));
 
+                        lastAgg.subAggregation(wrapNestedIfNeeded(nestedBuilder,field.isReverseNested()));
+                    } else if(field.isChildren()) {
+                        AggregationBuilder childrenBuilder = createChildrenAggregation(field);
+                        
+                        if(insertFilterIfExistsAfter(subAgg, groupBy, childrenBuilder, i + 1)){
+                            groupBy.remove(i + 1);
+                            i++;
+                        }
+                        else {
+                            childrenBuilder.subAggregation(subAgg);
+                        }
+
+                        lastAgg.subAggregation(childrenBuilder);
                     }
                     else {
                         lastAgg.subAggregation(subAgg);

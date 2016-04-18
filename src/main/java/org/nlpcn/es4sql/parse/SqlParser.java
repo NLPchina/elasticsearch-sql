@@ -293,7 +293,7 @@ public class SqlParser {
             	ChildrenType childrenType = new ChildrenType();
 
                 if(!childrenType.tryFillFromExpr(expr)){
-                    throw new SqlParseException("could not fill nested from expr:" + expr);
+                    throw new SqlParseException("could not fill children from expr:" + expr);
                 }
 
                 Condition condition = new Condition(CONN.valueOf(opear), childrenType.childType, methodName.toUpperCase(), childrenType.where);
