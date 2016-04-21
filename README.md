@@ -9,6 +9,7 @@ Elasticsearch-SQL
 **2.2.0** [![2.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.2.1** [![2.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.3.0** [![2.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.3.1** [![2.3.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
