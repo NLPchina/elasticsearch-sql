@@ -2,30 +2,27 @@ package org.nlpcn.es4sql;
 
 
 
-import com.google.common.io.ByteStreams;
-import org.apache.lucene.index.IndexNotFoundException;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
-
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
-
 import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import java.io.FileInputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import static org.nlpcn.es4sql.TestsConstants.*;
+import com.google.common.io.ByteStreams;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
