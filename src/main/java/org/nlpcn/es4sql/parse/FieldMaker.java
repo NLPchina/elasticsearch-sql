@@ -31,11 +31,19 @@ public class FieldMaker {
         } else if (expr instanceof SQLAllColumnExpr) {
 		} else if (expr instanceof SQLMethodInvokeExpr) {
 			SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
+			
             String methodName = mExpr.getMethodName();
+            
             if(methodName.toLowerCase().equals("nested") ||methodName.toLowerCase().equals("reverse_nested")  ){
                 NestedType nestedType = new NestedType();
                 if(nestedType.tryFillFromExpr(mExpr)){
                     return handleIdentifier(nestedType, alias, tableAlias);
+                }
+            }
+            if(methodName.toLowerCase().equals("children")){
+                ChildrenType childrenType = new ChildrenType();
+                if(childrenType.tryFillFromExpr(mExpr)){
+                    return handleIdentifier(childrenType, alias, tableAlias);
                 }
             }
             else  if (methodName.toLowerCase().equals("filter")){
@@ -83,9 +91,18 @@ public class FieldMaker {
     private static Field handleIdentifier(NestedType nestedType, String alias, String tableAlias) {
         Field field = handleIdentifier(new SQLIdentifierExpr(nestedType.field), alias, tableAlias);
         field.setNested(nestedType);
+        field.setChildren(null);
         return field;
     }
 
+    private static Field handleIdentifier(ChildrenType childrenType, String alias, String tableAlias) {
+        Field field = handleIdentifier(new SQLIdentifierExpr(childrenType.field), alias, tableAlias);
+        field.setNested(null);
+        field.setChildren(childrenType);
+        return field;
+    }
+    
+    
     private static Field makeScriptMethodField(SQLBinaryOpExpr binaryExpr, String alias) throws SqlParseException {
         List<SQLExpr> params = new ArrayList<>();
 
@@ -152,12 +169,23 @@ public class FieldMaker {
                 }
                 else if(methodName.equals("nested") || methodName.equals("reverse_nested")){
                     NestedType nestedType = new NestedType();
+
                     if(!nestedType.tryFillFromExpr(object)){
                         throw new SqlParseException("failed parsing nested expr " + object);
                     }
+
                     paramers.add(new KVValue("nested",nestedType));
                 }
-                else throw new SqlParseException("only support script/nested as inner functions");
+                else if(methodName.equals("children")) {
+                	ChildrenType childrenType = new ChildrenType();
+
+                    if(!childrenType.tryFillFromExpr(object)){
+                        throw new SqlParseException("failed parsing children expr " + object);
+                    }
+
+                    paramers.add(new KVValue("children", childrenType));
+                }
+                else throw new SqlParseException("only support script/nested/children as inner functions");
             }else {
 				paramers.add(new KVValue(Util.expr2Object(object)));
 			}

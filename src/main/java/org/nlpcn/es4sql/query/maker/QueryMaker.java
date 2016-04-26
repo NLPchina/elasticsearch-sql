@@ -53,10 +53,14 @@ public class QueryMaker extends Maker {
 	private void addSubQuery(BoolQueryBuilder boolQuery, Where where, QueryBuilder subQuery) {
         if(where instanceof Condition){
             Condition condition = (Condition) where;
+
             if(condition.isNested()){
-                subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(),subQuery);
+                subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery);
+            } else if(condition.isChildren()) {
+            	subQuery = QueryBuilders.hasChildQuery(condition.getChildType(), subQuery);
             }
         }
+
 		if (where.getConn() == CONN.AND) {
 			boolQuery.must(subQuery);
 		} else {

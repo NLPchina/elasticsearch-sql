@@ -243,10 +243,20 @@ public abstract class Maker {
         case NESTED_COMPLEX:
             if(value == null || ! (value instanceof Where) )
                 throw new SqlParseException("unsupported nested condition");
-            Where where = (Where) value;
-            BoolQueryBuilder nestedFilter = QueryMaker.explan(where);
 
-            x = QueryBuilders.nestedQuery(name,nestedFilter);
+            Where whereNested = (Where) value;
+            BoolQueryBuilder nestedFilter = QueryMaker.explan(whereNested);
+
+            x = QueryBuilders.nestedQuery(name, nestedFilter);
+        break;
+        case CHILDREN_COMPLEX:
+            if(value == null || ! (value instanceof Where) )
+                throw new SqlParseException("unsupported nested condition");
+
+            Where whereChildren = (Where) value;
+            BoolQueryBuilder childrenFilter = QueryMaker.explan(whereChildren);
+
+            x = QueryBuilders.hasChildQuery(name, childrenFilter);
 
         break;
         case SCRIPT:

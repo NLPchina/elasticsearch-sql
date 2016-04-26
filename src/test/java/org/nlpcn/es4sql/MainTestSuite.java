@@ -33,7 +33,7 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		MethodQueryTest.class,
 		AggregationTest.class,
         JoinTests.class,
-		DeleteTest.class,
+//		DeleteTest.class,
 		ExplainTest.class,
         WktToGeoJsonConverterTests.class,
         SqlParserTests.class,
@@ -80,6 +80,11 @@ public class MainTestSuite {
         prepareNestedTypeIndex();
         loadBulk("src/test/resources/nested_objects.json");
 
+        prepareChildrenTypeIndex();
+        prepareParentTypeIndex();
+        loadBulk("src/test/resources/parent_objects.json");
+        loadBulk("src/test/resources/children_objects.json");
+        
         searchDao = new SearchDao(client);
 
         //refresh to make sure all the docs will return on queries
@@ -147,6 +152,50 @@ public class MainTestSuite {
             client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping).execute().actionGet();
     }
 
+    private static void prepareChildrenTypeIndex() {
+
+        String dataMapping = "{\n" +
+				"	\"childrenType\": {\n" +
+				"		\"_routing\": {\n" +
+				"			\"required\": true\n" +
+				"		},\n" +
+				"		\"_parent\": {\n" +
+				"			\"type\": \"parentType\"\n" +
+				"		},\n" +
+				"		\"properties\": {\n" +
+				"			\"dayOfWeek\": {\n" +
+				"				\"type\": \"long\"\n" +
+				"			},\n" +
+				"			\"author\": {\n" +
+				"				\"index\": \"not_analyzed\",\n" +
+				"				\"type\": \"string\"\n" +
+				"			},\n" +
+				"			\"info\": {\n" +
+				"				\"index\": \"not_analyzed\",\n" +
+				"				\"type\": \"string\"\n" +
+				"			}\n" +
+				"		}\n" +
+				"	}"+
+				"}\n";
+
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("childrenType").setSource(dataMapping).execute().actionGet();
+    }
+
+    private static void prepareParentTypeIndex() {
+
+        String dataMapping = "{\n" +
+				"	\"parentType\": {\n" +
+				"		\"properties\": {\n" +
+				"			\"parentTile\": {\n" +
+				"				\"index\": \"not_analyzed\",\n" +
+				"				\"type\": \"string\"\n" +
+				"			}\n" +
+				"		}\n" +
+				"	}\n" +
+				"}\n";
+
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("parentType").setSource(dataMapping).execute().actionGet();
+    }
 
     @AfterClass
 	public static void tearDown() {

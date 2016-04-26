@@ -34,6 +34,7 @@ import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.parse.ChildrenType;
 import org.nlpcn.es4sql.parse.NestedType;
 
 public class AggMaker {
@@ -144,9 +145,13 @@ public class AggMaker {
         }
         else  if (kvValue.key!=null && ( kvValue.key.equals("nested") || kvValue.key.equals("reverse_nested")) ) {
             NestedType nestedType = (NestedType) kvValue.value;
+            
             builder.field(nestedType.field);
+            
             AggregationBuilder nestedBuilder;
+            
             String nestedAggName = nestedType.field + "@NESTED";
+            
             if (nestedType.isReverse()) {
                 if (nestedType.path != null && nestedType.path.startsWith("~")) {
                     String realPath = nestedType.path.substring(1);
@@ -159,7 +164,21 @@ public class AggMaker {
             } else {
                 nestedBuilder = AggregationBuilders.nested(nestedAggName).path(nestedType.path);
             }
+            
             return nestedBuilder.subAggregation(builder);
+        }
+        else  if (kvValue.key!=null && ( kvValue.key.equals("children"))) {
+        	ChildrenType childrenType = (ChildrenType) kvValue.value;
+        	
+        	builder.field(childrenType.field);
+        	
+        	AggregationBuilder childrenBuilder;
+        	
+        	String childrenAggName = childrenType.field + "@CHILDREN";
+        	
+        	childrenBuilder = AggregationBuilders.children(childrenAggName).childType(childrenType.childType);
+        	
+        	return childrenBuilder;
         }
 
         return builder.field(kvValue.toString());
@@ -205,6 +224,7 @@ public class AggMaker {
                 case "alias":
                 case "nested":
                 case "reverse_nested":
+                case "children":
                     break;
                 default:
                     throw new SqlParseException("geo_bounds err or not define field " + kv.toString());
@@ -235,6 +255,7 @@ public class AggMaker {
                 case "alias":
                 case "nested":
                 case "reverse_nested":
+                case "children":
                     break;
                 default:
                     throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
@@ -305,6 +326,7 @@ public class AggMaker {
                 case "alias":
                 case "nested":
                 case "reverse_nested":
+                case "children":
                     break;
                 default:
                     throw new SqlParseException("scripted_metric err or not define field " + param.getKey());
@@ -340,6 +362,7 @@ public class AggMaker {
                 case "alias":
                 case "nested":
                 case "reverse_nested":
+                case "children":
                     break;
                 default:
                     throw new SqlParseException("geohash grid err or not define field " + kv.toString());
@@ -370,7 +393,7 @@ public class AggMaker {
 			} else if ("to".equals(kv.key)) {
                 dateRange.addUnboundedTo(kv.value);
                 continue;
-            } else if ("alias".equals(kv.key) || "nested".equals(kv.key)){
+            } else if ("alias".equals(kv.key) || "nested".equals(kv.key) || "children".equals(kv.key)){
               continue;
 			} else {
 				ranges.add(value);
@@ -414,6 +437,7 @@ public class AggMaker {
             case "alias":
             case "nested":
             case "reverse_nested":
+            case "children":
                 break;
 			default:
 				throw new SqlParseException("date range err or not define field " + kv.toString());
@@ -455,6 +479,7 @@ public class AggMaker {
                 case "alias":
                 case "nested":
                 case "reverse_nested":
+                case "children":
                     break;
 				case "order":
 					Histogram.Order order = null;
@@ -551,6 +576,7 @@ public class AggMaker {
             case "alias":
             case "nested":
             case "reverse_nested":
+            case "children":
                 break;
 			default:
 				topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
