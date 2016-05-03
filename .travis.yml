@@ -6,7 +6,7 @@ jdk:
 
 
 script:
-  - wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.0/elasticsearch-2.3.0.deb && sudo dpkg -i --force-confnew elasticsearch-2.3.0.deb
+  - wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.2/elasticsearch-2.3.2.deb && sudo dpkg -i --force-confnew elasticsearch-2.3.2.deb
   - sudo /usr/share/elasticsearch/bin/plugin install delete-by-query
   - sudo service elasticsearch start
   - sleep 10
