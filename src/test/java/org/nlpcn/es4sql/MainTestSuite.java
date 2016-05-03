@@ -35,7 +35,8 @@ import com.google.common.io.ByteStreams;
         WktToGeoJsonConverterTests.class,
         SqlParserTests.class,
         ShowTest.class,
-        CSVResultsExtractorTests.class
+        CSVResultsExtractorTests.class,
+        SourceFieldTest.class
 })
 public class MainTestSuite {
 
@@ -53,34 +54,34 @@ public class MainTestSuite {
 		String clusterName = nodeInfos.getClusterName().value();
 		System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
 
-		// Load test data.
-        if(client.admin().indices().prepareExists(TEST_INDEX).execute().actionGet().isExists()){
-            client.admin().indices().prepareDelete(TEST_INDEX).get();
-        }
-		loadBulk("src/test/resources/accounts.json");
-		loadBulk("src/test/resources/online.json");
-        preparePhrasesIndex();
-        loadBulk("src/test/resources/phrases.json");
-        loadBulk("src/test/resources/dogs.json");
-        loadBulk("src/test/resources/peoples.json");
-        loadBulk("src/test/resources/game_of_thrones_complex.json");
-
-        prepareOdbcIndex();
-        loadBulk("src/test/resources/odbc-date-formats.json");
-
-        prepareSpatialIndex("location");
-        loadBulk("src/test/resources/locations.json");
-
-        prepareSpatialIndex("location2");
-        loadBulk("src/test/resources/locations2.json");
-
-        prepareNestedTypeIndex();
-        loadBulk("src/test/resources/nested_objects.json");
-
-        prepareChildrenTypeIndex();
-        prepareParentTypeIndex();
-        loadBulk("src/test/resources/parent_objects.json");
-        loadBulk("src/test/resources/children_objects.json");
+//		// Load test data.
+//        if(client.admin().indices().prepareExists(TEST_INDEX).execute().actionGet().isExists()){
+//            client.admin().indices().prepareDelete(TEST_INDEX).get();
+//        }
+//		loadBulk("src/test/resources/accounts.json");
+//		loadBulk("src/test/resources/online.json");
+//        preparePhrasesIndex();
+//        loadBulk("src/test/resources/phrases.json");
+//        loadBulk("src/test/resources/dogs.json");
+//        loadBulk("src/test/resources/peoples.json");
+//        loadBulk("src/test/resources/game_of_thrones_complex.json");
+//
+//        prepareOdbcIndex();
+//        loadBulk("src/test/resources/odbc-date-formats.json");
+//
+//        prepareSpatialIndex("location");
+//        loadBulk("src/test/resources/locations.json");
+//
+//        prepareSpatialIndex("location2");
+//        loadBulk("src/test/resources/locations2.json");
+//
+//        prepareNestedTypeIndex();
+//        loadBulk("src/test/resources/nested_objects.json");
+//
+//        prepareChildrenTypeIndex();
+//        prepareParentTypeIndex();
+//        loadBulk("src/test/resources/parent_objects.json");
+//        loadBulk("src/test/resources/children_objects.json");
         
         searchDao = new SearchDao(client);
 
