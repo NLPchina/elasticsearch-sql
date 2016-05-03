@@ -6,7 +6,10 @@ import java.util.Map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.parse.ChildrenType;
+import org.nlpcn.es4sql.parse.NestedType;
 
 /**
  * 过滤条件
@@ -16,7 +19,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 public class Condition extends Where {
 
     public enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , TERM , IDS_QUERY,NESTED_COMPLEX , SCRIPT;
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_DISTANCE_RANGE, GEO_POLYGON, GEO_CELL, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT;
 
         public static Map<String,OPEAR> methodNameToOpear;
 
@@ -59,44 +62,85 @@ public class Condition extends Where {
 
 	private OPEAR opear;
 
-    private boolean isNested;
+	private Object relationshipType;
 
+	private boolean isNested;
 	private String nestedPath;
 
+	private boolean isChildren;
+	private String childType;
+
     public Condition(CONN conn, String field, String condition, Object obj) throws SqlParseException {
-        this(conn, field, condition, obj, false, null);
+        this(conn, field, condition, obj, null);
     }
     public Condition(CONN conn, String field, OPEAR condition, Object obj) throws SqlParseException {
-        this(conn, field, condition, obj, false, null);
+        this(conn, field, condition, obj, null);
     }
 
-	public Condition(CONN conn, String name, OPEAR oper, Object value,boolean isNested , String nestedPath) throws SqlParseException {
+	public Condition(CONN conn, String name, OPEAR oper, Object value, Object relationshipType) throws SqlParseException {
 		super(conn);
+
 		this.opear = null;
-
 		this.name = name;
-
 		this.value = value;
-		
 		this.opear = oper ;
+		this.relationshipType = relationshipType;
 
-        this.isNested = isNested;
+		if(this.relationshipType != null) {
+			if(this.relationshipType instanceof NestedType) {
+				NestedType nestedType = (NestedType)relationshipType;
 
-        this.nestedPath = nestedPath;
+				this.isNested = true;
+		        this.nestedPath = nestedType.path;
+		        this.isChildren = false;
+		        this.childType = "";
+			} else if(relationshipType instanceof ChildrenType) {
+				ChildrenType childrenType = (ChildrenType)relationshipType;
+
+				this.isNested = false;
+		        this.nestedPath = "";
+		        this.isChildren = true;
+		        this.childType = childrenType.childType;				
+			}
+		} else {
+			this.isNested = false;
+	        this.nestedPath = "";
+	        this.isChildren = false;
+	        this.childType = "";
+		}
 	}
 
-	public Condition(CONN conn, String name, String oper, Object value,boolean isNested,String nestedPath) throws SqlParseException {
+	public Condition(CONN conn, String name, String oper, Object value, Object relationshipType) throws SqlParseException {
 		super(conn);
 
-        this.isNested = isNested;
-
-        this.nestedPath = nestedPath;
-
 		this.opear = null;
-
 		this.name = name;
-
 		this.value = value;
+
+		this.relationshipType = relationshipType;
+
+		if(this.relationshipType != null) {
+			if(this.relationshipType instanceof NestedType) {
+				NestedType nestedType = (NestedType)relationshipType;
+
+				this.isNested = true;
+		        this.nestedPath = nestedType.path;
+		        this.isChildren = false;
+		        this.childType = "";
+			} else if(relationshipType instanceof ChildrenType) {
+				ChildrenType childrenType = (ChildrenType)relationshipType;
+
+				this.isNested = false;
+		        this.nestedPath = "";
+		        this.isChildren = true;
+		        this.childType = childrenType.childType;				
+			}
+		} else {
+			this.isNested = false;
+	        this.nestedPath = "";
+	        this.isChildren = false;
+	        this.childType = "";
+		}
 
 		// EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN
 		switch (oper) {
@@ -166,6 +210,9 @@ public class Condition extends Where {
         case "NESTED":
             this.opear = OPEAR.NESTED_COMPLEX;
             break;
+        case "CHILDREN":
+            this.opear = OPEAR.CHILDREN_COMPLEX;
+            break;
         case "SCRIPT":
             this.opear = OPEAR.SCRIPT;
             break;
@@ -198,6 +245,14 @@ public class Condition extends Where {
 		this.opear = opear;
 	}
 
+	public Object getRelationshipType() {
+		return relationshipType;
+	}
+
+	public void setRelationshipType(Object relationshipType) {
+		this.relationshipType = relationshipType;
+	}
+
     public boolean isNested() {
         return isNested;
     }
@@ -214,27 +269,52 @@ public class Condition extends Where {
         this.nestedPath = nestedPath;
     }
 
+    public boolean isChildren() {
+        return isChildren;
+    }
+
+    public void setChildren(boolean isChildren) {
+        this.isChildren = isChildren;
+    }
+
+    public String getChildType() {
+        return childType;
+    }
+
+    public void setChildType(String childType) {
+        this.childType = childType;
+    }    
+
     @Override
 	public String toString() {
         String result = "";
+
         if(this.isNested()){
             result = "nested condition ";
             if(this.getNestedPath()!=null){
                 result+="on path:" + this.getNestedPath() + " ";
             }
+        } else if(this.isChildren()) {
+            result = "children condition ";
+
+            if(this.getChildType() != null){
+                result+="on child: " + this.getChildType() + " ";
+            }        	
         }
+
 		if (value instanceof Object[]) {
 			result += this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
 		} else {
 			result += this.conn + " " + this.name + " " + this.opear + " " + this.value;
 		}
+
         return result;
 	}
 
     @Override
     public Object clone() throws CloneNotSupportedException {
         try {
-            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue(),this.isNested(),this.getNestedPath());
+            Condition clonedCondition = new Condition(this.getConn(), this.getName(), this.getOpear(), this.getValue(), this.getRelationshipType());
             return clonedCondition;
         } catch (SqlParseException e) {
 
