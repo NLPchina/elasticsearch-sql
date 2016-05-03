@@ -50,13 +50,13 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>2.3.0</version>
+            <version>${elasticsearch.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.plugin</groupId>
             <artifactId>delete-by-query</artifactId>
-            <version>2.3.0</version>
+            <version>${elasticsearch.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
