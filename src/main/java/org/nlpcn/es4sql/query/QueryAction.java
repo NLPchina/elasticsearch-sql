@@ -69,6 +69,9 @@ public abstract class QueryAction {
 
         for (Map.Entry<String,Object> param : highlightParams.entrySet()){
             switch (param.getKey()){
+                case "type":
+                    field.highlighterType((String) param.getValue());
+                    break;
                 case "boundary_chars":
                     field.boundaryChars(fromArrayListToCharArray((ArrayList) param.getValue()));
                     break;
