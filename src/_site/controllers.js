@@ -255,7 +255,7 @@ function updateWithScrollIfNeeded (query) {
 		data += "\n";
 			data += map2csvStr(columns,rows[i],delimiter) ;
 		}
-		var plain = 'data:text/csv;charset=utf8,' + encodeURIComponent(data);
+		var plain = 'data:text/csv;charset=utf8,\uFEFF' + encodeURIComponent(data);
 		download(plain, "query_result.csv", "text/plain");
   		return true;
 	}
