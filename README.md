@@ -42,7 +42,7 @@ Versions
 | 2.3.0                 | 2.3.0.0        | delete commands not supported  | elastic2.3.0 |
 | 2.3.1                 | 2.3.1.0        | delete commands not supported  | elastic2.3.1 |
 | 2.3.2                 | 2.3.2.0        | delete commands not supported  | elastic2.3.2 |
-| 2.3.3                 | 2.3.2.0        | delete commands not supported  | elastic2.3.3 |
+| 2.3.3                 | 2.3.3.0        | delete commands not supported  | elastic2.3.3 |
 
 ### Elasticsearch 1.X
 ````
