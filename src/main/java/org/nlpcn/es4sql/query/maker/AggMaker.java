@@ -378,6 +378,8 @@ public class AggMaker {
 		DateRangeBuilder dateRange = AggregationBuilders.dateRange(alias).format(TIME_FARMAT);
 
 		String value = null;
+		String paired = null;
+		Boolean keyflag = false;
 		List<String> ranges = new ArrayList<>();
 		for (KVValue kv : field.getParams()) {
 			value = kv.value.toString();
@@ -385,7 +387,11 @@ public class AggMaker {
 				dateRange.field(value);
 				continue;
 			} else if ("format".equals(kv.key)) {
-				dateRange.format(value);
+				if("_original".equals(value)){
+					keyflag = true;
+				}else {
+					dateRange.format(value);
+				}
 				continue;
 			} else if ("from".equals(kv.key)) {
 				dateRange.addUnboundedFrom(kv.value);
@@ -393,16 +399,38 @@ public class AggMaker {
 			} else if ("to".equals(kv.key)) {
                 dateRange.addUnboundedTo(kv.value);
                 continue;
-            } else if ("alias".equals(kv.key) || "nested".equals(kv.key) || "children".equals(kv.key)){
+            } else if ("paired".equals(kv.key)) {
+                paired = value;
+                continue;
+            }else if ("alias".equals(kv.key) || "nested".equals(kv.key) || "children".equals(kv.key)){
               continue;
 			} else {
 				ranges.add(value);
 			}
 		}
-
-		for (int i = 1; i < ranges.size(); i++) {
-			dateRange.addRange(ranges.get(i - 1), ranges.get(i));
+		
+		//成对range
+		if ("true".equals(paired)){
+			for (int i = 0; i < ranges.size(); i=i+2) {
+				String endtime = i+1 == ranges.size() ? "now" : ranges.get(i+1);
+				if(keyflag){
+					String range_key =  ranges.get(i) +" - "+ endtime;
+					dateRange.addRange(range_key, ranges.get(i), endtime);
+				}else {
+					dateRange.addRange(ranges.get(i), endtime);
+				}
+			}
+		}else{//默认时间range为连续的
+			for (int i = 1; i < ranges.size(); i++) {
+				if(keyflag){
+					String range_key =  ranges.get(i - 1) +" - "+ ranges.get(i);
+					dateRange.addRange(range_key, ranges.get(i), ranges.get(i));
+				}else {
+					dateRange.addRange(ranges.get(i - 1), ranges.get(i));
+				}
+			}
 		}
+		
 
 		return dateRange;
 	}
