@@ -19,6 +19,9 @@ You can also use ES functions in SQL.
 
 **Check out our [wiki!](https://github.com/NLPchina/elasticsearch-sql/wiki)**
 
+## explain example 
+
+you can visite : [http://www.nlpcn.org:9999/web/](http://www.nlpcn.org:9999/web/) , it is a sample example for explain
 
 ## Web frontend overview
 
