@@ -265,6 +265,24 @@ public class AggregationTest {
 
     }
 
+    @Test
+    public void termsWithMissing() throws Exception {
+
+        Map<String, Set<Integer>> buckets = new HashMap<>();
+
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/gotCharacters GROUP BY terms('alias'='nicknames','field'='nickname','missing'='unknown')", TEST_INDEX));
+        Terms nicknames = result.get("nicknames");
+        boolean foundMissingBucket = false;
+        for(Terms.Bucket bucket : nicknames.getBuckets()){
+            if(bucket.getKeyAsString().equals("unknown")){
+                foundMissingBucket = true;
+                break;
+            }
+        }
+        Assert.assertTrue(foundMissingBucket);
+
+    }
+
 
     @Test
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {

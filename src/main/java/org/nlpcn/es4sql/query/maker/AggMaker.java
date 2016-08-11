@@ -232,6 +232,9 @@ public class AggMaker {
                 case "min_doc_count":
                     terms.minDocCount(Integer.parseInt(value));
                     break;
+                case "missing":
+                    terms.missing(value);
+                    break;
                 case "alias":
                 case "nested":
                 case "reverse_nested":
