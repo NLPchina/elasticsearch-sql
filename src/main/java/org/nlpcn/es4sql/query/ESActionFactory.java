@@ -29,69 +29,83 @@ import java.util.List;
 
 public class ESActionFactory {
 
-	/**
-	 * Create the compatible Query object
-	 * based on the SQL query.
-	 *
-	 * @param sql The SQL query.
-	 * @return Query object.
-	 */
-	public static QueryAction create(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
-		sql = sql.replaceAll("\n"," ");
+    /**
+     * Create the compatible Query object
+     * based on the SQL query.
+     *
+     * @param sql The SQL query.
+     * @return Query object.
+     */
+    public static QueryAction create(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
+        sql = sql.replaceAll("\n", " ");
         String firstWord = sql.substring(0, sql.indexOf(' '));
         switch (firstWord.toUpperCase()) {
-			case "SELECT":
-				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
-                if(isJoin(sqlExpr,sql)){
+            case "SELECT":
+                SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
+                if (isJoin(sqlExpr, sql)) {
                     JoinSelect joinSelect = new SqlParser().parseJoinSelect(sqlExpr);
                     handleSubQueries(client, joinSelect.getFirstTable());
                     handleSubQueries(client, joinSelect.getSecondTable());
                     return ESJoinQueryActionFactory.createJoinAction(client, joinSelect);
-                }
-                else {
+                } else {
                     Select select = new SqlParser().parseSelect(sqlExpr);
                     handleSubQueries(client, select);
                     return handleSelect(client, select);
                 }
-			case "DELETE":
+            case "DELETE":
                 SQLStatementParser parser = createSqlStatementParser(sql);
-				SQLDeleteStatement deleteStatement = parser.parseDeleteStatement();
-				Delete delete = new SqlParser().parseDelete(deleteStatement);
-				return new DeleteQueryAction(client, delete);
+                SQLDeleteStatement deleteStatement = parser.parseDeleteStatement();
+                Delete delete = new SqlParser().parseDelete(deleteStatement);
+                return new DeleteQueryAction(client, delete);
             case "SHOW":
-                return new ShowQueryAction(client,sql);
-			default:
-				throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
-		}
-	}
+                return new ShowQueryAction(client, sql);
+            default:
+                throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
+        }
+    }
+
+    public static String table(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
+        sql = sql.replaceAll("\n", " ");
+        String firstWord = sql.substring(0, sql.indexOf(' '));
+        switch (firstWord.toUpperCase()) {
+            case "SELECT":
+                SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
+                Select select = new SqlParser().parseSelect(sqlExpr);
+                return select.getFrom().get(0).getIndex();
+            case "DELETE":
+                throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
+            case "SHOW":
+                throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
+            default:
+                throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
+        }
+    }
 
     private static void handleSubQueries(Client client, Select select) throws SqlParseException {
-        if (select.containsSubQueries())
-        {
-            for(SubQueryExpression subQueryExpression : select.getSubQueries()){
+        if (select.containsSubQueries()) {
+            for (SubQueryExpression subQueryExpression : select.getSubQueries()) {
                 QueryAction queryAction = handleSelect(client, subQueryExpression.getSelect());
-                executeAndFillSubQuery(client , subQueryExpression,queryAction);
+                executeAndFillSubQuery(client, subQueryExpression, queryAction);
             }
         }
     }
 
-    private static void executeAndFillSubQuery(Client client , SubQueryExpression subQueryExpression,QueryAction queryAction) throws SqlParseException {
+    private static void executeAndFillSubQuery(Client client, SubQueryExpression subQueryExpression, QueryAction queryAction) throws SqlParseException {
         List<Object> values = new ArrayList<>();
         Object queryResult;
         try {
-            queryResult = QueryActionElasticExecutor.executeAnyAction(client,queryAction);
+            queryResult = QueryActionElasticExecutor.executeAnyAction(client, queryAction);
         } catch (Exception e) {
-            throw new SqlParseException("could not execute SubQuery: " +  e.getMessage());
+            throw new SqlParseException("could not execute SubQuery: " + e.getMessage());
         }
 
         String returnField = subQueryExpression.getReturnField();
-        if(queryResult instanceof SearchHits) {
+        if (queryResult instanceof SearchHits) {
             SearchHits hits = (SearchHits) queryResult;
             for (SearchHit hit : hits) {
-                values.add(ElasticResultHandler.getFieldValue(hit,returnField));
+                values.add(ElasticResultHandler.getFieldValue(hit, returnField));
             }
-        }
-        else {
+        } else {
             throw new SqlParseException("on sub queries only support queries that return Hits and not aggregations");
         }
         subQueryExpression.setValues(values.toArray());
@@ -111,9 +125,9 @@ public class ESActionFactory {
         return new MySqlStatementParser(lexer);
     }
 
-    private static boolean isJoin(SQLQueryExpr sqlExpr,String sql) {
+    private static boolean isJoin(SQLQueryExpr sqlExpr, String sql) {
         MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
-        return query.getFrom() instanceof  SQLJoinTableSource && sql.toLowerCase().contains("join");
+        return query.getFrom() instanceof SQLJoinTableSource && sql.toLowerCase().contains("join");
     }
 
     private static SQLExpr toSqlExpr(String sql) {
@@ -126,7 +140,6 @@ public class ESActionFactory {
 
         return expr;
     }
-
 
 
 }

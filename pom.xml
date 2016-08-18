@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.nlpcn</groupId>
     <artifactId>elasticsearch-sql</artifactId>
-    <version>1.4.9</version>
+    <version>1.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>Query elasticsearch using SQL</description>
     <name>elasticsearch-sql</name>
@@ -34,42 +34,55 @@
         </developer>
     </developers>
 
-    <distributionManagement>
-        <repository>
-            <id>mvn-repo</id>
-            <url>scpexe://ansj/home/mvn-repo/ROOT</url>
-        </repository>
-    </distributionManagement>
-
-
-    <repositories>
-        <repository>
-            <id>mvn-repo</id>
-            <url>http://maven.nlpcn.org/</url>
-        </repository>
-    </repositories>
-
-
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <runSuite>**/MainTestSuite.class</runSuite>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>1.6.0</version>
-            <scope>provided</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>provided</scope>
-        </dependency>
+    <profiles>
+
+        <profile>
+            <id>local</id>
+            <dependencies>
+
+                <dependency>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                    <version>1.6.0</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                    <version>1.2.16</version>
+                </dependency>
+
+            </dependencies>
+        </profile>
+        <profile>
+            <id>online</id>
+            <activation></activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                    <version>1.6.0</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                    <version>1.2.16</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+    </profiles>
+
+    <dependencies>
 
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -143,6 +156,21 @@
                             <goal>jar</goal>
                         </goals>
                         <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -224,5 +252,18 @@
         </extensions>
 
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>releases</name>
+            <url>http://mvn.letv.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://mvn.letv.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 
 </project>
