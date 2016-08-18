@@ -6,7 +6,10 @@
 
 ### v1.5.2
 
+下面大多数特性都需要ES 开启groovy 脚本支持:
+
 * distinct 默认精准度40000,先采用ES默认值,可以通过第二个参数控制精确度
-* select 字段可以设置别名,但是要ES 开启groovy 脚本支持
-* select 带函数的字段,可以支持别名,但是要ES 开启groovy 脚本支持
+* select 字段可以设置别名
+* select 带函数的字段,可以支持别名
+* groupby 字段可以支持函数
 * 调整Pom文件,支持profile,方便本地调试和打包
