@@ -1,12 +1,9 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.google.common.collect.Sets;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -38,7 +35,9 @@ import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 
 public class AggMaker {
 
-    private Map<String, KVValue> groupMap = new HashMap<>();
+    public static final Set<String> aggFunctions = Sets.newHashSet("SUM", "MAX", "MIN", "AVG", "STATS", "EXTENDED_STATS", "PERCENTILES", "TOPHITS", "SCRIPTED_METRIC", "COUNT");
+
+    protected Map<String, KVValue> groupMap = new HashMap<>();
 
     /**
      * 分组查的聚合函数
@@ -48,6 +47,14 @@ public class AggMaker {
      * @throws SqlParseException
      */
     public AggregationBuilder<?> makeGroupAgg(Field field) throws SqlParseException {
+
+        if (field instanceof MethodField && field.getName().equals("script")) {
+            MethodField methodField = (MethodField) field;
+            TermsBuilder termsBuilder = AggregationBuilders.terms(methodField.getAlias()).script(methodField.getParams().get(1).value.toString());
+            groupMap.put(methodField.getAlias(), new KVValue("KEY", termsBuilder));
+            return termsBuilder;
+        }
+
         if (field instanceof MethodField) {
 
             MethodField methodField = (MethodField) field;

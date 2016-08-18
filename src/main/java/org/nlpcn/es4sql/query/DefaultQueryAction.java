@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.query;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
@@ -54,6 +55,10 @@ DefaultQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
         return sqlElasticRequestBuilder;
+    }
+
+    public void intialize(SearchRequestBuilder request) throws SqlParseException {
+        this.request = request;
     }
 
     private boolean useScrollIfNeeded(boolean existsOrderBy) {
@@ -108,7 +113,7 @@ DefaultQueryAction extends QueryAction {
         }
     }
 
-    private void handleMethodField(MethodField field) throws SqlParseException {
+    protected void handleMethodField(MethodField field) throws SqlParseException {
         MethodField method = (MethodField) field;
         if (method.getName().toLowerCase().equals("script")) {
             handleScriptField(method);

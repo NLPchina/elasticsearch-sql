@@ -3,11 +3,13 @@ package org.nlpcn.es4sql.parse;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.parser.SQLParseException;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -15,6 +17,7 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.ast.*;
+import org.nlpcn.es4sql.query.maker.AggMaker;
 
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
@@ -171,21 +174,33 @@ public class FieldMaker {
 
         }
 
-        if (name != "script") {
+
+        if (!AggMaker.aggFunctions.contains(name.toUpperCase()) && finalMethodName != "script") {
             finalMethodName = "script";
 
             List<KVValue> newParamers = new LinkedList<>();
             newParamers.addAll(paramers);
             paramers.clear();
+            if (alias != null) {
+                paramers.add(new KVValue(alias));
+            }
 
-            paramers.add(new KVValue(alias));
             String start = name + "(";
             List<String> buffer = Lists.newArrayList();
             for (KVValue temp : newParamers) {
-                if (temp.value instanceof String) {
+                if (buffer.size() == 0) {
+                    if (alias == null) {
+                        alias = temp.value.toString();
+                        paramers.add(new KVValue(temp.value));
+                    }
                     buffer.add("doc['" + temp.value + "'].value");
                 } else {
-                    buffer.add(temp.value + "");
+                    if (temp.value instanceof String) {
+                        buffer.add("'" + temp.value + "'");
+                    } else {
+                        buffer.add(temp.value + "");
+                    }
+
                 }
             }
             String params = Joiner.on(",").join(buffer);
