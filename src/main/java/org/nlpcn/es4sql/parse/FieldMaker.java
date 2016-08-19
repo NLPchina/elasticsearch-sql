@@ -10,6 +10,7 @@ import com.alibaba.druid.sql.parser.SQLParseException;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.elasticsearch.common.collect.Tuple;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -47,10 +48,10 @@ public class FieldMaker {
             } else if (methodName.toLowerCase().equals("filter")) {
                 return makeFilterMethodField(mExpr, alias);
             }
-            return makeMethodField(methodName, mExpr.getParameters(), null, alias);
+            return makeMethodField(methodName, mExpr.getParameters(), null, alias, true);
         } else if (expr instanceof SQLAggregateExpr) {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
-            return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias);
+            return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, true);
         } else {
             throw new SqlParseException("unknown field name : " + expr);
         }
@@ -107,7 +108,7 @@ public class FieldMaker {
 
         params.add(new SQLCharExpr(script));
 
-        return makeMethodField("script", params, null, null);
+        return makeMethodField("script", params, null, null, true);
     }
 
     private static Object getScriptValue(SQLExpr expr) throws SqlParseException {
@@ -126,7 +127,7 @@ public class FieldMaker {
             List<SQLExpr> paramers = Lists.newArrayList();
             paramers.add(new SQLCharExpr(alias));
             paramers.add(new SQLCharExpr("doc['" + name + "'].value"));
-            return makeMethodField("script", paramers, null, alias);
+            return makeMethodField("script", paramers, null, alias, true);
         }
 
         if (tableAlias == null) return new Field(name, alias);
@@ -140,7 +141,7 @@ public class FieldMaker {
         return null;
     }
 
-    private static MethodField makeMethodField(String name, List<SQLExpr> arguments, SQLAggregateOption option, String alias) throws SqlParseException {
+    private static MethodField makeMethodField(String name, List<SQLExpr> arguments, SQLAggregateOption option, String alias, boolean first) throws SqlParseException {
         List<KVValue> paramers = new LinkedList<>();
 
         String finalMethodName = name;
@@ -157,10 +158,11 @@ public class FieldMaker {
                     paramers.add(new KVValue(binaryOpExpr.getLeft().toString(), value));
                 }
             } else if (object instanceof SQLMethodInvokeExpr) {
+                //method nest method
                 SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) object;
                 String methodName = mExpr.getMethodName().toLowerCase();
                 if (methodName.equals("script")) {
-                    KVValue script = new KVValue("script", makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias));
+                    KVValue script = new KVValue("script", makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias, true));
                     paramers.add(script);
                 } else if (methodName.equals("nested") || methodName.equals("reverse_nested")) {
                     NestedType nestedType = new NestedType();
@@ -168,57 +170,39 @@ public class FieldMaker {
                         throw new SqlParseException("failed parsing nested expr " + object);
                     }
                     paramers.add(new KVValue("nested", nestedType));
-                } else throw new SqlParseException("only support script/nested as inner functions");
+                } else {
+                    //throw new SqlParseException("only support script/nested as inner functions");
+                    MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, false);
+                    paramers.add(new KVValue(abc.getParams().get(0).toString(), abc.getParams().get(1)));
+
+                }
+
             } else {
                 paramers.add(new KVValue(Util.expr2Object(object)));
             }
 
         }
 
-
-        if (!AggMaker.aggFunctions.contains(name.toUpperCase()) && !finalMethodName.equals("script")) {
-            finalMethodName = "script";
-
-            String newFunctions = SQLFunctions.function(name, paramers);
-            if (newFunctions != null) {
-                if (alias == null) {
-                    alias = paramers.get(0).value.toString();
-                }
-                paramers.clear();
-                paramers.add(new KVValue(alias));
-                paramers.add(new KVValue(newFunctions));
+        //just check we can find the function
+        if (SQLFunctions.function(finalMethodName, paramers, null) != null) {
+            if (alias == null && first) {
+                alias = paramers.get(0).value.toString();
+            }
+            Tuple<String, String> newFunctions = SQLFunctions.function(finalMethodName, paramers,
+                    paramers.get(0).key);
+            paramers.clear();
+            if (!first) {
+                paramers.add(new KVValue(newFunctions.v1()));
             } else {
-                List<KVValue> newParamers = new LinkedList<>();
-                newParamers.addAll(paramers);
-                paramers.clear();
-                if (alias != null) {
-                    paramers.add(new KVValue(alias));
-                }
-
-                String start = name + "(";
-                List<String> buffer = Lists.newArrayList();
-                for (KVValue temp : newParamers) {
-                    if (buffer.size() == 0) {
-                        if (alias == null) {
-                            alias = temp.value.toString();
-                            paramers.add(new KVValue(temp.value));
-                        }
-                        buffer.add("doc['" + temp.value + "'].value");
-                    } else {
-                        if (temp.value instanceof String) {
-                            buffer.add("'" + temp.value + "'");
-                        } else {
-                            buffer.add(temp.value + "");
-                        }
-
-                    }
-                }
-                String params = Joiner.on(",").join(buffer);
-                paramers.add(new KVValue(start + params + ")"));
+                paramers.add(new KVValue(alias));
             }
 
+            paramers.add(new KVValue(newFunctions.v2()));
+            finalMethodName = "script";
         }
+
 
         return new MethodField(finalMethodName, paramers, option == null ? null : option.name(), alias);
     }
+
 }
