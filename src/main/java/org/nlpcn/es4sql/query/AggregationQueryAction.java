@@ -235,6 +235,9 @@ public class AggregationQueryAction extends QueryAction {
             if (field instanceof MethodField) {
                 if (field.getName().equals("script")) {
                     request.addField(field.getAlias());
+                    DefaultQueryAction defaultQueryAction = new DefaultQueryAction(client,select);
+                    defaultQueryAction.intialize(request);
+                    defaultQueryAction.handleMethodField((MethodField)field);
                     continue;
                 }
                 AbstractAggregationBuilder makeAgg = aggMaker.makeFieldAgg((MethodField) field, groupByAgg);

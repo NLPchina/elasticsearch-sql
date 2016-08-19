@@ -18,6 +18,7 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.ast.*;
 import org.nlpcn.es4sql.query.maker.AggMaker;
+import org.nlpcn.es4sql.sql.SQLFunctions;
 
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
@@ -175,36 +176,47 @@ public class FieldMaker {
         }
 
 
-        if (!AggMaker.aggFunctions.contains(name.toUpperCase()) && finalMethodName != "script") {
+        if (!AggMaker.aggFunctions.contains(name.toUpperCase()) && !finalMethodName.equals("script")) {
             finalMethodName = "script";
 
-            List<KVValue> newParamers = new LinkedList<>();
-            newParamers.addAll(paramers);
-            paramers.clear();
-            if (alias != null) {
-                paramers.add(new KVValue(alias));
-            }
-
-            String start = name + "(";
-            List<String> buffer = Lists.newArrayList();
-            for (KVValue temp : newParamers) {
-                if (buffer.size() == 0) {
-                    if (alias == null) {
-                        alias = temp.value.toString();
-                        paramers.add(new KVValue(temp.value));
-                    }
-                    buffer.add("doc['" + temp.value + "'].value");
-                } else {
-                    if (temp.value instanceof String) {
-                        buffer.add("'" + temp.value + "'");
-                    } else {
-                        buffer.add(temp.value + "");
-                    }
-
+            String newFunctions = SQLFunctions.function(name, paramers);
+            if (newFunctions != null) {
+                if (alias == null) {
+                    alias = paramers.get(0).value.toString();
                 }
+                paramers.clear();
+                paramers.add(new KVValue(alias));
+                paramers.add(new KVValue(newFunctions));
+            } else {
+                List<KVValue> newParamers = new LinkedList<>();
+                newParamers.addAll(paramers);
+                paramers.clear();
+                if (alias != null) {
+                    paramers.add(new KVValue(alias));
+                }
+
+                String start = name + "(";
+                List<String> buffer = Lists.newArrayList();
+                for (KVValue temp : newParamers) {
+                    if (buffer.size() == 0) {
+                        if (alias == null) {
+                            alias = temp.value.toString();
+                            paramers.add(new KVValue(temp.value));
+                        }
+                        buffer.add("doc['" + temp.value + "'].value");
+                    } else {
+                        if (temp.value instanceof String) {
+                            buffer.add("'" + temp.value + "'");
+                        } else {
+                            buffer.add(temp.value + "");
+                        }
+
+                    }
+                }
+                String params = Joiner.on(",").join(buffer);
+                paramers.add(new KVValue(start + params + ")"));
             }
-            String params = Joiner.on(",").join(buffer);
-            paramers.add(new KVValue(start + params + ")"));
+
         }
 
         return new MethodField(finalMethodName, paramers, option == null ? null : option.name(), alias);

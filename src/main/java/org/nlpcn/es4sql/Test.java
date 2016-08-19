@@ -29,8 +29,9 @@ public class Test {
         //sql = "SELECT sum(num_d) as num2,split(newtype,',') as nt  from  twitter2 group by nt  order by num2 ";
         sql = "SELECT newtype as nt  from  twitter2  ";
 
-        sql = "SELECT sum(num_d) as num2,floor(num) as nt  from  twitter2 group by floor(num)  order by num2 ";
+        //sql = "SELECT sum(num_d) as num2,floor(num) as nt  from  twitter2 group by floor(num),newtype  order by num2 ";
 
+        sql = "SELECT split('newtype','b') as nt,sum(num_d) as num2   from  twitter2 group by nt ";
         System.out.println(sqlToEsQuery(sql));
     }
 }
