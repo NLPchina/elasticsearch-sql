@@ -3,11 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.nlpcn</groupId>
     <artifactId>elasticsearch-sql</artifactId>
-<<<<<<< HEAD
-    <version>1.5.3-SNAPSHOT</version>
-=======
     <version>2.3.5.0</version>
->>>>>>> 739617331bd5e88bea4adedeb909f6d47ab4b577
     <packaging>jar</packaging>
     <description>Query elasticsearch using SQL</description>
     <name>elasticsearch-sql</name>
@@ -50,8 +46,6 @@
 
     </properties>
 
-<<<<<<< HEAD
-
     <profiles>
 
         <profile>
@@ -61,7 +55,14 @@
                 <dependency>
                     <groupId>org.elasticsearch</groupId>
                     <artifactId>elasticsearch</artifactId>
-                    <version>1.6.0</version>
+                    <version>${elasticsearch.version}</version>
+
+                </dependency>
+                <dependency>
+                    <groupId>org.elasticsearch.plugin</groupId>
+                    <artifactId>delete-by-query</artifactId>
+                    <version>${elasticsearch.version}</version>
+
                 </dependency>
 
                 <dependency>
@@ -79,7 +80,13 @@
                 <dependency>
                     <groupId>org.elasticsearch</groupId>
                     <artifactId>elasticsearch</artifactId>
-                    <version>1.6.0</version>
+                    <version>${elasticsearch.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.elasticsearch.plugin</groupId>
+                    <artifactId>delete-by-query</artifactId>
+                    <version>${elasticsearch.version}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
@@ -93,29 +100,8 @@
 
     </profiles>
 
-    <dependencies>
-=======
-    <dependencies>
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch.plugin</groupId>
-            <artifactId>delete-by-query</artifactId>
-            <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>provided</scope>
-        </dependency>
->>>>>>> 739617331bd5e88bea4adedeb909f6d47ab4b577
 
+    <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -295,8 +281,6 @@
         </plugins>
 
     </build>
-
-
 
 
 </project>

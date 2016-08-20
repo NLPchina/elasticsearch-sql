@@ -1,15 +1,65 @@
-## 功能特性
+## Elasticsearch-SQL
 
-### v1.5.1
 
-原始版本
+## features 
 
-### v1.5.2
+All features require ES with groovy script enabled.
 
-下面大多数特性都需要ES 开启groovy 脚本支持:
+* Distinct precision_threshold depends on ES or you can specify by second parameters.
+  When you have lot of shards, 40000  consume too much memory. 
+* select,groupBy now support functions and field alias 
+* nested function is also available,eg.  `split(substring('newtype',0,3),'c')[0]`
 
-* distinct 默认精准度40000,先采用ES默认值,可以通过第二个参数控制精确度
-* select 字段可以设置别名
-* select 带函数的字段,可以支持别名
-* groupby 字段可以支持函数
-* 调整Pom文件,支持profile,方便本地调试和打包
+
+## functions support
+ 
+ * floor
+ * split
+ * trim
+ * log
+ * log10
+ * substring
+ * round
+ * sqrt
+
+## Example
+
+check Example file:
+
+```
+org.nlpcn.es4sql.Test
+```
+
+SQLs:
+
+```sql
+
+SELECT newtype as nt  from  twitter2 
+
+SELECT sum(num) as num2,newtype as nt  
+from  twitter2 
+group by nt  order by num2 
+
+SELECT sum(num_d) as num2,split(newtype,',') as nt  
+from  twitter2 
+group by nt  
+order by num2
+
+SELECT sum(num_d) as num2,floor(num) as nt  
+from  twitter2 
+group by floor(num),newtype  
+order by num2
+
+SELECT split('newtype','b')[1] as nt,sum(num_d) as num2   
+from  twitter2 
+group by nt
+
+SELECT split(substring('newtype',0,3),'c')[0] as nt,num_d   
+from  twitter2 
+group by nt
+
+SELECT trim(newtype) as nt 
+from  twitter2
+ 
+```
+

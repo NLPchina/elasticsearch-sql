@@ -30,6 +30,10 @@ public class DefaultQueryAction extends QueryAction {
 		this.select = select;
 	}
 
+	public void intialize(SearchRequestBuilder request) throws SqlParseException {
+		this.request = request;
+	}
+
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 		this.request = client.prepareSearch();
@@ -89,7 +93,7 @@ public class DefaultQueryAction extends QueryAction {
 	 * @param fields
 	 *            list of fields to source filter.
 	 */
-	private void setFields(List<Field> fields) throws SqlParseException {
+	public void setFields(List<Field> fields) throws SqlParseException {
 		if (select.getFields().size() > 0) {
 			ArrayList<String> includeFields = new ArrayList<String>();
 			ArrayList<String> excludeFields = new ArrayList<String>();
