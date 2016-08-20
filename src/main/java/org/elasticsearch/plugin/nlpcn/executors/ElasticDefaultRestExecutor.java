@@ -32,7 +32,6 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
     public void execute(Client client, Map<String, String> params, QueryAction queryAction, RestChannel channel) throws Exception{
         SqlElasticRequestBuilder requestBuilder = queryAction.explain();
         ActionRequest request = requestBuilder.request();
-        request.listenerThreaded(false);
 
         //todo: maby change to instanceof multi?
         if(requestBuilder instanceof JoinRequestBuilder){
@@ -43,8 +42,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         else if (request instanceof SearchRequest) {
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
         } else if (request instanceof DeleteByQueryRequest) {
-            ActionRequestBuilder elasticRequestBuilder =  requestBuilder.getBuilder();
-            elasticRequestBuilder.execute(new DeleteByQueryRestListener(channel));
+            throw new UnsupportedOperationException("currently not support delete on elastic 2.x");
         }
         else if(request instanceof GetIndexRequest) {
             requestBuilder.getBuilder().execute( new GetIndexRequestRestListener(channel, (GetIndexRequest) request));

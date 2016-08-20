@@ -4,8 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,7 +16,7 @@ import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
 import org.nlpcn.es4sql.parse.FieldMaker;
 import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SqlParser;
-import org.nlpcn.es4sql.query.maker.FilterMaker;
+import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -541,7 +540,7 @@ public class SqlParserTests {
         Where where = select.getWhere().getWheres().get(0);
         Assert.assertTrue("where should be condition", where instanceof Condition);
         Condition condition = (Condition) where;
-        Assert.assertTrue("condition should be nested",condition.isNested());
+        Assert.assertTrue("condition should be nested", condition.isNested());
         Assert.assertEquals("message",condition.getNestedPath());
         Assert.assertEquals("message.name",condition.getName());
     }
@@ -713,7 +712,7 @@ public class SqlParserTests {
         Condition condition = (Condition) select.getWhere().getWheres().get(0);
         Object[] values = (Object[]) condition.getValue();
         Assert.assertEquals("a",values[0]);
-        Assert.assertEquals("b",values[1]);
+        Assert.assertEquals("b", values[1]);
     }
 
     @Test
@@ -775,7 +774,7 @@ public class SqlParserTests {
         LinkedList<Where> wheres = select.getWhere().getWheres();
         Assert.assertEquals(1, wheres.size());
         Where where = wheres.get(0);
-        Assert.assertEquals(Condition.class,where.getClass());
+        Assert.assertEquals(Condition.class, where.getClass());
         Condition condition = (Condition) where;
         Assert.assertEquals("3", condition.getName());
     }
@@ -784,7 +783,7 @@ public class SqlParserTests {
     public void likeTestWithEscaped() throws SqlParseException {
         String query = "select * from x where name like '&UNDERSCOREhey_%&PERCENT'";
         Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
-        BoolFilterBuilder explan = FilterMaker.explan(select.getWhere());
+        BoolQueryBuilder explan = QueryMaker.explan(select.getWhere());
         String filterAsString = explan.toString();
         Assert.assertTrue(filterAsString.contains("_hey?*%"));
     }

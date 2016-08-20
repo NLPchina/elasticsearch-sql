@@ -1,12 +1,13 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
-import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
+
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -97,7 +98,7 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
         builder.startObject(Fields.WARMERS);
         if (warmers != null) {
             for (IndexWarmersMetaData.Entry warmer : warmers) {
-                IndexWarmersMetaData.FACTORY.toXContent(warmer, builder, params);
+                IndexWarmersMetaData.toXContent(warmer, builder, params);
             }
         }
         builder.endObject();

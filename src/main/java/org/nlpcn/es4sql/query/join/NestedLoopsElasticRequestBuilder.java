@@ -1,12 +1,14 @@
 package org.nlpcn.es4sql.query.join;
 
-import org.elasticsearch.index.query.BoolFilterBuilder;
+
+import org.elasticsearch.index.query.QueryBuilder;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.maker.FilterMaker;
+
 import org.nlpcn.es4sql.query.maker.Maker;
+import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,10 +29,10 @@ public class NestedLoopsElasticRequestBuilder extends JoinRequestBuilder {
     public String explain() {
         String baseExplain = super.explain();
         Where where = this.connectedWhere;
-        BoolFilterBuilder explan = null;
+        QueryBuilder explan = null;
         try {
             if(where!=null)
-            explan = FilterMaker.explan(where);
+            explan = QueryMaker.explan(where);
         } catch (SqlParseException e) {
         }
         String conditions = explan == null ? "Could not parse conditions" : explan.toString();

@@ -4,18 +4,12 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
-import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
-import com.alibaba.druid.sql.parser.SQLStatementParser;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.nlpcn.es4sql.domain.Delete;
-import org.nlpcn.es4sql.domain.JoinSelect;
-import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.parse.SqlParser;
-import org.nlpcn.es4sql.query.*;
-import org.nlpcn.es4sql.query.join.ESJoinQueryActionFactory;
+import org.nlpcn.es4sql.query.ESActionFactory;
+import org.nlpcn.es4sql.query.QueryAction;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 
 public class SearchDao {
@@ -50,10 +44,6 @@ public class SearchDao {
 	 */
 	public QueryAction explain(String sql) throws SqlParseException, SQLFeatureNotSupportedException {
 		return ESActionFactory.create(client, sql);
-	}
-
-	public String getTableName(String sql) throws SqlParseException, SQLFeatureNotSupportedException {
-		return ESActionFactory.table(client, sql);
 	}
 
 

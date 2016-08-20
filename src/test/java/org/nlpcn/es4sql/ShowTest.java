@@ -64,6 +64,5 @@ public class ShowTest {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query).explain();
         return (GetIndexResponse) requestBuilder.get();
-
     }
 }
