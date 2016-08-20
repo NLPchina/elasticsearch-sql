@@ -46,25 +46,60 @@
 
     </properties>
 
+    <profiles>
+
+        <profile>
+            <id>local</id>
+            <dependencies>
+
+                <dependency>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                    <version>${elasticsearch.version}</version>
+
+                </dependency>
+                <dependency>
+                    <groupId>org.elasticsearch.plugin</groupId>
+                    <artifactId>delete-by-query</artifactId>
+                    <version>${elasticsearch.version}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                    <version>1.2.16</version>
+                </dependency>
+
+            </dependencies>
+        </profile>
+        <profile>
+            <id>online</id>
+            <activation></activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.elasticsearch</groupId>
+                    <artifactId>elasticsearch</artifactId>
+                    <version>${elasticsearch.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.elasticsearch.plugin</groupId>
+                    <artifactId>delete-by-query</artifactId>
+                    <version>${elasticsearch.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                    <version>1.2.16</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+    </profiles>
+
     <dependencies>
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch.plugin</groupId>
-            <artifactId>delete-by-query</artifactId>
-            <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.hamcrest</groupId>

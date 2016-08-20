@@ -49,7 +49,16 @@ public class AggMaker {
 	 * @throws SqlParseException
 	 */
 	public AggregationBuilder<?> makeGroupAgg(Field field) throws SqlParseException {
-		if (field instanceof MethodField) {
+
+        if (field instanceof MethodField && field.getName().equals("script")) {
+            MethodField methodField = (MethodField) field;
+            TermsBuilder termsBuilder = AggregationBuilders.terms(methodField.getAlias()).script(new Script(methodField.getParams().get(1).value.toString()));
+            groupMap.put(methodField.getAlias(), new KVValue("KEY", termsBuilder));
+            return termsBuilder;
+        }
+
+
+        if (field instanceof MethodField) {
 
             MethodField methodField = (MethodField) field;
             if(methodField.getName().equals("filter")){
