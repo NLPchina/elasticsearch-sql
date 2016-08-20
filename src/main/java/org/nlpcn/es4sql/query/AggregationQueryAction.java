@@ -55,8 +55,6 @@ public class AggregationQueryAction extends QueryAction {
 			if (!groupBy.isEmpty()) {
 				Field field = groupBy.get(0);
 
-<<<<<<< HEAD
-=======
 
 
                 //make groupby can reference to field alias
@@ -75,7 +73,6 @@ public class AggregationQueryAction extends QueryAction {
                 if (lastAgg == null) lastAgg = aggMaker.makeGroupAgg(field);
 
 
->>>>>>> enhancer
 				if (lastAgg != null && lastAgg instanceof TermsBuilder && !(field instanceof MethodField )) {
 
 					((TermsBuilder) lastAgg).size(select.getRowCount());
@@ -83,11 +80,7 @@ public class AggregationQueryAction extends QueryAction {
 
                 if(field.isNested()){
                     AggregationBuilder nestedBuilder = createNestedAggregation(field);
-<<<<<<< HEAD
-                    
-=======
 
->>>>>>> enhancer
                     if(insertFilterIfExistsAfter(lastAgg, groupBy, nestedBuilder,1)){
                         groupBy.remove(1);
                     }
@@ -98,11 +91,7 @@ public class AggregationQueryAction extends QueryAction {
                     request.addAggregation(wrapNestedIfNeeded(nestedBuilder,field.isReverseNested()));
                 } else if(field.isChildren()) {
                     AggregationBuilder childrenBuilder = createChildrenAggregation(field);
-<<<<<<< HEAD
-                    
-=======
 
->>>>>>> enhancer
                     if(insertFilterIfExistsAfter(lastAgg, groupBy, childrenBuilder, 1)){
                         groupBy.remove(1);
                     }
@@ -110,11 +99,7 @@ public class AggregationQueryAction extends QueryAction {
                     	childrenBuilder.subAggregation(lastAgg);
                     }
 
-<<<<<<< HEAD
-                    request.addAggregation(childrenBuilder);                	
-=======
                     request.addAggregation(childrenBuilder);
->>>>>>> enhancer
                 }
                 else {
                     request.addAggregation(lastAgg);
@@ -141,17 +126,6 @@ public class AggregationQueryAction extends QueryAction {
                         lastAgg.subAggregation(wrapNestedIfNeeded(nestedBuilder,field.isReverseNested()));
                     } else if(field.isChildren()) {
                         AggregationBuilder childrenBuilder = createChildrenAggregation(field);
-<<<<<<< HEAD
-                        
-                        if(insertFilterIfExistsAfter(subAgg, groupBy, childrenBuilder, i + 1)){
-                            groupBy.remove(i + 1);
-                            i++;
-                        }
-                        else {
-                            childrenBuilder.subAggregation(subAgg);
-                        }
-
-=======
 
                         if(insertFilterIfExistsAfter(subAgg, groupBy, childrenBuilder, i + 1)){
                             groupBy.remove(i + 1);
@@ -161,7 +135,6 @@ public class AggregationQueryAction extends QueryAction {
                             childrenBuilder.subAggregation(subAgg);
                         }
 
->>>>>>> enhancer
                         lastAgg.subAggregation(childrenBuilder);
                     }
                     else {
@@ -227,25 +200,15 @@ public class AggregationQueryAction extends QueryAction {
         AggregationBuilder nestedBuilder;
 
         String nestedPath = field.getNestedPath();
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> enhancer
         if(field.isReverseNested() ) {
             if(nestedPath == null || !nestedPath.startsWith("~"))
                 return AggregationBuilders.reverseNested(getNestedAggName(field)).path(nestedPath);
             nestedPath = nestedPath.substring(1);
         }
-<<<<<<< HEAD
-        
-        nestedBuilder = AggregationBuilders.nested(getNestedAggName(field)).path(nestedPath);
-        
-=======
 
         nestedBuilder = AggregationBuilders.nested(getNestedAggName(field)).path(nestedPath);
 
->>>>>>> enhancer
         return nestedBuilder;
     }
 
@@ -253,25 +216,15 @@ public class AggregationQueryAction extends QueryAction {
         AggregationBuilder childrenBuilder;
 
         String childType = field.getChildType();
-<<<<<<< HEAD
-        
-        childrenBuilder = AggregationBuilders.children(getChildrenAggName(field)).childType(childType);
-        
-=======
 
         childrenBuilder = AggregationBuilders.children(getChildrenAggName(field)).childType(childType);
 
->>>>>>> enhancer
         return childrenBuilder;
     }
 
     private String getNestedAggName(Field field) {
         String prefix;
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> enhancer
         if(field instanceof MethodField){
             String nestedPath = field.getNestedPath();
             if(nestedPath != null){
@@ -289,17 +242,10 @@ public class AggregationQueryAction extends QueryAction {
 
     private String getChildrenAggName(Field field) {
         String prefix;
-<<<<<<< HEAD
-        
-        if(field instanceof MethodField){
-            String childType = field.getChildType();
-            
-=======
 
         if(field instanceof MethodField){
             String childType = field.getChildType();
 
->>>>>>> enhancer
             if(childType != null){
                 prefix = childType;
             }
