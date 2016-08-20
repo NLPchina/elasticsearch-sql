@@ -1,9 +1,10 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.plugins.AbstractPlugin;
+
+import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.rest.RestModule;
 
-public class SqlPlug extends AbstractPlugin {
+public class SqlPlug extends Plugin {
 
 	public SqlPlug() {
 	}

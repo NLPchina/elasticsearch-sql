@@ -3,7 +3,7 @@ package org.elasticsearch.plugin.nlpcn;
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.text.StringText;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -115,7 +115,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
     private InternalSearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
         onlyReturnedFields(matchedHit.sourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
-        InternalSearchHit searchHit = new InternalSearchHit(currentCombinedResults, hitFromFirstTable.id() + "|" + matchedHit.getId(), new StringText(hitFromFirstTable.getType() + "|" + matchedHit.getType()), hitFromFirstTable.getFields());
+        InternalSearchHit searchHit = new InternalSearchHit(currentCombinedResults, hitFromFirstTable.id() + "|" + matchedHit.getId(), new Text(hitFromFirstTable.getType() + "|" + matchedHit.getType()), hitFromFirstTable.getFields());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
         searchHit.sourceAsMap().clear();
         searchHit.sourceAsMap().putAll(hitFromFirstTable.sourceAsMap());

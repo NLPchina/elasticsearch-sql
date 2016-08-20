@@ -1,7 +1,7 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
+import com.google.common.base.Joiner;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.base.Joiner;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;

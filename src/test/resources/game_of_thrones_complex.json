@@ -7,8 +7,8 @@
 {"index":{"_type": "gotCharacters", "_id":"4"}}
 {"name":{"firstname":"Jaime","lastname":"Lannister","ofHisName":1},"gender":"M","house":"Lannister","parents":{"father":"Tywin","mother":"Joanna"},"titles":["kingSlayer","lordCommanderOfTheKingsguard","Ser"]}
 {"index":{"_type": "gotHouses", "_id":"1"}}
-{"words":"fireAndBlood","name":"Targaryen","sigil":"Dragon","seat":"Dragonstone"}
+{"words":"fireAndBlood","hname":"Targaryen","sigil":"Dragon","seat":"Dragonstone"}
 {"index":{"_type": "gotHouses", "_id":"2"}}
-{"words":"winterIsComing" , "name":"Stark","sigil":"direwolf","seat":"Winterfell"}
+{"words":"winterIsComing" , "hname":"Stark","sigil":"direwolf","seat":"Winterfell"}
 {"index":{"_type": "gotHouses", "_id":"3"}}
-{"words":"hearMeRoar" , "name":"Lannister","sigil":"lion","seat":"CasterlyRock"}
+{"words":"hearMeRoar" , "hname":"Lannister","sigil":"lion","seat":"CasterlyRock"}

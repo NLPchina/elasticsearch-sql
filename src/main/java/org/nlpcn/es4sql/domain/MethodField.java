@@ -81,4 +81,17 @@ public class MethodField extends Field {
         }
         return this.getParamsAsMap().get("nested").toString();
     }
+
+    @Override
+    public boolean isChildren() {
+        Map<String, Object> paramsAsMap = this.getParamsAsMap();
+        return paramsAsMap.containsKey("children");
+    }
+
+    @Override
+    public String getChildType() {
+        if(!this.isChildren()) return null;
+
+        return this.getParamsAsMap().get("children").toString();
+    }
 }

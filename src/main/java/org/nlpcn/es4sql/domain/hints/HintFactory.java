@@ -1,7 +1,8 @@
 package org.nlpcn.es4sql.domain.hints;
 
-import org.elasticsearch.common.jackson.dataformat.yaml.YAMLFactory;
-import org.elasticsearch.common.jackson.dataformat.yaml.YAMLParser;
+
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import org.elasticsearch.common.xcontent.yaml.YamlXContentParser;
 import org.nlpcn.es4sql.exception.SqlParseException;
 

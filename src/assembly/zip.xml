@@ -19,6 +19,7 @@
         <outputDirectory>/</outputDirectory>
         <includes>
             <include>*.jar</include>
+            <include>plugin-descriptor.properties</include>
         </includes>
     </fileSet>
 </fileSets>

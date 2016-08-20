@@ -30,18 +30,18 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
-       String query = String.format("select name,age from %s/dog order by age",TEST_INDEX);
+       String query = String.format("select dog_name,age from %s/dog order by age",TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(2, headers.size());
-        Assert.assertTrue("name should be on headers", headers.contains("name"));
+        Assert.assertTrue("name should be on headers", headers.contains("dog_name"));
         Assert.assertTrue("age should be on headers", headers.contains("age"));
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(2, lines.size());
-        Assert.assertEquals("rex,2", lines.get(0));
-        Assert.assertEquals("snoopy,4", lines.get(1));
+        Assert.assertTrue("rex,2".equals(lines.get(0)) || "2,rex".equals(lines.get(0)) );
+        Assert.assertTrue("snoopy,4".equals(lines.get(1)) || "4,snoopy".equals(lines.get(1)) );
 
     }
 
@@ -131,15 +131,15 @@ public class CSVResultsExtractorTests {
     }
     @Test
     public void joinSearchResultNotNestedNotFlatNoAggs() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
-        String query = String.format("select c.gender , h.name,h.words from %s/gotCharacters c " +
+        String query = String.format("select c.gender , h.hname,h.words from %s/gotCharacters c " +
                 "JOIN %s/gotHouses h " +
-                "on h.name = c.house ",TEST_INDEX,TEST_INDEX);
+                "on h.hname = c.house ",TEST_INDEX,TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3, headers.size());
         Assert.assertTrue("c.gender should be on headers", headers.contains("c.gender"));
-        Assert.assertTrue("h.words should be on headers", headers.contains("h.words"));
+        Assert.assertTrue("h.hname should be on headers", headers.contains("h.hname"));
         Assert.assertTrue("h.words should be on headers", headers.contains("h.words"));
 
         List<String> lines = csvResult.getLines();

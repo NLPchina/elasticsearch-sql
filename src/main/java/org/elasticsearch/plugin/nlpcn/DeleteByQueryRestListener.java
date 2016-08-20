@@ -20,34 +20,42 @@ public class DeleteByQueryRestListener extends RestBuilderListener<DeleteByQuery
 
 	@Override
 	public RestResponse buildResponse(DeleteByQueryResponse result, XContentBuilder builder) throws Exception {
-		RestStatus restStatus = result.status();
+		RestStatus restStatus = RestStatus.OK;
 		builder.startObject();
 		builder.startObject(Fields._INDICES);
-		for (IndexDeleteByQueryResponse indexDeleteByQueryResponse : result.getIndices().values()) {
+		for (IndexDeleteByQueryResponse indexDeleteByQueryResponse : result.getIndices()) {
 			builder.startObject(indexDeleteByQueryResponse.getIndex(), XContentBuilder.FieldCaseConversion.NONE);
 
-			builder.startObject(Fields._SHARDS);
-			builder.field(Fields.TOTAL, indexDeleteByQueryResponse.getTotalShards());
-			builder.field(Fields.SUCCESSFUL, indexDeleteByQueryResponse.getSuccessfulShards());
-			builder.field(Fields.FAILED, indexDeleteByQueryResponse.getFailedShards());
-			ShardOperationFailedException[] failures = indexDeleteByQueryResponse.getFailures();
-			if (failures != null && failures.length > 0) {
-				builder.startArray(Fields.FAILURES);
-				for (ShardOperationFailedException shardFailure : failures) {
-					builder.startObject();
-					builder.field(Fields.INDEX, shardFailure.index());
-					builder.field(Fields.SHARD, shardFailure.shardId());
-					builder.field(Fields.REASON, shardFailure.reason());
-					builder.endObject();
-				}
-				builder.endArray();
-			}
+			builder.startObject(Fields.DELETE);
+
+			builder.field(Fields.DELETED, indexDeleteByQueryResponse.getDeleted());
+            builder.field(Fields.FOUND, indexDeleteByQueryResponse.getFound());
+			builder.field(Fields.FAILED, indexDeleteByQueryResponse.getFailed());
+			builder.field(Fields.MISSING, indexDeleteByQueryResponse.getMissing());
+
+
 			builder.endObject();
 
 			builder.endObject();
 		}
 		builder.endObject();
+        builder.startObject(Fields._SHARDS);
+        ShardOperationFailedException[] failures = result.getShardFailures();
+        if (failures != null && failures.length > 0) {
+            builder.startArray(Fields.FAILURES);
+            for (ShardOperationFailedException shardFailure : failures) {
+                builder.startObject();
+                builder.field(Fields.INDEX, shardFailure.index());
+                builder.field(Fields.SHARD, shardFailure.shardId());
+                builder.field(Fields.REASON, shardFailure.reason());
+                builder.endObject();
+            }
+            builder.endArray();
+        }
+        builder.endObject();
+
 		builder.endObject();
+
 		return new BytesRestResponse(restStatus, builder);
 	}
 
@@ -55,7 +63,10 @@ public class DeleteByQueryRestListener extends RestBuilderListener<DeleteByQuery
 		static final XContentBuilderString _INDICES = new XContentBuilderString("_indices");
 		static final XContentBuilderString _SHARDS = new XContentBuilderString("_shards");
 		static final XContentBuilderString TOTAL = new XContentBuilderString("total");
-		static final XContentBuilderString SUCCESSFUL = new XContentBuilderString("successful");
+        static final XContentBuilderString DELETED = new XContentBuilderString("deleted");
+        static final XContentBuilderString DELETE = new XContentBuilderString("delete");
+        static final XContentBuilderString FOUND = new XContentBuilderString("found");
+		static final XContentBuilderString MISSING = new XContentBuilderString("missing");
 		static final XContentBuilderString FAILED = new XContentBuilderString("failed");
 		static final XContentBuilderString FAILURES = new XContentBuilderString("failures");
 		static final XContentBuilderString INDEX = new XContentBuilderString("index");
