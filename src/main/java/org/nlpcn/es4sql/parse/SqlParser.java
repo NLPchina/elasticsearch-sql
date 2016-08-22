@@ -15,6 +15,7 @@ import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintFactory;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.multi.MultiQuerySelect;
 import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 
 /**
@@ -768,4 +769,9 @@ public class SqlParser {
 		}
 	}
 
+    public MultiQuerySelect parseMultiSelect(SQLUnionQuery query) throws SqlParseException {
+        Select firstTableSelect = this.parseSelect((MySqlSelectQueryBlock) query.getLeft());
+        Select secondTableSelect = this.parseSelect((MySqlSelectQueryBlock) query.getRight());
+        return new MultiQuerySelect(query.getOperator(),firstTableSelect,secondTableSelect);
+    }
 }

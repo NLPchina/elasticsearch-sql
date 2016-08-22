@@ -11,6 +11,8 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.*;
 import org.nlpcn.es4sql.query.join.ESJoinQueryAction;
 import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
+import org.nlpcn.es4sql.query.multi.MultiQueryAction;
+import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
 import java.io.IOException;
 
@@ -26,6 +28,13 @@ public class QueryActionElasticExecutor {
     public static SearchHits executeJoinSearchAction(Client client , ESJoinQueryAction joinQueryAction) throws IOException, SqlParseException {
         SqlElasticRequestBuilder joinRequestBuilder = joinQueryAction.explain();
         ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client,joinRequestBuilder);
+        executor.run();
+        return executor.getHits();
+    }
+
+    public static SearchHits executeMultiQueryAction(Client client, MultiQueryAction queryAction) throws SqlParseException, IOException {
+        SqlElasticRequestBuilder multiRequestBuilder = queryAction.explain();
+        ElasticHitsExecutor executor = MultiRequestExecutorFactory.createExecutor(client, (MultiQueryRequestBuilder) multiRequestBuilder);
         executor.run();
         return executor.getHits();
     }
@@ -46,10 +55,14 @@ public class QueryActionElasticExecutor {
             return executeAggregationAction((AggregationQueryAction) queryAction);
         if(queryAction instanceof ESJoinQueryAction)
             return executeJoinSearchAction(client, (ESJoinQueryAction) queryAction);
+        if(queryAction instanceof MultiQueryAction)
+            return executeMultiQueryAction(client, (MultiQueryAction) queryAction);
         if(queryAction instanceof DeleteQueryAction )
             return executeDeleteAction((DeleteQueryAction) queryAction);
         return null;
     }
+
+
 
 
 }

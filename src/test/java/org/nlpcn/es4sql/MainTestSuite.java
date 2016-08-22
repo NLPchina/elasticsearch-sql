@@ -27,6 +27,7 @@ import com.google.common.io.ByteStreams;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 		QueryTest.class,
+        MultiQueryTests.class,
 		MethodQueryTest.class,
 		AggregationTest.class,
         JoinTests.class,

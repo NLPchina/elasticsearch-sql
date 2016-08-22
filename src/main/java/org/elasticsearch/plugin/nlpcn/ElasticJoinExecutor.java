@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * Created by Eliran on 15/9/2015.
  */
-public abstract class ElasticJoinExecutor {
+public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
     protected SearchHits results ;
     protected MetaSearchResult metaResults;
     protected final int MAX_RESULTS_ON_ONE_FETCH = 10000;

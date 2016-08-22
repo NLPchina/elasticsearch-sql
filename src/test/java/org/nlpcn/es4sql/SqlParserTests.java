@@ -4,6 +4,8 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
+import com.alibaba.druid.sql.ast.statement.SQLSelect;
+import com.alibaba.druid.sql.ast.statement.SQLUnionOperator;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -17,6 +19,7 @@ import org.nlpcn.es4sql.parse.FieldMaker;
 import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
+import org.nlpcn.es4sql.query.multi.MultiQuerySelect;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -797,6 +800,15 @@ public class SqlParserTests {
         Assert.assertEquals(2, wheres.size());
         Assert.assertEquals("AND path NESTED_COMPLEX AND ( AND path.x EQ 3 ) ",wheres.get(0).toString());
         Assert.assertEquals("AND y EQ 3",wheres.get(1).toString());
+    }
+
+    @Test
+    public void multiSelectMinusOperationCheckIndices() throws SqlParseException {
+        String query = "select pk from firstIndex minus  select pk from secondIndex ";
+        MultiQuerySelect select = parser.parseMultiSelect((com.alibaba.druid.sql.ast.statement.SQLUnionQuery) ((SQLQueryExpr) queryToExpr(query)).getSubQuery().getQuery());
+        Assert.assertEquals("firstIndex",select.getFirstSelect().getFrom().get(0).getIndex());
+        Assert.assertEquals("secondIndex",select.getSecondSelect().getFrom().get(0).getIndex());
+        Assert.assertEquals(SQLUnionOperator.MINUS,select.getOperation());
     }
 
     private SQLExpr queryToExpr(String query) {
