@@ -18,7 +18,8 @@ public class SQLFunctions {
     //Groovy Built In Functions
     public final static Set<String> buildInFunctions = Sets.newHashSet(
             "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "rint", "pow", "round",
-            "random", "abs", "split", "concat_ws", "substring", "trim"
+            "random", "abs", "split", "concat_ws", "substring", "trim",
+            "add", "minus", "multiply", "divide"
     );
 
 
@@ -76,13 +77,31 @@ public class SQLFunctions {
                 functionStr = trim(paramers.get(0).value.toString(), name);
                 break;
 
+            case "add":
+                functionStr = add(paramers.get(0).value.toString(), paramers.get(1).value.toString());
+                break;
+
+            case "subtract":
+                functionStr = subtract(paramers.get(0).value.toString(), paramers.get(1).value.toString());
+                break;
+            case "divide":
+                functionStr = divide(paramers.get(0).value.toString(), paramers.get(1).value.toString());
+                break;
+
+            case "multiply":
+                functionStr = multiply(paramers.get(0).value.toString(), paramers.get(1).value.toString());
+                break;
+            case "modulus":
+                functionStr = modulus(paramers.get(0).value.toString(), paramers.get(1).value.toString());
+                break;
+
             default:
 
         }
         return functionStr;
     }
 
-    private static String random() {
+    public static String random() {
         return Math.abs(new Random().nextInt()) + "";
     }
 
@@ -115,6 +134,59 @@ public class SQLFunctions {
             return new Tuple(name, strColumn + "; def " + name + " = " + valueName + ".split('" + pattern + "')[" + index + "]");
         }
 
+    }
+
+
+    private static String extractName(String script) {
+        String[] variance = script.split(";");
+        String newScript = variance[variance.length - 1];
+        if (newScript.trim().startsWith("def ")) {
+            //for now ,if variant is string,then change to double.
+            return newScript.substring(4).split("=")[0].trim();
+        } else return newScript;
+    }
+
+    //cast(year as int)
+
+    private static String convertType(String script) {
+
+        String[] variance = script.split(";");
+        String newScript = variance[variance.length - 1];
+        if (newScript.trim().startsWith("def ")) {
+            //for now ,if variant is string,then change to double.
+            String temp =  newScript.substring(4).split("=")[0].trim();
+            return " if( " + temp + " instanceof String) " + temp + "=" + temp.trim() + ".toDouble() ";
+        } else return "";
+
+
+
+    }
+
+
+    public static Tuple<String, String> add(String a, String b) {
+        return binaryOpertator("add", "+", a, b);
+    }
+
+    public static Tuple<String, String> modulus(String a, String b) {
+        return binaryOpertator("modulus", "%", a, b);
+    }
+
+    public static Tuple<String, String> subtract(String a, String b) {
+        return binaryOpertator("subtract", "-", a, b);
+    }
+
+    public static Tuple<String, String> multiply(String a, String b) {
+        return binaryOpertator("multiply", "*", a, b);
+    }
+
+    public static Tuple<String, String> divide(String a, String b) {
+        return binaryOpertator("divide", "/", a, b);
+    }
+
+    public static Tuple<String, String> binaryOpertator(String methodName, String operator, String a, String b) {
+        String name = methodName + "_" + random();
+
+        return new Tuple(name, a + ";" + b + ";" + convertType(a) + ";" + convertType(b) + "; def " + name + " = " + extractName(a) + operator + extractName(b));
     }
 
 
