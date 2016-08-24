@@ -19,7 +19,7 @@ public class SQLFunctions {
     public final static Set<String> buildInFunctions = Sets.newHashSet(
             "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "rint", "pow", "round",
             "random", "abs", "split", "concat_ws", "substring", "trim",
-            "add", "minus", "multiply", "divide"
+            "add", "multiply", "divide","subtract","modulus"
     );
 
 
