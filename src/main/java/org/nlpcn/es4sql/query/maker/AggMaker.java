@@ -21,6 +21,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsBuilder;
@@ -251,6 +252,18 @@ public class AggMaker {
                     break;
                 case "min_doc_count":
                     terms.minDocCount(Integer.parseInt(value));
+                    break;
+                case "missing":
+                    terms.missing(value);
+                    break;
+                case "order":
+                    if ("asc".equalsIgnoreCase(value)) {
+                        terms.order(Terms.Order.term(true));
+                    } else if ("desc".equalsIgnoreCase(value)) {
+                        terms.order(Terms.Order.term(false));
+                    } else {
+                        throw new SqlParseException("order can only support asc/desc " + kv.toString());
+                    }
                     break;
                 case "alias":
                 case "nested":
