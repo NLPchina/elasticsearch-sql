@@ -212,7 +212,7 @@ public class FieldMaker {
         //just check we can find the function
         if (SQLFunctions.buildInFunctions.contains(finalMethodName)) {
             if (alias == null && first) {
-                alias = "group_by_" + SQLFunctions.random();//paramers.get(0).value.toString();
+                alias = "field_" + SQLFunctions.random();//paramers.get(0).value.toString();
             }
             Tuple<String, String> newFunctions = SQLFunctions.function(finalMethodName, paramers,
                     paramers.get(0).key);
