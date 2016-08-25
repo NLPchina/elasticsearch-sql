@@ -101,7 +101,7 @@ public class SQLFunctionsTest {
         List<String> headers = csvResult.getHeaders();
         List<String> contents = csvResult.getLines();
         String[] splits = contents.get(0).split(",");
-        Assert.assertTrue(splits[1].endsWith("--"));
+        Assert.assertTrue(splits[0].endsWith("--"));
     }
 
     @Test

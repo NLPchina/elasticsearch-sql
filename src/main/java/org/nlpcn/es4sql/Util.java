@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.druid.sql.ast.expr.*;
+import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -11,91 +12,107 @@ import com.alibaba.druid.sql.ast.*;
 
 
 public class Util {
-	public static String joiner(List<KVValue> lists, String oper) {
-		
-		if (lists.size() == 0) {
-			return null;
-		}
+    public static String joiner(List<KVValue> lists, String oper) {
 
-		StringBuilder sb = new StringBuilder(lists.get(0).toString());
-		for (int i = 1; i < lists.size(); i++) {
-			sb.append(oper);
-			sb.append(lists.get(i).toString());
-		}
+        if (lists.size() == 0) {
+            return null;
+        }
 
-		return sb.toString();
-	}
+        StringBuilder sb = new StringBuilder(lists.get(0).toString());
+        for (int i = 1; i < lists.size(); i++) {
+            sb.append(oper);
+            sb.append(lists.get(i).toString());
+        }
 
-	public static List<Map<String, Object>> sortByMap(List<Map<String, Object>> lists) {
+        return sb.toString();
+    }
 
-		return lists;
-	}
+    public static List<Map<String, Object>> sortByMap(List<Map<String, Object>> lists) {
 
-	public static Object expr2Object(SQLExpr expr) {
-		Object value = null;
-		if (expr instanceof SQLNumericLiteralExpr) {
-			value = ((SQLNumericLiteralExpr) expr).getNumber();
-		} else if (expr instanceof SQLCharExpr) {
-			value = ((SQLCharExpr) expr).getText();
-		} else if (expr instanceof SQLIdentifierExpr) {
-			value = expr.toString();
-		} else if (expr instanceof SQLPropertyExpr) {
+        return lists;
+    }
+
+    public static Object removeTableAilasFromField(Object expr, String tableAlias) {
+
+        if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr || expr instanceof SQLVariantRefExpr) {
+            String name = expr.toString().replace("`", "");
+            if (tableAlias != null) {
+                String aliasPrefix = tableAlias + ".";
+                if (name.startsWith(aliasPrefix)) {
+                    String newFieldName = name.replaceFirst(aliasPrefix, "");
+                    return new SQLIdentifierExpr(newFieldName);
+                }
+            }
+        }
+        return expr;
+    }
+
+
+    public static Object expr2Object(SQLExpr expr) {
+        Object value = null;
+        if (expr instanceof SQLNumericLiteralExpr) {
+            value = ((SQLNumericLiteralExpr) expr).getNumber();
+        } else if (expr instanceof SQLCharExpr) {
+            value = ((SQLCharExpr) expr).getText();
+        } else if (expr instanceof SQLIdentifierExpr) {
             value = expr.toString();
-        }else if (expr instanceof SQLVariantRefExpr ){
+        } else if (expr instanceof SQLPropertyExpr) {
             value = expr.toString();
-		}else if (expr instanceof SQLAllColumnExpr) {
-			value = "*";
-		} else if (expr instanceof  SQLValuableExpr){
-            value = ((SQLValuableExpr)expr).getValue();
+        } else if (expr instanceof SQLVariantRefExpr) {
+            value = expr.toString();
+        } else if (expr instanceof SQLAllColumnExpr) {
+            value = "*";
+        } else if (expr instanceof SQLValuableExpr) {
+            value = ((SQLValuableExpr) expr).getValue();
         } else {
-			//throw new SqlParseException("can not support this type " + expr.getClass());
-		}
-		return value;
-	}
+            //throw new SqlParseException("can not support this type " + expr.getClass());
+        }
+        return value;
+    }
 
-	public static Object getScriptValue(SQLExpr expr) throws SqlParseException {
-		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr || expr instanceof SQLVariantRefExpr) {
-			return "doc['" + expr.toString() + "'].value";
-		} else if (expr instanceof SQLValuableExpr) {
-			return ((SQLValuableExpr) expr).getValue();
-		}
-		throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
-	}
+    public static Object getScriptValue(SQLExpr expr) throws SqlParseException {
+        if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr || expr instanceof SQLVariantRefExpr) {
+            return "doc['" + expr.toString() + "'].value";
+        } else if (expr instanceof SQLValuableExpr) {
+            return ((SQLValuableExpr) expr).getValue();
+        }
+        throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
+    }
 
-	public static double[] String2DoubleArr(String paramer) {
-		String[] split = paramer.split(",");
-		double[] ds = new double[split.length];
-		for (int i = 0; i < ds.length; i++) {
-			ds[i] = Double.parseDouble(split[i].trim());
-		}
-		return ds;
-	}
+    public static double[] String2DoubleArr(String paramer) {
+        String[] split = paramer.split(",");
+        double[] ds = new double[split.length];
+        for (int i = 0; i < ds.length; i++) {
+            ds[i] = Double.parseDouble(split[i].trim());
+        }
+        return ds;
+    }
 
-	public static double[] KV2DoubleArr(List<KVValue> params) {
-		double[] ds = new double[params.size()];
-		int i = 0;
-		for (KVValue v : params) {
-			ds[i] = ((Number) v.value).doubleValue();
-			i++;
-		}
-		return ds;
-	}
+    public static double[] KV2DoubleArr(List<KVValue> params) {
+        double[] ds = new double[params.size()];
+        int i = 0;
+        for (KVValue v : params) {
+            ds[i] = ((Number) v.value).doubleValue();
+            i++;
+        }
+        return ds;
+    }
 
 
     public static String extendedToString(SQLExpr sqlExpr) {
-        if(sqlExpr instanceof SQLTextLiteralExpr){
+        if (sqlExpr instanceof SQLTextLiteralExpr) {
             return ((SQLTextLiteralExpr) sqlExpr).getText();
         }
         return sqlExpr.toString();
     }
 
-    public static String[] concatStringsArrays(String[] a1,String[] a2){
+    public static String[] concatStringsArrays(String[] a1, String[] a2) {
         String[] strings = new String[a1.length + a2.length];
-        for(int i=0;i<a1.length;i++){
+        for (int i = 0; i < a1.length; i++) {
             strings[i] = a1[i];
         }
-        for(int i = 0;i<a2.length;i++){
-            strings[a1.length+i] = a2[i];
+        for (int i = 0; i < a2.length; i++) {
+            strings[a1.length + i] = a2[i];
         }
         return strings;
     }
