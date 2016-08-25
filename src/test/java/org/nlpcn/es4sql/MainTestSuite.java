@@ -14,6 +14,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
@@ -36,7 +37,8 @@ import com.google.common.io.ByteStreams;
         SqlParserTests.class,
         ShowTest.class,
         CSVResultsExtractorTests.class,
-        SourceFieldTest.class
+        SourceFieldTest.class,
+		SQLFunctionsTest.class
 })
 public class MainTestSuite {
 
@@ -47,7 +49,9 @@ public class MainTestSuite {
 	@BeforeClass
 	public static void setUp() throws Exception {
 
-        client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).build().addTransportAddress(getTransportAddress());
+		Settings settings = Settings.builder().put("client.transport.ignore_cluster_name",true).build();
+		client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).settings(settings).
+				build().addTransportAddress(getTransportAddress());
 
 
         NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
@@ -298,7 +302,7 @@ public class MainTestSuite {
 		return client;
 	}
 
-	private static InetSocketTransportAddress getTransportAddress() throws UnknownHostException {
+	protected static InetSocketTransportAddress getTransportAddress() throws UnknownHostException {
 		String host = System.getenv("ES_TEST_HOST");
 		String port = System.getenv("ES_TEST_PORT");
 
