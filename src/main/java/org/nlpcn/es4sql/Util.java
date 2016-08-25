@@ -31,7 +31,7 @@ public class Util {
 		return lists;
 	}
 
-	public static Object expr2Object(SQLExpr expr) throws SqlParseException {
+	public static Object expr2Object(SQLExpr expr) {
 		Object value = null;
 		if (expr instanceof SQLNumericLiteralExpr) {
 			value = ((SQLNumericLiteralExpr) expr).getNumber();
@@ -48,9 +48,18 @@ public class Util {
 		} else if (expr instanceof  SQLValuableExpr){
             value = ((SQLValuableExpr)expr).getValue();
         } else {
-			throw new SqlParseException("can not support this type " + expr.getClass());
+			//throw new SqlParseException("can not support this type " + expr.getClass());
 		}
 		return value;
+	}
+
+	public static Object getScriptValue(SQLExpr expr) throws SqlParseException {
+		if (expr instanceof SQLIdentifierExpr || expr instanceof SQLPropertyExpr || expr instanceof SQLVariantRefExpr) {
+			return "doc['" + expr.toString() + "'].value";
+		} else if (expr instanceof SQLValuableExpr) {
+			return ((SQLValuableExpr) expr).getValue();
+		}
+		throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
 	}
 
 	public static double[] String2DoubleArr(String paramer) {
