@@ -75,10 +75,7 @@ public class Test {
                 "group by key ";
         String TEST_INDEX = "elasticsearch-sql_test_index";
 
-        sql =  "SELECT " +
-                " concat_ws('-',age,'-') from " +
-                TEST_INDEX + "/account " +
-                " limit 10  ";
+        sql =  "select count(t.*) as counts,sum(t.size) from xxx/locs as t group by t.kk";
 
         System.out.println("sql" + sql + ":\n----------\n" + sqlToEsQuery(sql));
 

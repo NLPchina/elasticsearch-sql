@@ -538,6 +538,22 @@ public class SqlParserTests {
         Assert.assertEquals("message.moreNested", condition.getNestedPath());
         Assert.assertEquals("message.moreNested.name", condition.getName());
     }
+    
+
+    @Test
+    public void aggFieldWithAliasTableAliasShouldBeRemoved() throws SqlParseException {
+        String query = "select count(t.*) as counts,sum(t.size) from xxx/locs as t group by t.kk";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Field> fields = select.getFields();
+        Assert.assertTrue(fields.size()==2);
+        Assert.assertEquals("COUNT(*)",fields.get(0).toString());
+        Assert.assertEquals("SUM(size)",fields.get(1).toString());
+        List<List<Field>> groups = select.getGroupBys();
+        Assert.assertTrue(groups.size()==1);
+        Assert.assertTrue(groups.get(0).size()==1);
+        Assert.assertEquals("kk",groups.get(0).get(0).getName());
+    }
 
     @Test
     public void nestedFieldOnWhereGivenPath() throws SqlParseException {
