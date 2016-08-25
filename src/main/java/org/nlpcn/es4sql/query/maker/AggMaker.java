@@ -152,6 +152,8 @@ public class AggMaker {
         KVValue kvValue = field.getParams().get(0);
         if (kvValue.key != null && kvValue.key.equals("script")) {
             return builder.script(new Script(((MethodField) kvValue.value).getParams().get(1).toString()));
+        } else if (kvValue.key != null && kvValue.value.toString().trim().startsWith("def")) {
+            return builder.script(new Script(kvValue.value.toString()));
         } else if (kvValue.key != null && (kvValue.key.equals("nested") || kvValue.key.equals("reverse_nested"))) {
             NestedType nestedType = (NestedType) kvValue.value;
 

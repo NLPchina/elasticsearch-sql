@@ -69,12 +69,15 @@ public class Test {
 //        sql = "SELECT split(trim(concat_ws('dd',newtype,num_d)),'dd')[0] as nt from  twitter2 ";
 //        System.out.println("sql" + sql + ":\n----------\n" + sqlToEsQuery(sql));
 
-//        sql = "SELECT floor(" +
-//                "floor(substring(newtype,0,14)/100)/5)*5 as key," +
-//                "count(distinct(num)) cvalue FROM twitter2 " +
-//                "group by key ";
+        sql = "SELECT floor(" +
+                "floor(substring(newtype,0,14)/100)/5)*5 as key," +
+                "count(distinct(num)) cvalue FROM twitter2 " +
+                "group by key ";
 
-         sql = "SELECT a FROM myindex where a < b";
+        sql =  String.format("select c.name.firstname name,c.parents.father father, h.hname house from %s/gotCharacters c " +
+                "JOIN %s/gotHouses h " +
+                "on h.hname = c.house " +
+                "where c.name.firstname='Daenerys'", "elasticsearch-sql_test_index","elasticsearch-sql_test_index");;
 
         System.out.println("sql" + sql + ":\n----------\n" + sqlToEsQuery(sql));
 
