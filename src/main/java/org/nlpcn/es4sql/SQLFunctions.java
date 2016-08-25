@@ -44,9 +44,9 @@ public class SQLFunctions {
                 break;
 
             case "concat_ws":
-                List<String> result = Lists.newArrayList();
+                List<SQLExpr> result = Lists.newArrayList();
                 for (int i = 1; i < paramers.size(); i++) {
-                    result.add(paramers.get(i).toString());
+                    result.add((SQLExpr) paramers.get(i).value);
                 }
                 functionStr = concat_ws(paramers.get(0).value.toString(), result, name);
 
@@ -113,22 +113,23 @@ public class SQLFunctions {
         return Math.abs(new Random().nextInt()) + "";
     }
 
-    public static Tuple<String, String> concat_ws(String split, List<String> columns, String valueName) {
+    public static Tuple<String, String> concat_ws(String split, List<SQLExpr> columns, String valueName) {
         String name = "concat_ws_" + random();
 
         List<String> result = Lists.newArrayList();
 
-        for (String strColumn : columns) {
-            //here we guess this is not column,but a function
+        for (SQLExpr column : columns) {
+            String strColumn = Util.expr2Object(column).toString();
             if (strColumn.startsWith("def ")) {
                 result.add(strColumn);
-            } else {
+            } else if (isProperty(column)) {
                 result.add("doc['" + strColumn + "'].value");
+            } else {
+                result.add("'"+strColumn+"'");
             }
 
-
         }
-        return new Tuple(name, "def " + name + " =" + Joiner.on("+'" + split + "'+").join(result));
+        return new Tuple(name, "def " + name + " =" + Joiner.on("+ " + split + " +").join(result));
 
     }
 

@@ -173,7 +173,7 @@ public class FieldMaker {
     private static boolean isFromJoinTable(SQLExpr expr) {
         SQLObject temp = expr;
         AtomicInteger counter = new AtomicInteger(10);
-        while (!(expr.getParent() instanceof SQLSelectQueryBlock) && counter.get() > 0) {
+        while (temp != null && !(expr.getParent() instanceof SQLSelectQueryBlock) && counter.get() > 0) {
             counter.decrementAndGet();
             temp = temp.getParent();
             if (temp instanceof SQLSelectQueryBlock) {

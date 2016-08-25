@@ -37,7 +37,8 @@ import com.google.common.io.ByteStreams;
         SqlParserTests.class,
         ShowTest.class,
         CSVResultsExtractorTests.class,
-        SourceFieldTest.class
+        SourceFieldTest.class,
+		SQLFunctionsTest.class
 })
 public class MainTestSuite {
 
@@ -301,7 +302,7 @@ public class MainTestSuite {
 		return client;
 	}
 
-	private static InetSocketTransportAddress getTransportAddress() throws UnknownHostException {
+	protected static InetSocketTransportAddress getTransportAddress() throws UnknownHostException {
 		String host = System.getenv("ES_TEST_HOST");
 		String port = System.getenv("ES_TEST_PORT");
 

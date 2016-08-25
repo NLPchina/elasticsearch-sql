@@ -32,18 +32,6 @@ All features following require ES with groovy script enabled.
  * /
  * %
  
-## Break features
-
-
-## field binary operator have been changed 
-
-field1 + field2 will not be supported. Please use field function to 
-wrap your field,eg. field(field1) + field(field2) instead. 
-With this, we can now support something like this: field(field1) + 9.
-
-## 
-
-
 ## Example
 
 check Example file:

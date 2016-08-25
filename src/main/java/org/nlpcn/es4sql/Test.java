@@ -75,9 +75,10 @@ public class Test {
                 "group by key ";
         String TEST_INDEX = "elasticsearch-sql_test_index";
 
-        sql =  String.format("select c.name.firstname , d.* from %s/gotCharacters c " +
-                        "JOIN %s/gotHouses d on d.hname = c.house "
-                ,  TEST_INDEX, TEST_INDEX);
+        sql =  "SELECT " +
+                " concat_ws('-',age,'-') from " +
+                TEST_INDEX + "/account " +
+                " limit 10  ";
 
         System.out.println("sql" + sql + ":\n----------\n" + sqlToEsQuery(sql));
 
