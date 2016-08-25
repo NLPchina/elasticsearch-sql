@@ -3,8 +3,11 @@ package org.nlpcn.es4sql.parse;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.parser.SQLParseException;
 import com.google.common.collect.Lists;
 import org.elasticsearch.common.collect.Tuple;
@@ -167,26 +170,39 @@ public class FieldMaker {
         return methodInvokeExpr;
     }
 
+    private static boolean isFromJoinTable(SQLExpr expr) {
+        SQLObject temp = expr;
+        AtomicInteger counter = new AtomicInteger(10);
+        while (!(expr.getParent() instanceof SQLSelectQueryBlock) && counter.get() > 0) {
+            counter.decrementAndGet();
+            temp = temp.getParent();
+            if (temp instanceof SQLSelectQueryBlock) {
+                if (((SQLSelectQueryBlock) temp).getFrom() instanceof SQLJoinTableSource) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     private static Field handleIdentifier(SQLExpr expr, String alias, String tableAlias) throws SqlParseException {
         String name = expr.toString().replace("`", "");
+        String newFieldName = name;
+        if (tableAlias != null) {
+            String aliasPrefix = tableAlias + ".";
+            if (name.startsWith(aliasPrefix)) {
+                newFieldName = name.replaceFirst(aliasPrefix, "");
+            }
+        }
 
-        if (alias != null && alias != name) {
+        if (alias != null && alias != name && !isFromJoinTable(expr)) {
             List<SQLExpr> paramers = Lists.newArrayList();
             paramers.add(new SQLCharExpr(alias));
-            paramers.add(new SQLCharExpr("doc['" + name + "'].value"));
+            paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));
             return makeMethodField("script", paramers, null, alias, true);
         }
 
-        if (tableAlias == null) return new Field(name, alias);
-        else if (tableAlias != null) {
-            String aliasPrefix = tableAlias + ".";
-            if (name.startsWith(aliasPrefix)) {
-                name = name.replaceFirst(aliasPrefix, "");
-                return new Field(name, alias);
-            }
-        }
-        return null;
+        return new Field(newFieldName, alias);
     }
 
     private static MethodField makeMethodField(String name, List<SQLExpr> arguments, SQLAggregateOption option, String alias, boolean first) throws SqlParseException {

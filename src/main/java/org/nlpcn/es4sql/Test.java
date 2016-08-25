@@ -73,11 +73,11 @@ public class Test {
                 "floor(substring(newtype,0,14)/100)/5)*5 as key," +
                 "count(distinct(num)) cvalue FROM twitter2 " +
                 "group by key ";
+        String TEST_INDEX = "elasticsearch-sql_test_index";
 
-        sql =  String.format("select c.name.firstname name,c.parents.father father, h.hname house from %s/gotCharacters c " +
-                "JOIN %s/gotHouses h " +
-                "on h.hname = c.house " +
-                "where c.name.firstname='Daenerys'", "elasticsearch-sql_test_index","elasticsearch-sql_test_index");;
+        sql =  String.format("select c.name.firstname , d.* from %s/gotCharacters c " +
+                        "JOIN %s/gotHouses d on d.hname = c.house "
+                ,  TEST_INDEX, TEST_INDEX);
 
         System.out.println("sql" + sql + ":\n----------\n" + sqlToEsQuery(sql));
 
