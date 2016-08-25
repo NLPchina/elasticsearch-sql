@@ -48,6 +48,21 @@ public class MultiQueryTests {
         Assert.assertTrue("names should contain rex",names.contains("rex"));
     }
 
+    @Test
+    public void unionAllOnlyOneRecordEachWithComplexAlias() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("SELECT firstname FROM %s/account WHERE firstname = 'Amber' " +
+                "union all " +
+                "SELECT name.firstname as firstname FROM %s/gotCharacters WHERE name.firstname = 'Daenerys'",TEST_INDEX,TEST_INDEX);
+        SearchHit[] searchHits = executeAndGetHits(query);
+        Assert.assertEquals(2,searchHits.length);
+        Set<String> names = new HashSet<>();
+        for(SearchHit hit : searchHits) {
+            Object firstname = hit.sourceAsMap().get("firstname");
+            names.add(firstname.toString());
+        }
+        Assert.assertTrue("names should contain Amber",names.contains("Amber"));
+        Assert.assertTrue("names should contain Daenerys",names.contains("Daenerys"));
+    }
     private SearchHit[] executeAndGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder explain = searchDao.explain(query).explain();

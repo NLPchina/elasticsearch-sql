@@ -37,10 +37,10 @@ import com.google.common.io.ByteStreams;
         SqlParserTests.class,
         ShowTest.class,
         CSVResultsExtractorTests.class,
-        SourceFieldTest.class
+        SourceFieldTest.class,
+        UtilTests.class
 })
 public class MainTestSuite {
-
 
 	private static TransportClient client;
 	private static SearchDao searchDao;

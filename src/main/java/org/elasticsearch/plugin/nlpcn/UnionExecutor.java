@@ -7,13 +7,12 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.internal.InternalSearchHit;
 import org.elasticsearch.search.internal.InternalSearchHits;
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Eliran on 21/8/2016.
@@ -59,15 +58,34 @@ public class UnionExecutor implements ElasticHitsExecutor {
         }
     }
 
+
     private void updateFieldNamesToAlias(Map<String, Object> sourceAsMap, Map<String, String> fieldNameToAlias) {
         for(Map.Entry<String,String> fieldToAlias : fieldNameToAlias.entrySet()){
             String fieldName = fieldToAlias.getKey();
-            if(sourceAsMap.containsKey(fieldName)){
-                Object value = sourceAsMap.get(fieldName);
-                sourceAsMap.remove(fieldName);
+            Object value = null;
+            Map<String,Object> deleteFrom = null;
+            if(fieldName.contains(".")){
+                String[] split = fieldName.split("\\.");
+                String[] path = Arrays.copyOf(split, split.length - 1);
+                Object placeInMap = Util.searchPathInMap(sourceAsMap, path);
+                if(placeInMap != null){
+                    if(!Map.class.isAssignableFrom(placeInMap.getClass())){
+                        continue;
+                    }
+                }
+                deleteFrom = (Map<String,Object>) placeInMap;
+                value = deleteFrom.get(split[split.length-1]);
+            }
+            else if(sourceAsMap.containsKey(fieldName)){
+                value = sourceAsMap.get(fieldName);
+                deleteFrom = sourceAsMap;
+            }
+            if(value!=null){
                 sourceAsMap.put(fieldToAlias.getValue(),value);
+                deleteFrom.remove(fieldName);
             }
         }
+        Util.clearEmptyPaths(sourceAsMap);
     }
 
     @Override

@@ -1,7 +1,9 @@
 package org.nlpcn.es4sql;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.alibaba.druid.sql.ast.expr.*;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -90,4 +92,42 @@ public class Util {
         }
         return strings;
     }
+
+    public static Object searchPathInMap(Map<String, Object> fieldsMap, String[] path) {
+        Map<String,Object> currentObject = fieldsMap;
+        for(int i=0;i<path.length-1 ;i++){
+            Object valueFromCurrentMap = currentObject.get(path[i]);
+            if(valueFromCurrentMap == null) return null;
+            if(!Map.class.isAssignableFrom(valueFromCurrentMap.getClass())) return null;
+            currentObject = (Map<String, Object>) valueFromCurrentMap;
+        }
+        return currentObject.get(path[path.length-1]);
+    }
+
+    public static boolean clearEmptyPaths(Map<String, Object> map) {
+        if(map.size() == 0){
+            return true;
+        }
+        Set<String> keysToDelete = new HashSet<>();
+        for (Map.Entry<String,Object> entry : map.entrySet()){
+            Object value = entry.getValue();
+            if(Map.class.isAssignableFrom(value.getClass())){
+                if(clearEmptyPaths((Map<String, Object>) value)){
+                    keysToDelete.add(entry.getKey());
+                }
+            }
+        }
+        if(keysToDelete.size() != 0){
+            if(map.size() == keysToDelete.size()){
+                map.clear();
+                return true;
+            }
+            for(String key : keysToDelete){
+                map.remove(key);
+                return false;
+            }
+        }
+        return false;
+    }
+
 }
