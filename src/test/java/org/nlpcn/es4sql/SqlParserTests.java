@@ -538,7 +538,7 @@ public class SqlParserTests {
         Assert.assertEquals("message.moreNested", condition.getNestedPath());
         Assert.assertEquals("message.moreNested.name", condition.getName());
     }
-    
+
 
     @Test
     public void aggFieldWithAliasTableAliasShouldBeRemoved() throws SqlParseException {
@@ -795,6 +795,57 @@ public class SqlParserTests {
         Assert.assertEquals("AND path NESTED_COMPLEX AND ( AND path.x EQ 3 ) ", wheres.get(0).toString());
         Assert.assertEquals("AND y EQ 3", wheres.get(1).toString());
     }
+
+
+    @Test
+    public void numberEqualConditionWithoutProperty() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 1 = 1");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"1 == 1");
+    }
+
+    @Test
+    public void numberGreatConditionWithoutProperty() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 1 > 1");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"1 > 1");
+    }
+
+    @Test
+    public void stringEqualConditionWithoutProperty() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 'a' = 'b'");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"'a' == 'b'");
+    }
+
+    @Test
+    public void stringAndNumberEqualConditionWithoutProperty() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 'a' = 1");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"'a' == 1");
+    }
+
+
 
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
