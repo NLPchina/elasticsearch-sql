@@ -75,7 +75,7 @@ public class Test {
                 "group by key ";
         String TEST_INDEX = "elasticsearch-sql_test_index";
 
-        sql =  "select count(t.*) as counts,sum(t.size) from xxx/locs as t group by t.kk";
+        sql =  "select * from xxx/locs where 'a' = 'b' and a > 1";
 
         System.out.println("sql" + sql + ":\n----------\n" + sqlToEsQuery(sql));
 
