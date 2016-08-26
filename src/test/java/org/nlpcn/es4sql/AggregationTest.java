@@ -265,6 +265,26 @@ public class AggregationTest {
 
     }
 
+    @Test
+    public void termsWithMissing() throws Exception {
+        Aggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='name','field'='name.ofHisName','missing'='-999')", TEST_INDEX));
+        Terms name = result.get("name");
+        Assert.assertNotNull(name.getBucketByKey("-999"));
+        Assert.assertEquals(1, name.getBucketByKey("-999").getDocCount());
+    }
+    
+    @Test
+    public void termsWithOrder() throws Exception {
+        Aggregations result = query(String.format("SELECT count(*) FROM %s/dog GROUP BY terms('field'='dog_name', 'alias'='dog_name', order='desc')", TEST_INDEX));
+        Terms name = result.get("dog_name");
+        Assert.assertEquals("snoopy",name.getBuckets().get(0).getKeyAsString());
+        Assert.assertEquals("rex",name.getBuckets().get(1).getKeyAsString());
+        
+        result = query(String.format("SELECT count(*) FROM %s/dog GROUP BY terms('field'='dog_name', 'alias'='dog_name', order='asc')", TEST_INDEX));
+        name = result.get("dog_name");        
+        Assert.assertEquals("rex",name.getBuckets().get(0).getKeyAsString());
+        Assert.assertEquals("snoopy",name.getBuckets().get(1).getKeyAsString());
+    }
 
     @Test
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
