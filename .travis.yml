@@ -13,4 +13,4 @@ script:
   - sudo service elasticsearch start
   - sleep 10
   - ulimit -a
-  - mvn -Plocal test
+  - mvn test
