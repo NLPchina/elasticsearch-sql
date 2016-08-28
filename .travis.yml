@@ -7,8 +7,8 @@ jdk:
 
 script:
   - wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.5/elasticsearch-2.3.5.deb && sudo dpkg -i --force-confnew elasticsearch-2.3.5.deb
-  - sudo echo 'script.inline: true' >> /etc/elasticsearch/elasticsearch.yml
-  - sudo echo 'script.indexed: true' >> /etc/elasticsearch/elasticsearch.yml
+  - sudo echo "script.inline: true">>/etc/elasticsearch/elasticsearch.yml
+  - sudo echo "script.indexed: true">>/etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
   - sudo /usr/share/elasticsearch/bin/plugin install delete-by-query
   - sudo service elasticsearch start
