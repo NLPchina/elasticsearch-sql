@@ -102,8 +102,7 @@ public class SQLFunctionsTest {
         List<String> headers = csvResult.getHeaders();
         List<String> contents = csvResult.getLines();
         String[] splits = contents.get(0).split(",");
-        //TODO: this function not validate test! please fix it 
-		//Assert.assertTrue(splits[0].endsWith("--"));
+		Assert.assertTrue(splits[0].endsWith("--")|| splits[1].endsWith("--"));
 	}
 
 	@Test
