@@ -102,6 +102,26 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-core</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-example-csv</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-elasticsearch</artifactId>
+            <version>1.8.0</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
