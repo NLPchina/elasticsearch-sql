@@ -200,8 +200,9 @@ public class MainTestSuite {
     }
 
     @AfterClass
-	public static void tearDown() {
+	public static void tearDown() throws InterruptedException {
 		System.out.println("teardown process...");
+		client.close();
 	}
 
 
