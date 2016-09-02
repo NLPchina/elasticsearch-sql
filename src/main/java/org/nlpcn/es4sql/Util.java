@@ -2,8 +2,11 @@ package org.nlpcn.es4sql;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -81,6 +84,26 @@ public class Util {
             return ((SQLValuableExpr) expr).getValue();
         }
         throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
+    }
+
+    public static boolean isFromJoinTable(SQLExpr expr) {
+        SQLObject temp = expr;
+        AtomicInteger counter = new AtomicInteger(10);
+        while (temp != null &&
+                !(expr instanceof SQLSelectQueryBlock) &&
+                !(expr instanceof SQLJoinTableSource) && counter.get() > 0) {
+            counter.decrementAndGet();
+            temp = temp.getParent();
+            if (temp instanceof SQLSelectQueryBlock) {
+                if (((SQLSelectQueryBlock) temp).getFrom() instanceof SQLJoinTableSource) {
+                    return true;
+                }
+            }
+            if (temp instanceof SQLJoinTableSource) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static double[] String2DoubleArr(String paramer) {

@@ -23,7 +23,7 @@ public class SQLFunctions {
             "random", "abs", //nummber operator
             "split", "concat_ws", "substring", "trim",//string operator
             "add", "multiply", "divide", "subtract", "modulus",//binary operator
-            "field"
+            "field", "date_format"
     );
 
 
@@ -54,6 +54,13 @@ public class SQLFunctions {
 
             case "floor":
                 functionStr = floor(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
+                break;
+
+            case "date_format":
+                functionStr = date_format(
+                        Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
+                        Util.expr2Object((SQLExpr) paramers.get(1).value).toString(),
+                        name);
                 break;
 
             case "round":
@@ -115,7 +122,6 @@ public class SQLFunctions {
 
     public static Tuple<String, String> concat_ws(String split, List<SQLExpr> columns, String valueName) {
         String name = "concat_ws_" + random();
-
         List<String> result = Lists.newArrayList();
 
         for (SQLExpr column : columns) {
@@ -125,7 +131,7 @@ public class SQLFunctions {
             } else if (isProperty(column)) {
                 result.add("doc['" + strColumn + "'].value");
             } else {
-                result.add("'"+strColumn+"'");
+                result.add("'" + strColumn + "'");
             }
 
         }
@@ -141,6 +147,16 @@ public class SQLFunctions {
             return new Tuple(name, "def " + name + " = doc['" + strColumn + "'].value.split('" + pattern + "')[" + index + "]");
         } else {
             return new Tuple(name, strColumn + "; def " + name + " = " + valueName + ".split('" + pattern + "')[" + index + "]");
+        }
+
+    }
+
+    public static Tuple<String, String> date_format(String strColumn, String pattern, String valueName) {
+        String name = "date_format_" + random();
+        if (valueName == null) {
+            return new Tuple(name, "def " + name + " = new Date(doc['" + strColumn + "'].value - 8*1000*60*60).format('" + pattern + "') ");
+        } else {
+            return new Tuple(name, strColumn + "; def " + name + " = new Date(" + valueName + " - 8*1000*60*60).format('" + pattern + "')");
         }
 
     }
