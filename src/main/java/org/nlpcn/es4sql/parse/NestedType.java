@@ -65,7 +65,7 @@ public class NestedType {
             else {
                 this.path = field;
                 Where where = Where.newInstance();
-                new SqlParser().parseWhere(secondParameter,where);
+                new WhereParser(new SqlParser()).parseWhere(secondParameter,where);
                 if(where.getWheres().size() == 0)
                     throw new SqlParseException("unable to parse filter where.");
                 this.where = where;
