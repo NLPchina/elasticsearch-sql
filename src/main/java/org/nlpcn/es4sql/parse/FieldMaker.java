@@ -170,20 +170,7 @@ public class FieldMaker {
         return methodInvokeExpr;
     }
 
-    private static boolean isFromJoinTable(SQLExpr expr) {
-        SQLObject temp = expr;
-        AtomicInteger counter = new AtomicInteger(10);
-        while (temp != null && !(expr.getParent() instanceof SQLSelectQueryBlock) && counter.get() > 0) {
-            counter.decrementAndGet();
-            temp = temp.getParent();
-            if (temp instanceof SQLSelectQueryBlock) {
-                if (((SQLSelectQueryBlock) temp).getFrom() instanceof SQLJoinTableSource) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+
 
     private static Field handleIdentifier(SQLExpr expr, String alias, String tableAlias) throws SqlParseException {
         String name = expr.toString().replace("`", "");
@@ -201,7 +188,7 @@ public class FieldMaker {
             field = new Field(newFieldName, alias);
         }
 
-        if (alias != null && alias != name && !isFromJoinTable(expr)) {
+        if (alias != null && alias != name && !Util.isFromJoinTable(expr)) {
             List<SQLExpr> paramers = Lists.newArrayList();
             paramers.add(new SQLCharExpr(alias));
             paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));

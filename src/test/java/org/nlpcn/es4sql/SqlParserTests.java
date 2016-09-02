@@ -834,6 +834,43 @@ public class SqlParserTests {
     }
 
     @Test
+    public void propertyEqualCondition() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where a = b");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"doc['a'].value == doc['b'].value");
+    }
+
+
+    @Test
+    public void propertyWithTableAliasEqualCondition() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select t.* from xxx/locs where t.a = t.b");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"doc['a'].value == doc['b'].value");
+    }
+
+    @Test
+    public void propertyGreatCondition() throws SqlParseException {
+        SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where a > b");
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        List<Where> wheres = select.getWhere().getWheres();
+        Assert.assertTrue(wheres.size()==1);
+        Condition condition = (Condition)wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
+        ScriptFilter sf = (ScriptFilter)condition.getValue();
+        Assert.assertEquals(sf.getScript(),"doc['a'].value > doc['b'].value");
+    }
+
+    @Test
     public void stringAndNumberEqualConditionWithoutProperty() throws SqlParseException {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 'a' = 1");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);

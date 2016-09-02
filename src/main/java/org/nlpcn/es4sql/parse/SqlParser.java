@@ -9,6 +9,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 
+import com.google.common.collect.Sets;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.Where.CONN;
@@ -90,11 +91,21 @@ public class SqlParser {
     }
 
     public void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
-        if (expr instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) expr)) {
+
+
+
+        if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
-            if (explanSpecialCond(bExpr, where)) {
+            if (explanSpecialCondWithBothSidesAreLiterals(bExpr, where)) {
                 return;
             }
+            if (explanSpecialCondWithBothSidesAreProperty(bExpr, where)) {
+                return;
+            }
+        }
+
+        if (expr instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) expr)) {
+            SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
             routeCond(bExpr, bExpr.getLeft(), where);
             routeCond(bExpr, bExpr.getRight(), where);
         } else if (expr instanceof SQLNotExpr) {
@@ -106,9 +117,10 @@ public class SqlParser {
     }
 
     //some where conditions eg. 1=1 or 3>2 or 'a'='b'
-    private boolean explanSpecialCond(SQLBinaryOpExpr bExpr, Where where) throws SqlParseException {
+    private boolean explanSpecialCondWithBothSidesAreLiterals(SQLBinaryOpExpr bExpr, Where where) throws SqlParseException {
         if ((bExpr.getLeft() instanceof SQLNumericLiteralExpr || bExpr.getLeft() instanceof SQLCharExpr) &&
-                (bExpr.getRight() instanceof SQLNumericLiteralExpr || bExpr.getRight() instanceof SQLCharExpr)) {
+                (bExpr.getRight() instanceof SQLNumericLiteralExpr || bExpr.getRight() instanceof SQLCharExpr)
+                ) {
             SQLMethodInvokeExpr sqlMethodInvokeExpr = new SQLMethodInvokeExpr("script", null);
             String operator = bExpr.getOperator().getName();
             if (operator.equals("=")) {
@@ -119,6 +131,44 @@ public class SqlParser {
                             " " + operator + " " +
                             Util.expr2Object(bExpr.getRight(), "'"))
             );
+
+            explanCond("AND", sqlMethodInvokeExpr, where);
+            return true;
+        }
+        return false;
+    }
+
+    //some where conditions eg. field1=field2 or field1>field2
+    private boolean explanSpecialCondWithBothSidesAreProperty(SQLBinaryOpExpr bExpr, Where where) throws SqlParseException {
+        //join is not support
+        if ((bExpr.getLeft() instanceof SQLPropertyExpr || bExpr.getLeft() instanceof SQLIdentifierExpr) &&
+                (bExpr.getRight() instanceof SQLPropertyExpr || bExpr.getRight() instanceof SQLIdentifierExpr) &&
+                Sets.newHashSet("=", "<", ">", ">=", "<=").contains(bExpr.getOperator().getName()) &&
+                !Util.isFromJoinTable(bExpr)
+
+                ) {
+            SQLMethodInvokeExpr sqlMethodInvokeExpr = new SQLMethodInvokeExpr("script", null);
+            String operator = bExpr.getOperator().getName();
+            if (operator.equals("=")) {
+                operator = "==";
+            }
+
+            String leftProperty = Util.expr2Object(bExpr.getLeft()).toString();
+            String rightProperty = Util.expr2Object(bExpr.getRight()).toString();
+            if (leftProperty.split("\\.").length > 1) {
+
+                leftProperty = leftProperty.substring(leftProperty.split("\\.")[0].length()+1);
+            }
+
+            if (rightProperty.split("\\.").length > 1) {
+                rightProperty = rightProperty.substring(rightProperty.split("\\.")[0].length()+1);
+            }
+
+            sqlMethodInvokeExpr.addParameter(new SQLCharExpr(
+                    "doc['" + leftProperty + "'].value " +
+                            operator +
+                            " doc['" + rightProperty + "'].value"));
+
 
             explanCond("AND", sqlMethodInvokeExpr, where);
             return true;

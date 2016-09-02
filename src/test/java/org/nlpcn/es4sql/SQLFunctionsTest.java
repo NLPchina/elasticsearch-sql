@@ -21,6 +21,8 @@ import java.net.UnknownHostException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+
 /**
  * Created by allwefantasy on 8/25/16.
  */
@@ -104,6 +106,15 @@ public class SQLFunctionsTest {
         String[] splits = contents.get(0).split(",");
 		Assert.assertTrue(splits[0].endsWith("--")|| splits[1].endsWith("--"));
 	}
+
+    @Test
+    public void test() throws Exception {
+
+//        String query =  "select * from xxx/locs where floor(a) = floor(b)";
+//
+//        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+//        System.out.println(searchDao.explain(query).explain().explain());
+    }
 
 	@Test
     public void concat_ws_fields() throws Exception {
