@@ -56,10 +56,10 @@ public class FieldMaker {
                 return makeFilterMethodField(mExpr, alias);
             }
 
-            return makeMethodField(methodName, mExpr.getParameters(), null, alias, tableAlias,true);
+            return makeMethodField(methodName, mExpr.getParameters(), null, alias, tableAlias, true);
         } else if (expr instanceof SQLAggregateExpr) {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
-            return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias,tableAlias, true);
+            return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);
         } else {
             throw new SqlParseException("unknown field name : " + expr);
         }
@@ -70,7 +70,7 @@ public class FieldMaker {
         return Util.getScriptValue(expr);
     }
 
-    private static Field makeScriptMethodField(SQLBinaryOpExpr binaryExpr, String alias,String tableAlias) throws SqlParseException {
+    private static Field makeScriptMethodField(SQLBinaryOpExpr binaryExpr, String alias, String tableAlias) throws SqlParseException {
         List<SQLExpr> params = new ArrayList<>();
 
         String scriptFieldAlias;
@@ -86,7 +86,7 @@ public class FieldMaker {
 
         params.add(new SQLCharExpr(script));
 
-        return makeMethodField("script", params, null, null, tableAlias,false);
+        return makeMethodField("script", params, null, null, tableAlias, false);
     }
 
 
@@ -107,7 +107,7 @@ public class FieldMaker {
             exprToCheck = parameters.get(1);
         }
         Where where = Where.newInstance();
-        new SqlParser().parseWhere(exprToCheck, where);
+        new WhereParser(new SqlParser()).parseWhere(exprToCheck, where);
         if (where.getWheres().size() == 0)
             throw new SqlParseException("unable to parse filter where.");
         List<KVValue> methodParameters = new ArrayList<>();
@@ -133,7 +133,7 @@ public class FieldMaker {
 
 
     //binary method can nested
-    private static SQLMethodInvokeExpr makeBinaryMethodField(SQLBinaryOpExpr expr, String alias, boolean first) throws SqlParseException {
+    public static SQLMethodInvokeExpr makeBinaryMethodField(SQLBinaryOpExpr expr, String alias, boolean first) throws SqlParseException {
         List<SQLExpr> params = new ArrayList<>();
 
         String scriptFieldAlias;
@@ -171,7 +171,6 @@ public class FieldMaker {
     }
 
 
-
     private static Field handleIdentifier(SQLExpr expr, String alias, String tableAlias) throws SqlParseException {
         String name = expr.toString().replace("`", "");
         String newFieldName = name;
@@ -192,12 +191,12 @@ public class FieldMaker {
             List<SQLExpr> paramers = Lists.newArrayList();
             paramers.add(new SQLCharExpr(alias));
             paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));
-            field = makeMethodField("script", paramers, null, alias, tableAlias,true);
+            field = makeMethodField("script", paramers, null, alias, tableAlias, true);
         }
         return field;
     }
 
-    private static MethodField makeMethodField(String name, List<SQLExpr> arguments, SQLAggregateOption option, String alias,String tableAlias, boolean first) throws SqlParseException {
+    public static MethodField makeMethodField(String name, List<SQLExpr> arguments, SQLAggregateOption option, String alias, String tableAlias, boolean first) throws SqlParseException {
         List<KVValue> paramers = new LinkedList<>();
         String finalMethodName = name;
 
@@ -209,11 +208,11 @@ public class FieldMaker {
 
                 if (SQLFunctions.buildInFunctions.contains(binaryOpExpr.getOperator().toString().toLowerCase())) {
                     SQLMethodInvokeExpr mExpr = makeBinaryMethodField(binaryOpExpr, alias, first);
-                    MethodField abc = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null,tableAlias, false);
+                    MethodField abc = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null, tableAlias, false);
                     paramers.add(new KVValue(abc.getParams().get(0).toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
                 } else {
                     if (!binaryOpExpr.getOperator().getName().equals("=")) {
-                        paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr, null,tableAlias)));
+                        paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr, null, tableAlias)));
                     } else {
                         SQLExpr right = binaryOpExpr.getRight();
                         Object value = Util.expr2Object(right);
@@ -225,7 +224,7 @@ public class FieldMaker {
                 SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) object;
                 String methodName = mExpr.getMethodName().toLowerCase();
                 if (methodName.equals("script")) {
-                    KVValue script = new KVValue("script", makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias,tableAlias, true));
+                    KVValue script = new KVValue("script", makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, alias, tableAlias, true));
                     paramers.add(script);
                 } else if (methodName.equals("nested") || methodName.equals("reverse_nested")) {
                     NestedType nestedType = new NestedType();
@@ -245,11 +244,11 @@ public class FieldMaker {
                     paramers.add(new KVValue("children", childrenType));
                 } else if (SQLFunctions.buildInFunctions.contains(methodName)) {
                     //throw new SqlParseException("only support script/nested as inner functions");
-                    MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias,false);
+                    MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
                     paramers.add(new KVValue(abc.getParams().get(0).toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
                 } else throw new SqlParseException("only support script/nested/children as inner functions");
             } else {
-                paramers.add(new KVValue(Util.removeTableAilasFromField(object,tableAlias)));
+                paramers.add(new KVValue(Util.removeTableAilasFromField(object, tableAlias)));
             }
 
         }

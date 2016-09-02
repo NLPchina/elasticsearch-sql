@@ -1,6 +1,8 @@
 package org.nlpcn.es4sql;
 
 
+import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
@@ -12,14 +14,24 @@ import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
 import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Select;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
+import org.nlpcn.es4sql.parse.ScriptFilter;
+import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.QueryAction;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
@@ -27,6 +39,13 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
  * Created by allwefantasy on 8/25/16.
  */
 public class SQLFunctionsTest {
+
+    private static SqlParser parser;
+
+    @BeforeClass
+    public static void init() {
+        parser = new SqlParser();
+    }
 
     @Test
     public void functionFieldAliasAndGroupByAlias() throws Exception {
@@ -104,19 +123,90 @@ public class SQLFunctionsTest {
         List<String> headers = csvResult.getHeaders();
         List<String> contents = csvResult.getLines();
         String[] splits = contents.get(0).split(",");
-		Assert.assertTrue(splits[0].endsWith("--")|| splits[1].endsWith("--"));
-	}
+        Assert.assertTrue(splits[0].endsWith("--") || splits[1].endsWith("--"));
+    }
 
     @Test
     public void test() throws Exception {
 
-//        String query =  "select * from xxx/locs where floor(a) = floor(b)";
-//
-//        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
-//        System.out.println(searchDao.explain(query).explain().explain());
+        String query = "select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3";
+
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
     }
 
-	@Test
+    @Test
+    public void whereConditionLeftFunctionRightVariableEqualTest() throws Exception {
+
+        String query = "SELECT " +
+                " * from " +
+                TestsConstants.TEST_INDEX + "/account " +
+                " where split(address,' ')[0]='806' limit 1000  ";
+
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> contents = csvResult.getLines();
+        Assert.assertTrue(contents.size() == 4);
+    }
+
+    @Test
+    public void whereConditionLeftFunctionRightVariableGreatTest() throws Exception {
+
+        String query = "SELECT " +
+                " * from " +
+                TestsConstants.TEST_INDEX + "/account " +
+                " where floor(split(address,' ')[0]+0) > 805 limit 1000  ";
+
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
+
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> contents = csvResult.getLines();
+        Assert.assertTrue(contents.size() == 223);
+    }
+
+    private SQLExpr queryToExpr(String query) {
+        return new ElasticSqlExprParser(query).expr();
+    }
+
+    @Test
+    public void whereConditionLeftFunctionRightFunctionEqualTest() throws Exception {
+
+        String query = "SELECT " +
+                " * from " +
+                TestsConstants.TEST_INDEX + "/account " +
+                " where floor(split(address,' ')[0]+0) = floor(split(address,' ')[0]+0) limit 1000  ";
+
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Where where = select.getWhere();
+        Assert.assertTrue((where.getWheres().size() == 1));
+        Assert.assertTrue(((Condition) (where.getWheres().get(0))).getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) (((Condition) (where.getWheres().get(0))).getValue());
+        Assert.assertTrue(scriptFilter.getScript().contains("doc['address'].value.split(' ')[0]"));
+        Pattern pattern = Pattern.compile("floor_\\d+ == floor_\\d+");
+        Matcher matcher = pattern.matcher(scriptFilter.getScript());
+        Assert.assertTrue(matcher.find());
+    }
+
+    @Test
+    public void whereConditionVariableRightVariableEqualTest() throws Exception {
+
+        String query = "SELECT " +
+                " * from " +
+                TestsConstants.TEST_INDEX + "/account " +
+                " where a = b limit 1000  ";
+
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
+
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Where where = select.getWhere();
+        Assert.assertTrue((where.getWheres().size() == 1));
+        Assert.assertTrue(((Condition) (where.getWheres().get(0))).getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) (((Condition) (where.getWheres().get(0))).getValue());
+        Assert.assertTrue(scriptFilter.getScript().contains("doc['a'].value == doc['b'].value"));
+    }
+
+    @Test
     public void concat_ws_fields() throws Exception {
 
         //here is a bug,csv field with spa
