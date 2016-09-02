@@ -164,6 +164,27 @@ public class SQLFunctionsTest {
         Assert.assertTrue(contents.size() == 223);
     }
 
+    @Test
+    public void whereConditionLeftFunctionRightPropertyGreatTest() throws Exception {
+
+        String query = "SELECT " +
+                " * from " +
+                TestsConstants.TEST_INDEX + "/account " +
+                " where floor(split(address,' ')[0]+0) > b limit 1000  ";
+
+        Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
+        Where where = select.getWhere();
+        Assert.assertTrue((where.getWheres().size() == 1));
+        Assert.assertTrue(((Condition) (where.getWheres().get(0))).getValue() instanceof ScriptFilter);
+        ScriptFilter scriptFilter = (ScriptFilter) (((Condition) (where.getWheres().get(0))).getValue());
+
+        Assert.assertTrue(scriptFilter.getScript().contains("doc['address'].value.split(' ')[0]"));
+        Pattern pattern = Pattern.compile("floor_\\d+ > doc\\['b'\\].value");
+        Matcher matcher = pattern.matcher(scriptFilter.getScript());
+        Assert.assertTrue(matcher.find());
+
+    }
+
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }

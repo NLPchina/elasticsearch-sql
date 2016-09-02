@@ -466,6 +466,14 @@ public class WhereParser {
         MethodField leftMethod = new MethodField(null, Lists.newArrayList(new KVValue("", Util.expr2Object(soExpr.getLeft(), "'"))), null, null);
         MethodField rightMethod = new MethodField(null, Lists.newArrayList(new KVValue("", Util.expr2Object(soExpr.getRight(), "'"))), null, null);
 
+        if(soExpr.getLeft() instanceof SQLIdentifierExpr || soExpr.getLeft() instanceof SQLPropertyExpr){
+            leftMethod = new MethodField(null, Lists.newArrayList(new KVValue("", "doc['"+Util.expr2Object(soExpr.getLeft(), "'")+"'].value")), null, null);
+        }
+
+        if(soExpr.getRight() instanceof SQLIdentifierExpr || soExpr.getRight() instanceof SQLPropertyExpr){
+            rightMethod = new MethodField(null, Lists.newArrayList(new KVValue("", "doc['"+Util.expr2Object(soExpr.getRight(), "'")+"'].value")), null, null);
+        }
+
         if (soExpr.getLeft() instanceof SQLMethodInvokeExpr) {
             leftMethod = parseSQLMethodInvokeExprWithFunctionInWhere((SQLMethodInvokeExpr) soExpr.getLeft());
         }
