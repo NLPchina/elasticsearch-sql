@@ -129,7 +129,7 @@ public class SQLFunctionsTest {
     @Test
     public void test() throws Exception {
 
-        String query = "select address from bank where address= score(matchQuery('Lane'),100) or address= score(matchQuery('Street'),0.5)  order by _score desc limit 3";
+        String query = "select  case when ty=0 then '云点播CV' when ty=1 then '云直播CV' end as tyname,sum(cv) as cv  from cloud_play_stat_cust  where day='20160906' group by  tyname";
 
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
         System.out.println(searchDao.explain(query).explain().explain());

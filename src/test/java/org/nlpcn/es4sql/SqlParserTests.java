@@ -23,6 +23,9 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
@@ -546,13 +549,13 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Field> fields = select.getFields();
-        Assert.assertTrue(fields.size()==2);
-        Assert.assertEquals("COUNT(*)",fields.get(0).toString());
-        Assert.assertEquals("SUM(size)",fields.get(1).toString());
+        Assert.assertTrue(fields.size() == 2);
+        Assert.assertEquals("COUNT(*)", fields.get(0).toString());
+        Assert.assertEquals("SUM(size)", fields.get(1).toString());
         List<List<Field>> groups = select.getGroupBys();
-        Assert.assertTrue(groups.size()==1);
-        Assert.assertTrue(groups.get(0).size()==1);
-        Assert.assertEquals("kk",groups.get(0).get(0).getName());
+        Assert.assertTrue(groups.size() == 1);
+        Assert.assertTrue(groups.get(0).size() == 1);
+        Assert.assertEquals("kk", groups.get(0).get(0).getName());
     }
 
     @Test
@@ -802,11 +805,11 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 1 = 1");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"1 == 1");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "1 == 1");
     }
 
     @Test
@@ -814,11 +817,11 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 1 > 1");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"1 > 1");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "1 > 1");
     }
 
     @Test
@@ -826,11 +829,11 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 'a' = 'b'");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"'a' == 'b'");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "'a' == 'b'");
     }
 
     @Test
@@ -838,11 +841,11 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where a = b");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"doc['a'].value == doc['b'].value");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "doc['a'].value == doc['b'].value");
     }
 
 
@@ -851,11 +854,11 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select t.* from xxx/locs where t.a = t.b");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"doc['a'].value == doc['b'].value");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "doc['a'].value == doc['b'].value");
     }
 
     @Test
@@ -863,11 +866,11 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where a > b");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"doc['a'].value > doc['b'].value");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "doc['a'].value > doc['b'].value");
     }
 
     @Test
@@ -875,13 +878,111 @@ public class SqlParserTests {
         SQLExpr sqlExpr = queryToExpr("select * from xxx/locs where 'a' = 1");
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Where> wheres = select.getWhere().getWheres();
-        Assert.assertTrue(wheres.size()==1);
-        Condition condition = (Condition)wheres.get(0);
-        Assert.assertTrue(condition.getValue() instanceof  ScriptFilter);
-        ScriptFilter sf = (ScriptFilter)condition.getValue();
-        Assert.assertEquals(sf.getScript(),"'a' == 1");
+        Assert.assertTrue(wheres.size() == 1);
+        Condition condition = (Condition) wheres.get(0);
+        Assert.assertTrue(condition.getValue() instanceof ScriptFilter);
+        ScriptFilter sf = (ScriptFilter) condition.getValue();
+        Assert.assertEquals(sf.getScript(), "'a' == 1");
     }
 
+
+    @Test
+    public void caseWhenTest() throws SqlParseException {
+        String query = "Select k,\n" +
+                "Case \n" +
+                "When floor(testBase)>=90 then 'A'\n" +
+                "When testBase = '80' then 'B'\n" +
+                "Else 'E' end as testBaseLevel\n" +
+                "from t";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        for (Field field : select.getFields()) {
+            if (field instanceof MethodField) {
+                MethodField methodField = (MethodField) field;
+                String alias = (String) methodField.getParams().get(0).value;
+                String scriptCode = (String) methodField.getParams().get(1).value;
+                Assert.assertEquals(alias, "testBaseLevel");
+                Matcher docValue = Pattern.compile("doc\\['testBase'\\].value").matcher(scriptCode);
+                Matcher number = Pattern.compile(" (\\s+90) | (\\s+'80')").matcher(scriptCode);
+
+                AtomicInteger docValueCounter = new AtomicInteger();
+
+                while (docValue.find()) {
+                    docValueCounter.incrementAndGet();
+                }
+
+                Assert.assertTrue(docValueCounter.get() == 2);
+                Assert.assertTrue(number.groupCount() == 2);
+
+            }
+        }
+
+    }
+
+    @Test
+    public void caseWhenTestWithFieldElseExpr() throws SqlParseException {
+        String query = "Select k,\n" +
+                "Case \n" +
+                "When floor(testBase)>=90 then 'A'\n" +
+                "When testBase = '80' then 'B'\n" +
+                "Else testBase end as testBaseLevel\n" +
+                "from t";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        for (Field field : select.getFields()) {
+            if (field instanceof MethodField) {
+                MethodField methodField = (MethodField) field;
+                String alias = (String) methodField.getParams().get(0).value;
+                String scriptCode = (String) methodField.getParams().get(1).value;
+                Assert.assertEquals(alias, "testBaseLevel");
+                Matcher docValue = Pattern.compile("doc\\['testBase'\\].value").matcher(scriptCode);
+                Matcher number = Pattern.compile(" (\\s+90) | (\\s+'80')").matcher(scriptCode);
+
+                AtomicInteger docValueCounter = new AtomicInteger();
+
+                while (docValue.find()) {
+                    docValueCounter.incrementAndGet();
+                }
+
+                Assert.assertTrue(docValueCounter.get() == 3);
+                Assert.assertTrue(number.groupCount() == 2);
+
+            }
+        }
+
+    }
+
+    @Test
+    public void caseWhenTestWithouhtElseExpr() throws SqlParseException {
+        String query = "Select k,\n" +
+                "Case \n" +
+                "When floor(testBase)>=90 then 'A'\n" +
+                "When testBase = '80' then 'B'\n" +
+                "end as testBaseLevel\n" +
+                "from t";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        for (Field field : select.getFields()) {
+            if (field instanceof MethodField) {
+                MethodField methodField = (MethodField) field;
+                String alias = (String) methodField.getParams().get(0).value;
+                String scriptCode = (String) methodField.getParams().get(1).value;
+                Assert.assertEquals(alias, "testBaseLevel");
+
+                Matcher docValue = Pattern.compile("\\{\\s+null\\s+}").matcher(scriptCode);
+
+                AtomicInteger docValueCounter = new AtomicInteger();
+
+                while (docValue.find()) {
+                    docValueCounter.incrementAndGet();
+                }
+
+                Assert.assertTrue(docValueCounter.get() == 1);
+
+            }
+        }
+
+    }
 
 
     private SQLExpr queryToExpr(String query) {
