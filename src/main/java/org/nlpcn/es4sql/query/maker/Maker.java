@@ -90,7 +90,7 @@ public abstract class Maker {
 		case "scorequery":
 		case "score_query":
 			Float boost = Float.parseFloat(value.getParameters().get(1).toString());
-			Condition subCond = new Condition(cond.getConn(), cond.getName(), cond.getOpear(), value.getParameters().get(0));
+			Condition subCond = new Condition(cond.getConn(), cond.getName(),null, cond.getOpear(), value.getParameters().get(0),null);
             bqb = QueryBuilders.constantScoreQuery((QueryBuilder) make(subCond)).boost(boost);
 			break;
 		case "wildcardquery":

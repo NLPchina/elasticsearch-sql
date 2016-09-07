@@ -60,6 +60,12 @@ public class FieldMaker {
         } else if (expr instanceof SQLAggregateExpr) {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
             return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);
+        } else if (expr instanceof SQLCaseExpr) {
+            String scriptCode = new CaseWhenParser((SQLCaseExpr) expr, alias, tableAlias).parse();
+            List<KVValue> methodParameters = new ArrayList<>();
+            methodParameters.add(new KVValue(alias));
+            methodParameters.add(new KVValue(scriptCode));
+            return new MethodField("script", methodParameters, null, alias);
         } else {
             throw new SqlParseException("unknown field name : " + expr);
         }
