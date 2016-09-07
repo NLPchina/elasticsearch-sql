@@ -12,9 +12,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.Properties;
+import java.sql.Date;
+import java.util.*;
 import java.util.concurrent.Executor;
 
 /**
@@ -25,14 +24,21 @@ public class ElasticSearchConnection implements Connection {
     private Client client;
 
     public ElasticSearchConnection(String jdbcUrl) {
-        String hostAndPort = jdbcUrl.split("/")[2];
-        String host = hostAndPort.split(":")[0];
-        String port = hostAndPort.split(":")[1];
+
+
         Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
-        Connection conn = null;
         try {
-            client = TransportClient.builder().settings(settings).build().
-                    addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
+            TransportClient transportClient = TransportClient.builder().settings(settings).build();
+
+            String hostAndPortArrayStr = jdbcUrl.split("/")[2];
+            String[] hostAndPortArray = hostAndPortArrayStr.split(",");
+
+            for (String hostAndPort : hostAndPortArray) {
+                String host = hostAndPort.split(":")[0];
+                String port = hostAndPort.split(":")[1];
+                transportClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
+            }
+            client = transportClient;
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
