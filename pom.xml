@@ -15,6 +15,12 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
+	<scm>
+		<connection>scm:git:git@github.com:NLPchina/elasticsearch-sql.git</connection>
+		<developerConnection>scm:git:git@github.com:NLPchina/elasticsearch-sql.git</developerConnection>
+		<url>git@github.com:NLPchina/elasticsearch-sql.git</url>
+	</scm>
 
 	<developers>
 		<developer>
