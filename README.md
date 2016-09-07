@@ -196,6 +196,19 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 *  SQL Nulls
 *  SQL isnull()
 *  SQL now()
+*  SQL floor
+*  SQL split
+*  SQL trim
+*  SQL log
+*  SQL log10
+*  SQL substring
+*  SQL round
+*  SQL sqrt
+*  SQL concat_ws
+
+## JDBC Support (Experimental feature)
+
+Check details : [JDBC Support](https://github.com/NLPchina/elasticsearch-sql/pull/283) 
 
 ## Beyond sql features
 
