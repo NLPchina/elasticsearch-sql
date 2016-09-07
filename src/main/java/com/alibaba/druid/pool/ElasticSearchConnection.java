@@ -343,7 +343,7 @@ public class ElasticSearchConnection implements Connection {
 
             @Override
             public void close() throws SQLException {
-
+                client.close();
             }
 
             @Override
