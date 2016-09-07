@@ -129,7 +129,7 @@ public class SQLFunctionsTest {
     @Test
     public void test() throws Exception {
 
-        String query = "select  case when ty=0 then '云点播CV' when ty=1 then '云直播CV' end as tyname,sum(cv) as cv  from cloud_play_stat_cust  where day='20160906' group by  tyname";
+        String query = "SELECT  gender,lastname,age from  " + TestsConstants.TEST_INDEX + " where lastname='Heath'";
 
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
         System.out.println(searchDao.explain(query).explain().explain());
