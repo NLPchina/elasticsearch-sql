@@ -23,15 +23,17 @@ import java.util.*;
 public class ObjectResultsExtractor {
     private final boolean includeType;
     private final boolean includeScore;
+    private final boolean includeId;
     private int currentLineIndex;
 
-    public ObjectResultsExtractor(boolean includeScore, boolean includeType) {
+    public ObjectResultsExtractor(boolean includeScore, boolean includeType, boolean includeId) {
         this.includeScore = includeScore;
         this.includeType = includeType;
+        this.includeId = includeId;
         this.currentLineIndex = 0;
     }
 
-    public ObjectResult extractResults(Object queryResult, boolean flat, String separator) throws ObjectResultsExtractException {
+    public ObjectResult extractResults(Object queryResult, boolean flat) throws ObjectResultsExtractException {
         if (queryResult instanceof SearchHits) {
             SearchHit[] hits = ((SearchHits) queryResult).getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
@@ -252,6 +254,9 @@ public class ObjectResultsExtractor {
             if (this.includeType) {
                 doc.put("_type", hit.type());
             }
+            if (this.includeId) {
+                doc.put("_id", hit.id());
+            }
             docsAsMap.add(doc);
         }
         ArrayList<String> headersList = new ArrayList<>(csvHeaders);
@@ -260,6 +265,9 @@ public class ObjectResultsExtractor {
         }
         if (this.includeType) {
             headersList.add("_type");
+        }
+        if (this.includeId) {
+            headersList.add("_id");
         }
         return headersList;
     }
