@@ -7,15 +7,18 @@ import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.plugin.nlpcn.DeleteByQueryRestListener;
-import org.elasticsearch.plugin.nlpcn.ElasticJoinExecutor;
-import org.elasticsearch.plugin.nlpcn.GetIndexRequestRestListener;
+import org.elasticsearch.plugin.nlpcn.*;
+import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.support.RestStatusToXContentListener;
+import org.elasticsearch.search.SearchHits;
 import org.nlpcn.es4sql.query.QueryAction;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
+import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
+import java.io.IOException;
 import java.util.Map;
 
 
@@ -33,11 +36,16 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         SqlElasticRequestBuilder requestBuilder = queryAction.explain();
         ActionRequest request = requestBuilder.request();
 
-        //todo: maby change to instanceof multi?
+
         if(requestBuilder instanceof JoinRequestBuilder){
             ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client,requestBuilder);
             executor.run();
             executor.sendResponse(channel);
+        }
+        else if (requestBuilder instanceof MultiQueryRequestBuilder){
+            ElasticHitsExecutor executor = MultiRequestExecutorFactory.createExecutor(client, (MultiQueryRequestBuilder) requestBuilder);
+            executor.run();
+            sendDefaultResponse(executor.getHits(),channel);
         }
         else if (request instanceof SearchRequest) {
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
@@ -49,7 +57,24 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         }
 
         else {
-            throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
+            String name ="";
+            if(request !=null){
+                name = request.getClass().getName();
+            }
+            else {
+                name = requestBuilder.getClass().getName();
+            }
+            throw new Exception(String.format("Unsupported ActionRequest provided: %s", name));
+        }
+    }
+
+    private void sendDefaultResponse(SearchHits hits, RestChannel channel) {
+        try {
+            String json = ElasticUtils.hitsAsStringResult(hits,new MetaSearchResult());
+            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
+            channel.sendResponse(bytesRestResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

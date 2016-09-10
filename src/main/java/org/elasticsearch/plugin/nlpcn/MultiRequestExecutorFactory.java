@@ -16,8 +16,10 @@ public class MultiRequestExecutorFactory {
              case UNION_ALL:
              case UNION:
                  return new UnionExecutor(client,builder);
+             case MINUS:
+                 return new MinusExecutor(client,builder);
              default:
-                 throw new SqlParseException("only supports union and union all");
+                 throw new SqlParseException("only supports union, and minus operations");
          }
      }
 }

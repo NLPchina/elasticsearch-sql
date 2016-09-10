@@ -40,6 +40,7 @@ import com.google.common.io.ByteStreams;
         SourceFieldTest.class,
         UtilTests.class
 })
+
 public class MainTestSuite {
 
 	private static TransportClient client;
@@ -66,6 +67,7 @@ public class MainTestSuite {
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
         loadBulk("src/test/resources/game_of_thrones_complex.json");
+        loadBulk("src/test/resources/systems.json");
 
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");

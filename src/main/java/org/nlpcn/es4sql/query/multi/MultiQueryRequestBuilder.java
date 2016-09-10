@@ -11,6 +11,9 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.Select;
+import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
@@ -27,10 +30,13 @@ public class MultiQueryRequestBuilder implements SqlElasticRequestBuilder{
     private SearchRequestBuilder secondSearchRequest;
     private Map<String,String> firstTableFieldToAlias;
     private Map<String,String> secondTableFieldToAlias;
+    private MultiQuerySelect multiQuerySelect;
     private SQLUnionOperator relation;
 
-    public MultiQueryRequestBuilder(SQLUnionOperator relation) {
-        this.relation = relation;
+
+    public MultiQueryRequestBuilder(MultiQuerySelect multiQuerySelect) {
+        this.multiQuerySelect = multiQuerySelect;
+        this.relation = multiQuerySelect.getOperation();
         this.firstTableFieldToAlias = new HashMap<>();
         this.secondTableFieldToAlias = new HashMap<>();
     }
@@ -68,6 +74,7 @@ public class MultiQueryRequestBuilder implements SqlElasticRequestBuilder{
     public ActionRequestBuilder getBuilder() {
         return null;
     }
+
 
     public SearchRequestBuilder getFirstSearchRequest() {
         return firstSearchRequest;
@@ -108,5 +115,14 @@ public class MultiQueryRequestBuilder implements SqlElasticRequestBuilder{
 
     public Map<String, String> getSecondTableFieldToAlias() {
         return secondTableFieldToAlias;
+    }
+
+    public Select getOriginalSelect(boolean first){
+        if(first){
+            return this.multiQuerySelect.getFirstSelect();
+        }
+        else {
+            return this.multiQuerySelect.getSecondSelect();
+        }
     }
 }

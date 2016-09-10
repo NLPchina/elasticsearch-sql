@@ -811,6 +811,53 @@ public class SqlParserTests {
         Assert.assertEquals(SQLUnionOperator.MINUS,select.getOperation());
     }
 
+    @Test
+    public void multiSelectMinusTestMinusHints() throws SqlParseException {
+        String query = "select /*! MINUS_SCROLL_FETCH_AND_RESULT_LIMITS(1000,50,100)*/ /*! MINUS_USE_TERMS_OPTIMIZATION(true)*/ pk from firstIndex minus  select pk from secondIndex ";
+        MultiQuerySelect select = parser.parseMultiSelect((com.alibaba.druid.sql.ast.statement.SQLUnionQuery) ((SQLQueryExpr) queryToExpr(query)).getSubQuery().getQuery());
+        List<Hint> hints = select.getFirstSelect().getHints();
+        Assert.assertEquals(2,hints.size());
+        for(Hint hint : hints) {
+            if (hint.getType() == HintType.MINUS_FETCH_AND_RESULT_LIMITS) {
+                Object[] params = hint.getParams();
+                Assert.assertEquals(1000,params[0]);
+                Assert.assertEquals(50,params[1]);
+                Assert.assertEquals(100,params[2]);
+            }
+            if(hint.getType() == HintType.MINUS_USE_TERMS_OPTIMIZATION){
+                Assert.assertEquals(true,hint.getParams()[0]);
+            }
+        }
+    }
+
+    @Test
+    public void multiSelectMinusScrollCheckDefaultsAllDefaults() throws SqlParseException {
+        String query = "select /*! MINUS_SCROLL_FETCH_AND_RESULT_LIMITS*/ pk from firstIndex minus  select pk from secondIndex ";
+        MultiQuerySelect select = parser.parseMultiSelect((com.alibaba.druid.sql.ast.statement.SQLUnionQuery) ((SQLQueryExpr) queryToExpr(query)).getSubQuery().getQuery());
+        List<Hint> hints = select.getFirstSelect().getHints();
+        Assert.assertEquals(1, hints.size());
+        Hint hint = hints.get(0);
+        Assert.assertEquals(HintType.MINUS_FETCH_AND_RESULT_LIMITS,hint.getType());
+        Object[] params = hint.getParams();
+        Assert.assertEquals(100000, params[0]);
+        Assert.assertEquals(100000, params[1]);
+        Assert.assertEquals(1000, params[2]);
+    }
+
+    @Test
+    public void multiSelectMinusScrollCheckDefaultsOneDefault() throws SqlParseException {
+        String query = "select /*! MINUS_SCROLL_FETCH_AND_RESULT_LIMITS(50,100)*/ pk from firstIndex minus  select pk from secondIndex ";
+        MultiQuerySelect select = parser.parseMultiSelect((com.alibaba.druid.sql.ast.statement.SQLUnionQuery) ((SQLQueryExpr) queryToExpr(query)).getSubQuery().getQuery());
+        List<Hint> hints = select.getFirstSelect().getHints();
+        Assert.assertEquals(1, hints.size());
+        Hint hint = hints.get(0);
+        Assert.assertEquals(HintType.MINUS_FETCH_AND_RESULT_LIMITS,hint.getType());
+        Object[] params = hint.getParams();
+        Assert.assertEquals(50, params[0]);
+        Assert.assertEquals(100, params[1]);
+        Assert.assertEquals(1000, params[2]);
+    }
+
     private SQLExpr queryToExpr(String query) {
         return new ElasticSqlExprParser(query).expr();
     }

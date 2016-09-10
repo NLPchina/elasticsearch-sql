@@ -1,9 +1,6 @@
 package org.nlpcn.es4sql;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.alibaba.druid.sql.ast.expr.*;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -102,6 +99,14 @@ public class Util {
             currentObject = (Map<String, Object>) valueFromCurrentMap;
         }
         return currentObject.get(path[path.length-1]);
+    }
+
+    public static Object deepSearchInMap(Map<String,Object> fieldsMap , String field){
+        if(field.contains(".")){
+            String[] split = field.split("\\.");
+            return searchPathInMap(fieldsMap,split);
+        }
+        return fieldsMap.get(field);
     }
 
     public static boolean clearEmptyPaths(Map<String, Object> map) {
