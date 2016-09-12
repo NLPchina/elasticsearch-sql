@@ -129,10 +129,10 @@ public class SQLFunctionsTest {
     @Test
     public void test() throws Exception {
 
-        String query = "SELECT  gender,lastname,age from  " + TestsConstants.TEST_INDEX + " where lastname='Heath'";
-
-        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
-        System.out.println(searchDao.explain(query).explain().explain());
+//        String query = "select * from 5ed516e548a8458c825ec3655127cd46";
+//
+//        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+//        System.out.println(searchDao.explain(query).explain().explain());
     }
 
     @Test
