@@ -1,5 +1,7 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.elasticsearch.common.text.StringText;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.internal.InternalSearchHit;
 import org.nlpcn.es4sql.domain.Field;
 

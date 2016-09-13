@@ -42,10 +42,10 @@ public class SearchDao {
 	 * @return ES request
 	 * @throws SqlParseException
 	 */
-	public QueryAction explain(String sql) throws SqlParseException, SQLFeatureNotSupportedException {
-		return ESActionFactory.create(client, sql);
+	public SqlElasticRequestBuilder explain(String sql) throws SqlParseException, SQLFeatureNotSupportedException {
+
+		QueryAction query = ESActionFactory.create(client, sql);
+		return query.explain();
 	}
-
-
 
 }

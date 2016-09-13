@@ -445,98 +445,9 @@ public class JoinTests {
     }
 
 
-    @Test
-    public void joinWithOrderbyFirstTableHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        joinWithOrderFirstTable(false);
-    }
-    @Test
-    public void joinWithOrderbyFirstTableNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        joinWithOrderFirstTable(true);
-    }
-    private void joinWithOrderFirstTable(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("select c.name.firstname , d.words from %s/gotCharacters c " +
-                "JOIN %s/gotHouses d on d.name = c.house " +
-                "order by c.name.firstname"
-                ,  TEST_INDEX, TEST_INDEX);
-        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
-        SearchHit[] hits = joinAndGetHits(query);
-        Assert.assertEquals(4, hits.length);
-        Assert.assertEquals("Brandon",hits[0].sourceAsMap().get("c.name.firstname"));
-        Assert.assertEquals("Daenerys",hits[1].sourceAsMap().get("c.name.firstname"));
-        Assert.assertEquals("Eddard",hits[2].sourceAsMap().get("c.name.firstname"));
-        Assert.assertEquals("Jaime",hits[3].sourceAsMap().get("c.name.firstname"));
-    }
-
-
-    @Test
-    public void joinWithAllFromSecondTableHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        joinWithAllFromSecondTable(false);
-    }
-    @Test
-    public void joinWithAllFromSecondTableNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        joinWithAllFromSecondTable(true);
-    }
-    private void joinWithAllFromSecondTable(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("select c.name.firstname , d.* from %s/gotCharacters c " +
-                "JOIN %s/gotHouses d on d.name = c.house "
-                ,  TEST_INDEX, TEST_INDEX);
-        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
-        SearchHit[] hits = joinAndGetHits(query);
-        Assert.assertEquals(4, hits.length);
-        Assert.assertEquals(5,hits[0].sourceAsMap().size());
-    }
-
-
-    @Test
-    public void joinWithAllFromFirstTableHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        joinWithAllFromFirstTable(false);
-    }
-    @Test
-    public void joinWithAllFromFirstTableNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        joinWithAllFromFirstTable(true);
-    }
-
-    private void joinWithAllFromFirstTable(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("select  d.* , c.name.firstname from %s/gotHouses d " +
-                "JOIN %s/gotCharacters c  on  c.house = d.name  "
-                ,  TEST_INDEX, TEST_INDEX);
-        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
-        SearchHit[] hits = joinAndGetHits(query);
-        Assert.assertEquals(4, hits.length);
-        Assert.assertEquals(5,hits[0].sourceAsMap().size());
-    }
-
-    @Test
-    public void leftJoinWithAllFromSecondTableHASH() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        leftJoinWithAllFromSecondTable(false);
-    }
-    @Test
-    public void leftJoinWithAllFromSecondTableNL() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        leftJoinWithAllFromSecondTable(true);
-    }
-    private void leftJoinWithAllFromSecondTable(boolean useNestedLoops) throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("select c.name.firstname , d.* from %s/gotCharacters c " +
-                "LEFT JOIN %s/gotHouses d on d.name = c.house " +
-                "where d.sigil <> 'direwolf'"
-                ,  TEST_INDEX, TEST_INDEX);
-        if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
-        SearchHit[] hits = joinAndGetHits(query);
-        Assert.assertEquals(4, hits.length);
-        for (SearchHit hit : hits) {
-            if(hit.getId().endsWith("0")){
-                Assert.assertEquals(1,hit.sourceAsMap().size());
-            }
-            else {
-                Assert.assertEquals(5,hit.sourceAsMap().size());
-            }
-        }
-
-    }
-
-
     private String hashJoinRunAndExplain(String query) throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query).explain();
+        HashJoinElasticRequestBuilder explain = (HashJoinElasticRequestBuilder) searchDao.explain(query);
         HashJoinElasticExecutor executor = new HashJoinElasticExecutor(searchDao.getClient(),  explain);
         executor.run();
         return explain.explain();
@@ -544,7 +455,7 @@ public class JoinTests {
 
     private SearchHit[] joinAndGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticRequestBuilder explain = searchDao.explain(query).explain();
+        SqlElasticRequestBuilder explain = searchDao.explain(query);
         ElasticJoinExecutor executor  = ElasticJoinExecutor.createJoinExecutor(searchDao.getClient(),explain);
         executor.run();
         return executor.getHits().getHits();

@@ -1,7 +1,6 @@
 package org.nlpcn.es4sql.domain;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.BiMap;
@@ -16,23 +15,13 @@ import org.nlpcn.es4sql.exception.SqlParseException;
  */
 public class Condition extends Where {
 
-    public enum OPEAR {
-		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , TERM , IDS_QUERY,NESTED_COMPLEX , SCRIPT;
+	public enum OPEAR {
+		EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN , BETWEEN ,NBETWEEN , GEO_INTERSECTS , GEO_BOUNDING_BOX , GEO_DISTANCE , GEO_DISTANCE_RANGE, GEO_POLYGON , GEO_CELL, IN_TERMS , IDS_QUERY;
 
-        public static Map<String,OPEAR> methodNameToOpear;
-
+        public static Map<String,OPEAR> methodNameToOpear = ImmutableMap.of("in_terms",IN_TERMS,"terms",IN_TERMS,"ids",IDS_QUERY,"ids_query",IDS_QUERY);
         private static BiMap<OPEAR, OPEAR> negatives;
 
-        static {
-            methodNameToOpear = new HashMap<>();
-            methodNameToOpear.put("term",TERM);
-            methodNameToOpear.put("matchterm",TERM);
-            methodNameToOpear.put("match_term",TERM);
-            methodNameToOpear.put("terms",IN_TERMS);
-            methodNameToOpear.put("in_terms",IN_TERMS);
-            methodNameToOpear.put("ids",IDS_QUERY);
-            methodNameToOpear.put("ids_query",IDS_QUERY);
-        }
+
 		static {
 			negatives = HashBiMap.create(7);
 			negatives.put(EQ, N);
@@ -60,15 +49,9 @@ public class Condition extends Where {
 
 	private OPEAR opear;
 
-    private boolean isNested;
+	private String aliasTableName;
 
-	private String nestedPath;
-
-    public Condition(CONN conn, String field, String condition, Object obj) throws SqlParseException {
-        this(conn, field, condition, obj, false, null);
-    }
-
-	public Condition(CONN conn, String name, OPEAR oper, Object value,boolean isNested , String nestedPath) throws SqlParseException {
+	public Condition(CONN conn, String name, OPEAR oper, Object value) throws SqlParseException {
 		super(conn);
 		this.opear = null;
 
@@ -77,18 +60,10 @@ public class Condition extends Where {
 		this.value = value;
 		
 		this.opear = oper ;
-
-        this.isNested = isNested;
-
-        this.nestedPath = nestedPath;
 	}
 
-	public Condition(CONN conn, String name, String oper, Object value,boolean isNested,String nestedPath) throws SqlParseException {
+	public Condition(CONN conn, String name, String oper, Object value) throws SqlParseException {
 		super(conn);
-
-        this.isNested = isNested;
-
-        this.nestedPath = nestedPath;
 
 		this.opear = null;
 
@@ -161,12 +136,6 @@ public class Condition extends Where {
         case "GEO_CELL":
             this.opear = OPEAR.GEO_CELL;
             break;
-        case "NESTED":
-            this.opear = OPEAR.NESTED_COMPLEX;
-            break;
-        case "SCRIPT":
-            this.opear = OPEAR.SCRIPT;
-            break;
         default:
 			throw new SqlParseException(oper + " is err!");
 		}
@@ -196,43 +165,20 @@ public class Condition extends Where {
 		this.opear = opear;
 	}
 
-    public boolean isNested() {
-        return isNested;
-    }
-
-    public void setNested(boolean isNested) {
-        this.isNested = isNested;
-    }
-
-    public String getNestedPath() {
-        return nestedPath;
-    }
-
-    public void setNestedPath(String nestedPath) {
-        this.nestedPath = nestedPath;
-    }
-
-    @Override
+	@Override
 	public String toString() {
-        String result = "";
-        if(this.isNested()){
-            result = "nested condition ";
-            if(this.getNestedPath()!=null){
-                result+="on path:" + this.getNestedPath() + " ";
-            }
-        }
+
 		if (value instanceof Object[]) {
-			result += this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
+			return this.conn + " " + this.name + " " + this.opear + " " + Arrays.toString((Object[]) value);
 		} else {
-			result += this.conn + " " + this.name + " " + this.opear + " " + this.value;
+			return this.conn + " " + this.name + " " + this.opear + " " + this.value;
 		}
-        return result;
 	}
 
     @Override
     public Object clone() throws CloneNotSupportedException {
         try {
-            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue(),this.isNested(),this.getNestedPath());
+            Condition clonedCondition = new Condition(this.getConn(),this.getName(),this.getOpear(),this.getValue());
             return clonedCondition;
         } catch (SqlParseException e) {
 

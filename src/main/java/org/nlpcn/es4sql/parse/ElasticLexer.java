@@ -88,6 +88,6 @@ public class ElasticLexer extends MySqlLexer {
 
 
     private boolean isElasticIdentifierChar(char ch) {
-        return ch == '*' || ch == ':' || ch == '-'  || ch == '.' || ch == ';' || isIdentifierChar(ch);
+        return ch == '*' || ch == ':' || ch == '-'  || ch == '.' || isIdentifierChar(ch);
     }
 }

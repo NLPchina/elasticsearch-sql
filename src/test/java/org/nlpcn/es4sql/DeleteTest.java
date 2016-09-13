@@ -57,6 +57,6 @@ public class DeleteTest {
 
 	private void delete(String deleteStatement) throws SqlParseException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
-		searchDao.explain(deleteStatement).explain().get();
+		searchDao.explain(deleteStatement).get();
 	}
 }

@@ -88,6 +88,7 @@ public class ESHashJoinQueryAction extends ESJoinQueryAction {
                 comparisonFields.add(getComparisonFieldsFromWhere(t1Alias,t2Alias,innerWhere));
             }
         }
+        //todo: where is condition. is it possible?
 
         return comparisonFields;
     }
