@@ -24,13 +24,13 @@ import static org.nlpcn.es4sql.TestsConstants.*;
 		QueryTest.class,
 		MethodQueryTest.class,
 		AggregationTest.class,
-		BugTest.class,
         JoinTests.class,
 		DeleteTest.class,
 		ExplainTest.class,
         WktToGeoJsonConverterTests.class,
         SqlParserTests.class,
-        ShowTest.class
+        ShowTest.class,
+        CSVResultsExtractorTests.class
 })
 public class MainTestSuite {
 
@@ -50,6 +50,7 @@ public class MainTestSuite {
 		deleteQuery(TEST_INDEX);
 		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
+        preparePhrasesIndex();
         loadBulk("src/test/resources/phrases.json");
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
@@ -64,6 +65,9 @@ public class MainTestSuite {
         prepareSpatialIndex("location2");
         loadBulk("src/test/resources/locations2.json");
 
+        prepareNestedTypeIndex();
+        loadBulk("src/test/resources/nested_objects.json");
+
         searchDao = new SearchDao(client);
 
         //refresh to make sure all the docs will return on queries
@@ -72,8 +76,67 @@ public class MainTestSuite {
 		System.out.println("Finished the setup process...");
 	}
 
+    private static void preparePhrasesIndex() {
+        String dataMapping = "{  \"phrase\": {" +
+                " \"properties\": {\n" +
+                "          \"phrase\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"store\": true\n" +
+                "          }" +
+                "       }"+
+                "   }" +
+                "}";
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping).execute().actionGet();
+    }
 
-	@AfterClass
+    private static void prepareNestedTypeIndex() {
+
+            String dataMapping = "{ \"nestedType\": {\n" +
+                    "        \"properties\": {\n" +
+                    "          \"message\": {\n" +
+                    "            \"type\": \"nested\",\n" +
+                    "            \"properties\": {\n" +
+                    "              \"info\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"author\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"dayOfWeek\": {\n" +
+                    "                \"type\": \"long\"\n" +
+                    "              }\n" +
+                    "            }\n" +
+                    "          },\n" +
+                    "          \"comment\": {\n" +
+                    "            \"type\": \"nested\",\n" +
+                    "            \"properties\": {\n" +
+                    "              \"data\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "              },\n" +
+                    "              \"likes\": {\n" +
+                    "                \"type\": \"long\"\n" +
+                    "              }\n" +
+                    "            }\n" +
+                    "          },\n" +
+                    "          \"myNum\": {\n" +
+                    "            \"type\": \"long\"\n" +
+                    "          },\n" +
+                    "          \"someField\": {\n" +
+                    "                \"type\": \"string\",\n" +
+                    "                \"index\": \"not_analyzed\"\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }}";
+
+            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping).execute().actionGet();
+    }
+
+
+    @AfterClass
 	public static void tearDown() {
 		System.out.println("teardown process...");
 	}

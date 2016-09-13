@@ -17,7 +17,6 @@ import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -26,9 +25,7 @@ import java.util.Map;
  */
 public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
-    private final NestedLoopsElasticRequestBuilder
-
-            nestedLoopsRequest;
+    private final NestedLoopsElasticRequestBuilder nestedLoopsRequest;
     private final Client client;
 
     public NestedLoopsElasticExecutor(Client client, NestedLoopsElasticRequestBuilder nestedLoops) {
@@ -89,7 +86,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
         for(int j =0 ; j < responses.length && currentCombinedResults < totalLimit ; j++){
             SearchHit hitFromFirstTable = hits[currentIndex+j];
-            onlyReturnedFields(hitFromFirstTable.sourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields());
+            onlyReturnedFields(hitFromFirstTable.sourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields(),nestedLoopsRequest.getFirstTable().getOriginalSelect().isSelectAll());
 
             SearchResponse multiItemResponse = responses[j].getResponse();
             updateMetaSearchResults(multiItemResponse);
@@ -98,7 +95,8 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
             SearchHits responseForHit = multiItemResponse.getHits();
 
             if(responseForHit.getHits().length == 0 && nestedLoopsRequest.getJoinType() == SQLJoinTableSource.JoinType.LEFT_OUTER_JOIN){
-                addUnmachedResult(combinedResults, nestedLoopsRequest.getSecondTable().getReturnedFields(), currentCombinedResults, t1Alias, t2Alias, hitFromFirstTable);
+                InternalSearchHit unmachedResult = createUnmachedResult(nestedLoopsRequest.getSecondTable().getReturnedFields(), currentCombinedResults, t1Alias, t2Alias, hitFromFirstTable);
+                combinedResults.add(unmachedResult);
                 currentCombinedResults++;
                 continue;
             }
@@ -116,7 +114,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     }
 
     private InternalSearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
-        onlyReturnedFields(matchedHit.sourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields());
+        onlyReturnedFields(matchedHit.sourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
         InternalSearchHit searchHit = new InternalSearchHit(currentCombinedResults, hitFromFirstTable.id() + "|" + matchedHit.getId(), new StringText(hitFromFirstTable.getType() + "|" + matchedHit.getType()), hitFromFirstTable.getFields());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
         searchHit.sourceAsMap().clear();
@@ -182,21 +180,20 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
             if(hintLimit != null && hintLimit < MAX_RESULTS_ON_ONE_FETCH){
 
                 responseWithHits = tableRequest.getRequestBuilder().setSize(hintLimit).get();
-                needScrollForFirstTable=true;
+                needScrollForFirstTable=false;
             }
             else {
                 //scroll request with max.
-                responseWithHits = tableRequest.getRequestBuilder().setSearchType(SearchType.SCAN)
-                        .setScroll(new TimeValue(60000))
-                        .setSize(MAX_RESULTS_ON_ONE_FETCH).get();
+                responseWithHits = scrollOneTimeWithMax(client,tableRequest);
                 if(responseWithHits.getHits().getTotalHits() < MAX_RESULTS_ON_ONE_FETCH)
                     needScrollForFirstTable = true;
-                responseWithHits = client.prepareSearchScroll(responseWithHits.getScrollId()).setScroll(new TimeValue(600000)).get();
             }
 
             updateMetaSearchResults(responseWithHits);
             return new FetchWithScrollResponse(responseWithHits,needScrollForFirstTable);
     }
+
+
 
     private void orderConditions(String t1Alias, String t2Alias) {
         orderConditionRecursive(t1Alias,t2Alias,nestedLoopsRequest.getConnectedWhere());

@@ -43,17 +43,19 @@ public class
 		setSorts(select.getOrderBys());
 		setLimit(select.getOffset(), select.getRowCount());
 
-		// set SearchType.
-        boolean usedScroll = useScrollIfNeeded();
+        boolean usedScroll = useScrollIfNeeded(select.isOrderdSelect());
         if(!usedScroll){
             request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
         }
+        updateRequestWithIndexAndRoutingOptions(select, request);
+        updateRequestWithHighlight(select, request);
 
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
+
 		return sqlElasticRequestBuilder;
 	}
 
-    private boolean useScrollIfNeeded() {
+    private boolean useScrollIfNeeded(boolean existsOrderBy) {
         Hint scrollHint = null;
         for(Hint hint: select.getHints()){
             if(hint.getType() == HintType.USE_SCROLL){
@@ -64,8 +66,8 @@ public class
         if(scrollHint!=null) {
             int scrollSize = (Integer) scrollHint.getParams()[0];
             int timeoutInMilli = (Integer) scrollHint.getParams()[1];
-            request.setSearchType(SearchType.SCAN)
-                    .setScroll(new TimeValue(timeoutInMilli))
+            if(!existsOrderBy) request.setSearchType(SearchType.SCAN);
+            request.setScroll(new TimeValue(timeoutInMilli))
                     .setSize(scrollSize);
         }
         return scrollHint !=null ;

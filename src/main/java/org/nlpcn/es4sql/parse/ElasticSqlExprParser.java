@@ -68,7 +68,7 @@ public class ElasticSqlExprParser extends MySqlExprParser {
             lexer.nextToken();
             String prefix = "";
             while(lexer.token()!=Token.RBRACKET){
-                if(lexer.token() != Token.IDENTIFIER && lexer.token()!=Token.INDEX){
+                if(lexer.token() != Token.IDENTIFIER && lexer.token()!=Token.INDEX && lexer.token()!=Token.LITERAL_CHARS){
                     throw new ParserException("All items between Brackets should be identifiers , got:" +lexer.token());
                 }
                 identifier.append(prefix);

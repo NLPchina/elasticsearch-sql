@@ -9,6 +9,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -80,10 +81,18 @@ public class SqlParser {
 
 
 	private boolean isCond(SQLBinaryOpExpr expr) {
-		return expr.getLeft() instanceof SQLIdentifierExpr || expr.getLeft() instanceof SQLPropertyExpr || expr.getLeft() instanceof SQLVariantRefExpr;
+        SQLExpr leftSide = expr.getLeft();
+        if(leftSide instanceof SQLMethodInvokeExpr){
+            return isAllowedMethodOnConditionLeft((SQLMethodInvokeExpr) leftSide,expr.getOperator());
+        }
+		return leftSide instanceof SQLIdentifierExpr || leftSide instanceof SQLPropertyExpr || leftSide instanceof SQLVariantRefExpr;
 	}
 
-	private void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
+    private boolean isAllowedMethodOnConditionLeft(SQLMethodInvokeExpr method, SQLBinaryOperator operator) {
+        return  method.getMethodName().toLowerCase().equals("nested") && !operator.isLogical();
+    }
+
+    public void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
 		if (expr instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) expr)) {
 			SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
 			routeCond(bExpr, bExpr.getLeft(), where);
@@ -120,74 +129,126 @@ public class SqlParser {
         if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr soExpr = (SQLBinaryOpExpr) expr;
             boolean methodAsOpear = false;
+            boolean nestedFieldCondition = false;
+            String nestedPath = null ;
+            NestedType nestedType = new NestedType();
+            if(nestedType.tryFillFromExpr(soExpr.getLeft())){
+                soExpr.setLeft(new SQLIdentifierExpr(nestedType.field));
+                nestedFieldCondition = true;
+                nestedPath = nestedType.path ;
+            }
+
             if(soExpr.getRight() instanceof SQLMethodInvokeExpr){
                 SQLMethodInvokeExpr method = (SQLMethodInvokeExpr) soExpr.getRight();
                 String methodName = method.getMethodName().toLowerCase();
 
                 if(Condition.OPEAR.methodNameToOpear.containsKey(methodName)){
                     Object[] methodParametersValue = getMethodValuesWithSubQueries(method);
-                    Condition condition = new Condition(CONN.valueOf(opear) ,soExpr.getLeft().toString(), Condition.OPEAR.methodNameToOpear.get(methodName),methodParametersValue);
+                    Condition condition = new Condition(CONN.valueOf(opear) ,soExpr.getLeft().toString(), Condition.OPEAR.methodNameToOpear.get(methodName),methodParametersValue,nestedFieldCondition,nestedPath);
                     where.addWhere(condition);
                     methodAsOpear = true;
                 }
             }
             if(!methodAsOpear){
-                Condition condition = new Condition(CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getOperator().name, parseValue(soExpr.getRight()));
+                Condition condition = new Condition(CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getOperator().name, parseValue(soExpr.getRight()),nestedFieldCondition,nestedPath);
                 where.addWhere(condition);
             }
         } else if (expr instanceof SQLInListExpr) {
             SQLInListExpr siExpr = (SQLInListExpr) expr;
-            Condition condition = new Condition(CONN.valueOf(opear), siExpr.getExpr().toString(), siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()));
+            NestedType nestedType = new NestedType();
+            String leftSide = siExpr.getExpr().toString();
+            if(nestedType.tryFillFromExpr(siExpr.getExpr())){
+                leftSide = nestedType.field;
+            }
+            Condition condition = new Condition(CONN.valueOf(opear), leftSide, siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()),nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         } else if (expr instanceof SQLBetweenExpr) {
             SQLBetweenExpr between = ((SQLBetweenExpr) expr);
-            Condition condition = new Condition(CONN.valueOf(opear), between.getTestExpr().toString(), between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[]{parseValue(between.beginExpr),
-                    parseValue(between.endExpr)});
+            String leftSide = between.getTestExpr().toString();
+            NestedType nestedType = new NestedType();
+            if(nestedType.tryFillFromExpr(between.getTestExpr())){
+                leftSide = nestedType.field;
+            }
+            Condition condition = new Condition(CONN.valueOf(opear), leftSide, between.isNot() ? "NOT BETWEEN" : "BETWEEN", new Object[]{parseValue(between.beginExpr),
+                    parseValue(between.endExpr)},nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         }
         else if (expr instanceof SQLMethodInvokeExpr) {
+
             SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
             List<SQLExpr> methodParameters = methodExpr.getParameters();
 
             String methodName = methodExpr.getMethodName();
-            String fieldName = methodParameters.get(0).toString();
-            Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
+            if(SpatialParamsFactory.isAllowedMethod(methodName)){
 
-            Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject);
-            where.addWhere(condition);
+                String fieldName = methodParameters.get(0).toString();
+                NestedType nestedType = new NestedType();
+                if (nestedType.tryFillFromExpr(methodParameters.get(0))) {
+                    fieldName = nestedType.field;
+                }
+
+                Object spatialParamsObject = SpatialParamsFactory.generateSpatialParamsObject(methodName, methodParameters);
+
+                Condition condition = new Condition(CONN.valueOf(opear), fieldName, methodName, spatialParamsObject, nestedType.field != null, nestedType.path);
+                where.addWhere(condition);
+            }
+
+            else if (methodName.toLowerCase().equals("nested")){
+                NestedType nestedType = new NestedType();
+                if(!nestedType.tryFillFromExpr(expr)){
+                    throw new SqlParseException("could not fill nested from expr:"+expr);
+                }
+                Condition condition = new Condition(CONN.valueOf(opear),nestedType.path,methodName.toUpperCase(),nestedType.where);
+                where.addWhere(condition);
+
+            }
+            else if (methodName.toLowerCase().equals("script")){
+                ScriptFilter scriptFilter = new ScriptFilter();
+                if(!scriptFilter.tryParseFromMethodExpr(methodExpr)){
+                    throw new SqlParseException("could not parse script filter");
+                }
+                Condition condition = new Condition(CONN.valueOf(opear),null,"SCRIPT",scriptFilter);
+                where.addWhere(condition);
+            }
+            else {
+                throw new SqlParseException("unsupported method: " + methodName);
+            }
         } else if (expr instanceof SQLInSubQueryExpr){
             SQLInSubQueryExpr sqlIn = (SQLInSubQueryExpr) expr;
             Select innerSelect = parseSelect((MySqlSelectQueryBlock) sqlIn.getSubQuery().getQuery());
             if(innerSelect.getFields() == null || innerSelect.getFields().size()!=1)
                 throw new SqlParseException("should only have one return field in subQuery");
             SubQueryExpression subQueryExpression = new SubQueryExpression(innerSelect);
-            Condition condition = new Condition(CONN.valueOf(opear), sqlIn.getExpr().toString(), sqlIn.isNot() ? "NOT IN" : "IN",subQueryExpression);
+            String leftSide = sqlIn.getExpr().toString();
+            NestedType nestedType = new NestedType();
+            if(nestedType.tryFillFromExpr(sqlIn.getExpr())){
+                leftSide = nestedType.field;
+            }
+            Condition condition = new Condition(CONN.valueOf(opear), leftSide, sqlIn.isNot() ? "NOT IN" : "IN",subQueryExpression,nestedType.field!=null,nestedType.path);
             where.addWhere(condition);
         } else {
 			throw new SqlParseException("err find condition " + expr.getClass());
 		}
 	}
 
+
+
     private Object[] getMethodValuesWithSubQueries(SQLMethodInvokeExpr method) throws SqlParseException {
         List<Object> values = new ArrayList<>();
-        boolean foundSubQuery = false;
         for(SQLExpr innerExpr : method.getParameters()){
             if(innerExpr instanceof SQLQueryExpr){
-                foundSubQuery = true;
                 Select select = parseSelect((MySqlSelectQueryBlock) ((SQLQueryExpr) innerExpr).getSubQuery().getQuery());
                 values.add(new SubQueryExpression(select));
+            }
+            else if(innerExpr instanceof SQLTextLiteralExpr){
+                values.add(((SQLTextLiteralExpr)innerExpr).getText());
             }
             else {
                 values.add(innerExpr);
             }
 
         }
-        Object[] conditionValues ;
-        if(foundSubQuery)
-            conditionValues = values.toArray();
-        else
-            conditionValues = method.getParameters().toArray();
-        return conditionValues;
+        return values.toArray();
     }
 
     private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
@@ -242,7 +303,7 @@ public class SqlParser {
                 sqlExpr = sqlSelectGroupByExpr.getExpr();
             }
 
-            if ((sqlExpr instanceof SQLParensIdentifierExpr || !(sqlExpr instanceof SQLIdentifierExpr)) && !standardGroupBys.isEmpty()) {
+            if ((sqlExpr instanceof SQLParensIdentifierExpr || !(sqlExpr instanceof SQLIdentifierExpr|| sqlExpr instanceof SQLMethodInvokeExpr)) && !standardGroupBys.isEmpty()) {
                 // flush the standard group bys
                 select.addGroupBy(convertExprsToFields(standardGroupBys));
                 standardGroupBys = new ArrayList<>();
@@ -310,24 +371,29 @@ public class SqlParser {
 			return;
 		}
 		List<SQLSelectOrderByItem> items = orderBy.getItems();
-		List<String> lists = new ArrayList<>();
-		for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
-			SQLExpr expr = sqlSelectOrderByItem.getExpr();
-			lists.add(FieldMaker.makeField(expr, null,null).toString());
-			if (sqlSelectOrderByItem.getType() == null) {
-				sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
-			}
-			String type = sqlSelectOrderByItem.getType().toString();
-			for (String name : lists) {
-				name = name.replace("`", "");
-				select.addOrderBy(name, type);
-			}
-			lists.clear();
-		}
 
-	}
+        addOrderByToSelect(select, items, null);
 
-	private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {
+    }
+
+    private void addOrderByToSelect(Select select, List<SQLSelectOrderByItem> items, String alias) throws SqlParseException {
+        for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
+            SQLExpr expr = sqlSelectOrderByItem.getExpr();
+            String orderByName = FieldMaker.makeField(expr, null, null).toString();
+
+            if (sqlSelectOrderByItem.getType() == null) {
+                sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
+            }
+            String type = sqlSelectOrderByItem.getType().toString();
+
+            orderByName = orderByName.replace("`", "");
+            if(alias!=null) orderByName = orderByName.replaceFirst(alias+"\\.","");
+            select.addOrderBy(orderByName, type);
+
+        }
+    }
+
+    private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {
 
 		if (limit == null) {
 			return;
@@ -379,15 +445,36 @@ public class SqlParser {
         String firstTableAlias = joinedFrom.get(0).getAlias();
         String secondTableAlias = joinedFrom.get(1).getAlias();
         Map<String, Where> aliasToWhere = splitAndFindWhere(query.getWhere(), firstTableAlias, secondTableAlias);
+        Map<String, List<SQLSelectOrderByItem>> aliasToOrderBy = splitAndFindOrder(query.getOrderBy(), firstTableAlias, secondTableAlias);
         List<Condition> connectedConditions = getConditionsFlatten(joinSelect.getConnectedWhere());
         joinSelect.setConnectedConditions(connectedConditions);
-        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias), connectedConditions);
-        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), connectedConditions);
+        fillTableSelectedJoin(joinSelect.getFirstTable(), query, joinedFrom.get(0), aliasToWhere.get(firstTableAlias),aliasToOrderBy.get(firstTableAlias), connectedConditions);
+        fillTableSelectedJoin(joinSelect.getSecondTable(), query, joinedFrom.get(1), aliasToWhere.get(secondTableAlias), aliasToOrderBy.get(secondTableAlias),connectedConditions);
 
         updateJoinLimit(query.getLimit(), joinSelect);
 
         //todo: throw error feature not supported:  no group bys on joins ?
         return joinSelect;
+    }
+
+    private Map<String, List<SQLSelectOrderByItem>> splitAndFindOrder(SQLOrderBy orderBy, String firstTableAlias, String secondTableAlias) throws SqlParseException {
+        Map<String,List<SQLSelectOrderByItem>> aliasToOrderBys = new HashMap<>();
+        aliasToOrderBys.put(firstTableAlias,new ArrayList<SQLSelectOrderByItem>());
+        aliasToOrderBys.put(secondTableAlias,new ArrayList<SQLSelectOrderByItem>());
+        if(orderBy == null) return aliasToOrderBys;
+        List<SQLSelectOrderByItem> orderByItems = orderBy.getItems();
+        for(SQLSelectOrderByItem orderByItem : orderByItems){
+            if(orderByItem.getExpr().toString().startsWith(firstTableAlias+".")){
+                aliasToOrderBys.get(firstTableAlias).add(orderByItem);
+            }
+            else if(orderByItem.getExpr().toString().startsWith(secondTableAlias+".")){
+                aliasToOrderBys.get(secondTableAlias).add(orderByItem);
+            }
+            else
+                throw new SqlParseException("order by field on join request should have alias before, got " + orderByItem.getExpr().toString());
+
+        }
+        return aliasToOrderBys;
     }
 
     private void updateJoinLimit(MySqlSelectQueryBlock.Limit limit, JoinSelect joinSelect) {
@@ -397,7 +484,7 @@ public class SqlParser {
          }
     }
 
-    private List<Hint> parseHints(List<SQLCommentHint> sqlHints) {
+    private List<Hint> parseHints(List<SQLCommentHint> sqlHints) throws SqlParseException {
         List<Hint> hints = new ArrayList<>();
         for (SQLCommentHint sqlHint : sqlHints) {
             Hint hint = HintFactory.getHintFromString(sqlHint.getText());
@@ -423,9 +510,9 @@ public class SqlParser {
         return splitWheres(where, firstTableAlias, secondTableAlias);
     }
 
-    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin,MySqlSelectQueryBlock query, From tableFrom,  Where where, List<Condition> conditions) throws SqlParseException {
+    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin, MySqlSelectQueryBlock query, From tableFrom, Where where, List<SQLSelectOrderByItem> orderBys, List<Condition> conditions) throws SqlParseException {
         String alias = tableFrom.getAlias();
-        fillBasicTableSelectJoin(tableOnJoin, tableFrom, where, query);
+        fillBasicTableSelectJoin(tableOnJoin, tableFrom, where,orderBys, query);
         tableOnJoin.setConnectedFields(getConnectedFields(conditions, alias));
         tableOnJoin.setSelectedFields(new ArrayList<Field>(tableOnJoin.getFields()));
         tableOnJoin.setAlias(alias);
@@ -453,10 +540,11 @@ public class SqlParser {
         return fields;
     }
 
-    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from,  Where where, MySqlSelectQueryBlock query) throws SqlParseException {
+    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from, Where where, List<SQLSelectOrderByItem> orderBys, MySqlSelectQueryBlock query) throws SqlParseException {
         select.getFrom().add(from);
         findSelect(query, select,from.getAlias());
         select.setWhere(where);
+        addOrderByToSelect(select, orderBys,from.getAlias());
     }
 
     private List<Condition> getJoinConditionsFlatten(SQLJoinTableSource from) throws SqlParseException {

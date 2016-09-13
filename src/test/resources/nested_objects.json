@@ -1,0 +1,8 @@
+{"index":{"_type": "nestedType", "_id":"1"}}
+{"message":{"info":"a","author":"e","dayOfWeek":1},"comment":{"data":"ab","likes":3},"myNum":1,"someField":"b"}
+{"index":{"_type": "nestedType", "_id":"2"}}
+{"message":{"info":"b","author":"f","dayOfWeek":2},"comment":{"data":"aa","likes":2},"myNum":2,"someField":"a"}
+{"index":{"_type": "nestedType", "_id":"3"}}
+{"message":{"info":"c","author":"g","dayOfWeek":1},"comment":{"data":"aa","likes":3},"myNum":3,"someField":"a"}
+{"index":{"_type": "nestedType", "_id":"4"}}
+{"message":[{"info":"c","author":"h","dayOfWeek":4},{"info":"a","author":"i","dayOfWeek":5}],"comment":{"data":"ab","likes":1},"myNum":4,"someField":"b"}
