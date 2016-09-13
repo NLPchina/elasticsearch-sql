@@ -1,8 +1,11 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.elasticsearch.common.collect.Sets;
@@ -12,12 +15,16 @@ import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.*;
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
+import org.nlpcn.es4sql.domain.Query;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 
+import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.spatial.*;
 
@@ -85,7 +92,7 @@ public abstract class Maker {
 		case "scorequery":
 		case "score_query":
 			Float boost = Float.parseFloat(value.getParameters().get(1).toString());
-			Condition subCond = new Condition(cond.getConn(), cond.getName(), cond.getOpear(), value.getParameters().get(0));
+			Condition subCond = new Condition(cond.getConn(), cond.getName(), cond.getOpear(), value.getParameters().get(0),false,null);
 			if (isQuery) {
 				bqb = QueryBuilders.constantScoreQuery((QueryBuilder) make(subCond)).boost(boost);
 			} else {
@@ -113,16 +120,6 @@ public abstract class Maker {
 				bqb = FilterBuilders.queryFilter((QueryBuilder) bqb);
 			}
 			break;
-        case "match_term":
-        case "matchterm":
-        case "term":
-            if(isQuery){
-                bqb = QueryBuilders.termQuery(name,value.getParameters().get(0));
-            }
-            else {
-                bqb = FilterBuilders.termFilter(name,value.getParameters().get(0));
-            }
-            break;
 		default:
 			throw new SqlParseException("it did not support this query method " + value.getMethodName());
 
@@ -159,7 +156,9 @@ public abstract class Maker {
 			}
 		case LIKE:
         case NLIKE:
-			String queryStr = ((String) value).replace('%', '*').replace('_', '?');
+			String queryStr = ((String) value);
+            queryStr = queryStr.replace('%', '*').replace('_', '?');
+            queryStr = queryStr.replace("&PERCENT","%").replace("&UNDERSCORE","_");
 			WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(name, queryStr);
 			x = isQuery ? wildcardQuery : FilterBuilders.queryFilter(wildcardQuery);
 			break;
@@ -286,6 +285,16 @@ public abstract class Maker {
                 x = FilterBuilders.termsFilter(name,termValues);
             }
         break;
+
+        case TERM:
+            Object term  =( (Object[]) value)[0];
+            if(isQuery){
+                x = QueryBuilders.termQuery(name,term);
+            }
+            else {
+                x = FilterBuilders.termFilter(name,term);
+            }
+        break;
         case IDS_QUERY:
             Object[] idsParameters = (Object[]) value;
             String[] ids;
@@ -304,7 +313,32 @@ public abstract class Maker {
                 x = FilterBuilders.idsFilter(type).addIds(ids);
             }
         break;
-        default:
+        case NESTED_COMPLEX:
+            if(value == null || ! (value instanceof Where) )
+                throw new SqlParseException("unsupported nested condition");
+            Where where = (Where) value;
+            BoolFilterBuilder nestedFilter = FilterMaker.explan(where);
+            if(isQuery){
+                x = QueryBuilders.nestedQuery(name,nestedFilter);
+            }
+            else {
+                x = FilterBuilders.nestedFilter(name,nestedFilter);
+            }
+        break;
+        case SCRIPT:
+            ScriptFilter scriptFilter = (ScriptFilter) value;
+            if(isQuery) {
+                throw new SqlParseException("script on where is only for filter");
+            }
+            else {
+                ScriptFilterBuilder scriptFilterBuilder = FilterBuilders.scriptFilter(scriptFilter.getScript());
+                if(scriptFilter.containsParameters()){
+                    scriptFilterBuilder.params(scriptFilter.getArgs());
+                }
+                x = scriptFilterBuilder;
+            }
+        break;
+            default:
 			throw new SqlParseException("not define type " + cond.getName());
 		}
 

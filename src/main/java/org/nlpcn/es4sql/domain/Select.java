@@ -26,6 +26,7 @@ public class Select extends Query {
     private boolean containsSubQueries;
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
+    private boolean selectAll = false;
 
 	public boolean isAgg = false;
 
@@ -80,9 +81,12 @@ public class Select extends Query {
 
 
 	public void addField(Field field) {
-		if (field == null || field.getName() == "*") {
+		if (field == null ) {
 			return;
 		}
+        if(field.getName().equals("*")){
+            this.selectAll = true;
+        }
 
 		if(field instanceof  MethodField && aggsFunctions.contains(field.getName().toUpperCase())) {
 			isAgg = true;
@@ -132,6 +136,14 @@ public class Select extends Query {
 
     public List<SubQueryExpression> getSubQueries() {
         return subQueries;
+    }
+
+    public boolean isOrderdSelect(){
+        return this.getOrderBys()!=null && this.getOrderBys().size() >0 ;
+    }
+
+    public boolean isSelectAll() {
+        return selectAll;
     }
 }
 

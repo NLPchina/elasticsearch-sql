@@ -1,12 +1,16 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
+import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.*;
 import org.nlpcn.es4sql.SearchDao;
+import org.nlpcn.es4sql.query.QueryAction;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+
+import java.util.Map;
 
 
 public class RestSqlAction extends BaseRestHandler {
@@ -27,18 +31,18 @@ public class RestSqlAction extends BaseRestHandler {
 		if (sql == null) {
 			sql = request.content().toUtf8();
 		}
-
 		SearchDao searchDao = new SearchDao(client);
-        SqlElasticRequestBuilder actionRequestBuilder = searchDao.explain(sql);
-        ActionRequest actionRequest = actionRequestBuilder.request();
+        QueryAction queryAction= searchDao.explain(sql);
 
 		// TODO add unittests to explain. (rest level?)
 		if (request.path().endsWith("/_explain")) {
-			String jsonExplanation = actionRequestBuilder.explain();
+			String jsonExplanation = queryAction.explain().explain();
 			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, jsonExplanation);
 			channel.sendResponse(bytesRestResponse);
 		} else {
-			new ActionRequestRestExecuter(actionRequestBuilder, channel, client).execute();
+            Map<String, String> params = request.params();
+            RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
+			restExecutor.execute(client,params,queryAction,channel);
 		}
 	}
 }

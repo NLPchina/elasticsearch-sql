@@ -8,8 +8,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.format.DateTimeFormat;
 import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
+import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.highlight.HighlightField;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.domain.Select;
@@ -306,8 +308,18 @@ public class QueryTest {
 	}
 
     @Test
-    public void inTermsTestWithStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+    public void inTermsTestWithIdentifiersTreatLikeStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = IN_TERMS(daenerys,eddard) LIMIT 1000", TEST_INDEX));
+        SearchHit[] hits = response.getHits();
+        Assert.assertEquals(2, response.getTotalHits());
+        for(SearchHit hit : hits) {
+            String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+            assertThat(firstname, isOneOf("Daenerys", "Eddard"));
+        }
+    }
+    @Test
+    public void inTermsTestWithStrings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT name FROM %s/gotCharacters WHERE name.firstname = IN_TERMS('daenerys','eddard') LIMIT 1000", TEST_INDEX));
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(2, response.getTotalHits());
         for(SearchHit hit : hits) {
@@ -671,6 +683,19 @@ public class QueryTest {
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 
+
+    @Test
+    public void useScrollWithOrderByAndParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL(5,50000)*/ age,gender,firstname,balance FROM  %s/account order by age", TEST_INDEX, TEST_INDEX));
+        Assert.assertNotNull(response.getScrollId());
+        SearchHits hits = response.getHits();
+        Assert.assertEquals(5,hits.getHits().length);
+        Assert.assertEquals(1000,hits.getTotalHits());
+        for(SearchHit hit : hits){
+            Assert.assertEquals(20,hit.sourceAsMap().get("age"));
+        }
+    }
+
     @Test
     public void innerQueryTest() throws SqlParseException, SQLFeatureNotSupportedException {
         String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'Hattie')",TEST_INDEX,TEST_INDEX);
@@ -743,17 +768,115 @@ public class QueryTest {
 
     }
 
+    @Test
+    public void nestedEqualsTestFieldNormalField() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info)='b'", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
 
+    @Test
+    public void nestedEqualsTestFieldInsideArrays() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) = 'a'", TEST_INDEX));
+        Assert.assertEquals(2, response.getTotalHits());
+    }
+
+    @Test
+    public void nestedOnInQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) in ('a','b')", TEST_INDEX));
+        Assert.assertEquals(3, response.getTotalHits());
+    }
+
+    @Test
+    public void complexNestedQueryBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested('message',message.info = 'a' and message.author ='i' ) ", TEST_INDEX));
+        Assert.assertEquals(1, response.getTotalHits());
+    }
+    @Test
+    public void complexNestedQueryNotBothOnSameObject() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested('message',message.info = 'a' and message.author ='h' ) ", TEST_INDEX));
+        Assert.assertEquals(0, response.getTotalHits());
+    }
+
+    @Test
+    public void nestedOnInTermsQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT * FROM %s/nestedType where nested(message.info) = IN_TERMS(a,b)", TEST_INDEX));
+        Assert.assertEquals(3, response.getTotalHits());
+    }
+
+    @Test
+    public void multipleIndicesOneNotExistWithHint() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT /*! IGNORE_UNAVAILABLE */ * FROM %s,%s ", TEST_INDEX,"badindex"));
+        Assert.assertTrue(response.getTotalHits() > 0);
+    }
+
+    @Test(expected=IndexMissingException.class)
+    public void multipleIndicesOneNotExistWithoutHint() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SearchHits response = query(String.format("SELECT  * FROM %s,%s ", TEST_INDEX,"badindex"));
+        Assert.assertTrue(response.getTotalHits() > 0);
+    }
+
+    @Test
+    public void routingRequestOneRounting() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SqlElasticSearchRequestBuilder request = getRequestBuilder(String.format("SELECT /*! ROUTINGS(hey) */ * FROM %s/account ", TEST_INDEX));
+        SearchRequestBuilder searchRequestBuilder = (SearchRequestBuilder) request.getBuilder();
+        Assert.assertEquals("hey",searchRequestBuilder.request().routing());
+    }
+
+    @Test
+    public void routingRequestMultipleRountings() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        SqlElasticSearchRequestBuilder request = getRequestBuilder(String.format("SELECT /*! ROUTINGS(hey,bye) */ * FROM %s/account ", TEST_INDEX));
+        SearchRequestBuilder searchRequestBuilder = (SearchRequestBuilder) request.getBuilder();
+        Assert.assertEquals("hey,bye",searchRequestBuilder.request().routing());
+    }
+
+    //todo: find a way to check if scripts are enabled , uncomment before deploy.
+//    @Test
+//    public void scriptFilterNoParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+//        SearchHits response = query(String.format("SELECT insert_time FROM %s/online where script('doc[\\'insert_time\''].date.hourOfDay==16') " +
+//                "and insert_time <'2014-08-21T00:00:00.000Z'", TEST_INDEX));
+//        Assert.assertEquals(237,response.getTotalHits() );
+//
+//    }
+//
+//    @Test
+//    public void scriptFilterWithParams() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+//        SearchHits response = query(String.format("SELECT insert_time FROM %s/online where script('doc[\\'insert_time\''].date.hourOfDay==x','x'=16) " +
+//                "and insert_time <'2014-08-21T00:00:00.000Z'", TEST_INDEX));
+//        Assert.assertEquals(237,response.getTotalHits() );
+//
+//    }
+
+
+    @Test
+    public void highlightPreTagsAndPostTags() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
+        String query = String.format("select /*! HIGHLIGHT(phrase,pre_tags : ['<b>'], post_tags : ['</b>']  ) */ " +
+                "* from %s/phrase " +
+                "where phrase like 'fox' " +
+                "order by _score",TEST_INDEX);
+        SearchHits hits = query(query);
+        for (SearchHit hit : hits){
+            HighlightField phrase = hit.getHighlightFields().get("phrase");
+            String highlightPhrase = phrase.getFragments()[0].string();
+            Assert.assertTrue(highlightPhrase.contains("<b>fox</b>"));
+        }
+
+    }
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
         return ((SearchResponse)select.get()).getHits();
+    }
+
+
+    private SqlElasticSearchRequestBuilder getRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+        SearchDao searchDao = MainTestSuite.getSearchDao();
+        return  (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
     }
 
     private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query);
+        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
         return ((SearchResponse)select.get());
     }
 

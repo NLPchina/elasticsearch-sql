@@ -52,7 +52,6 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
         Map<String, Map<String, List<Object>>> optimizationTermsFilterStructure =
                 initOptimizationStructure();
 
-
         updateFirstTableLimitIfNeeded();
         TableInJoinRequestBuilder firstTableRequest = requestBuilder.getFirstTable();
         createKeyToResultsAndFillOptimizationStructure(optimizationTermsFilterStructure, firstTableRequest);
@@ -75,6 +74,15 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                     currentNumOfResults, totalLimit,
                     t1Alias,
                     t2Alias);
+        }
+        if(firstTableRequest.getOriginalSelect().isOrderdSelect()){
+            Collections.sort(combinedResult,new Comparator<InternalSearchHit>() {
+                @Override
+                public int compare(InternalSearchHit o1, InternalSearchHit o2) {
+                    return o1.docId() - o2.docId();
+                }
+            });
+
         }
         return combinedResult;
     }
@@ -149,11 +157,11 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
 
                             Map<String,Object> copiedSource = new HashMap<String,Object>();
                             copyMaps(copiedSource,secondTableHit.sourceAsMap());
-                            onlyReturnedFields(copiedSource, secondTableRequest.getReturnedFields());
+                            onlyReturnedFields(copiedSource, secondTableRequest.getReturnedFields(),secondTableRequest.getOriginalSelect().isSelectAll());
 
 
 
-                            InternalSearchHit searchHit = new InternalSearchHit(resultIds, combinedId, new StringText(matchingHit.getType() + "|" + secondTableHit.getType()), matchingHit.getFields());
+                            InternalSearchHit searchHit = new InternalSearchHit(matchingHit.docId(), combinedId, new StringText(matchingHit.getType() + "|" + secondTableHit.getType()), matchingHit.getFields());
                             searchHit.sourceRef(matchingHit.getSourceRef());
                             searchHit.sourceAsMap().clear();
                             searchHit.sourceAsMap().putAll(matchingHit.sourceAsMap());
@@ -188,7 +196,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
     }
 
     private void createKeyToResultsAndFillOptimizationStructure(Map<String,Map<String, List<Object>>> optimizationTermsFilterStructure, TableInJoinRequestBuilder firstTableRequest) {
-        List<SearchHit> firstTableHits = fetchAllHits(firstTableRequest.getRequestBuilder(), firstTableRequest.getHintLimit());
+        List<SearchHit> firstTableHits = fetchAllHits(firstTableRequest);
 
         int resultIds = 1;
         for (SearchHit hit : firstTableHits) {
@@ -203,29 +211,28 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                 InternalSearchHit searchHit = new InternalSearchHit(resultIds, hit.id(), new StringText(hit.getType()), hit.getFields());
                 searchHit.sourceRef(hit.getSourceRef());
 
-                onlyReturnedFields(searchHit.sourceAsMap(), firstTableRequest.getReturnedFields());
+                onlyReturnedFields(searchHit.sourceAsMap(), firstTableRequest.getReturnedFields(),firstTableRequest.getOriginalSelect().isSelectAll());
                 resultIds++;
                 this.hashJoinComparisonStructure.insertIntoComparisonHash(comparisonID, key, searchHit);
             }
         }
     }
 
-    private List<SearchHit> fetchAllHits(SearchRequestBuilder requestBuilder, Integer hintLimit) {
+    private List<SearchHit> fetchAllHits(TableInJoinRequestBuilder tableInJoinRequest) {
+        Integer hintLimit = tableInJoinRequest.getHintLimit();
+        SearchRequestBuilder requestBuilder = tableInJoinRequest.getRequestBuilder();
         if (hintLimit != null && hintLimit < MAX_RESULTS_ON_ONE_FETCH) {
             requestBuilder.setSize(hintLimit);
             SearchResponse searchResponse = requestBuilder.get();
             updateMetaSearchResults(searchResponse);
             return Arrays.asList(searchResponse.getHits().getHits());
         }
-        return scrollTillLimit(requestBuilder, hintLimit);
+        return scrollTillLimit(tableInJoinRequest, hintLimit);
     }
 
-    private List<SearchHit> scrollTillLimit(SearchRequestBuilder requestBuilder, Integer hintLimit) {
-        SearchResponse scrollResp = requestBuilder.setSearchType(SearchType.SCAN)
-                .setScroll(new TimeValue(60000))
-                .setSize(MAX_RESULTS_ON_ONE_FETCH).get();
+    private List<SearchHit> scrollTillLimit(TableInJoinRequestBuilder tableInJoinRequest, Integer hintLimit) {
+        SearchResponse scrollResp = scrollOneTimeWithMax(client,tableInJoinRequest);
 
-        scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(600000)).get();
         updateMetaSearchResults(scrollResp);
         List<SearchHit> hitsWithScan = new ArrayList<>();
         int curentNumOfResults = 0;

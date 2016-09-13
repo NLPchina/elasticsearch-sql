@@ -1,5 +1,7 @@
 package org.nlpcn.es4sql.domain;
 
+import org.nlpcn.es4sql.parse.NestedType;
+
 /**
  * 搜索域
  * 
@@ -10,13 +12,22 @@ public class Field implements  Cloneable{
 
 	protected String name;
 	private String alias;
+    private NestedType nested;
+
 
 	public Field(String name, String alias) {
 		this.name = name;
 		this.alias = alias;
+        this.nested = null;
 	}
 
-	public String getName() {
+    public Field(String name, String alias, NestedType nested) {
+        this.name = name;
+        this.alias = alias;
+        this.nested = nested;
+    }
+
+    public String getName() {
 		return name;
 	}
 
@@ -32,7 +43,25 @@ public class Field implements  Cloneable{
 		this.alias = alias;
 	}
 
-	@Override
+    public boolean isNested() {
+        return this.nested!=null;
+    }
+    public boolean isReverseNested() {
+        return this.nested!=null && this.nested.isReverse();
+    }
+
+    public void setNested(NestedType nested){
+        this.nested = nested;
+    }
+
+
+    public String getNestedPath() {
+        if(this.nested == null ) return null;
+        return this.nested.path;
+    }
+
+
+    @Override
 	public String toString() {
 		return this.name;
 	}
