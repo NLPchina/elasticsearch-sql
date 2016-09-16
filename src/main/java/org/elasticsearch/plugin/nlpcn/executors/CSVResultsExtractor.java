@@ -247,7 +247,7 @@ public class CSVResultsExtractor {
             for(String header : headers){
                 line += findFieldValue(header, doc, flat, separator);
             }
-            csvLines.add(line.substring(0, line.length() - 1));
+            csvLines.add(line.substring(0, line.lastIndexOf(separator)));
         }
         return csvLines;
     }

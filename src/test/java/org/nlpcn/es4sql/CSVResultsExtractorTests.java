@@ -391,7 +391,6 @@ public class CSVResultsExtractorTests {
     * geo
      */
 
-/* test for scripted fields
     @Test
     public void scriptedField() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
         String query = String.format("select age+1 as agePlusOne ,age , firstname from %s/account where age =  31 limit 1", TEST_INDEX);
@@ -404,17 +403,39 @@ public class CSVResultsExtractorTests {
         List<String> lines = csvResult.getLines();
         Assert.assertTrue(lines.get(0).contains("32,31") || lines.get(0).contains("32.0,31.0"));
     }
-*/
+
+
+    @Test
+    public void twoCharsSeperator() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("select dog_name,age from %s/dog order by age",TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query,false,false,"||");
+
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(2, headers.size());
+        Assert.assertTrue("name should be on headers", headers.contains("dog_name"));
+        Assert.assertTrue("age should be on headers", headers.contains("age"));
+
+        List<String> lines = csvResult.getLines();
+        Assert.assertEquals(2, lines.size());
+        Assert.assertTrue("rex||2".equals(lines.get(0)) || "2||rex".equals(lines.get(0)) );
+        Assert.assertTrue("snoopy||4".equals(lines.get(1)) || "4||snoopy".equals(lines.get(1)) );
+
+    }
+
 
     private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         return getCsvResult(flat,query,false,false);
     }
 
     private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+        return getCsvResult(flat,query,includeScore,includeType,",");
+    }
+
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,String seperator) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution =  QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new CSVResultsExtractor(includeScore,includeType).extractResults(execution, flat, ",");
+        return new CSVResultsExtractor(includeScore,includeType).extractResults(execution, flat, seperator);
     }
 
 }
