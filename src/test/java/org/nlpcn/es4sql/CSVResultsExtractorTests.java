@@ -401,7 +401,8 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(headers.contains("age"));
         Assert.assertTrue(headers.contains("firstname"));
         List<String> lines = csvResult.getLines();
-        Assert.assertTrue(lines.get(0).contains("32,31") || lines.get(0).contains("32.0,31.0"));
+        System.out.println("lines.get(0) = " + lines.get(0));
+        Assert.assertTrue(lines.get(0).contains("32,31") || lines.get(0).contains("32.0,31.0") || lines.get(0).contains("31,32")|| lines.get(0).contains("31.0,32.0"));
     }
 
 
