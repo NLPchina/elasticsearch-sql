@@ -193,7 +193,7 @@ public class FieldMaker {
             field = new Field(newFieldName, alias);
         }
 
-        if (alias != null && alias != name && !Util.isFromJoinTable(expr)) {
+        if (alias != null && alias != name && !Util.isFromJoinOrUnionTable(expr)) {
             List<SQLExpr> paramers = Lists.newArrayList();
             paramers.add(new SQLCharExpr(alias));
             paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));

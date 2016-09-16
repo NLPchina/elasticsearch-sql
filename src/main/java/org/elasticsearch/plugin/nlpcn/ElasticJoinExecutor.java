@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * Created by Eliran on 15/9/2015.
  */
-public abstract class ElasticJoinExecutor {
+public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
     protected SearchHits results ;
     protected MetaSearchResult metaResults;
     protected final int MAX_RESULTS_ON_ONE_FETCH = 10000;
@@ -50,7 +50,7 @@ public abstract class ElasticJoinExecutor {
 
     public void  sendResponse(RestChannel channel){
         try {
-            String json = resultAsString();
+            String json = ElasticUtils.hitsAsStringResult(results,metaResults);
             BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
@@ -68,37 +68,6 @@ public abstract class ElasticJoinExecutor {
         this.metaResults.setTookImMilli(joinTimeInMilli);
     }
 
-    //use our deserializer instead of results toXcontent because the source field is differnet from sourceAsMap.
-    public String resultAsString() throws IOException {
-        if(this.results == null) return null;
-        Object[] searchHits;
-        searchHits = new Object[(int) this.results.totalHits()];
-        int i = 0;
-        for(SearchHit hit : this.results) {
-            HashMap<String,Object> value = new HashMap<>();
-            value.put("_id",hit.getId());
-            value.put("_type", hit.getType());
-            value.put("_score", hit.score());
-            value.put("_source", hit.sourceAsMap());
-            searchHits[i] = value;
-            i++;
-        }
-        HashMap<String,Object> hits = new HashMap<>();
-        hits.put("total",this.results.totalHits());
-        hits.put("max_score",this.results.maxScore());
-        hits.put("hits",searchHits);
-        XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-        builder.startObject();
-        builder.field("took", metaResults.getTookImMilli());
-        builder.field("timed_out",metaResults.isTimedOut());
-        builder.field("_shards", ImmutableMap.of("total", metaResults.getTotalNumOfShards(),
-                "successful", metaResults.getSuccessfulShards()
-                , "failed", metaResults.getFailedShards()));
-        builder.field("hits",hits) ;
-        builder.endObject();
-
-        return builder.string();
-    }
 
     protected abstract List<InternalSearchHit> innerRun() throws IOException, SqlParseException ;
 

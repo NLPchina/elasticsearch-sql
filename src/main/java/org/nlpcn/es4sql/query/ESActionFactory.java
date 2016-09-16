@@ -5,6 +5,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.parser.*;
@@ -22,6 +23,8 @@ import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.query.join.ESJoinQueryActionFactory;
+import org.nlpcn.es4sql.query.multi.MultiQueryAction;
+import org.nlpcn.es4sql.query.multi.MultiQuerySelect;
 
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
@@ -42,7 +45,13 @@ public class ESActionFactory {
         switch (firstWord.toUpperCase()) {
 			case "SELECT":
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
-                if(isJoin(sqlExpr,sql)){
+                if(isMulti(sqlExpr)){
+                    MultiQuerySelect multiSelect = new SqlParser().parseMultiSelect((SQLUnionQuery) sqlExpr.getSubQuery().getQuery());
+                    handleSubQueries(client,multiSelect.getFirstSelect());
+                    handleSubQueries(client,multiSelect.getSecondSelect());
+                    return new MultiQueryAction(client, multiSelect);
+                }
+                else if(isJoin(sqlExpr,sql)){
                     JoinSelect joinSelect = new SqlParser().parseJoinSelect(sqlExpr);
                     handleSubQueries(client, joinSelect.getFirstTable());
                     handleSubQueries(client, joinSelect.getSecondTable());
@@ -64,6 +73,10 @@ public class ESActionFactory {
 				throw new SQLFeatureNotSupportedException(String.format("Unsupported query: %s", sql));
 		}
 	}
+
+    private static boolean isMulti(SQLQueryExpr sqlExpr) {
+        return sqlExpr.getSubQuery().getQuery() instanceof SQLUnionQuery;
+    }
 
     private static void handleSubQueries(Client client, Select select) throws SqlParseException {
         if (select.containsSubQueries())
