@@ -1,25 +1,18 @@
 package org.nlpcn.es4sql;
 
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
 import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
-import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 /**
@@ -424,19 +417,57 @@ public class CSVResultsExtractorTests {
     }
 
 
+    @Test
+    public void includeIdAndNotTypeOrScore() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("select age , firstname from %s/account where lastname = 'Marquez' ", TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query,false,false,true);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(3,headers.size());
+        Assert.assertTrue(headers.contains("age"));
+        Assert.assertTrue(headers.contains("firstname"));
+        Assert.assertTrue(headers.contains("_id"));
+        List<String> lines = csvResult.getLines();
+        Assert.assertTrue(lines.get(0).contains(",437") || lines.get(0).contains("437,"));
+    }
+
+    @Test
+    public void includeIdAndTypeButNoScore() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
+        String query = String.format("select age , firstname from %s/account where lastname = 'Marquez' ", TEST_INDEX);
+        CSVResult csvResult = getCsvResult(false, query,false,true,true);
+        List<String> headers = csvResult.getHeaders();
+        Assert.assertEquals(4, headers.size());
+        Assert.assertTrue(headers.contains("age"));
+        Assert.assertTrue(headers.contains("firstname"));
+        Assert.assertTrue(headers.contains("_id"));
+        Assert.assertTrue(headers.contains("_type"));
+        List<String> lines = csvResult.getLines();
+        System.out.println(lines.get(0));
+        Assert.assertTrue(lines.get(0).contains("account,437") || lines.get(0).contains("437,account"));
+    }
+
+
     private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         return getCsvResult(flat,query,false,false);
     }
 
+
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+        return getCsvResult(flat,query,includeScore,includeType,includeId,",");
+    }
+
     private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
-        return getCsvResult(flat,query,includeScore,includeType,",");
+        return getCsvResult(flat,query,includeScore,includeType,false,",");
     }
 
     private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,String seperator) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+        return getCsvResult(flat,query,includeScore,includeType,false,seperator);
+    }
+
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,boolean includeId,String seperator) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution =  QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new CSVResultsExtractor(includeScore,includeType).extractResults(execution, flat, seperator);
+        return new CSVResultsExtractor(includeScore,includeType, includeId).extractResults(execution, flat, seperator);
     }
 
 }
