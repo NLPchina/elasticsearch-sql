@@ -1,0 +1,38 @@
+{
+  "from" : 0,
+  "size" : 0,
+  "query" : {
+    "bool" : {
+      "filter" : {
+        "bool" : {
+          "must" : {
+            "bool" : {
+              "must" : [ {
+                "wildcard" : {
+                  "firstname" : "A*"
+                }
+              }, {
+                "range" : {
+                  "age" : {
+                    "from" : 20,
+                    "to" : null,
+                    "include_lower" : false,
+                    "include_upper" : true
+                  }
+                }
+              } ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "aggregations" : {
+    "gender" : {
+      "terms" : {
+        "field" : "gender",
+        "size" : 200
+      }
+    }
+  }
+}

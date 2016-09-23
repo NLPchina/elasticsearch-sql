@@ -3,16 +3,20 @@
   "size" : 200,
   "query" : {
     "bool" : {
-      "must" : {
-        "geo_shape" : {
-          "place" : {
-            "shape" : {
-              "type" : "polygon",
-              "coordinates" : [ [ [ 102.0, 2.0 ], [ 103.0, 2.0 ], [ 103.0, 3.0 ], [ 102.0, 3.0 ], [ 102.0, 2.0 ] ] ]
-            },
-            "relation" : "intersects"
-          },
-          "_name" : null
+      "filter" : {
+        "bool" : {
+          "must" : {
+            "geo_shape" : {
+              "place" : {
+                "shape" : {
+                  "type" : "polygon",
+                  "coordinates" : [ [ [ 102.0, 2.0 ], [ 103.0, 2.0 ], [ 103.0, 3.0 ], [ 102.0, 3.0 ], [ 102.0, 2.0 ] ] ]
+                },
+                "relation" : "intersects"
+              },
+              "_name" : null
+            }
+          }
         }
       }
     }

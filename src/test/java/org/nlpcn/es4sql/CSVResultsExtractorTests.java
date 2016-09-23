@@ -350,7 +350,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void includeScoreAndNotType() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
-        String query = String.format("select age , firstname from %s/account where age > 31 limit 2", TEST_INDEX);
+        String query = String.format("select age , firstname from %s/account where age > 31 order by _score desc limit 2 ", TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query,true,false);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3, headers.size());
@@ -358,13 +358,13 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_score"));
         List<String> lines = csvResult.getLines();
-        Assert.assertTrue(lines.get(0).contains(",1.0"));
-        Assert.assertTrue(lines.get(1).contains(",1.0"));
+        Assert.assertTrue(lines.get(0).contains("1.0"));
+        Assert.assertTrue(lines.get(1).contains("1.0"));
     }
 
     @Test
     public void includeScoreAndType() throws SqlParseException, SQLFeatureNotSupportedException, Exception {
-        String query = String.format("select age , firstname from %s/account where age > 31 limit 2", TEST_INDEX);
+        String query = String.format("select age , firstname from %s/account where age > 31 order by _score desc limit 2 ", TEST_INDEX);
         CSVResult csvResult = getCsvResult(false, query,true,true);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(4, headers.size());
@@ -373,8 +373,9 @@ public class CSVResultsExtractorTests {
         Assert.assertTrue(headers.contains("_score"));
         Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
-        System.out.println(lines.get(0));
-        Assert.assertTrue(lines.get(0).contains("account,1.0") || lines.get(0).contains("1.0,account"));
+        String firstLine = lines.get(0);
+        System.out.println(firstLine);
+        Assert.assertTrue(firstLine.contains("account,1.0") || firstLine.contains("1.0,account"));
         Assert.assertTrue(lines.get(1).contains("account,1.0") || lines.get(1).contains("1.0,account"));
     }
 

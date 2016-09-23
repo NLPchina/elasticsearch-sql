@@ -285,7 +285,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
 
         BoolQueryBuilder boolQuery;
         if (where != null) {
-            boolQuery = QueryMaker.explan(where);
+            boolQuery = QueryMaker.explan(where,false);
             boolQuery.must(orQuery);
         } else boolQuery = orQuery;
         secondTableRequest.getRequestBuilder().setQuery(boolQuery);

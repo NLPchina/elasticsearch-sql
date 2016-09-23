@@ -324,7 +324,7 @@ public class AggregationQueryAction extends QueryAction {
      */
     private void setWhere(Where where) throws SqlParseException {
         if (where != null) {
-            QueryBuilder whereQuery = QueryMaker.explan(where);
+            QueryBuilder whereQuery = QueryMaker.explan(where,this.select.isQuery);
             request.setQuery(whereQuery);
         }
     }
