@@ -51,10 +51,26 @@ public class WktToGeoJsonConverterTests {
     }
 
     @Test
+    public void convertPoint_NegativeCoordinates_ShouldConvert(){
+        String wkt = "POINT(-12.2 13)";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"Point\", \"coordinates\": [-12.2,13]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
     public void convertPolygon_NoRedundantSpaces_ShouldConvert(){
         String wkt = "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))";
         String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
         String expectedGeoJson = "{\"type\":\"Polygon\", \"coordinates\": [[[30,10],[40,40],[20,40],[10,20],[30,10]]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
+    public void convertPolygon_NegativeCoordinates_ShouldConvert(){
+        String wkt = "POLYGON ((-30 10, 40 40, 20 40, 10 20, -30 10))";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"Polygon\", \"coordinates\": [[[-30,10],[40,40],[20,40],[10,20],[-30,10]]]}";
         Assert.assertEquals(expectedGeoJson,geoJson);
     }
 
@@ -87,6 +103,14 @@ public class WktToGeoJsonConverterTests {
         String wkt = "LINESTRING (30 10, 10 30, 40 40)";
         String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
         String expectedGeoJson = "{\"type\":\"LineString\", \"coordinates\": [[30,10],[10,30],[40,40]]}";
+        Assert.assertEquals(expectedGeoJson,geoJson);
+    }
+
+    @Test
+    public void convertLineString_NegativeCoordinates_ShouldConvert(){
+        String wkt = "LINESTRING (-30 10, 10 30, 40 40)";
+        String geoJson = WktToGeoJsonConverter.toGeoJson(wkt);
+        String expectedGeoJson = "{\"type\":\"LineString\", \"coordinates\": [[-30,10],[10,30],[40,40]]}";
         Assert.assertEquals(expectedGeoJson,geoJson);
     }
 
@@ -151,4 +175,3 @@ public class WktToGeoJsonConverterTests {
         Assert.assertEquals(expectedGeoJson,geoJson);
     }
 }
-
