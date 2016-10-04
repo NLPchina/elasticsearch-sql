@@ -32,6 +32,7 @@ elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$
   function loadOptionsFromStorageOrDefault () {
     var defaultOptions = {
       isFlat : false,
+      showId : false,
       useOldTable : false,
       scrollSize : 10,
       alwaysScroll : false,
@@ -82,7 +83,7 @@ $scope.fetchAll = function(){
 
 		$http.get($scope.url + scroll_url + $scope.scrollId)
 		.success(function(data, status, headers, config) {
-          var handler = ResultHandlerFactory.create(data,$scope.config.isFlat,$scope.config.showScore,$scope.config.showType);
+          var handler = ResultHandlerFactory.create(data,$scope.config.isFlat,$scope.config.showScore,$scope.config.showType,$scope.config.showId);
           updateDescription(handler);
           var body = handler.getBody()
 
@@ -162,7 +163,7 @@ function updateWithScrollIfNeeded (query) {
     query = updateWithScrollIfNeeded(query);
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
-          var handler = ResultHandlerFactory.create(data,$scope.config.isFlat,$scope.config.showScore,$scope.config.showType);
+          var handler = ResultHandlerFactory.create(data,$scope.config.isFlat,$scope.config.showScore,$scope.config.showType,$scope.config.showId);
           updateDescription(handler);
           if(handler.isScroll){
           	$scope.showResults=true;

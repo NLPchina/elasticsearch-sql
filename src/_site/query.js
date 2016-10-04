@@ -3,7 +3,7 @@
  Returns the right Result Handler depend
  on the results */
 var ResultHandlerFactory = {
-    "create": function(data,isFlat,showScore,showType) {
+    "create": function(data,isFlat,showScore,showType,showId) {
         function isSearch(){
             return "hits" in data
         }
@@ -17,7 +17,7 @@ var ResultHandlerFactory = {
 
         if(isSearch()){
             return isAggregation() ? new AggregationQueryResultHandler(data) : 
-            new DefaultQueryResultHandler(data,isFlat,showScore,showType)
+            new DefaultQueryResultHandler(data,isFlat,showScore,showType,showId)
         }
 
         if(isDelete()){
@@ -36,7 +36,7 @@ var ResultHandlerFactory = {
  in case of regular query
  (Not aggregation)
  */
-var DefaultQueryResultHandler = function(data,isFlat,showScore,showType) {
+var DefaultQueryResultHandler = function(data,isFlat,showScore,showType,showId) {
 
     // createScheme by traverse hits field
     function createScheme() {
@@ -65,6 +65,9 @@ var DefaultQueryResultHandler = function(data,isFlat,showScore,showType) {
         if(showScore){
             scheme.push("_score");
         }
+        if(showScore){
+            scheme.push("_id");
+        }
         return scheme
     }
     
@@ -74,6 +77,7 @@ var DefaultQueryResultHandler = function(data,isFlat,showScore,showType) {
     this.isFlat = isFlat;
     this.showScore = showScore;
     this.showType = showType;
+    this.showId = showId;
     this.scrollId = data["_scroll_id"];
     this.isScroll = this.scrollId!=undefined && this.scrollId!="";
 };
@@ -107,6 +111,9 @@ DefaultQueryResultHandler.prototype.getBody = function() {
         }
         if(this.showScore){
             row["_score"] = hits[i]._score
+        }
+        if(this.showId){
+            row["_id"] = hits[i]._id
         }
         body.push(row)
     }
