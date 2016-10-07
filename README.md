@@ -52,7 +52,7 @@ Versions
 | 2.3.3                 | 2.3.3.0        | delete commands not supported  | elastic2.3.3 |
 | 2.3.4                 | 2.3.4.0        | delete commands not supported  | elastic2.3.4 |
 | 2.3.5                 | 2.3.5.0        | delete commands not supported  | elastic2.3.5 |
-| 2.4.0                 | 2.4.0.0        | delete commands not supported  | elastic2.4.0 |
+| 2.4.0                 | 2.4.0.1        | delete commands not supported  | elastic2.4.0 |
 | 2.4.1                 | 2.4.1.0        | delete commands not supported  | elastic2.4.1 |
 ### Elasticsearch 1.X
 ````
@@ -108,7 +108,7 @@ Versions
 ````
 ### Elasticsearch 2.4.0
 ````
-./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.0.0/elasticsearch-sql-2.4.0.0.zip 
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.0.1/elasticsearch-sql-2.4.0.1.zip
 ````
 ### Elasticsearch 2.4.1
 ````
@@ -217,6 +217,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 *  SQL round
 *  SQL sqrt
 *  SQL concat_ws
+*  SQL union and minus
 
 ## JDBC Support (Experimental feature)
 
