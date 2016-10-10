@@ -123,7 +123,11 @@ public class SQLFunctionsTest {
     @Test
     public void test() throws Exception {
 
-        String query = "select /*! SHARD_SIZE(1000) */ sum(traffic) as tf,date_format(5minute,'yyyyMMddHHmm') as nt  from traffic_statistics where business_line='2'  and day='20160927' group by nt order by tf asc limit 10";
+        String query = "select sum(case \n" +
+                "             when traffic=0 then 100 \n" +
+                "             when traffic=1 then 1000 \n" +
+                "             else 10000 \n" +
+                "       end) as tf,date_format(5minute,'yyyyMMddHHmm') as nt  from traffic_statistics_v4_m200106 where business_line='2'   group by nt order by tf asc limit 10";
 
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
         System.out.println(searchDao.explain(query).explain().explain());
