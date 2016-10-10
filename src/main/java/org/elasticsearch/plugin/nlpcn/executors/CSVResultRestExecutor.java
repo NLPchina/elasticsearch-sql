@@ -48,7 +48,8 @@ public class CSVResultRestExecutor implements RestExecutor {
         }
         boolean includeScore = getBooleanOrDefault(params,"_score",false);
         boolean includeType = getBooleanOrDefault(params,"_type",false);
-        CSVResult result  = new CSVResultsExtractor(includeScore,includeType).extractResults(queryResult,flat,separator);
+        boolean includeId = getBooleanOrDefault(params,"_id",false);
+        CSVResult result  = new CSVResultsExtractor(includeScore,includeType,includeId).extractResults(queryResult,flat,separator);
         String newLine = "\n";
         if(params.containsKey("newLine")){
             newLine = params.get("newLine");
