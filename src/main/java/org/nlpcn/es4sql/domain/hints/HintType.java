@@ -16,5 +16,6 @@ public enum HintType
     IGNORE_UNAVAILABLE,
     DOCS_WITH_AGGREGATION,
     ROUTINGS,
+    SHARD_SIZE,
     HIGHLIGHT;
 }

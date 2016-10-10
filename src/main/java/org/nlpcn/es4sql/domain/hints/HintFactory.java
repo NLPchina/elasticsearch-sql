@@ -20,6 +20,22 @@ public class HintFactory {
         if(hintAsString.startsWith("! USE_NESTED_LOOPS") || hintAsString.startsWith("! USE_NL")){
             return new Hint(HintType.USE_NESTED_LOOPS,null);
         }
+
+        if(hintAsString.startsWith("! SHARD_SIZE")){
+            String[] numbers =  getParamsFromHint(hintAsString, "! SHARD_SIZE");
+            //todo: check if numbers etc..
+            List<Object> params = new ArrayList<>();
+            for (String number : numbers){
+                if(number.equals("null") || number.equals("infinity")){
+                    params.add(null);
+                }
+                else {
+                    params.add(Integer.parseInt(number));
+                }
+            }
+            return new Hint(HintType.SHARD_SIZE,params.toArray());
+        }
+
         if(hintAsString.equals("! HASH_WITH_TERMS_FILTER"))
             return new Hint(HintType.HASH_WITH_TERMS_FILTER,null);
         if(hintAsString.startsWith("! JOIN_TABLES_LIMIT")){

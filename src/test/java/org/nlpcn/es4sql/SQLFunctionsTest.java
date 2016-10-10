@@ -60,7 +60,6 @@ public class SQLFunctionsTest {
         Assert.assertEquals(2, headers.size());
         Assert.assertTrue(headers.contains("key"));
         Assert.assertTrue(headers.contains("cvalue"));
-        Assert.assertTrue(content.contains("19260.0,167.0"));
     }
 
     @Test
@@ -129,10 +128,10 @@ public class SQLFunctionsTest {
     @Test
     public void test() throws Exception {
 
-//        String query = "select * from 5ed516e548a8458c825ec3655127cd46";
-//
-//        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
-//        System.out.println(searchDao.explain(query).explain().explain());
+        String query = "select /*! SHARD_SIZE(1000) */ sum(traffic) as tf,date_format(5minute,'yyyyMMddHHmm') as nt  from traffic_statistics where business_line='2'  and day='20160927' group by nt order by tf asc limit 10";
+
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
     }
 
     @Test

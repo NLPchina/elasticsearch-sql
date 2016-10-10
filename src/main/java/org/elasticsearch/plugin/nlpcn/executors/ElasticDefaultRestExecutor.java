@@ -1,5 +1,6 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
+import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
@@ -22,33 +23,52 @@ import java.util.Map;
 public class ElasticDefaultRestExecutor implements RestExecutor {
 
 
-	public ElasticDefaultRestExecutor() {
-	}
+    public ElasticDefaultRestExecutor() {
+    }
 
     /**
      * Execute the ActionRequest and returns the REST response using the channel.
      */
     @Override
-    public void execute(Client client, Map<String, String> params, QueryAction queryAction, RestChannel channel) throws Exception{
+    public void execute(Client client, Map<String, String> params, QueryAction queryAction, RestChannel channel) throws Exception {
         SqlElasticRequestBuilder requestBuilder = queryAction.explain();
         ActionRequest request = requestBuilder.request();
 
         //todo: maby change to instanceof multi?
-        if(requestBuilder instanceof JoinRequestBuilder){
-            ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client,requestBuilder);
+        if (requestBuilder instanceof JoinRequestBuilder) {
+            ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client, requestBuilder);
             executor.run();
             executor.sendResponse(channel);
-        }
-        else if (request instanceof SearchRequest) {
+        } else if (request instanceof SearchRequest) {
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
         } else if (request instanceof DeleteByQueryRequest) {
             throw new UnsupportedOperationException("currently not support delete on elastic 2.x");
+        } else if (request instanceof GetIndexRequest) {
+            requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
+        } else {
+            throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }
-        else if(request instanceof GetIndexRequest) {
-            requestBuilder.getBuilder().execute( new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
-        }
+    }
 
-        else {
+    @Override
+    public String execute(Client client, Map<String, String> params, QueryAction queryAction) throws Exception {
+        SqlElasticRequestBuilder requestBuilder = queryAction.explain();
+        ActionRequest request = requestBuilder.request();
+
+        //todo: maby change to instanceof multi?
+        if (requestBuilder instanceof JoinRequestBuilder) {
+            ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client, requestBuilder);
+            executor.run();
+            return executor.resultAsString();
+        } else if (request instanceof SearchRequest) {
+            ActionFuture<SearchResponse> future = client.search((SearchRequest) request);
+            SearchResponse response = future.actionGet();
+            return response.toString();
+        } else if (request instanceof DeleteByQueryRequest) {
+            throw new UnsupportedOperationException("currently not support delete on elastic 2.x");
+        } else if (request instanceof GetIndexRequest) {
+            return requestBuilder.getBuilder().execute().actionGet().toString();
+        } else {
             throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }
     }
