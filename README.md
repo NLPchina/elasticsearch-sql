@@ -14,6 +14,8 @@ Elasticsearch-SQL
 **2.3.3** [![2.3.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.3.4** [![2.3.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.3.5** [![2.3.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.4.0** [![2.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.4.1** [![2.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -37,7 +39,7 @@ Versions
 
 | elasticsearch version | latest version | remarks                        | branch       |
 | --------------------- | -------------  | -----------------------------  | ------------ |
-| 1.X	                | 1.4.9          | tested against elastic 1.4-1.6 | master       |
+| 1.X	                | 1.4.9          | tested against elastic 1.4-1.6 | elastic1.x   |
 | 2.0.0                 | 2.0.4          | delete commands not supported  | elastic2.0   |
 | 2.1.0                 | 2.1.0.2        | delete commands not supported  | elastic2.1   |
 | 2.1.1                 | 2.1.1.1        | delete commands not supported  | elastic2.1.1 |
@@ -50,7 +52,8 @@ Versions
 | 2.3.3                 | 2.3.3.0        | delete commands not supported  | elastic2.3.3 |
 | 2.3.4                 | 2.3.4.0        | delete commands not supported  | elastic2.3.4 |
 | 2.3.5                 | 2.3.5.0        | delete commands not supported  | elastic2.3.5 |
-
+| 2.4.0                 | 2.4.0.1        | delete commands not supported  | elastic2.4.0 |
+| 2.4.1                 | 2.4.1.0        | delete commands not supported  | elastic2.4.1 |
 ### Elasticsearch 1.X
 ````
 ./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.9/elasticsearch-sql-1.4.9.zip --install sql
@@ -103,6 +106,15 @@ Versions
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.3.5.0/elasticsearch-sql-2.3.5.0.zip 
 ````
+### Elasticsearch 2.4.0
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.0.1/elasticsearch-sql-2.4.0.1.zip
+````
+### Elasticsearch 2.4.1
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.1.0/elasticsearch-sql-2.4.1.0.zip
+````
+
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
@@ -205,6 +217,7 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 *  SQL round
 *  SQL sqrt
 *  SQL concat_ws
+*  SQL union and minus
 
 ## JDBC Support (Experimental feature)
 

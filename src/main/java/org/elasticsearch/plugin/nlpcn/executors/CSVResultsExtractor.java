@@ -29,11 +29,12 @@ import java.util.*;
 public class CSVResultsExtractor {
     private final boolean includeType;
     private final boolean includeScore;
+    private final boolean indcludeId;
     private int currentLineIndex;
-
-    public CSVResultsExtractor(boolean includeScore, boolean includeType) {
+    public CSVResultsExtractor(boolean includeScore, boolean includeType, boolean includeId) {
         this.includeScore = includeScore;
         this.includeType = includeType;
+        this.indcludeId = includeId;
         this.currentLineIndex = 0;
     }
 
@@ -247,7 +248,7 @@ public class CSVResultsExtractor {
             for(String header : headers){
                 line += findFieldValue(header, doc, flat, separator);
             }
-            csvLines.add(line.substring(0, line.length() - 1));
+            csvLines.add(line.substring(0, line.lastIndexOf(separator)));
         }
         return csvLines;
     }
@@ -261,6 +262,9 @@ public class CSVResultsExtractor {
                 doc.put(searchHitField.getName(),searchHitField.value());
             }
             mergeHeaders(csvHeaders, doc, flat);
+            if(this.indcludeId){
+                doc.put("_id", hit.id());
+            }
             if(this.includeScore){
                 doc.put("_score", hit.score());
             }
@@ -270,6 +274,9 @@ public class CSVResultsExtractor {
             docsAsMap.add(doc);
         }
         ArrayList<String> headersList = new ArrayList<>(csvHeaders);
+        if (this.indcludeId){
+            headersList.add("_id");
+        }
         if (this.includeScore){
             headersList.add("_score");
         }
@@ -297,7 +304,7 @@ public class CSVResultsExtractor {
         }
         else {
             if(doc.containsKey(header)){
-                return doc.get(header).toString() + separator;
+                return String.valueOf(doc.get(header)) + separator;
             }
         }
         return separator;

@@ -39,7 +39,9 @@ import com.google.common.io.ByteStreams;
         CSVResultsExtractorTests.class,
         SourceFieldTest.class,
 		SQLFunctionsTest.class,
-		JDBCTests.class
+		JDBCTests.class,
+        UtilTests.class,
+        MultiQueryTests.class
 })
 public class MainTestSuite {
 
@@ -70,6 +72,7 @@ public class MainTestSuite {
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
         loadBulk("src/test/resources/game_of_thrones_complex.json");
+        loadBulk("src/test/resources/systems.json");
 
         prepareOdbcIndex();
         loadBulk("src/test/resources/odbc-date-formats.json");

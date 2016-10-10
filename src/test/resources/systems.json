@@ -1,0 +1,24 @@
+{"index":{"_type": "systems", "_id":"1"}}
+{"system_name":"A","pk":1}
+{"index":{"_type": "systems", "_id":"2"}}
+{"system_name":"A","pk":2}
+{"index":{"_type": "systems", "_id":"3"}}
+{"system_name":"A","pk":3}
+{"index":{"_type": "systems", "_id":"4"}}
+{"system_name":"B","pk":1}
+{"index":{"_type": "systems", "_id":"5"}}
+{"system_name":"B","pk":2}
+{"index":{"_type": "systems", "_id":"6"}}
+{"system_name":"C","pk":1,"letter":"e"}
+{"index":{"_type": "systems", "_id":"7"}}
+{"system_name":"C","pk":1,"letter":"d"}
+{"index":{"_type": "systems", "_id":"8"}}
+{"system_name":"C","pk":2,"letter":"c"}
+{"index":{"_type": "systems", "_id":"9"}}
+{"system_name":"D","pk":1,"letter":"d"}
+{"index":{"_type": "systems", "_id":"10"}}
+{"system_name":"D","pk":2,"letter":"c"}
+{"index":{"_type": "systems", "_id":"11"}}
+{"system_name":"E","myId":1,"myLetter":"d"}
+{"index":{"_type": "systems", "_id":"12"}}
+{"system_name":"E","myId":2,"myLetter":"c"}

@@ -141,7 +141,7 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setWhere(Where where) throws SqlParseException {
 		if (where != null) {
-			BoolQueryBuilder boolQuery = QueryMaker.explan(where);
+			BoolQueryBuilder boolQuery = QueryMaker.explan(where,this.select.isQuery);
 			request.setQuery(boolQuery);
 		}
 	}

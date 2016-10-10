@@ -13,6 +13,7 @@ import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintFactory;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.multi.MultiQuerySelect;
 
 
 /**
@@ -71,6 +72,11 @@ public class SqlParser {
         return delete;
     }
 
+    public MultiQuerySelect parseMultiSelect(SQLUnionQuery query) throws SqlParseException {
+        Select firstTableSelect = this.parseSelect((MySqlSelectQueryBlock) query.getLeft());
+        Select secondTableSelect = this.parseSelect((MySqlSelectQueryBlock) query.getRight());
+        return new MultiQuerySelect(query.getOperator(),firstTableSelect,secondTableSelect);
+    }
 
     private void findSelect(MySqlSelectQueryBlock query, Select select, String tableAlias) throws SqlParseException {
         List<SQLSelectItem> selectList = query.getSelectList();

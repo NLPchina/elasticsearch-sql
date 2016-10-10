@@ -23,6 +23,11 @@
       }
     }
   },
+  "sort" : [ {
+    "_score" : {
+      "order" : "asc"
+    }
+  } ],
   "aggregations" : {
     "gender" : {
       "terms" : {

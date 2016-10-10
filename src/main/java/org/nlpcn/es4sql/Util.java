@@ -1,12 +1,16 @@
 package org.nlpcn.es4sql;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
+import com.alibaba.druid.sql.ast.statement.SQLTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -99,20 +103,21 @@ public class Util {
         throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
     }
 
-    public static boolean isFromJoinTable(SQLExpr expr) {
+    public static boolean isFromJoinOrUnionTable(SQLExpr expr) {
         SQLObject temp = expr;
         AtomicInteger counter = new AtomicInteger(10);
         while (temp != null &&
                 !(expr instanceof SQLSelectQueryBlock) &&
-                !(expr instanceof SQLJoinTableSource) && counter.get() > 0) {
+                !(expr instanceof SQLJoinTableSource) && !(expr instanceof SQLUnionQuery) && counter.get() > 0) {
             counter.decrementAndGet();
             temp = temp.getParent();
             if (temp instanceof SQLSelectQueryBlock) {
-                if (((SQLSelectQueryBlock) temp).getFrom() instanceof SQLJoinTableSource) {
+                SQLTableSource from = ((SQLSelectQueryBlock) temp).getFrom();
+                if (from instanceof SQLJoinTableSource || from instanceof SQLUnionQuery) {
                     return true;
                 }
             }
-            if (temp instanceof SQLJoinTableSource) {
+            if (temp instanceof SQLJoinTableSource || temp instanceof SQLUnionQuery) {
                 return true;
             }
         }
@@ -156,4 +161,50 @@ public class Util {
         }
         return strings;
     }
+
+    public static Object searchPathInMap(Map<String, Object> fieldsMap, String[] path) {
+        Map<String,Object> currentObject = fieldsMap;
+        for(int i=0;i<path.length-1 ;i++){
+            Object valueFromCurrentMap = currentObject.get(path[i]);
+            if(valueFromCurrentMap == null) return null;
+            if(!Map.class.isAssignableFrom(valueFromCurrentMap.getClass())) return null;
+            currentObject = (Map<String, Object>) valueFromCurrentMap;
+        }
+        return currentObject.get(path[path.length-1]);
+    }
+
+    public static Object deepSearchInMap(Map<String,Object> fieldsMap , String field){
+        if(field.contains(".")){
+            String[] split = field.split("\\.");
+            return searchPathInMap(fieldsMap,split);
+        }
+        return fieldsMap.get(field);
+    }
+
+    public static boolean clearEmptyPaths(Map<String, Object> map) {
+        if(map.size() == 0){
+            return true;
+        }
+        Set<String> keysToDelete = new HashSet<>();
+        for (Map.Entry<String,Object> entry : map.entrySet()){
+            Object value = entry.getValue();
+            if(Map.class.isAssignableFrom(value.getClass())){
+                if(clearEmptyPaths((Map<String, Object>) value)){
+                    keysToDelete.add(entry.getKey());
+                }
+            }
+        }
+        if(keysToDelete.size() != 0){
+            if(map.size() == keysToDelete.size()){
+                map.clear();
+                return true;
+            }
+            for(String key : keysToDelete){
+                map.remove(key);
+                return false;
+            }
+        }
+        return false;
+    }
+
 }

@@ -593,6 +593,8 @@ public class AggMaker {
         String alias = gettAggNameFromParamsOrAlias(field);
         TopHitsBuilder topHits = AggregationBuilders.topHits(alias);
         List<KVValue> params = field.getParams();
+        String[] include = null;
+        String[] exclude = null;
         for (KVValue kv : params) {
             switch (kv.key) {
                 case "from":
@@ -600,6 +602,12 @@ public class AggMaker {
                     break;
                 case "size":
                     topHits.setSize((int) kv.value);
+                    break;
+                case "include":
+                    include = kv.value.toString().split(",");
+                    break;
+                case "exclude":
+                    exclude = kv.value.toString().split(",");
                     break;
                 case "alias":
                 case "nested":
@@ -610,6 +618,9 @@ public class AggMaker {
                     topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
                     break;
             }
+        }
+        if(include != null || exclude != null){
+            topHits.setFetchSource(include,exclude);
         }
         return topHits;
     }
