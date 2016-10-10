@@ -75,7 +75,17 @@ public class AggregationQueryAction extends QueryAction {
 
 
                 if (lastAgg != null && lastAgg instanceof TermsBuilder && !(field instanceof MethodField)) {
-
+                    //if limit size is too small, increasing shard  size is required
+                    if (select.getRowCount() < 200) {
+                        ((TermsBuilder) lastAgg).shardSize(2000);
+                        for (Hint hint : select.getHints()) {
+                            if (hint.getType() == HintType.SHARD_SIZE) {
+                                if (hint.getParams() != null && hint.getParams().length != 0 && hint.getParams()[0] != null) {
+                                    ((TermsBuilder) lastAgg).shardSize((Integer) hint.getParams()[0]);
+                                }
+                            }
+                        }
+                    }
                     ((TermsBuilder) lastAgg).size(select.getRowCount());
                 }
 
