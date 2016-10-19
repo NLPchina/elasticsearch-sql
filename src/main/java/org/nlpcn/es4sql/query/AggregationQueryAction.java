@@ -59,9 +59,6 @@ public class AggregationQueryAction extends QueryAction {
                 //make groupby can reference to field alias
                 lastAgg = getGroupAgg(field, select);
 
-                if (!refrence) lastAgg = aggMaker.makeGroupAgg(field);
-
-
                 if (lastAgg != null && lastAgg instanceof TermsBuilder && !(field instanceof MethodField)) {
                     //if limit size is too small, increasing shard  size is required
                     if (select.getRowCount() < 200) {
