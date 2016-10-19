@@ -1,0 +1,40 @@
+{
+  "from" : 0,
+  "size" : 0,
+  "_source" : {
+    "includes" : [ ],
+    "excludes" : [ ]
+  },
+  "fields" : [ "a", "a2345" ],
+  "script_fields" : {
+    "a2345" : {
+      "script" : {
+        "inline" : "if( (doc['gender'].value=='0')){'aaa'} else {'bbb'}"
+      }
+    }
+  },
+  "aggregations" : {
+    "terms(field=a)" : {
+      "terms" : {
+        "field" : "a"
+      },
+      "aggregations" : {
+        "a2345" : {
+          "terms" : {
+            "script" : {
+              "inline" : "if( (doc['gender'].value=='0')){'aaa'} else {'bbb'}"
+            },
+            "size" : 0
+          },
+          "aggregations" : {
+            "COUNT(c)" : {
+              "value_count" : {
+                "field" : "c"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
