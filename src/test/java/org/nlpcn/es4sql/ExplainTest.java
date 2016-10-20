@@ -28,6 +28,14 @@ public class ExplainTest {
 
 		assertThat(result, equalTo(expectedOutput));
 	}
+	
+    @Test
+    public void aggregationQuery() throws IOException, SqlParseException, NoSuchMethodException, IllegalAccessException, SQLFeatureNotSupportedException, InvocationTargetException {
+        String expectedOutput = Files.toString(new File("src/test/resources/expectedOutput/aggregation_query_explain.json"), StandardCharsets.UTF_8).replaceAll("\r","");
+        String result = explain(String.format("SELECT a, CASE WHEN gender='0' then 'aaa' else 'bbb'end a2345,count(c) FROM %s GROUP BY terms('field'='a'),a2345", TEST_INDEX));
+
+        assertThat(result, equalTo(expectedOutput));
+    }
 
 	@Test
 	public void searchSanityFilter() throws IOException, SqlParseException, NoSuchMethodException, IllegalAccessException, SQLFeatureNotSupportedException, InvocationTargetException {
