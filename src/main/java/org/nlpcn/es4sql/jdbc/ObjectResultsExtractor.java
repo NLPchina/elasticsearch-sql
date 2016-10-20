@@ -46,7 +46,11 @@ public class ObjectResultsExtractor {
             List<List<Object>> lines = new ArrayList<>();
             lines.add(new ArrayList<Object>());
             handleAggregations((Aggregations) queryResult, headers, lines);
-
+            
+            // remove empty line。
+            if(lines.get(0).size() == 0) {
+                lines.remove(0);
+            }
             //todo: need to handle more options for aggregations:
             //Aggregations that inhrit from base
             //ScriptedMetric
