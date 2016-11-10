@@ -2,6 +2,7 @@ package org.nlpcn.es4sql.parse;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCaseExpr;
+import com.alibaba.druid.sql.ast.expr.SQLNullExpr;
 import com.google.common.base.Joiner;
 import org.elasticsearch.common.inject.internal.Join;
 import org.nlpcn.es4sql.SQLFunctions;
@@ -75,7 +76,13 @@ public class CaseWhenParser {
             if (condition.getValue() instanceof ScriptFilter) {
                 codes.add(relation + "(" + ((ScriptFilter) condition.getValue()).getScript() + ")");
             } else {
-                codes.add(relation + "(" + Util.getScriptValueWithQuote(condition.getNameExpr(), "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(condition.getValueExpr(), "'") + ")");
+                SQLExpr nameExpr = condition.getNameExpr();
+                SQLExpr valueExpr = condition.getValueExpr();
+                if(valueExpr instanceof SQLNullExpr) {
+                    codes.add(relation + "(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
+                } else {
+                    codes.add(relation + "(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
+                }
             }
         } else {
             for (Where subWhere : where.getWheres()) {

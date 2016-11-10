@@ -8,7 +8,7 @@
   "script_fields" : {
     "test" : {
       "script" : {
-        "inline" : "if( (doc['gender'].value==null)){'aaa'} else {doc['gender'].value}"
+        "inline" : "if( (doc['gender'].empty)){'aaa'} else {doc['gender'].value}"
       }
     }
   }
