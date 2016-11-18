@@ -8,6 +8,7 @@ import org.elasticsearch.common.inject.internal.Join;
 import org.nlpcn.es4sql.SQLFunctions;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -72,16 +73,20 @@ public class CaseWhenParser {
     private void explainWhere(List<String> codes, Where where) throws SqlParseException {
         if (where instanceof Condition) {
             Condition condition = (Condition) where;
-            String relation = condition.getConn().name().equals("AND") ? " && " : " || ";
+
             if (condition.getValue() instanceof ScriptFilter) {
-                codes.add(relation + "(" + ((ScriptFilter) condition.getValue()).getScript() + ")");
+                codes.add("(" + ((ScriptFilter) condition.getValue()).getScript() + ")");
+            } else if (condition.getOpear() == OPEAR.BETWEEN) {
+                Object[] objs = (Object[]) condition.getValue();
+                codes.add("(" + "doc['" + condition.getName() + "'].value >= " + objs[0] + " && doc['"
+                        + condition.getName() + "'].value <=" + objs[1] + ")");
             } else {
                 SQLExpr nameExpr = condition.getNameExpr();
                 SQLExpr valueExpr = condition.getValueExpr();
                 if(valueExpr instanceof SQLNullExpr) {
-                    codes.add(relation + "(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
+                    codes.add("(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
                 } else {
-                    codes.add(relation + "(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
+                    codes.add("(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
                 }
             }
         } else {
@@ -89,8 +94,9 @@ public class CaseWhenParser {
                 List<String> subCodes = new ArrayList<String>();
                 explainWhere(subCodes, subWhere);
                 String relation = subWhere.getConn().name().equals("AND") ? "&&" : "||";
-                codes.add("(" + Joiner.on(relation).join(subCodes) + ")");
+                codes.add(Joiner.on(relation).join(subCodes));
             }
         }
     }
+
 }
