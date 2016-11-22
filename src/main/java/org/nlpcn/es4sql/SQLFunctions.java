@@ -21,7 +21,7 @@ public class SQLFunctions {
     public final static Set<String> buildInFunctions = Sets.newHashSet(
             "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "rint", "pow", "round",
             "random", "abs", //nummber operator
-            "split", "concat_ws", "substring", "trim",//string operator
+            "split", "concat_ws", "substring", "trim","tostring",//string operator
             "add", "multiply", "divide", "subtract", "modulus",//binary operator
             "field", "date_format"
     );
@@ -87,7 +87,9 @@ public class SQLFunctions {
             case "trim":
                 functionStr = trim(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
                 break;
-
+            case "tostring":
+                functionStr = toString(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
+                break;
             case "add":
                 functionStr = add((SQLExpr) paramers.get(0).value, (SQLExpr) paramers.get(1).value);
                 break;
@@ -261,6 +263,12 @@ public class SQLFunctions {
     public static Tuple<String, String> trim(String strColumn, String valueName) {
 
         return strSingleValueTemplate("trim", strColumn, valueName);
+
+    }
+    
+    public static Tuple<String, String> toString(String strColumn, String valueName) {
+
+        return strSingleValueTemplate("toString", strColumn, valueName);
 
     }
 

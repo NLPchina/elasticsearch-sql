@@ -8,7 +8,9 @@ import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
-
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptService.ScriptType;
+import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintFactory;
@@ -178,16 +180,22 @@ public class SqlParser {
     private void addOrderByToSelect(Select select, List<SQLSelectOrderByItem> items, String alias) throws SqlParseException {
         for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
             SQLExpr expr = sqlSelectOrderByItem.getExpr();
-            String orderByName = FieldMaker.makeField(expr, null, null).toString();
-
             if (sqlSelectOrderByItem.getType() == null) {
                 sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
             }
-            String type = sqlSelectOrderByItem.getType().toString();
-
-            orderByName = orderByName.replace("`", "");
-            if (alias != null) orderByName = orderByName.replaceFirst(alias + "\\.", "");
-            select.addOrderBy(orderByName, type);
+            String sortOrder = sqlSelectOrderByItem.getType().toString();
+            
+//            String orderByName = FieldMaker.makeField(expr, null, null).toString();
+            String orderByName=expr.toString();
+            
+            if(expr instanceof SQLMethodInvokeExpr && ((SQLMethodInvokeExpr)((SQLMethodInvokeExpr) expr)).getMethodName().equalsIgnoreCase("random")){
+            	Script script=new Script("Math.random() * 10000");
+				select.addOrderBy(new Order("",script, "number", SortOrder.valueOf(sortOrder)));
+            }else{
+                 orderByName = orderByName.replace("`", "");
+                 if (alias != null) orderByName = orderByName.replaceFirst(alias + "\\.", "");
+                 select.addOrderBy(orderByName, SortOrder.valueOf(sortOrder));
+            }
 
         }
     }

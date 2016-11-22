@@ -1,9 +1,9 @@
 package org.nlpcn.es4sql.domain;
 
+import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,11 +72,15 @@ public class Select extends Query {
 		return rowCount;
 	}
 
-	public void addOrderBy(String name, String type) {
+	public void addOrderBy(String name, SortOrder sortOrder) {
 		if ("_score".equals(name)) {
 			isQuery = true;
 		}
-		this.orderBys.add(new Order(name, type));
+		this.orderBys.add(new Order(name, sortOrder));
+	}
+	
+	public void addOrderBy(Order order) {
+		this.orderBys.add(order);
 	}
 
 

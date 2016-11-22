@@ -221,8 +221,19 @@ public class FieldMaker {
                         paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr, null, tableAlias)));
                     } else {
                         SQLExpr right = binaryOpExpr.getRight();
-                        Object value = Util.expr2Object(right);
-                        paramers.add(new KVValue(binaryOpExpr.getLeft().toString(), value));
+                        if(right instanceof SQLMethodInvokeExpr){
+                            SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) right;
+                            String methodName = mExpr.getMethodName().toLowerCase();
+                            //incase terms('script'=method,.....)
+                            if (SQLFunctions.buildInFunctions.contains(methodName)) {
+                                //throw new SqlParseException("only support script/nested as inner functions");
+                                MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
+                                paramers.add(new KVValue(binaryOpExpr.getLeft().toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
+                            }
+                        }else{
+                        	Object value = Util.expr2Object(right);
+                        	paramers.add(new KVValue(binaryOpExpr.getLeft().toString(), value));
+                        }
                     }
                 }
 

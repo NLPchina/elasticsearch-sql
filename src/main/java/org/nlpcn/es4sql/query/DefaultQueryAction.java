@@ -10,6 +10,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -105,11 +107,11 @@ public class DefaultQueryAction extends QueryAction {
 						handleScriptField(method);
 					} else if (method.getName().equalsIgnoreCase("include")) {
 						for (KVValue kvValue : method.getParams()) {
-							includeFields.add(kvValue.value.toString()) ;
+							includeFields.add(kvValue.value.toString());
 						}
 					} else if (method.getName().equalsIgnoreCase("exclude")) {
 						for (KVValue kvValue : method.getParams()) {
-							excludeFields.add(kvValue.value.toString()) ;
+							excludeFields.add(kvValue.value.toString());
 						}
 					}
 				} else if (field instanceof Field) {
@@ -117,7 +119,8 @@ public class DefaultQueryAction extends QueryAction {
 				}
 			}
 
-			request.setFetchSource(includeFields.toArray(new String[includeFields.size()]), excludeFields.toArray(new String[excludeFields.size()]));
+			request.setFetchSource(includeFields.toArray(new String[includeFields.size()]),
+					excludeFields.toArray(new String[excludeFields.size()]));
 		}
 	}
 
@@ -126,7 +129,8 @@ public class DefaultQueryAction extends QueryAction {
 		if (params.size() == 2) {
 			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString()));
 		} else if (params.size() == 3) {
-			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString(), ScriptService.ScriptType.INLINE, params.get(2).value.toString(), null));
+			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString(),
+					ScriptService.ScriptType.INLINE, params.get(2).value.toString(), null));
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
 		}
@@ -141,7 +145,7 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setWhere(Where where) throws SqlParseException {
 		if (where != null) {
-			BoolQueryBuilder boolQuery = QueryMaker.explan(where,this.select.isQuery);
+			BoolQueryBuilder boolQuery = QueryMaker.explan(where, this.select.isQuery);
 			request.setQuery(boolQuery);
 		}
 	}
@@ -154,7 +158,14 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setSorts(List<Order> orderBys) {
 		for (Order order : orderBys) {
-			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+			if (order.getScript() != null) {
+				ScriptSortBuilder sort = new ScriptSortBuilder(order.getScript(), order.getType());
+				sort.order(order.getSortOrder());
+				request.addSort(sort);
+			} else {
+				request.addSort(order.getName(),  order.getSortOrder());
+			}
+
 		}
 	}
 

@@ -36,7 +36,10 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ChildrenType;
+import org.nlpcn.es4sql.parse.FieldMaker;
 import org.nlpcn.es4sql.parse.NestedType;
+
+import com.alibaba.druid.sql.ast.SQLExpr;
 
 public class AggMaker {
 
@@ -259,6 +262,9 @@ public class AggMaker {
                 case "field":
                     terms.field(value);
                     break;
+                case "script":
+                    terms.script(new Script(value));
+                    break;
                 case "size":
                     terms.size(Integer.parseInt(value));
                     break;
@@ -281,6 +287,7 @@ public class AggMaker {
                     }
                     break;
                 case "alias":
+                    break;
                 case "nested":
                 case "reverse_nested":
                 case "children":
