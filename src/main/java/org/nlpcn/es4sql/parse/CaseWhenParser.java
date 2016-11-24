@@ -21,81 +21,93 @@ import java.util.List;
  * Created by allwefantasy on 9/3/16.
  */
 public class CaseWhenParser {
-	private SQLCaseExpr caseExpr;
-	private String alias;
-	private String tableAlias;
+    private SQLCaseExpr caseExpr;
+    private String alias;
+    private String tableAlias;
 
-	public CaseWhenParser(SQLCaseExpr caseExpr, String alias, String tableAlias) {
-		this.alias = alias;
-		this.tableAlias = tableAlias;
-		this.caseExpr = caseExpr;
+    private final static String OPERATOR_AND = " && ";
+    private final static String OPERATOR_OR = " || ";
 
-	}
+    public CaseWhenParser(SQLCaseExpr caseExpr, String alias, String tableAlias) {
+        this.alias = alias;
+        this.tableAlias = tableAlias;
+        this.caseExpr = caseExpr;
 
-	public String parse() throws SqlParseException {
-		List<String> result = new ArrayList<String>();
+    }
 
-		for (SQLCaseExpr.Item item : caseExpr.getItems()) {
-			SQLExpr conditionExpr = item.getConditionExpr();
+    public String parse() throws SqlParseException {
+        List<String> result = new ArrayList<String>();
 
-			WhereParser parser = new WhereParser(new SqlParser(), conditionExpr);
-			String scriptCode = explain(parser.findWhere());
-			if (scriptCode.startsWith(" &&")) {
-				scriptCode = scriptCode.substring(3);
-			}
-			if (result.size() == 0) {
-				result.add(
-						"if(" + scriptCode + ")" + "{" + Util.getScriptValueWithQuote(item.getValueExpr(), "'") + "}");
-			} else {
-				result.add("else if(" + scriptCode + ")" + "{" + Util.getScriptValueWithQuote(item.getValueExpr(), "'")
-						+ "}");
-			}
+        for (SQLCaseExpr.Item item : caseExpr.getItems()) {
+            SQLExpr conditionExpr = item.getConditionExpr();
 
-		}
-		SQLExpr elseExpr = caseExpr.getElseExpr();
-		if (elseExpr == null) {
-			result.add("else { null }");
-		} else {
-			result.add("else {" + Util.getScriptValueWithQuote(elseExpr, "'") + "}");
-		}
+            WhereParser parser = new WhereParser(new SqlParser(), conditionExpr);
+            String scriptCode = explain(parser.findWhere());
+            if (scriptCode.startsWith(OPERATOR_AND) || scriptCode.startsWith(OPERATOR_OR)) {
+                scriptCode = scriptCode.substring(4);
+            }
+            if (result.size() == 0) {
+                result.add(
+                        "if(" + scriptCode + ")" + "{" + Util.getScriptValueWithQuote(item.getValueExpr(), "'") + "}");
+            } else {
+                result.add("else if(" + scriptCode + ")" + "{" + Util.getScriptValueWithQuote(item.getValueExpr(), "'")
+                        + "}");
+            }
 
-		System.out.println(Joiner.on(" ").join(result));
-		return Joiner.on(" ").join(result);
-	}
+        }
+        SQLExpr elseExpr = caseExpr.getElseExpr();
+        if (elseExpr == null) {
+            result.add("else { null }");
+        } else {
+            result.add("else {" + Util.getScriptValueWithQuote(elseExpr, "'") + "}");
+        }
 
-	public String explain(Where where) throws SqlParseException {
-		List<String> codes = new ArrayList<String>();
-		while (where.getWheres().size() == 1) {
-			where = where.getWheres().getFirst();
-		}
-		explainWhere(codes, where);
-		String relation = where.getConn().name().equals("AND") ? " && " : " || ";
-		return Joiner.on(relation).join(codes);
-	}
+        return Joiner.on(" ").join(result);
+    }
 
-	private void explainWhere(List<String> codes, Where where) throws SqlParseException {
-		if (where instanceof Condition) {
-			Condition condition = (Condition) where;
-			// String relation = condition.getConn().name().equals("AND") ? " &&
-			// " : " || ";
-			if (condition.getValue() instanceof ScriptFilter) {
-				codes.add("(" + ((ScriptFilter) condition.getValue()).getScript() + ")");
-			} else if (condition.getOpear() == OPEAR.BETWEEN) {
-				Object[] objs = (Object[]) condition.getValue();
-				codes.add("(" + "doc['" + condition.getName() + "'].value >= " + objs[0] + " && doc['"
-						+ condition.getName() + "'].value <=" + objs[1] + ")");
-			} else {
-				codes.add("(" + Util.getScriptValueWithQuote(condition.getNameExpr(), "'")
-						+ condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(condition.getValueExpr(), "'")
-						+ ")");
-			}
-		} else {
-			for (Where subWhere : where.getWheres()) {
-				List<String> subCodes = new ArrayList<String>();
-				explainWhere(subCodes, subWhere);
-				String relation = subWhere.getConn().name().equals("AND") ? "&&" : "||";
-				codes.add(Joiner.on(relation).join(subCodes));
-			}
-		}
-	}
+    public String explain(Where where) throws SqlParseException {
+        List<String> codes = new ArrayList<String>();
+        while (where.getWheres().size() == 1) {
+            where = where.getWheres().getFirst();
+        }
+        explainWhere(codes, where);
+        String relation = where.getConn().name().equals("AND") ? OPERATOR_AND : OPERATOR_OR;
+        String express = Joiner.on("").join(codes);
+        if (express.startsWith(OPERATOR_AND) || express.startsWith(OPERATOR_OR)) {
+            express = express.substring(4);
+        }
+        return relation + express;
+    }
+
+    private void explainWhere(List<String> codes, Where where) throws SqlParseException {
+        if (where instanceof Condition) {
+            Condition condition = (Condition) where;
+            String relation = condition.getConn().name().equals("AND") ? OPERATOR_AND : OPERATOR_OR;
+            if (condition.getValue() instanceof ScriptFilter) {
+                codes.add(relation + ((ScriptFilter) condition.getValue()).getScript());
+            } else if (condition.getOpear() == OPEAR.BETWEEN) {
+                Object[] objs = (Object[]) condition.getValue();
+                codes.add(relation + "doc['" + condition.getName() + "'].value >= " + objs[0] + " && doc['"
+                        + condition.getName() + "'].value <=" + objs[1]);
+            } else {
+                codes.add(relation + Util.getScriptValueWithQuote(condition.getNameExpr(), "'")
+                        + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(condition.getValueExpr(), "'"));
+            }
+        } else {
+            for (Where subWhere : where.getWheres()) {
+                List<String> subCodes = new ArrayList<String>();
+                explainWhere(subCodes, subWhere);
+                String relation = subWhere.getConn().name().equals("AND") ? OPERATOR_AND : OPERATOR_OR;
+                if (subCodes.size() > 1) {
+                    String express = Joiner.on("").join(subCodes);
+                    if (express.startsWith(OPERATOR_AND) || express.startsWith(OPERATOR_OR)) {
+                        express = express.substring(4);
+                    }
+                    codes.add(relation + "(" + express + ")");
+                } else {
+                    codes.add(Joiner.on(relation).join(subCodes));
+                }
+            }
+        }
+    }
 }

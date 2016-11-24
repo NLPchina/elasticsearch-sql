@@ -17,6 +17,8 @@ import org.elasticsearch.search.highlight.HighlightField;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
@@ -32,7 +34,6 @@ import static org.hamcrest.Matchers.*;
 import static org.nlpcn.es4sql.TestsConstants.DATE_FORMAT;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 import static org.nlpcn.es4sql.TestsConstants.TS_DATE_FORMAT;
-
 
 public class QueryTest {
 

@@ -77,12 +77,12 @@ public class AggregationTest {
 //        assertThat(sum.getValue(), equalTo(25714837.0*2));
 //    }
 //
-//    @Test
-//    public void sumWithScriptTestNoAlias() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-//        Aggregations result = query(String.format("SELECT SUM(balance + balance) FROM %s/account", TEST_INDEX));
-//        Sum sum = result.get("SUM(script=script(balance + balance,doc('balance').value + doc('balance').value))");
-//        assertThat(sum.getValue(), equalTo(25714837.0*2));
-//    }
+    @Test
+    public void sumWithScriptTestNoAlias() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        Aggregations result = query(String.format("SELECT SUM(balance + balance) FROM %s/account", TEST_INDEX));
+        Sum sum = result.get("SUM(script=script(balance + balance,doc('balance').value + doc('balance').value))");
+        assertThat(sum.getValue(), equalTo(25714837.0*2));
+    }
 //
 //    @Test
 //    public void scriptedMetricAggregation() throws SQLFeatureNotSupportedException, SqlParseException {
