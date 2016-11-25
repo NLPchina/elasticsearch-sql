@@ -20,7 +20,7 @@ import org.nlpcn.es4sql.parse.NestedType;
 public class Condition extends Where {
 
     public enum OPEAR {
-        EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_DISTANCE_RANGE, GEO_POLYGON, GEO_CELL, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT;
+        EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_DISTANCE_RANGE, GEO_POLYGON, GEO_CELL, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT,NIN_TERMS,NTERM;
 
         public static Map<String, OPEAR> methodNameToOpear;
 
@@ -40,6 +40,8 @@ public class Condition extends Where {
         static {
             negatives = HashBiMap.create(7);
             negatives.put(EQ, N);
+            negatives.put(IN_TERMS, NIN_TERMS);
+			negatives.put(TERM, NTERM);
             negatives.put(GT, LTE);
             negatives.put(LT, GTE);
             negatives.put(LIKE, NLIKE);
