@@ -25,7 +25,7 @@ public class SQLFunctions {
             // operator
             "add", "multiply", "divide", "subtract", "modulus", // binary
                                                                 // operator
-            "field", "date_format", "double");
+            "field", "date_format", "double", "todate");
 
     public static Tuple<String, String> function(String methodName, List<KVValue> paramers, String name) {
         Tuple<String, String> functionStr = null;
@@ -119,6 +119,10 @@ public class SQLFunctions {
         case "double":
             functionStr = toDouble(Util.expr2Object((SQLExpr) paramers.get(0).value).toString());
             break;
+        case "todate":
+            functionStr = toDate(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
+                    Util.expr2Object((SQLExpr) paramers.get(1).value).toString(), name);
+            break;
         default:
 
         }
@@ -186,6 +190,18 @@ public class SQLFunctions {
 
     }
 
+    public static Tuple<String, String> toDate(String strColumn, String pattern, String valueName) {
+        String name = "todate_" + random();
+        if (valueName == null) {
+            return new Tuple<String, String>(name,
+                    "def " + name + " = Date.parse('" + pattern + "', doc['" + strColumn + "'].value) ");
+        } else {
+            return new Tuple<String, String>(name,
+                    strColumn + "; def " + name + " = Date.parse('" + pattern + "'," + valueName + ") ");
+        }
+
+    }
+
     public static Tuple<String, String> add(SQLExpr a, SQLExpr b) {
         return binaryOpertator("add", "+", a, b);
     }
@@ -194,15 +210,15 @@ public class SQLFunctions {
         return binaryOpertator("modulus", "%", a, b);
     }
 
-    public static Tuple<String, String> field(String a) {
+    public static Tuple<String, String> field(String strColumn) {
         String name = "field_" + random();
-        return new Tuple<String, String>(name, "def " + name + " = " + "doc['" + a + "'].value");
+        return new Tuple<String, String>(name, "def " + name + " = " + "doc['" + strColumn + "'].value");
     }
 
-    public static Tuple<String, String> toDouble(String a) {
+    public static Tuple<String, String> toDouble(String strColumn) {
         String name = "double_" + random();
-        return new Tuple<String, String>(name,
-                "def " + name + " = 0; if(!doc['" + a + "'].empty) " + name + "=doc['" + a + "'].value.toDouble()");
+        return new Tuple<String, String>(name, "def " + name + " = 0; if(!doc['" + strColumn + "'].empty) " + name
+                + "=doc['" + strColumn + "'].value.toDouble()");
     }
 
     public static Tuple<String, String> subtract(SQLExpr a, SQLExpr b) {
