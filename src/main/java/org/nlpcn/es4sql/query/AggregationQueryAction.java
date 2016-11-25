@@ -156,7 +156,7 @@ public class AggregationQueryAction extends QueryAction {
                         case "KEY":
                             termsBuilder.order(Terms.Order.term(isASC(order)));
                             // add the sort to the request also so the results get sorted as well
-                            request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+                            request.addSort(order.getName(), order.getSortOrder());
                             break;
                         case "FIELD":
                             termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
@@ -165,7 +165,7 @@ public class AggregationQueryAction extends QueryAction {
                             throw new SqlParseException(order.getName() + " can not to order");
                     }
                 } else {
-                    request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+                    request.addSort(order.getName(), order.getSortOrder());
                 }
             }
         }
@@ -286,7 +286,7 @@ public class AggregationQueryAction extends QueryAction {
     }
 
     private boolean isASC(Order order) {
-        return "ASC".equals(order.getType());
+        return "ASC".equals(order.getSortOrder().toString());
     }
 
     private void setFields(List<Field> fields) {

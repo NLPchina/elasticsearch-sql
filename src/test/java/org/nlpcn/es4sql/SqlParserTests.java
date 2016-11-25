@@ -673,10 +673,10 @@ public class SqlParserTests {
         List<Order> orderBys = select.getOrderBys();
         Assert.assertEquals(2, orderBys.size());
         Assert.assertEquals("a", orderBys.get(0).getName());
-        Assert.assertEquals("ASC", orderBys.get(0).getType());
+        Assert.assertEquals("ASC", orderBys.get(0).getSortOrder().toString());
 
         Assert.assertEquals("b", orderBys.get(1).getName());
-        Assert.assertEquals("DESC", orderBys.get(1).getType());
+        Assert.assertEquals("DESC", orderBys.get(0).getSortOrder().toString());
     }
 
     @Test

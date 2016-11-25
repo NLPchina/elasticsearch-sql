@@ -213,8 +213,8 @@ public class SqlParser {
             String orderByName=expr.toString();
             
             if(expr instanceof SQLMethodInvokeExpr && ((SQLMethodInvokeExpr)((SQLMethodInvokeExpr) expr)).getMethodName().equalsIgnoreCase("random")){
-            	Script script=new Script("Math.random() * 10000");
-				select.addOrderBy(new Order("",script, "number", SortOrder.valueOf(sortOrder)));
+                Script script=new Script("Math.random() * 10000");
+                select.addOrderBy(new Order("",script, "number", SortOrder.valueOf(sortOrder)));
             }else{
                  orderByName = orderByName.replace("`", "");
                  if (alias != null) orderByName = orderByName.replaceFirst(alias + "\\.", "");
