@@ -1,19 +1,9 @@
 package org.nlpcn.es4sql.query.join;
 
-import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
-import org.elasticsearch.action.ActionRequest;
-import org.elasticsearch.action.ActionResponse;
-import org.elasticsearch.action.search.MultiSearchRequest;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.nlpcn.es4sql.domain.Field;
-import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import org.nlpcn.es4sql.domain.Field;
 
 /**
  * Created by Eliran on 22/8/2015.

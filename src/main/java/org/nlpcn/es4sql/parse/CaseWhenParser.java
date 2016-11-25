@@ -1,21 +1,17 @@
 package org.nlpcn.es4sql.parse;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.nlpcn.es4sql.Util;
+import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Condition.OPEAR;
+import org.nlpcn.es4sql.domain.Where;
+import org.nlpcn.es4sql.exception.SqlParseException;
+
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCaseExpr;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-
-import org.elasticsearch.common.inject.internal.Join;
-import org.nlpcn.es4sql.SQLFunctions;
-import org.nlpcn.es4sql.Util;
-import org.nlpcn.es4sql.domain.Condition;
-import org.nlpcn.es4sql.domain.Where;
-import org.nlpcn.es4sql.domain.Condition.OPEAR;
-import org.nlpcn.es4sql.exception.SqlParseException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by allwefantasy on 9/3/16.

@@ -1,19 +1,22 @@
 package org.nlpcn.es4sql.query;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
-import org.nlpcn.es4sql.domain.*;
+import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.KVValue;
+import org.nlpcn.es4sql.domain.MethodField;
+import org.nlpcn.es4sql.domain.Order;
+import org.nlpcn.es4sql.domain.Select;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;

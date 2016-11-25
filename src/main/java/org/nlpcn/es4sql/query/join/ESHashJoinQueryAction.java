@@ -1,13 +1,18 @@
 package org.nlpcn.es4sql.query.join;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.elasticsearch.client.Client;
-import org.nlpcn.es4sql.domain.*;
+import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.JoinSelect;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.*;
-
-import java.util.*;
 
 /**
  * Created by Eliran on 22/8/2015.

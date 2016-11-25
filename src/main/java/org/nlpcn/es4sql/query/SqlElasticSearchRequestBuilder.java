@@ -49,7 +49,7 @@ public class SqlElasticSearchRequestBuilder implements SqlElasticRequestBuilder 
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return this.requestBuilder.toString();
     }
 }

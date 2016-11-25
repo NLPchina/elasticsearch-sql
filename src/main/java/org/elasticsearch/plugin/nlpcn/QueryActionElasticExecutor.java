@@ -1,20 +1,22 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import java.io.IOException;
+
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
-import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.*;
+import org.nlpcn.es4sql.query.AggregationQueryAction;
+import org.nlpcn.es4sql.query.DefaultQueryAction;
+import org.nlpcn.es4sql.query.DeleteQueryAction;
+import org.nlpcn.es4sql.query.QueryAction;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 import org.nlpcn.es4sql.query.join.ESJoinQueryAction;
-import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
 import org.nlpcn.es4sql.query.multi.MultiQueryAction;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
-
-import java.io.IOException;
 
 /**
  * Created by Eliran on 3/10/2015.
