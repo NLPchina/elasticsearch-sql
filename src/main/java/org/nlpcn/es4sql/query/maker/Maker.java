@@ -34,7 +34,7 @@ import org.nlpcn.es4sql.spatial.*;
 public abstract class Maker {
 
 
-	private static final Set<OPEAR> NOT_OPEAR_SET = ImmutableSet.of(OPEAR.N, OPEAR.NIN, OPEAR.ISN, OPEAR.NBETWEEN, OPEAR.NLIKE);
+	private static final Set<OPEAR> NOT_OPEAR_SET = ImmutableSet.of(OPEAR.N, OPEAR.NIN, OPEAR.ISN, OPEAR.NBETWEEN, OPEAR.NLIKE,OPEAR.NIN_TERMS,OPEAR.NTERM);
 
 
 
@@ -217,12 +217,14 @@ public abstract class Maker {
             Point geoHashPoint = cellFilterParams.getGeohashPoint();
             x = QueryBuilders.geoHashCellQuery(cond.getName()).point(geoHashPoint.getLat(),geoHashPoint.getLon()).precision(cellFilterParams.getPrecision()).neighbors(cellFilterParams.isNeighbors());
             break;
+        case NIN_TERMS:
         case IN_TERMS:
             Object[] termValues = (Object[]) value;
             if(termValues.length == 1 && termValues[0] instanceof SubQueryExpression)
                 termValues = ((SubQueryExpression) termValues[0]).getValues();
             x = QueryBuilders.termsQuery(name,termValues);
         break;
+        case NTERM:
         case TERM:
             Object term  =( (Object[]) value)[0];
             x = QueryBuilders.termQuery(name,term);
