@@ -178,9 +178,10 @@ public class AggregationQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }
-	private AggregationBuilder<?> getGroupAgg(Field field, Select select2) throws SqlParseException {
-    	boolean refrence = false;
-    	AggregationBuilder<?> lastAgg = null;
+    
+    private AggregationBuilder<?> getGroupAgg(Field field, Select select2) throws SqlParseException {
+        boolean refrence = false;
+        AggregationBuilder<?> lastAgg = null;
         for (Field temp : select.getFields()) {
             if (temp instanceof MethodField && temp.getName().equals("script")) {
                 MethodField scriptField = (MethodField) temp;
@@ -197,7 +198,7 @@ public class AggregationQueryAction extends QueryAction {
         if (!refrence) lastAgg = aggMaker.makeGroupAgg(field);
         
         return lastAgg;
-	}
+    }
 
     private AbstractAggregationBuilder wrapNestedIfNeeded(AggregationBuilder nestedBuilder, boolean reverseNested) {
         if (!reverseNested) return nestedBuilder;

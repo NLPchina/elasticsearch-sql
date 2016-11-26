@@ -99,6 +99,8 @@ public class Util {
             return ((SQLIntegerExpr) expr).getValue();
         } else if (expr instanceof SQLNumericLiteralExpr) {
             return ((SQLNumericLiteralExpr) expr).getNumber();
+        } else if (expr instanceof SQLNullExpr) {
+            return ((SQLNullExpr) expr).toString().toLowerCase();
         }
         throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
     }

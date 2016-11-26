@@ -9,7 +9,7 @@
   "script_fields" : {
     "a2345" : {
       "script" : {
-        "inline" : "if( (doc['gender'].value=='0')){'aaa'} else {'bbb'}"
+        "inline" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}"
       }
     }
   },
@@ -22,7 +22,7 @@
         "a2345" : {
           "terms" : {
             "script" : {
-              "inline" : "if( (doc['gender'].value=='0')){'aaa'} else {'bbb'}"
+              "inline" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}"
             },
             "size" : 0
           },
