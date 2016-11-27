@@ -9,11 +9,11 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import org.elasticsearch.search.highlight.HighlightField;
 
 import org.junit.Assert;
 import org.junit.Test;

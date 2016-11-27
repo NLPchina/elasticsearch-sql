@@ -4,6 +4,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -28,7 +29,7 @@ public class ElasticSearchConnection implements Connection {
 
         Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
         try {
-            TransportClient transportClient = TransportClient.builder().settings(settings).build();
+            TransportClient transportClient = new PreBuiltTransportClient(settings);
 
             String hostAndPortArrayStr = jdbcUrl.split("/")[2];
             String[] hostAndPortArray = hostAndPortArrayStr.split(",");

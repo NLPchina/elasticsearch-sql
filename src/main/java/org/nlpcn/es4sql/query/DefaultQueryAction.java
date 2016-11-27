@@ -69,7 +69,7 @@ public class DefaultQueryAction extends QueryAction {
 			int scrollSize = (Integer) scrollHint.getParams()[0];
 			int timeoutInMilli = (Integer) scrollHint.getParams()[1];
 			if (!existsOrderBy)
-				request.setSearchType(SearchType.SCAN);
+				request.setSearchType(SearchType.DEFAULT);
 			request.setScroll(new TimeValue(timeoutInMilli)).setSize(scrollSize);
 		}
 		return scrollHint != null;

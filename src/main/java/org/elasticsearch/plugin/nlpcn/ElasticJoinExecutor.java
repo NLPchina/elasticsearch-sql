@@ -202,7 +202,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
                 .setScroll(new TimeValue(60000))
                 .setSize(MAX_RESULTS_ON_ONE_FETCH);
         boolean ordered = tableRequest.getOriginalSelect().isOrderdSelect();
-        if(!ordered) scrollRequest.setSearchType(SearchType.SCAN);
+        if(!ordered) scrollRequest.setSearchType(SearchType.DEFAULT);
         responseWithHits = scrollRequest.get();
         //on ordered select - not using SCAN , elastic returns hits on first scroll
         if(!ordered)

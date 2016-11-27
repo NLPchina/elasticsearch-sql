@@ -117,7 +117,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
             finishedScrolling = true;
         } else {
             searchResponse = secondTableRequest.getRequestBuilder()
-                    .setSearchType(SearchType.SCAN)
+                    .setSearchType(SearchType.DEFAULT)
                     .setScroll(new TimeValue(60000))
                     .setSize(MAX_RESULTS_ON_ONE_FETCH).get();
             searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll(new TimeValue(600000)).get();

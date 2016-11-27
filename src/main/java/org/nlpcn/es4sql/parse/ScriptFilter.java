@@ -80,7 +80,8 @@ public class ScriptFilter {
                 this.scriptType = ScriptService.ScriptType.INLINE;
                 break;
             case "INDEXED":
-                this.scriptType = ScriptService.ScriptType.INDEXED;
+            case "STORED":
+                this.scriptType = ScriptService.ScriptType.STORED;
                 break;
             case "FILE":
                 this.scriptType = ScriptService.ScriptType.FILE;

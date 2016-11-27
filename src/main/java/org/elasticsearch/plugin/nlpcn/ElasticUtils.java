@@ -26,7 +26,7 @@ public class ElasticUtils {
                 .setScroll(new TimeValue(60000))
                 .setSize(resultSize);
         boolean ordered = originalSelect.isOrderdSelect();
-        if(!ordered) scrollRequest.setSearchType(SearchType.SCAN);
+        if(!ordered) scrollRequest.setSearchType(SearchType.DEFAULT);
         responseWithHits = scrollRequest.get();
         //on ordered select - not using SCAN , elastic returns hits on first scroll
         if(!ordered) {

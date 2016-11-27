@@ -6,12 +6,12 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
 import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.nlpcn.es4sql.domain.Condition;
@@ -273,8 +273,8 @@ public class SQLFunctionsTest {
 
     private SearchDao getSearchDao() throws UnknownHostException {
         Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
-        Client client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).settings(settings).
-                build().addTransportAddress(MainTestSuite.getTransportAddress());
+        Client client = new PreBuiltTransportClient(settings).
+                addTransportAddress(MainTestSuite.getTransportAddress());
         return new SearchDao(client);
     }
 }

@@ -9,10 +9,9 @@ install:
 
 
 script:
-  - wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.4.1/elasticsearch-2.4.1.deb && sudo dpkg -i --force-confnew elasticsearch-2.4.1.deb
+  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.0.1.deb && sudo dpkg -i --force-confnew elasticsearch-5.0.1.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
-  - sudo /usr/share/elasticsearch/bin/plugin install delete-by-query
   - sudo service elasticsearch start
   - sleep 10
   - ulimit -a

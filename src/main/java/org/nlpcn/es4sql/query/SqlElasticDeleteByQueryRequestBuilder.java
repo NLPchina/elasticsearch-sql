@@ -3,12 +3,12 @@ package org.nlpcn.es4sql.query;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.support.QuerySourceBuilder;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -32,12 +32,8 @@ public class SqlElasticDeleteByQueryRequestBuilder implements SqlElasticRequestB
     @Override
     public String explain() {
         try {
-            XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            Method method = deleteByQueryRequestBuilder.getClass().getDeclaredMethod("sourceBuilder");
-            method.setAccessible(true);
-            QuerySourceBuilder sourceBuilder = (QuerySourceBuilder) method.invoke(deleteByQueryRequestBuilder);
-            sourceBuilder.toXContent(builder, ToXContent.EMPTY_PARAMS);
-            return builder.string();
+            SearchRequestBuilder source = deleteByQueryRequestBuilder.source();
+            return source.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }

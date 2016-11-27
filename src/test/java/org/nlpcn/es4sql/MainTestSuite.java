@@ -11,13 +11,13 @@ import java.net.UnknownHostException;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
+import org.elasticsearch.index.reindex.DeleteByQueryAction;
+import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -53,8 +53,9 @@ public class MainTestSuite {
 	public static void setUp() throws Exception {
 
 		Settings settings = Settings.builder().put("client.transport.ignore_cluster_name",true).build();
-		client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).settings(settings).
-				build().addTransportAddress(getTransportAddress());
+
+		client = new PreBuiltTransportClient(settings).
+				addTransportAddress(getTransportAddress());
 
 
         NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
@@ -225,18 +226,13 @@ public class MainTestSuite {
 	 */
 	public static void deleteQuery(String indexName, String typeName) {
 
-			DeleteByQueryRequestBuilder deleteQuery = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
-			deleteQuery.setIndices(indexName);
-			if (typeName != null) {
-				deleteQuery.setTypes(typeName);
-			}
-			deleteQuery.setQuery(QueryBuilders.matchAllQuery());
+        DeleteByQueryRequestBuilder deleteQueryBuilder = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
+        deleteQueryBuilder.request().indices(indexName);
+        deleteQueryBuilder.filter(QueryBuilders.matchAllQuery());
+        deleteQueryBuilder.get();
+        System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
 
-			deleteQuery.get();
-			System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
-
-
-	}
+    }
 
 
 	/**
@@ -267,10 +263,7 @@ public class MainTestSuite {
                 "\t\t\t\t\"precision\": \"10km\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"center\":{\n" +
-                "\t\t\t\t\"type\":\"geo_point\",\n" +
-                "\t\t\t\t\"geohash\":true,\n" +
-                "\t\t\t\t\"geohash_prefix\":true,\n" +
-                "\t\t\t\t\"geohash_precision\":17\n" +
+                "\t\t\t\t\"type\":\"geo_point\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"description\":{\n" +
                 "\t\t\t\t\"type\":\"string\"\n" +
