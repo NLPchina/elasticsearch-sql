@@ -603,21 +603,23 @@ public class QueryTest {
         Assert.assertEquals("square",result.getSource().get("description"));
     }
 
-    @Test
-    public void geoDistanceRange() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE_RANGE(center,'1m','1km',100.5,0.50001)", TEST_INDEX));
-        org.junit.Assert.assertEquals(1,results.getTotalHits());
-        SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
-    }
+    //ES5.0: geo_distance_range] queries are no longer supported for geo_point field types. Use geo_distance sort or aggregations
+//    @Test
+//    public void geoDistanceRange() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+//        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE_RANGE(center,'1m','1km',100.5,0.50001)", TEST_INDEX));
+//        org.junit.Assert.assertEquals(1,results.getTotalHits());
+//        SearchHit result = results.getAt(0);
+//        Assert.assertEquals("square",result.getSource().get("description"));
+//    }
 
-    @Test
-    public void geoCell() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_CELL(center,100.5,0.50001,7)", TEST_INDEX));
-        org.junit.Assert.assertEquals(1,results.getTotalHits());
-        SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
-    }
+    //ES5.0: geo_point field no longer supports geohash_cell queries
+//    @Test
+//    public void geoCell() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+//        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_CELL(center,100.5,0.50001,7)", TEST_INDEX));
+//        org.junit.Assert.assertEquals(1,results.getTotalHits());
+//        SearchHit result = results.getAt(0);
+//        Assert.assertEquals("square",result.getSource().get("description"));
+//    }
 
     @Test
     public void geoPolygon() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {

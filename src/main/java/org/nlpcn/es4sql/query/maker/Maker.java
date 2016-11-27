@@ -227,12 +227,16 @@ public abstract class Maker {
             Object[] termValues = (Object[]) value;
             if(termValues.length == 1 && termValues[0] instanceof SubQueryExpression)
                 termValues = ((SubQueryExpression) termValues[0]).getValues();
-            x = QueryBuilders.termsQuery(name,termValues);
+            String[] termValuesStrings = new String[termValues.length];
+            for (int i=0;i<termValues.length;i++){
+                termValuesStrings[i] = termValues[i].toString();
+            }
+            x = QueryBuilders.termsQuery(name,termValuesStrings);
         break;
         case NTERM:
         case TERM:
             Object term  =( (Object[]) value)[0];
-            x = QueryBuilders.termQuery(name,term);
+            x = QueryBuilders.termQuery(name,term.toString());
             break;
         case IDS_QUERY:
             Object[] idsParameters = (Object[]) value;
