@@ -491,7 +491,7 @@ public class AggregationTest {
 	public void testSubAggregations() throws  Exception {
 		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
 		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */" +
-                " * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
+                " * FROM %s/account GROUP BY (gender, age), (state) LIMIT 200,200", TEST_INDEX);
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
@@ -660,7 +660,7 @@ public class AggregationTest {
         Histogram histogram = nested.getAggregations().get("someAlias");
         for(Histogram.Bucket bucket : histogram.getBuckets()){
             long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
-            String key = bucket.getKey().toString();
+            String key = ((Double)bucket.getKey()).intValue()+"";
             if(key.equals("0") || key.equals("4")){
                 Assert.assertEquals(2,count);
             }

@@ -31,7 +31,6 @@ import com.google.common.io.ByteStreams;
 		MethodQueryTest.class,
 		AggregationTest.class,
         JoinTests.class,
-		DeleteTest.class,
 		ExplainTest.class,
         WktToGeoJsonConverterTests.class,
         SqlParserTests.class,
@@ -41,7 +40,8 @@ import com.google.common.io.ByteStreams;
 		SQLFunctionsTest.class,
 		JDBCTests.class,
         UtilTests.class,
-        MultiQueryTests.class
+        MultiQueryTests.class,
+		DeleteTest.class
 })
 public class MainTestSuite {
 
@@ -71,6 +71,7 @@ public class MainTestSuite {
 		loadBulk("src/test/resources/accounts.json");
         preparePhrasesIndex();
         loadBulk("src/test/resources/phrases.json");
+        prepareDogsIndex();
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
         loadBulk("src/test/resources/game_of_thrones_complex.json");
@@ -101,10 +102,27 @@ public class MainTestSuite {
 		System.out.println("Finished the setup process...");
 	}
 
+    private static void prepareDogsIndex() {
+        String dataMapping = "{  \"dog\": {" +
+                " \"properties\": {\n" +
+                "          \"dog_name\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"fielddata\": true\n" +
+                "          }"+
+                "       }"+
+                "   }" +
+                "}";
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("dog").setSource(dataMapping).execute().actionGet();
+    }
+
     private static void prepareAccountsIndex() {
         String dataMapping = "{  \"account\": {" +
                 " \"properties\": {\n" +
                 "          \"gender\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"fielddata\": true\n" +
+                "          }," +
+                "          \"state\": {\n" +
                 "            \"type\": \"string\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }" +
