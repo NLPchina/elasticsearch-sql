@@ -132,6 +132,10 @@ public class MainTestSuite {
         client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping).execute().actionGet();
     }
 
+
+
+
+
     private static void preparePhrasesIndex() {
         String dataMapping = "{  \"phrase\": {" +
                 " \"properties\": {\n" +
