@@ -1,0 +1,27 @@
+{
+  "from" : 0,
+  "size" : 20,
+  "_source" : {
+    "includes" : [ "open_date", "edu" ],
+    "excludes" : [ ]
+  },
+  "script_fields" : {
+    "channel_id_line" : {
+      "script" : {
+        "inline" : "if(doc['channel_id'].value==1){'线上'} else {'线下'}"
+      }
+    }
+  },
+  "sort" : [ {
+    "_script" : {
+      "script" : {
+        "inline" : "if(doc['channel_id'].value==1){'线上'} else {'线下'}"
+      },
+      "type" : "string"
+    }
+  }, {
+    "aaa" : {
+      "order" : "asc"
+    }
+  } ]
+}

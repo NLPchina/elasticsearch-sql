@@ -1,0 +1,82 @@
+{
+  "from" : 0,
+  "size" : 0,
+  "query" : {
+    "bool" : {
+      "filter" : {
+        "bool" : {
+          "must" : {
+            "bool" : {
+              "must" : [ {
+                "range" : {
+                  "cust_type" : {
+                    "from" : 0,
+                    "to" : 4,
+                    "include_lower" : true,
+                    "include_upper" : true
+                  }
+                }
+              }, {
+                "missing" : {
+                  "field" : "priv_plac"
+                }
+              }, {
+                "missing" : {
+                  "field" : "non_trade"
+                }
+              } ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "_source" : {
+    "includes" : [ ],
+    "excludes" : [ ]
+  },
+  "fields" : [ "channel_id_line", "open_date", "edu" ],
+  "script_fields" : {
+    "channel_id_line" : {
+      "script" : {
+        "inline" : "if(doc['channel_id'].value==1){'线上'} else {'线下'}"
+      }
+    }
+  },
+  "sort" : [ {
+    "aaa" : {
+      "order" : "asc"
+    }
+  } ],
+  "aggregations" : {
+    "channel_id_line" : {
+      "terms" : {
+        "script" : {
+          "inline" : "if(doc['channel_id'].value==1){'线上'} else {'线下'}"
+        },
+        "size" : 5000,
+        "order" : {
+          "_term" : "desc"
+        }
+      },
+      "aggregations" : {
+        "open_date" : {
+          "terms" : {
+            "field" : "open_date",
+            "missing" : "-999999999999",
+            "size" : 10000
+          },
+          "aggregations" : {
+            "edu" : {
+              "terms" : {
+                "field" : "edu",
+                "missing" : "",
+                "size" : 10000
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

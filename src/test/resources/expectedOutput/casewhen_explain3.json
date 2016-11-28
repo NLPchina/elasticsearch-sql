@@ -1,0 +1,15 @@
+{
+  "from" : 0,
+  "size" : 200,
+  "_source" : {
+    "includes" : [ "cust_code" ],
+    "excludes" : [ ]
+  },
+  "script_fields" : {
+    "test" : {
+      "script" : {
+        "inline" : "if(doc['cust_subscribe_il-sub_time-fund_code-5150_last'].value!=null || doc['cust_subscribe_il-sub_time-fund_code-5151_last'].value!=null || doc['cust_subscribe_il-sub_time-fund_code-5152_last'].value!=null){'订阅'} else {'为订阅'}"
+      }
+    }
+  }
+}

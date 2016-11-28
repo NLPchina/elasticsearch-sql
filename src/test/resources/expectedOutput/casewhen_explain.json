@@ -1,0 +1,33 @@
+{
+  "from" : 0,
+  "size" : 200,
+  "query" : {
+    "bool" : {
+      "filter" : {
+        "bool" : {
+          "must" : {
+            "range" : {
+              "birth" : {
+                "from" : 19900101,
+                "to" : 19910101,
+                "include_lower" : true,
+                "include_upper" : true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "_source" : {
+    "includes" : [ "cust_code" ],
+    "excludes" : [ ]
+  },
+  "script_fields" : {
+    "test" : {
+      "script" : {
+        "inline" : "if(doc['birth'].value==null){'0'} else { null }"
+      }
+    }
+  }
+}

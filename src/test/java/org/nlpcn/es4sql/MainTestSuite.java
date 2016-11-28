@@ -27,7 +27,7 @@ import com.google.common.io.ByteStreams;
 @Suite.SuiteClasses({ QueryTest.class, MethodQueryTest.class, AggregationTest.class, JoinTests.class, DeleteTest.class,
         ExplainTest.class, WktToGeoJsonConverterTests.class, SqlParserTests.class, ShowTest.class,
         CSVResultsExtractorTests.class, SourceFieldTest.class, SQLFunctionsTest.class, JDBCTests.class, UtilTests.class,
-        MultiQueryTests.class })
+        MultiQueryTests.class, CaseWhenTest.class  })
 public class MainTestSuite {
 
     private static TransportClient client;
