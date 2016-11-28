@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -69,7 +70,7 @@ public class DefaultQueryAction extends QueryAction {
 			int scrollSize = (Integer) scrollHint.getParams()[0];
 			int timeoutInMilli = (Integer) scrollHint.getParams()[1];
 			if (!existsOrderBy)
-				request.setSearchType(SearchType.DEFAULT);
+				request.addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC);
 			request.setScroll(new TimeValue(timeoutInMilli)).setSize(scrollSize);
 		}
 		return scrollHint != null;

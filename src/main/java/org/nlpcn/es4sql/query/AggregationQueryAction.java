@@ -13,6 +13,7 @@ import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -213,8 +214,13 @@ public class AggregationQueryAction extends QueryAction {
         String nestedPath = field.getNestedPath();
 
         if (field.isReverseNested()) {
-            if (nestedPath == null || !nestedPath.startsWith("~"))
-                return AggregationBuilders.reverseNested(getNestedAggName(field)).path(nestedPath);
+            if (nestedPath == null || !nestedPath.startsWith("~")) {
+                ReverseNestedAggregationBuilder reverseNestedAggregationBuilder = AggregationBuilders.reverseNested(getNestedAggName(field));
+                if(nestedPath!=null){
+                    reverseNestedAggregationBuilder.path(nestedPath);
+                }
+                return reverseNestedAggregationBuilder;
+            }
             nestedPath = nestedPath.substring(1);
         }
 

@@ -688,7 +688,8 @@ public class QueryTest {
         SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL*/ age,gender,firstname,balance FROM  %s/account LIMIT 2000", TEST_INDEX, TEST_INDEX));
         Assert.assertNotNull(response.getScrollId());
         SearchHits hits = response.getHits();
-        Assert.assertEquals(0,hits.getHits().length);
+        //default is 50 , es5.0 functionality now returns docs on first scroll
+        Assert.assertEquals(50,hits.getHits().length);
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 
@@ -697,7 +698,7 @@ public class QueryTest {
         SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL(10,5000)*/ age,gender,firstname,balance FROM  %s/account ", TEST_INDEX, TEST_INDEX));
         Assert.assertNotNull(response.getScrollId());
         SearchHits hits = response.getHits();
-        Assert.assertEquals(0,hits.getHits().length);
+        Assert.assertEquals(10,hits.getHits().length);
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 

@@ -11,6 +11,8 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Select;
 
 import java.io.IOException;
@@ -26,7 +28,7 @@ public class ElasticUtils {
                 .setScroll(new TimeValue(60000))
                 .setSize(resultSize);
         boolean ordered = originalSelect.isOrderdSelect();
-        if(!ordered) scrollRequest.setSearchType(SearchType.DEFAULT);
+        if(!ordered) scrollRequest.addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC);
         responseWithHits = scrollRequest.get();
         //on ordered select - not using SCAN , elastic returns hits on first scroll
         if(!ordered) {

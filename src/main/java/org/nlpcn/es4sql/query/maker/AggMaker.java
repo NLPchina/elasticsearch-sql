@@ -14,6 +14,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggre
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -172,7 +173,11 @@ public class AggMaker {
                     nestedBuilder = nestedBuilder.subAggregation(builder);
                     return AggregationBuilders.reverseNested(nestedAggName + "_REVERSED").subAggregation(nestedBuilder);
                 } else {
-                    nestedBuilder = AggregationBuilders.reverseNested(nestedAggName).path(nestedType.path);
+                    ReverseNestedAggregationBuilder reverseNestedAggregationBuilder = AggregationBuilders.reverseNested(nestedAggName);
+                    if (nestedType.path!=null){
+                        reverseNestedAggregationBuilder.path(nestedType.path);
+                    }
+                    nestedBuilder = reverseNestedAggregationBuilder;
                 }
             } else {
                 nestedBuilder = AggregationBuilders.nested(nestedAggName,nestedType.path);

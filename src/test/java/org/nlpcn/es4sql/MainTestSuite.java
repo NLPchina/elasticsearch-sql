@@ -66,8 +66,9 @@ public class MainTestSuite {
         if(client.admin().indices().prepareExists(TEST_INDEX).execute().actionGet().isExists()){
             client.admin().indices().prepareDelete(TEST_INDEX).get();
         }
-		loadBulk("src/test/resources/accounts.json");
 		loadBulk("src/test/resources/online.json");
+        prepareAccountsIndex();
+		loadBulk("src/test/resources/accounts.json");
         preparePhrasesIndex();
         loadBulk("src/test/resources/phrases.json");
         loadBulk("src/test/resources/dogs.json");
@@ -99,6 +100,19 @@ public class MainTestSuite {
 
 		System.out.println("Finished the setup process...");
 	}
+
+    private static void prepareAccountsIndex() {
+        String dataMapping = "{  \"account\": {" +
+                " \"properties\": {\n" +
+                "          \"gender\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"fielddata\": true\n" +
+                "          }" +
+                "       }"+
+                "   }" +
+                "}";
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping).execute().actionGet();
+    }
 
     private static void preparePhrasesIndex() {
         String dataMapping = "{  \"phrase\": {" +
