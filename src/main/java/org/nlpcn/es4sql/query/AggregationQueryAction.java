@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
@@ -15,7 +14,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
@@ -27,6 +25,8 @@ import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.maker.AggMaker;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
+
+import com.google.common.collect.Lists;
 
 /**
  * Transform SQL query to Elasticsearch aggregations query
@@ -156,7 +156,7 @@ public class AggregationQueryAction extends QueryAction {
                         case "KEY":
                             termsBuilder.order(Terms.Order.term(isASC(order)));
                             // add the sort to the request also so the results get sorted as well
-                            request.addSort(order.getName(), order.getSortOrder());
+//                            request.addSort(order.getName(), order.getSortOrder());
                             break;
                         case "FIELD":
                             termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
@@ -178,7 +178,8 @@ public class AggregationQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }
-	private AggregationBuilder<?> getGroupAgg(Field field, Select select2) throws SqlParseException {
+
+	private AggregationBuilder<?> getGroupAgg(Field field, Select select) throws SqlParseException {
     	boolean refrence = false;
     	AggregationBuilder<?> lastAgg = null;
         for (Field temp : select.getFields()) {
@@ -286,7 +287,7 @@ public class AggregationQueryAction extends QueryAction {
     }
 
     private boolean isASC(Order order) {
-        return "ASC".equals(order.getSortOrder().toString());
+        return "ASC".equalsIgnoreCase(order.getSortOrder().toString());
     }
 
     private void setFields(List<Field> fields) {
