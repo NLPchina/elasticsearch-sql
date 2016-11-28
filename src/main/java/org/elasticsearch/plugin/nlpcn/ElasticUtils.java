@@ -31,9 +31,10 @@ public class ElasticUtils {
         if(!ordered) scrollRequest.addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC);
         responseWithHits = scrollRequest.get();
         //on ordered select - not using SCAN , elastic returns hits on first scroll
-        if(!ordered) {
-            responseWithHits = client.prepareSearchScroll(responseWithHits.getScrollId()).setScroll(new TimeValue(600000)).get();
-        }
+        //es5.0 elastic always return docs on scan
+//        if(!ordered) {
+//            responseWithHits = client.prepareSearchScroll(responseWithHits.getScrollId()).setScroll(new TimeValue(600000)).get();
+//        }
         return responseWithHits;
     }
 

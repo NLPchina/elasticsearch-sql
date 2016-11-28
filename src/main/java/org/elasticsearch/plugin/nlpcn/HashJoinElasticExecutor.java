@@ -121,7 +121,8 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
             searchResponse = secondTableRequest.getRequestBuilder()
                     .setScroll(new TimeValue(60000))
                     .setSize(MAX_RESULTS_ON_ONE_FETCH).get();
-            searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll(new TimeValue(600000)).get();
+            //es5.0 no need to scroll again!
+//            searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll(new TimeValue(600000)).get();
             finishedScrolling = false;
         }
         updateMetaSearchResults(searchResponse);
