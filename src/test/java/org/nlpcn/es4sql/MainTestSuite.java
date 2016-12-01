@@ -40,8 +40,9 @@ import com.google.common.io.ByteStreams;
 		SQLFunctionsTest.class,
 		JDBCTests.class,
         UtilTests.class,
-        MultiQueryTests.class,
-		DeleteTest.class
+        MultiQueryTests.class
+//        ,
+//		DeleteTest.class
 })
 public class MainTestSuite {
 
@@ -74,6 +75,7 @@ public class MainTestSuite {
         prepareDogsIndex();
         loadBulk("src/test/resources/dogs.json");
         loadBulk("src/test/resources/peoples.json");
+        prepareGameOfThronesIndex();
         loadBulk("src/test/resources/game_of_thrones_complex.json");
         loadBulk("src/test/resources/systems.json");
 
@@ -102,6 +104,31 @@ public class MainTestSuite {
 		System.out.println("Finished the setup process...");
 	}
 
+    private static void prepareGameOfThronesIndex() {
+        String dataMapping = "{  \"gotCharacters\": { " +
+                " \"properties\": {\n" +
+                " \"name\": {\n" +
+                "\"properties\": {\n" +
+                "\"firstname\": {\n" +
+                "\"type\": \"string\",\n" +
+                "  \"fielddata\": true\n" +
+                "},\n" +
+                "\"lastname\": {\n" +
+                "\"type\": \"string\",\n" +
+                "  \"fielddata\": true\n" +
+                "},\n" +
+                "\"ofHerName\": {\n" +
+                "\"type\": \"integer\"\n" +
+                "},\n" +
+                "\"ofHisName\": {\n" +
+                "\"type\": \"integer\"\n" +
+                "}\n" +
+                "}\n" +
+                "}"+
+                "} } }";
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("gotCharacters").setSource(dataMapping).execute().actionGet();
+    }
+
     private static void prepareDogsIndex() {
         String dataMapping = "{  \"dog\": {" +
                 " \"properties\": {\n" +
@@ -119,6 +146,10 @@ public class MainTestSuite {
         String dataMapping = "{  \"account\": {" +
                 " \"properties\": {\n" +
                 "          \"gender\": {\n" +
+                "            \"type\": \"string\",\n" +
+                "            \"fielddata\": true\n" +
+                "          }," +
+                "          \"address\": {\n" +
                 "            \"type\": \"string\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }," +

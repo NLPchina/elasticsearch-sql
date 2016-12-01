@@ -14,7 +14,9 @@ import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
@@ -61,7 +63,11 @@ public class JoinTests {
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
         String explainedQuery = hashJoinRunAndExplain(query);
-        boolean containTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"holdersName\":[\"virginia\",\"aurelia\"");
+        boolean containTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"holdersName\":[");
+        List<String> holdersName = Arrays.asList("daenerys","nanette","virginia","aurelia","mcgee","hattie","elinor","burton");
+        for(String holderName : holdersName){
+            Assert.assertTrue("should contain:" + holderName , explainedQuery.contains(holderName));
+        }
         Assert.assertTrue(containTerms);
     }
 
@@ -439,9 +445,13 @@ public class JoinTests {
                 , TEST_INDEX, TEST_INDEX);
 
         String explainedQuery = hashJoinRunAndExplain(query);
-        boolean containsHoldersNamesTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"holdersName\":[\"eddard\",\"jaime\",\"daenerys\",\"brandon\"]}");
+        boolean containsHoldersNamesTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"holdersName\":");
         Assert.assertTrue(containsHoldersNamesTerms);
-        boolean containsAgesTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"age\":[1,1,4]");
+        List<String> holdersName = Arrays.asList("daenerys","brandon","eddard","jaime");
+        for(String holderName : holdersName){
+            Assert.assertTrue("should contain:" + holderName , explainedQuery.contains(holderName));
+        }
+        boolean containsAgesTerms = explainedQuery.replaceAll("\\s+","").contains("\"terms\":{\"age\":");
         Assert.assertTrue(containsAgesTerms);
     }
 
