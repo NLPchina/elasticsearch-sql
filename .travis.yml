@@ -5,13 +5,13 @@ jdk:
 
 install:
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
-
+  - sudo apt-get update && sudo apt-get install oracle-java8-installer
 
 script:
   - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.0.1.deb && sudo dpkg -i --force-confnew elasticsearch-5.0.1.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
-  - sudo apt-get update && sudo apt-get install oracle-java8-installer
+  - sudo java -version
   - sudo service elasticsearch start
   - sleep 10
   - ulimit -a
