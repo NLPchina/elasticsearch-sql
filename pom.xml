@@ -219,6 +219,13 @@
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>druid.jar</destFileName>
 								</artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.guava</groupId>
+                                    <artifactId>guava</artifactId>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>guava.jar</destFileName>
+                                </artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
@@ -271,6 +278,7 @@
 				<version>2.4</version>
 				<configuration>
 					<descriptor>src/assembly/zip.xml</descriptor>
+                    <finalName>elasticsearch</finalName>
 				</configuration>
 			</plugin>
 
