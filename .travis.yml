@@ -8,6 +8,16 @@ addons:
     packages:
       - oracle-java8-installer
 
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+before_install:
+  # update to java 8
+  - sudo update-java-alternatives -s java-8-oracle
+  - export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+
 install:
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
 
