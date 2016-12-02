@@ -219,13 +219,6 @@
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>druid.jar</destFileName>
 								</artifactItem>
-								<artifactItem>
-									<groupId>org.elasticsearch.plugin</groupId>
-									<artifactId>delete-by-query</artifactId>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>deleteByQuery.jar</destFileName>
-								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
