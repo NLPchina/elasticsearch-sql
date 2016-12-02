@@ -15,6 +15,9 @@ import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -31,28 +34,6 @@ public class RestSqlAction extends BaseRestHandler {
 		restController.registerHandler(RestRequest.Method.POST, "/_sql", this);
 		restController.registerHandler(RestRequest.Method.GET, "/_sql", this);
 	}
-
-//	@Override
-//	public void handleRequest(RestRequest request, RestChannel channel, NodeClient client) throws Exception {
-//		String sql = request.param("sql");
-//
-//		if (sql == null) {
-//			sql = request.content().utf8ToString();
-//		}
-//		SearchDao searchDao = new SearchDao(client);
-//        QueryAction queryAction= searchDao.explain(sql);
-//
-//		// TODO add unittests to explain. (rest level?)
-//		if (request.path().endsWith("/_explain")) {
-//			String jsonExplanation = queryAction.explain().explain();
-//			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, jsonExplanation);
-//			channel.sendResponse(bytesRestResponse);
-//		} else {
-//            Map<String, String> params = request.params();
-//            RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
-//			restExecutor.execute(client,params,queryAction,channel);
-//		}
-//	}
 
     @Override
     protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
@@ -75,7 +56,13 @@ public class RestSqlAction extends BaseRestHandler {
             Map<String, String> params = request.params();
             RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
             final QueryAction finalQueryAction = queryAction;
-            return channel -> restExecutor.execute(client,params, finalQueryAction,channel);
+            //doing this hack because elasticsearch throws exception for un-consumed props
+            Map<String,String> additionalParams = new HashMap<>();
+            List<String> additionalParamsNames = Arrays.asList("_type","_id","_score");
+            for(String paramName : additionalParamsNames) {
+                additionalParams.put(paramName, request.param(paramName));
+            }
+            return channel -> restExecutor.execute(client,additionalParams, finalQueryAction,channel);
         }
         } catch (SqlParseException e) {
             e.printStackTrace();

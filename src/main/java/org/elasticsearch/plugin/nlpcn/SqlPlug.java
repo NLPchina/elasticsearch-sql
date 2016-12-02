@@ -11,7 +11,7 @@ import org.elasticsearch.rest.RestHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SqlPlug implements ActionPlugin {
+public class SqlPlug extends Plugin implements ActionPlugin {
 
 	public SqlPlug() {
 	}
@@ -26,16 +26,6 @@ public class SqlPlug implements ActionPlugin {
 	}
 
 
-//    @Override
-//    public List<ActionHandler<? extends ActionRequest<?>, ? extends ActionResponse>> getActions() {
-//        List<ActionHandler<? extends ActionRequest<?>, ? extends ActionResponse>> actions = new ArrayList<>(2);
-//
-//        actions.add(new ActionHandler<>(DidYouMeanAction.INSTANCE, TransportDidYouMeanAction.class));
-//        actions.add(new ActionHandler<>(IntentAction.INSTANCE, TransportIntentAction.class));
-//
-//        return actions;
-//    }
-
     @Override
     public List<Class<? extends RestHandler>> getRestHandlers() {
         List<Class<? extends RestHandler>> restHandlers = new ArrayList<>(1);
@@ -43,9 +33,4 @@ public class SqlPlug implements ActionPlugin {
 
         return restHandlers;
     }
-
-    //	public void addRestAction(RestModule module)
-//	{
-//		module.addRestAction(RestSqlAction.class);
-//	}
 }
