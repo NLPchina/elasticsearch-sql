@@ -48,6 +48,8 @@ public class SQLFunctionsTest {
                 "floor(substring(address,0,3)*20) as key," +
                 "sum(age) cvalue FROM " + TestsConstants.TEST_INDEX + "/account where address is not null " +
                 "group by key order by cvalue desc limit 10  ";
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
 
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
@@ -249,6 +251,8 @@ public class SQLFunctionsTest {
                 " split(address,' ')[0],age from " +
                 TestsConstants.TEST_INDEX + "/account where address is not null " +
                 " limit 10  ";
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
 
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
