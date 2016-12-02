@@ -272,10 +272,10 @@ public class AggregationTest {
 
     @Test
     public void termsWithMissing() throws Exception {
-        Aggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='name','field'='name.ofHisName','missing'=99)", TEST_INDEX));
-        Terms name = result.get("name");
-        Assert.assertNotNull(name.getBucketByKey("-999"));
-        Assert.assertEquals(1, name.getBucketByKey("-999").getDocCount());
+        Aggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='nick','field'='nickname','missing'='no_nickname')", TEST_INDEX));
+        Terms name = result.get("nick");
+        Assert.assertNotNull(name.getBucketByKey("no_nickname"));
+        Assert.assertEquals(3, name.getBucketByKey("no_nickname").getDocCount());
     }
     
     @Test

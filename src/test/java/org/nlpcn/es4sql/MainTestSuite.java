@@ -107,6 +107,10 @@ public class MainTestSuite {
     private static void prepareGameOfThronesIndex() {
         String dataMapping = "{  \"gotCharacters\": { " +
                 " \"properties\": {\n" +
+                " \"nickname\": {\n" +
+                "\"type\":\"string\", "+
+                "\"fielddata\":true"+
+                "},\n"+
                 " \"name\": {\n" +
                 "\"properties\": {\n" +
                 "\"firstname\": {\n" +
