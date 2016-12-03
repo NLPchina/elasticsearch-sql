@@ -52,9 +52,6 @@ public class SQLFunctions {
 
                 break;
 
-            case "floor":
-                functionStr = floor(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
-                break;
 
             case "date_format":
                 functionStr = date_format(
@@ -63,20 +60,19 @@ public class SQLFunctions {
                         name);
                 break;
 
+            case "floor":
             case "round":
-                functionStr = round(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
-                break;
             case "log":
-                functionStr = log(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
-                break;
-
             case "log10":
-                functionStr = log10(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
+            case "ceil":
+            case "cbrt":
+            case "rint":
+            case "pow":
+            case "exp":
+            case "sqrt":
+                functionStr = mathSingleValueTemplate("Math."+methodName,methodName,Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
                 break;
 
-            case "sqrt":
-                functionStr = sqrt(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
-                break;
 
             case "substring":
                 functionStr = substring(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
