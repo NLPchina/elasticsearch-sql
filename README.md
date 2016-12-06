@@ -16,6 +16,7 @@ Elasticsearch-SQL
 **2.3.5** [![2.3.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.4.0** [![2.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.4.1** [![2.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.4.2** [![2.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -54,6 +55,8 @@ Versions
 | 2.3.5                 | 2.3.5.0        | delete commands not supported  | elastic2.3.5 |
 | 2.4.0                 | 2.4.0.1        | delete commands not supported  | elastic2.4.0 |
 | 2.4.1                 | 2.4.1.0        | delete commands not supported  | elastic2.4.1 |
+| 2.4.2                 | 2.4.2.0        | delete commands not supported  | elastic2.4.2 |
+
 ### Elasticsearch 1.X
 ````
 ./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.9/elasticsearch-sql-1.4.9.zip --install sql
@@ -113,6 +116,10 @@ Versions
 ### Elasticsearch 2.4.1
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.1.0/elasticsearch-sql-2.4.1.0.zip
+````
+### Elasticsearch 2.4.2
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.2.0/elasticsearch-sql-2.4.2.0.zip
 ````
 
 
