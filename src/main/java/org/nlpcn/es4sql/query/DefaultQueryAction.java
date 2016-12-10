@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
@@ -127,7 +128,7 @@ public class DefaultQueryAction extends QueryAction {
 		if (params.size() == 2) {
 			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString()));
 		} else if (params.size() == 3) {
-			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString(), ScriptService.ScriptType.INLINE, params.get(2).value.toString(), null));
+			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), null));
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
 		}

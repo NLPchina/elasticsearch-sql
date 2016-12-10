@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -319,37 +320,37 @@ public class AggMaker {
                     scriptedMetricBuilder.mapScript(new Script(paramValue));
                     break;
                 case "map_script_id":
-                    scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, null));
+                    scriptedMetricBuilder.mapScript(new Script(ScriptType.STORED, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "map_script_file":
-                    scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, null));
+                    scriptedMetricBuilder.mapScript(new Script(ScriptType.FILE ,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "init_script":
                     scriptedMetricBuilder.initScript(new Script(paramValue));
                     break;
                 case "init_script_id":
-                    scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, null));
+                    scriptedMetricBuilder.initScript(new Script(ScriptType.STORED,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "init_script_file":
-                    scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, null));
+                    scriptedMetricBuilder.initScript(new Script(ScriptType.FILE,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "combine_script":
                     scriptedMetricBuilder.combineScript(new Script(paramValue));
                     break;
                 case "combine_script_id":
-                    scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, null));
+                    scriptedMetricBuilder.combineScript(new Script(ScriptType.STORED, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "combine_script_file":
-                    scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, null));
+                    scriptedMetricBuilder.combineScript(new Script(ScriptType.FILE, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "reduce_script":
-                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.INLINE, null, reduceScriptAdditionalParams));
+                    scriptedMetricBuilder.reduceScript(new Script(ScriptType.INLINE,  Script.DEFAULT_SCRIPT_LANG , paramValue, reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_id":
-                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, reduceScriptAdditionalParams));
+                    scriptedMetricBuilder.reduceScript(new Script(ScriptType.STORED,  Script.DEFAULT_SCRIPT_LANG,paramValue, reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_file":
-                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, reduceScriptAdditionalParams));
+                    scriptedMetricBuilder.reduceScript(new Script(ScriptType.FILE,  Script.DEFAULT_SCRIPT_LANG, paramValue, reduceScriptAdditionalParams));
                     break;
                 case "alias":
                 case "nested":

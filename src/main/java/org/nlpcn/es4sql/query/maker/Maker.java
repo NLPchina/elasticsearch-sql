@@ -1,10 +1,7 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
@@ -272,11 +269,11 @@ public abstract class Maker {
         break;
         case SCRIPT:
             ScriptFilter scriptFilter = (ScriptFilter) value;
-            Map<String, Object> params = null;
+            Map<String, Object> params = new HashMap<>();
             if(scriptFilter.containsParameters()){
                 params = scriptFilter.getArgs();
             }
-            x = QueryBuilders.scriptQuery(new Script(scriptFilter.getScript(), scriptFilter.getScriptType(), null, params));
+            x = QueryBuilders.scriptQuery(new Script(scriptFilter.getScriptType(), Script.DEFAULT_SCRIPT_LANG,scriptFilter.getScript(), params));
         break;
             default:
 			throw new SqlParseException("not define type " + cond.getName());

@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.elasticsearch.script.ScriptService;
+import org.elasticsearch.script.ScriptType;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -20,14 +21,14 @@ import java.util.Map;
 public class ScriptFilter {
     private String script;
     private Map<String,Object> args;
-    private ScriptService.ScriptType scriptType;
+    private ScriptType scriptType;
     public ScriptFilter() {
 
         args = null;
-        scriptType = ScriptService.ScriptType.INLINE;
+        scriptType = ScriptType.INLINE;
     }
 
-    public ScriptFilter(String script, Map<String, Object> args, ScriptService.ScriptType scriptType) {
+    public ScriptFilter(String script, Map<String, Object> args, ScriptType scriptType) {
         this.script = script;
         this.args = args;
         this.scriptType = scriptType;
@@ -77,14 +78,14 @@ public class ScriptFilter {
         String scriptTypeUpper = scriptType.toUpperCase();
         switch(scriptTypeUpper){
             case "INLINE":
-                this.scriptType = ScriptService.ScriptType.INLINE;
+                this.scriptType = ScriptType.INLINE;
                 break;
             case "INDEXED":
             case "STORED":
-                this.scriptType = ScriptService.ScriptType.STORED;
+                this.scriptType = ScriptType.STORED;
                 break;
             case "FILE":
-                this.scriptType = ScriptService.ScriptType.FILE;
+                this.scriptType = ScriptType.FILE;
                 break;
         }
     }
@@ -97,7 +98,7 @@ public class ScriptFilter {
         return script;
     }
 
-    public ScriptService.ScriptType getScriptType() {
+    public ScriptType getScriptType() {
         return scriptType;
     }
 
