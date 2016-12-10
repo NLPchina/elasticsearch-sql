@@ -17,6 +17,7 @@ Elasticsearch-SQL
 **2.4.0** [![2.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.4.1** [![2.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.4.2** [![2.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**5.0.1** [![5.0.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.0.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -56,6 +57,7 @@ Versions
 | 2.4.0                 | 2.4.0.1        | delete commands not supported  | elastic2.4.0 |
 | 2.4.1                 | 2.4.1.0        | delete commands not supported  | elastic2.4.1 |
 | 2.4.2                 | 2.4.2.0        | delete commands not supported  | elastic2.4.2 |
+| 5.0.1                 | 5.0.1.0        | delete commands not supported  | elastic5.0.1 |
 
 ### Elasticsearch 1.X
 ````
@@ -122,16 +124,29 @@ Versions
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.2.0/elasticsearch-sql-2.4.2.0.zip
 ````
 
+### Elasticsearch 5.0.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.0.1/elasticsearch-sql-5.0.1.0.zip
+````
+
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
 ## Basic Usage
 
+* on elasticsearch 1.x / 2.x 
 * Visit The elasticsearch-sql web front end:
 ````
 http://localhost:9200/_plugin/sql/
 ````
 
+* in order to use site on elasticsearch 5.x
+download and extract site[https://github.com/NLPchina/elasticsearch-sql/releases/download/5.0.1/es-sql-site-standalone.zip]
+```
+cd site-server
+npm install express --save
+node node-server.js 
+```
 
 * Simple query
 ````
