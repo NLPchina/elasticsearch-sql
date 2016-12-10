@@ -28,7 +28,8 @@ public class DeleteTest {
 
 	@After
 	public void deleteTempData() throws Exception {
-		MainTestSuite.deleteQuery(TEST_INDEX, "account_temp");
+        //todo: find a way to delete only specific type
+        //MainTestSuite.deleteQuery(TEST_INDEX, "account_temp");
 	}
 
 

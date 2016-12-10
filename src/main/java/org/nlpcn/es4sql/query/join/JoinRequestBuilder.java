@@ -51,10 +51,10 @@ public  class JoinRequestBuilder implements SqlElasticRequestBuilder {
     public String explain() {
         try {
             XContentBuilder firstBuilder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            firstTable.getRequestBuilder().internalBuilder().toXContent(firstBuilder, ToXContent.EMPTY_PARAMS);
+            firstTable.getRequestBuilder().request().source().toXContent(firstBuilder, ToXContent.EMPTY_PARAMS);
 
             XContentBuilder secondBuilder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            secondTable.getRequestBuilder().internalBuilder().toXContent(secondBuilder, ToXContent.EMPTY_PARAMS);
+            secondTable.getRequestBuilder().request().source().toXContent(secondBuilder, ToXContent.EMPTY_PARAMS);
             String explained = String.format(" first query:\n%s\n second query:\n%s", firstBuilder.string(), secondBuilder.string());
 
             return explained;

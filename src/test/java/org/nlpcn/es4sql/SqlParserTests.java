@@ -447,7 +447,7 @@ public class SqlParserTests {
         MethodField scriptMethod = (MethodField) field;
         Assert.assertEquals("script", scriptMethod.getName().toLowerCase());
         Assert.assertEquals(2, scriptMethod.getParams().size());
-        Assert.assertTrue(scriptMethod.getParams().get(1).toString().endsWith("doc['field1'].value + 3"));
+        Assert.assertTrue(scriptMethod.getParams().get(1).toString().contains("doc['field1'].value + 3"));
     }
 
     @Test
@@ -462,7 +462,7 @@ public class SqlParserTests {
         MethodField scriptMethod = (MethodField) field;
         Assert.assertEquals("script", scriptMethod.getName().toLowerCase());
         Assert.assertEquals(2, scriptMethod.getParams().size());
-        Assert.assertTrue(scriptMethod.getParams().get(1).toString().endsWith("doc['field1'].value + doc['field2'].value"));
+        Assert.assertTrue(scriptMethod.getParams().get(1).toString().contains("doc['field1'].value + doc['field2'].value"));
     }
 
 
@@ -478,7 +478,7 @@ public class SqlParserTests {
         MethodField scriptMethod = (MethodField) field;
         Assert.assertEquals("script", scriptMethod.getName().toLowerCase());
         Assert.assertEquals(2, scriptMethod.getParams().size());
-        Assert.assertTrue(scriptMethod.getParams().get(1).toString().endsWith("1 + 2"));
+        Assert.assertTrue(scriptMethod.getParams().get(1).toString().contains("1 + 2"));
     }
 
 

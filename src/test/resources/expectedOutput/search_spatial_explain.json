@@ -2,23 +2,59 @@
   "from" : 0,
   "size" : 200,
   "query" : {
-    "bool" : {
-      "filter" : {
-        "bool" : {
-          "must" : {
-            "geo_shape" : {
-              "place" : {
-                "shape" : {
-                  "type" : "polygon",
-                  "coordinates" : [ [ [ 102.0, 2.0 ], [ 103.0, 2.0 ], [ 103.0, 3.0 ], [ 102.0, 3.0 ], [ 102.0, 2.0 ] ] ]
-                },
-                "relation" : "intersects"
-              },
-              "_name" : null
-            }
-          }
+      "bool" : {
+            "filter" : [
+                {
+                    "bool" : {
+                        "must" : [
+                            {
+                                "geo_shape" : {
+                                    "place" : {
+                                        "shape" : {
+                                            "type" : "polygon",
+                                            "orientation" : "right",
+                                            "coordinates" : [
+                                                [
+                                                    [
+                                                        102.0,
+                                                        2.0
+                                                    ],
+                                                    [
+                                                        103.0,
+                                                        2.0
+                                                    ],
+                                                    [
+                                                        103.0,
+                                                        3.0
+                                                    ],
+                                                    [
+                                                        102.0,
+                                                        3.0
+                                                    ],
+                                                    [
+                                                        102.0,
+                                                        2.0
+                                                    ]
+                                                ]
+                                            ]
+                                        },
+                                        "relation" : "intersects"
+                                    },
+                                    "ignore_unmapped" : false,
+                                    "boost" : 1.0
+                                }
+                            }
+                        ],
+                        "disable_coord" : false,
+                        "adjust_pure_negative" : true,
+                        "boost" : 1.0
+                    }
+                }
+            ],
+            "disable_coord" : false,
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
         }
-      }
-    }
-  }
+    },
+    "ext" : { }
 }

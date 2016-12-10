@@ -28,14 +28,7 @@ public class SqlElasticSearchRequestBuilder implements SqlElasticRequestBuilder 
 
     @Override
     public String explain() {
-        try {
-            XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
-            requestBuilder.internalBuilder().toXContent(builder, ToXContent.EMPTY_PARAMS);
-            return builder.string();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return requestBuilder.toString();
     }
 
     @Override

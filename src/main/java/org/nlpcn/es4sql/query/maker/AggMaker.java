@@ -1,34 +1,31 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.ValuesSourceAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGridBuilder;
+import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
-import org.elasticsearch.search.aggregations.bucket.histogram.HistogramBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
-import org.elasticsearch.search.aggregations.metrics.ValuesSourceMetricsAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsBuilder;
-import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesBuilder;
-import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetricBuilder;
-import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetricAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsAggregationBuilder;
+import org.elasticsearch.search.aggregations.support.ValuesSourceAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.joda.time.DateTimeZone;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -49,11 +46,11 @@ public class AggMaker {
      * @return
      * @throws SqlParseException
      */
-    public AggregationBuilder<?> makeGroupAgg(Field field) throws SqlParseException {
+    public AggregationBuilder makeGroupAgg(Field field) throws SqlParseException {
 
         if (field instanceof MethodField && field.getName().equals("script")) {
             MethodField methodField = (MethodField) field;
-            TermsBuilder termsBuilder = AggregationBuilders.terms(methodField.getAlias()).script(new Script(methodField.getParams().get(1).value.toString()));
+            TermsAggregationBuilder termsBuilder = AggregationBuilders.terms(methodField.getAlias()).script(new Script(methodField.getParams().get(1).value.toString()));
             groupMap.put(methodField.getAlias(), new KVValue("KEY", termsBuilder));
             return termsBuilder;
         }
@@ -65,12 +62,12 @@ public class AggMaker {
             if (methodField.getName().equals("filter")) {
                 Map<String, Object> paramsAsMap = methodField.getParamsAsMap();
                 Where where = (Where) paramsAsMap.get("where");
-                return AggregationBuilders.filter(paramsAsMap.get("alias").toString()).
-                        filter(QueryMaker.explan(where));
+                return AggregationBuilders.filter(paramsAsMap.get("alias").toString(),
+                        QueryMaker.explan(where));
             }
             return makeRangeGroup(methodField);
         } else {
-            TermsBuilder termsBuilder = AggregationBuilders.terms(field.getName()).field(field.getName());
+            TermsAggregationBuilder termsBuilder = AggregationBuilders.terms(field.getName()).field(field.getName());
             groupMap.put(field.getName(), new KVValue("KEY", termsBuilder));
             return termsBuilder;
         }
@@ -85,9 +82,9 @@ public class AggMaker {
      * @return AggregationBuilder represents the SQL function
      * @throws SqlParseException in case of unrecognized function
      */
-    public AbstractAggregationBuilder makeFieldAgg(MethodField field, AbstractAggregationBuilder parent) throws SqlParseException {
+    public AggregationBuilder makeFieldAgg(MethodField field, AggregationBuilder parent) throws SqlParseException {
         groupMap.put(field.getAlias(), new KVValue("FIELD", parent));
-        ValuesSourceMetricsAggregationBuilder builder;
+        ValuesSourceAggregationBuilder builder;
         field.setAlias(fixAlias(field.getAlias()));
         switch (field.getName().toUpperCase()) {
             case "SUM":
@@ -110,7 +107,7 @@ public class AggMaker {
                 return addFieldToAgg(field, builder);
             case "PERCENTILES":
                 builder = AggregationBuilders.percentiles(field.getAlias());
-                addSpecificPercentiles((PercentilesBuilder) builder, field.getParams());
+                addSpecificPercentiles((PercentilesAggregationBuilder) builder, field.getParams());
                 return addFieldToAgg(field, builder);
             case "TOPHITS":
                 return makeTopHitsAgg(field);
@@ -124,7 +121,7 @@ public class AggMaker {
         }
     }
 
-    private void addSpecificPercentiles(PercentilesBuilder percentilesBuilder, List<KVValue> params) {
+    private void addSpecificPercentiles(PercentilesAggregationBuilder percentilesBuilder, List<KVValue> params) {
         List<Double> percentiles = new ArrayList<>();
         for (KVValue kValue : params) {
             if (kValue.value.getClass().equals(BigDecimal.class)) {
@@ -149,7 +146,7 @@ public class AggMaker {
         return alias.replaceAll("\\[", "(").replaceAll("\\]", ")");
     }
 
-    private AbstractAggregationBuilder addFieldToAgg(MethodField field, ValuesSourceMetricsAggregationBuilder builder) {
+    private AggregationBuilder addFieldToAgg(MethodField field, ValuesSourceAggregationBuilder builder) {
         KVValue kvValue = field.getParams().get(0);
         if (kvValue.key != null && kvValue.key.equals("script")) {
             if (kvValue.value instanceof MethodField) {
@@ -172,14 +169,18 @@ public class AggMaker {
             if (nestedType.isReverse()) {
                 if (nestedType.path != null && nestedType.path.startsWith("~")) {
                     String realPath = nestedType.path.substring(1);
-                    nestedBuilder = AggregationBuilders.nested(nestedAggName).path(realPath);
+                    nestedBuilder = AggregationBuilders.nested(nestedAggName,realPath);
                     nestedBuilder = nestedBuilder.subAggregation(builder);
                     return AggregationBuilders.reverseNested(nestedAggName + "_REVERSED").subAggregation(nestedBuilder);
                 } else {
-                    nestedBuilder = AggregationBuilders.reverseNested(nestedAggName).path(nestedType.path);
+                    ReverseNestedAggregationBuilder reverseNestedAggregationBuilder = AggregationBuilders.reverseNested(nestedAggName);
+                    if (nestedType.path!=null){
+                        reverseNestedAggregationBuilder.path(nestedType.path);
+                    }
+                    nestedBuilder = reverseNestedAggregationBuilder;
                 }
             } else {
-                nestedBuilder = AggregationBuilders.nested(nestedAggName).path(nestedType.path);
+                nestedBuilder = AggregationBuilders.nested(nestedAggName,nestedType.path);
             }
 
             return nestedBuilder.subAggregation(builder);
@@ -192,7 +193,7 @@ public class AggMaker {
 
             String childrenAggName = childrenType.field + "@CHILDREN";
 
-            childrenBuilder = AggregationBuilders.children(childrenAggName).childType(childrenType.childType);
+            childrenBuilder = AggregationBuilders.children(childrenAggName,childrenType.childType);
 
             return childrenBuilder;
         }
@@ -200,7 +201,7 @@ public class AggMaker {
         return builder.field(kvValue.toString());
     }
 
-    private AggregationBuilder<?> makeRangeGroup(MethodField field) throws SqlParseException {
+    private AggregationBuilder makeRangeGroup(MethodField field) throws SqlParseException {
         switch (field.getName().toLowerCase()) {
             case "range":
                 return rangeBuilder(field);
@@ -224,9 +225,9 @@ public class AggMaker {
 
     }
 
-    private AggregationBuilder<?> geoBounds(MethodField field) throws SqlParseException {
+    private AggregationBuilder geoBounds(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
-        GeoBoundsBuilder boundsBuilder = AggregationBuilders.geoBounds(aggName);
+        GeoBoundsAggregationBuilder boundsBuilder = AggregationBuilders.geoBounds(aggName);
         String value = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
@@ -249,9 +250,9 @@ public class AggMaker {
         return boundsBuilder;
     }
 
-    private AggregationBuilder<?> termsAgg(MethodField field) throws SqlParseException {
+    private AggregationBuilder termsAgg(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
-        TermsBuilder terms = AggregationBuilders.terms(aggName);
+        TermsAggregationBuilder terms = AggregationBuilders.terms(aggName);
         String value = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
@@ -294,7 +295,7 @@ public class AggMaker {
 
     private AbstractAggregationBuilder scriptedMetric(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
-        ScriptedMetricBuilder scriptedMetricBuilder = AggregationBuilders.scriptedMetric(aggName);
+        ScriptedMetricAggregationBuilder scriptedMetricBuilder = AggregationBuilders.scriptedMetric(aggName);
         Map<String, Object> scriptedMetricParams = field.getParamsAsMap();
         if (!scriptedMetricParams.containsKey("map_script") && !scriptedMetricParams.containsKey("map_script_id") && !scriptedMetricParams.containsKey("map_script_file")) {
             throw new SqlParseException("scripted metric parameters must contain map_script/map_script_id/map_script_file parameter");
@@ -318,7 +319,7 @@ public class AggMaker {
                     scriptedMetricBuilder.mapScript(new Script(paramValue));
                     break;
                 case "map_script_id":
-                    scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.INDEXED, null, null));
+                    scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, null));
                     break;
                 case "map_script_file":
                     scriptedMetricBuilder.mapScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, null));
@@ -327,7 +328,7 @@ public class AggMaker {
                     scriptedMetricBuilder.initScript(new Script(paramValue));
                     break;
                 case "init_script_id":
-                    scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.INDEXED, null, null));
+                    scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, null));
                     break;
                 case "init_script_file":
                     scriptedMetricBuilder.initScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, null));
@@ -336,7 +337,7 @@ public class AggMaker {
                     scriptedMetricBuilder.combineScript(new Script(paramValue));
                     break;
                 case "combine_script_id":
-                    scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.INDEXED, null, null));
+                    scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, null));
                     break;
                 case "combine_script_file":
                     scriptedMetricBuilder.combineScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, null));
@@ -345,7 +346,7 @@ public class AggMaker {
                     scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.INLINE, null, reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_id":
-                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.INDEXED, null, reduceScriptAdditionalParams));
+                    scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.STORED, null, reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_file":
                     scriptedMetricBuilder.reduceScript(new Script(paramValue, ScriptService.ScriptType.FILE, null, reduceScriptAdditionalParams));
@@ -367,9 +368,9 @@ public class AggMaker {
         return scriptedMetricBuilder;
     }
 
-    private AggregationBuilder<?> geohashGrid(MethodField field) throws SqlParseException {
+    private AggregationBuilder geohashGrid(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
-        GeoHashGridBuilder geoHashGrid = AggregationBuilders.geohashGrid(aggName);
+        GeoGridAggregationBuilder geoHashGrid = AggregationBuilders.geohashGrid(aggName);
         String value = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
@@ -400,9 +401,9 @@ public class AggMaker {
 
     private static final String TIME_FARMAT = "yyyy-MM-dd HH:mm:ss";
 
-    private ValuesSourceAggregationBuilder<?> dateRange(MethodField field) {
+    private ValuesSourceAggregationBuilder dateRange(MethodField field) {
         String alias = gettAggNameFromParamsOrAlias(field);
-        DateRangeBuilder dateRange = AggregationBuilders.dateRange(alias).format(TIME_FARMAT);
+        DateRangeAggregationBuilder dateRange = AggregationBuilders.dateRange(alias).format(TIME_FARMAT);
 
         String value = null;
         List<String> ranges = new ArrayList<>();
@@ -415,10 +416,10 @@ public class AggMaker {
                 dateRange.format(value);
                 continue;
             } else if ("from".equals(kv.key)) {
-                dateRange.addUnboundedFrom(kv.value);
+                dateRange.addUnboundedFrom(kv.value.toString());
                 continue;
             } else if ("to".equals(kv.key)) {
-                dateRange.addUnboundedTo(kv.value);
+                dateRange.addUnboundedTo(kv.value.toString());
                 continue;
             } else if ("alias".equals(kv.key) || "nested".equals(kv.key) || "children".equals(kv.key)) {
                 continue;
@@ -441,15 +442,15 @@ public class AggMaker {
      * @return
      * @throws SqlParseException
      */
-    private DateHistogramBuilder dateHistogram(MethodField field) throws SqlParseException {
+    private DateHistogramAggregationBuilder dateHistogram(MethodField field) throws SqlParseException {
         String alias = gettAggNameFromParamsOrAlias(field);
-        DateHistogramBuilder dateHistogram = AggregationBuilders.dateHistogram(alias).format(TIME_FARMAT);
+        DateHistogramAggregationBuilder dateHistogram = AggregationBuilders.dateHistogram(alias).format(TIME_FARMAT);
         String value = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
             switch (kv.key.toLowerCase()) {
                 case "interval":
-                    dateHistogram.interval(new DateHistogramInterval(kv.value.toString()));
+                    dateHistogram.dateHistogramInterval(new DateHistogramInterval(kv.value.toString()));
                     break;
                 case "field":
                     dateHistogram.field(value);
@@ -458,7 +459,7 @@ public class AggMaker {
                     dateHistogram.format(value);
                     break;
                 case "time_zone":
-                    dateHistogram.timeZone(value);
+                    dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(value)));
                     break;
 
                 case "alias":
@@ -482,9 +483,9 @@ public class AggMaker {
         return alias;
     }
 
-    private HistogramBuilder histogram(MethodField field) throws SqlParseException {
+    private HistogramAggregationBuilder histogram(MethodField field) throws SqlParseException {
         String aggName = gettAggNameFromParamsOrAlias(field);
-        HistogramBuilder histogram = AggregationBuilders.histogram(aggName);
+        HistogramAggregationBuilder histogram = AggregationBuilders.histogram(aggName);
         String value = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
@@ -540,7 +541,7 @@ public class AggMaker {
      * @param field
      * @return
      */
-    private RangeBuilder rangeBuilder(MethodField field) {
+    private RangeAggregationBuilder rangeBuilder(MethodField field) {
 
         LinkedList<KVValue> params = new LinkedList<>(field.getParams());
 
@@ -548,7 +549,7 @@ public class AggMaker {
 
         double[] ds = Util.KV2DoubleArr(params);
 
-        RangeBuilder range = AggregationBuilders.range(field.getAlias()).field(fieldName);
+        RangeAggregationBuilder range = AggregationBuilders.range(field.getAlias()).field(fieldName);
 
         for (int i = 1; i < ds.length; i++) {
             range.addRange(ds[i - 1], ds[i]);
@@ -596,17 +597,17 @@ public class AggMaker {
      */
     private AbstractAggregationBuilder makeTopHitsAgg(MethodField field) {
         String alias = gettAggNameFromParamsOrAlias(field);
-        TopHitsBuilder topHits = AggregationBuilders.topHits(alias);
+        TopHitsAggregationBuilder topHits = AggregationBuilders.topHits(alias);
         List<KVValue> params = field.getParams();
         String[] include = null;
         String[] exclude = null;
         for (KVValue kv : params) {
             switch (kv.key) {
                 case "from":
-                    topHits.setFrom((int) kv.value);
+                    topHits.from((int) kv.value);
                     break;
                 case "size":
-                    topHits.setSize((int) kv.value);
+                    topHits.size((int) kv.value);
                     break;
                 case "include":
                     include = kv.value.toString().split(",");
@@ -620,12 +621,12 @@ public class AggMaker {
                 case "children":
                     break;
                 default:
-                    topHits.addSort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
+                    topHits.sort(kv.key, SortOrder.valueOf(kv.value.toString().toUpperCase()));
                     break;
             }
         }
         if (include != null || exclude != null) {
-            topHits.setFetchSource(include, exclude);
+            topHits.fetchSource(include, exclude);
         }
         return topHits;
     }

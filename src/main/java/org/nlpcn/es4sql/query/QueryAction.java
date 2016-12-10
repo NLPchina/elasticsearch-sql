@@ -3,7 +3,7 @@ package org.nlpcn.es4sql.query;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.search.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.nlpcn.es4sql.domain.Query;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -45,14 +45,19 @@ public abstract class QueryAction {
     }
 
     protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
-
+        boolean foundAnyHighlights = false;
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
         for(Hint hint : select.getHints()){
             if(hint.getType() == HintType.HIGHLIGHT){
                 HighlightBuilder.Field highlightField = parseHighlightField(hint.getParams());
                 if(highlightField != null){
-                    request.addHighlightedField(highlightField);
+                    foundAnyHighlights = true;
+                    highlightBuilder.field(highlightField);
                 }
             }
+        }
+        if(foundAnyHighlights){
+            request.highlighter(highlightBuilder);
         }
     }
 

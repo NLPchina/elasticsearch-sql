@@ -1,15 +1,20 @@
 {
-  "from" : 0,
-  "size" : 200,
-  "_source" : {
-    "includes" : [ "cust_code" ],
-    "excludes" : [ ]
-  },
-  "script_fields" : {
-    "test" : {
-      "script" : {
-        "inline" : "if((doc['gender'].empty)){'aaa'} else {doc['gender'].value}"
-      }
-    }
-  }
+    "from" : 0,
+    "size" : 200,
+    "_source" : {
+        "includes" : [
+            "cust_code"
+        ],
+        "excludes" : [ ]
+    },
+    "script_fields" : {
+        "test" : {
+            "script" : {
+                "inline" : "if((doc['gender'].empty)){'aaa'} else {doc['gender'].value}",
+                "lang" : "painless"
+            },
+            "ignore_failure" : false
+        }
+    },
+    "ext" : { }
 }

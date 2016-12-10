@@ -3,6 +3,8 @@ package org.nlpcn.es4sql;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.node.NodeClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.util.concurrent.ThreadContext;
+import org.elasticsearch.threadpool.ThreadPool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +16,14 @@ public class Test {
     public static String sqlToEsQuery(String sql) throws Exception {
         Map actions = new HashMap();
         Settings settings = Settings.builder().build();
-        Client client = new NodeClient(settings, null, null, actions);
+//        Client client = new NodeClient(settings, null, null, actions);
+//        Settings.builder()
+//                .put(ThreadContext.PREFIX + ".key1", "val1")
+//                .put(ThreadContext.PREFIX + ".key2", "val 2")
+//                .build();
+
+        ThreadPool threadPool = new ThreadPool(settings);
+        Client client = new NodeClient(settings, threadPool);
         SearchDao searchDao = new org.nlpcn.es4sql.SearchDao(client);
         try {
             return searchDao.explain(sql).explain().explain();

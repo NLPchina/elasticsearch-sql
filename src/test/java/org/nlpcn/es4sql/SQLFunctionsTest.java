@@ -6,12 +6,12 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
 import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.nlpcn.es4sql.domain.Condition;
@@ -48,6 +48,8 @@ public class SQLFunctionsTest {
                 "floor(substring(address,0,3)*20) as key," +
                 "sum(age) cvalue FROM " + TestsConstants.TEST_INDEX + "/account where address is not null " +
                 "group by key order by cvalue desc limit 10  ";
+        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+        System.out.println(searchDao.explain(query).explain().explain());
 
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
@@ -133,34 +135,35 @@ public class SQLFunctionsTest {
         System.out.println(searchDao.explain(query).explain().explain());
     }
 
-    @Test
-    public void whereConditionLeftFunctionRightVariableEqualTest() throws Exception {
-
-        String query = "SELECT " +
-                " * from " +
-                TestsConstants.TEST_INDEX + "/account " +
-                " where split(address,' ')[0]='806' limit 1000  ";
-
-        CSVResult csvResult = getCsvResult(false, query);
-        List<String> contents = csvResult.getLines();
-        Assert.assertTrue(contents.size() == 4);
-    }
-
-    @Test
-    public void whereConditionLeftFunctionRightVariableGreatTest() throws Exception {
-
-        String query = "SELECT " +
-                " * from " +
-                TestsConstants.TEST_INDEX + "/account " +
-                " where floor(split(address,' ')[0]+0) > 805 limit 1000  ";
-
-        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
-        System.out.println(searchDao.explain(query).explain().explain());
-
-        CSVResult csvResult = getCsvResult(false, query);
-        List<String> contents = csvResult.getLines();
-        Assert.assertTrue(contents.size() == 223);
-    }
+// todo: change when split is back on language
+//    @Test
+//    public void whereConditionLeftFunctionRightVariableEqualTest() throws Exception {
+//
+//        String query = "SELECT " +
+//                " * from " +
+//                TestsConstants.TEST_INDEX + "/account " +
+//                " where split(address,' ')[0]='806' limit 1000  ";
+//
+//        CSVResult csvResult = getCsvResult(false, query);
+//        List<String> contents = csvResult.getLines();
+//        Assert.assertTrue(contents.size() == 4);
+//    }
+//
+//    @Test
+//    public void whereConditionLeftFunctionRightVariableGreatTest() throws Exception {
+//
+//        String query = "SELECT " +
+//                " * from " +
+//                TestsConstants.TEST_INDEX + "/account " +
+//                " where floor(split(address,' ')[0]+0) > 805 limit 1000  ";
+//
+//        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+//        System.out.println(searchDao.explain(query).explain().explain());
+//
+//        CSVResult csvResult = getCsvResult(false, query);
+//        List<String> contents = csvResult.getLines();
+//        Assert.assertTrue(contents.size() == 223);
+//    }
 
     @Test
     public void whereConditionLeftFunctionRightPropertyGreatTest() throws Exception {
@@ -241,22 +244,25 @@ public class SQLFunctionsTest {
         Assert.assertTrue(contents.get(0).contains("-"));
     }
 
-    @Test
-    public void split_field() throws Exception {
-
-        //here is a bug,csv field with spa
-        String query = "SELECT " +
-                " split(address,' ')[0],age from " +
-                TestsConstants.TEST_INDEX + "/account where address is not null " +
-                " limit 10  ";
-
-        CSVResult csvResult = getCsvResult(false, query);
-        List<String> headers = csvResult.getHeaders();
-        List<String> contents = csvResult.getLines();
-        String[] splits = contents.get(0).split(",");
-        Assert.assertTrue(headers.size() == 2);
-        Assert.assertTrue(Integer.parseInt(splits[0]) > 0);
-    }
+    // todo: change when split is back on language
+//    @Test
+//    public void split_field() throws Exception {
+//
+//        //here is a bug,csv field with spa
+//        String query = "SELECT " +
+//                " split(address,' ')[0],age from " +
+//                TestsConstants.TEST_INDEX + "/account where address is not null " +
+//                " limit 10  ";
+//        SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
+//        System.out.println(searchDao.explain(query).explain().explain());
+//
+//        CSVResult csvResult = getCsvResult(false, query);
+//        List<String> headers = csvResult.getHeaders();
+//        List<String> contents = csvResult.getLines();
+//        String[] splits = contents.get(0).split(",");
+//        Assert.assertTrue(headers.size() == 2);
+//        Assert.assertTrue(Integer.parseInt(splits[0]) > 0);
+//    }
 
 
     private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
@@ -273,8 +279,8 @@ public class SQLFunctionsTest {
 
     private SearchDao getSearchDao() throws UnknownHostException {
         Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
-        Client client = TransportClient.builder().addPlugin(DeleteByQueryPlugin.class).settings(settings).
-                build().addTransportAddress(MainTestSuite.getTransportAddress());
+        Client client = new PreBuiltTransportClient(settings).
+                addTransportAddress(MainTestSuite.getTransportAddress());
         return new SearchDao(client);
     }
 }

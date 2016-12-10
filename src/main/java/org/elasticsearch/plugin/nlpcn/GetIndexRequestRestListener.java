@@ -3,7 +3,6 @@ package org.elasticsearch.plugin.nlpcn;
 import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
@@ -11,13 +10,11 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentBuilderString;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.rest.action.support.RestBuilderListener;
-import org.elasticsearch.search.warmer.IndexWarmersMetaData;
+import org.elasticsearch.rest.action.RestBuilderListener;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +33,7 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
 
     @Override
     public RestResponse buildResponse(GetIndexResponse getIndexResponse, XContentBuilder builder) throws Exception {
-        GetIndexRequest.Feature[] features = getIndexRequest.featuresAsEnums();
+        GetIndexRequest.Feature[] features = getIndexRequest.features();
         String[] indices = getIndexResponse.indices();
 
         builder.startObject();
@@ -52,9 +49,6 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
                         break;
                     case SETTINGS:
                         writeSettings(getIndexResponse.settings().get(index), builder, channel.request());
-                        break;
-                    case WARMERS:
-                        writeWarmers(getIndexResponse.warmers().get(index), builder, channel.request());
                         break;
                     default:
                         throw new IllegalStateException("feature [" + feature + "] is not valid");
@@ -94,20 +88,11 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
         builder.endObject();
     }
 
-    private void writeWarmers(List<IndexWarmersMetaData.Entry> warmers, XContentBuilder builder, ToXContent.Params params) throws IOException {
-        builder.startObject(Fields.WARMERS);
-        if (warmers != null) {
-            for (IndexWarmersMetaData.Entry warmer : warmers) {
-                IndexWarmersMetaData.toXContent(warmer, builder, params);
-            }
-        }
-        builder.endObject();
-    }
 
     static class Fields {
-        static final XContentBuilderString ALIASES = new XContentBuilderString("aliases");
-        static final XContentBuilderString MAPPINGS = new XContentBuilderString("mappings");
-        static final XContentBuilderString SETTINGS = new XContentBuilderString("settings");
-        static final XContentBuilderString WARMERS = new XContentBuilderString("warmers");
+        static final String ALIASES = "aliases";
+        static final String MAPPINGS = "mappings";
+        static final String SETTINGS = "settings";
+        static final String WARMERS = "warmers";
     }
 }

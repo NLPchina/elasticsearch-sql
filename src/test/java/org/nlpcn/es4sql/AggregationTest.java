@@ -222,7 +222,7 @@ public class AggregationTest {
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender, age", TEST_INDEX));
+		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender,  terms('field'='age','size'=200,'alias'='age')", TEST_INDEX));
 		Terms gender = result.get("gender");
 		for(Terms.Bucket genderBucket : gender.getBuckets()) {
 			String genderKey = genderBucket.getKey().toString();
@@ -272,10 +272,10 @@ public class AggregationTest {
 
     @Test
     public void termsWithMissing() throws Exception {
-        Aggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='name','field'='name.ofHisName','missing'='-999')", TEST_INDEX));
-        Terms name = result.get("name");
-        Assert.assertNotNull(name.getBucketByKey("-999"));
-        Assert.assertEquals(1, name.getBucketByKey("-999").getDocCount());
+        Aggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='nick','field'='nickname','missing'='no_nickname')", TEST_INDEX));
+        Terms name = result.get("nick");
+        Assert.assertNotNull(name.getBucketByKey("no_nickname"));
+        Assert.assertEquals(3, name.getBucketByKey("no_nickname").getDocCount());
     }
     
     @Test
@@ -363,7 +363,7 @@ public class AggregationTest {
     @Test
     public void countGroupByDateTestWithAlias() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM','alias'='myAlias') ").explain();
-        boolean containAlias = result.toString().replaceAll("\\s+","").contains("myAlias\":{\"date_histogram\":{\"field\":\"insert_time\",\"interval\":\"1.5h\",\"format\":\"yyyy-MM\"}}");
+        boolean containAlias = result.toString().replaceAll("\\s+","").contains("myAlias\":{\"date_histogram\":{\"field\":\"insert_time\",\"format\":\"yyyy-MM\",\"interval\":\"1.5h\"");
         Assert.assertTrue(containAlias);
     }
 
@@ -491,7 +491,7 @@ public class AggregationTest {
 	public void testSubAggregations() throws  Exception {
 		Set expectedAges = new HashSet<>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
 		final String query = String.format("SELECT /*! DOCS_WITH_AGGREGATION(10) */" +
-                " * FROM %s/account GROUP BY (gender, age), (state) LIMIT 0,10", TEST_INDEX);
+                " * FROM %s/account GROUP BY (gender, terms('field'='age','size'=200,'alias'='age')), (state) LIMIT 200,200", TEST_INDEX);
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
@@ -557,7 +557,7 @@ public class AggregationTest {
         InternalGeoHashGrid grid = result.get("geohash_grid(field=center,precision=5)");
         Collection<GeoHashGrid.Bucket> buckets = grid.getBuckets();
         for (GeoHashGrid.Bucket bucket : buckets) {
-            Assert.assertTrue(bucket.getKey().toString().equals("4.9658203125,104.9853515625") || bucket.getKey().toString().equals("0.4833984375,100.458984375") );
+            Assert.assertTrue(bucket.getKeyAsString().equals("w2fsm") || bucket.getKeyAsString().equals("w0p6y") );
             Assert.assertEquals(1,bucket.getDocCount());
         }
     }
@@ -660,7 +660,7 @@ public class AggregationTest {
         Histogram histogram = nested.getAggregations().get("someAlias");
         for(Histogram.Bucket bucket : histogram.getBuckets()){
             long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
-            String key = bucket.getKey().toString();
+            String key = ((Double)bucket.getKey()).intValue()+"";
             if(key.equals("0") || key.equals("4")){
                 Assert.assertEquals(2,count);
             }

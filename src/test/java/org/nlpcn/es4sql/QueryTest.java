@@ -9,11 +9,11 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import org.elasticsearch.search.highlight.HighlightField;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -603,21 +603,23 @@ public class QueryTest {
         Assert.assertEquals("square",result.getSource().get("description"));
     }
 
-    @Test
-    public void geoDistanceRange() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE_RANGE(center,'1m','1km',100.5,0.50001)", TEST_INDEX));
-        org.junit.Assert.assertEquals(1,results.getTotalHits());
-        SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
-    }
+    //ES5.0: geo_distance_range] queries are no longer supported for geo_point field types. Use geo_distance sort or aggregations
+//    @Test
+//    public void geoDistanceRange() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+//        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE_RANGE(center,'1m','1km',100.5,0.50001)", TEST_INDEX));
+//        org.junit.Assert.assertEquals(1,results.getTotalHits());
+//        SearchHit result = results.getAt(0);
+//        Assert.assertEquals("square",result.getSource().get("description"));
+//    }
 
-    @Test
-    public void geoCell() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
-        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_CELL(center,100.5,0.50001,7)", TEST_INDEX));
-        org.junit.Assert.assertEquals(1,results.getTotalHits());
-        SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
-    }
+    //ES5.0: geo_point field no longer supports geohash_cell queries
+//    @Test
+//    public void geoCell() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
+//        SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_CELL(center,100.5,0.50001,7)", TEST_INDEX));
+//        org.junit.Assert.assertEquals(1,results.getTotalHits());
+//        SearchHit result = results.getAt(0);
+//        Assert.assertEquals("square",result.getSource().get("description"));
+//    }
 
     @Test
     public void geoPolygon() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
@@ -686,7 +688,8 @@ public class QueryTest {
         SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL*/ age,gender,firstname,balance FROM  %s/account LIMIT 2000", TEST_INDEX, TEST_INDEX));
         Assert.assertNotNull(response.getScrollId());
         SearchHits hits = response.getHits();
-        Assert.assertEquals(0,hits.getHits().length);
+        //default is 50 , es5.0 functionality now returns docs on first scroll
+        Assert.assertEquals(50,hits.getHits().length);
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 
@@ -695,7 +698,7 @@ public class QueryTest {
         SearchResponse response = getSearchResponse(String.format("SELECT /*! USE_SCROLL(10,5000)*/ age,gender,firstname,balance FROM  %s/account ", TEST_INDEX, TEST_INDEX));
         Assert.assertNotNull(response.getScrollId());
         SearchHits hits = response.getHits();
-        Assert.assertEquals(0,hits.getHits().length);
+        Assert.assertEquals(10,hits.getHits().length);
         Assert.assertEquals(1000,hits.getTotalHits());
     }
 

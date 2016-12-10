@@ -1,38 +1,71 @@
 {
-  "from" : 0,
-  "size" : 0,
-  "query" : {
-    "bool" : {
-      "filter" : {
+    "from" : 0,
+    "size" : 0,
+    "query" : {
         "bool" : {
-          "must" : {
-            "bool" : {
-              "must" : [ {
-                "wildcard" : {
-                  "firstname" : "A*"
+            "filter" : [
+                {
+                    "bool" : {
+                        "must" : [
+                            {
+                                "bool" : {
+                                    "must" : [
+                                        {
+                                            "wildcard" : {
+                                                "firstname" : {
+                                                    "wildcard" : "A*",
+                                                    "boost" : 1.0
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "range" : {
+                                                "age" : {
+                                                    "from" : 20,
+                                                    "to" : null,
+                                                    "include_lower" : false,
+                                                    "include_upper" : true,
+                                                    "boost" : 1.0
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "disable_coord" : false,
+                                    "adjust_pure_negative" : true,
+                                    "boost" : 1.0
+                                }
+                            }
+                        ],
+                        "disable_coord" : false,
+                        "adjust_pure_negative" : true,
+                        "boost" : 1.0
+                    }
                 }
-              }, {
-                "range" : {
-                  "age" : {
-                    "from" : 20,
-                    "to" : null,
-                    "include_lower" : false,
-                    "include_upper" : true
-                  }
-                }
-              } ]
-            }
-          }
+            ],
+            "disable_coord" : false,
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
         }
-      }
-    }
-  },
-  "aggregations" : {
-    "gender" : {
-      "terms" : {
-        "field" : "gender",
-        "size" : 200
-      }
-    }
-  }
+    },
+    "aggregations" : {
+        "gender" : {
+            "terms" : {
+                "field" : "gender",
+                "size" : 200,
+                "shard_size" : -1,
+                "min_doc_count" : 1,
+                "shard_min_doc_count" : 0,
+                "show_term_doc_count_error" : false,
+                "order" : [
+                    {
+                        "_count" : "desc"
+                    },
+                    {
+                        "_term" : "asc"
+                    }
+                ]
+            }
+        }
+    },
+    "ext" : { }
 }
