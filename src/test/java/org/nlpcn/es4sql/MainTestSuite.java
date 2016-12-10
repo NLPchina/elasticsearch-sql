@@ -41,8 +41,8 @@ import com.google.common.io.ByteStreams;
 		JDBCTests.class,
         UtilTests.class,
         MultiQueryTests.class
-//        ,
-//		DeleteTest.class
+        ,
+		DeleteTest.class
 })
 public class MainTestSuite {
 
@@ -299,6 +299,9 @@ public class MainTestSuite {
 
         DeleteByQueryRequestBuilder deleteQueryBuilder = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
         deleteQueryBuilder.request().indices(indexName);
+        if (typeName!=null) {
+            deleteQueryBuilder.request().getSearchRequest().types(typeName);
+        }
         deleteQueryBuilder.filter(QueryBuilders.matchAllQuery());
         deleteQueryBuilder.get();
         System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
