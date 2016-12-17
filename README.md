@@ -57,7 +57,7 @@ Versions
 | 2.3.5                 | 2.3.5.0        | delete commands not supported  | elastic2.3.5 |
 | 2.4.0                 | 2.4.0.1        | delete commands not supported  | elastic2.4.0 |
 | 2.4.1                 | 2.4.1.0        | delete commands not supported  | elastic2.4.1 |
-| 2.4.2                 | 2.4.2.0        | delete commands not supported  | elastic2.4.2 |
+| 2.4.2                 | 2.4.2.1        | delete commands not supported  | elastic2.4.2 |
 | 5.0.1                 | 5.0.1.0        | delete commands not supported  | elastic5.0.1 |
 | 5.1.1                 | 5.1.1.0        | delete commands not supported  | elastic5.1.1 |
 
@@ -123,7 +123,7 @@ Versions
 ````
 ### Elasticsearch 2.4.2
 ````
-./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.2.0/elasticsearch-sql-2.4.2.0.zip
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.2.1/elasticsearch-sql-2.4.2.1.zip
 ````
 
 ### Elasticsearch 5.0.1
