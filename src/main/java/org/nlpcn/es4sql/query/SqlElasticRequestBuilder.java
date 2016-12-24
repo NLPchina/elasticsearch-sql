@@ -8,9 +8,9 @@ import org.elasticsearch.action.ActionResponse;
  * Created by Eliran on 19/8/2015.
  */
 public interface SqlElasticRequestBuilder {
-    public ActionRequest request();
-    public String explain();
-    public ActionResponse get();
-    public ActionRequestBuilder getBuilder();
+    ActionRequest request();
+    String explain();
+    ActionResponse get();
+    ActionRequestBuilder getBuilder();
 
 }
