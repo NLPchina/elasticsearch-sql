@@ -1,18 +1,22 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
-
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.ExtendedBounds;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
@@ -462,7 +466,11 @@ public class AggMaker {
                 case "time_zone":
                     dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(value)));
                     break;
-
+                case "extended_bounds":
+                    String[] bounds = value.split(":");
+                    if (bounds.length == 2)
+                        dateHistogram.extendedBounds(new ExtendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1])));
+                    break;
                 case "alias":
                 case "nested":
                 case "reverse_nested":
