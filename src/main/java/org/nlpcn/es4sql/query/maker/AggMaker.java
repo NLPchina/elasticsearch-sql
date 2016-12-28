@@ -433,6 +433,11 @@ public class AggMaker {
 			case "time_zone":
 				dateHistogram.timeZone(value);
 				break;
+            case "extended_bounds":
+                String[] bounds = value.split(":");
+                if (bounds.length == 2)
+                    dateHistogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
+                break;
 
             case "alias":
             case "nested":
