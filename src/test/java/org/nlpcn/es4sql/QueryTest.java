@@ -12,6 +12,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
 import java.io.IOException;
@@ -904,8 +905,8 @@ public class QueryTest {
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
-        return ((SearchResponse)select.get()).getHits();
+        SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query).explain();
+        return ((SearchResponse)requestBuilder.get()).getHits();
     }
 
 
@@ -916,8 +917,8 @@ public class QueryTest {
 
     private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
-        return ((SearchResponse)select.get());
+        SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query).explain();
+        return ((SearchResponse)requestBuilder.get());
     }
 
 }
