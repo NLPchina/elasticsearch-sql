@@ -1,5 +1,37 @@
+// fetch settings
+var settings = {};
+$.ajax({
+    type: 'GET',
+    url: './sql_external_settings.json',
+    dataType: 'json',
+    async: false
+}).done(function (data) {
+    try {
+        Object.keys(data).forEach(function (setting) {
+            settings[setting] = data[setting];
+        });
+    } catch (error) {
+        throw {message: 'Error processing external settings', body: data};
+    }
+}).fail(function (error) {
+    throw {message: 'Error fetching external settings from file', body: error};
+});
 
 var elasticsearchSqlApp = angular.module('elasticsearchSqlApp', ["ngAnimate", "ngSanitize"]);
+
+// auth
+if (settings['username']) {
+    elasticsearchSqlApp.config(function ($httpProvider) {
+        $httpProvider.interceptors.push(function () {
+            return {
+                request: function (config) {
+                    config.headers['Authorization'] = "Basic " + window.btoa(settings['username'] + ":" + settings['password']);
+                    return config;
+                }
+            };
+        });
+    });
+}
 
 elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$compile) {
 	scroll_url = "_search/scroll?scroll=1m&scroll_id=";
@@ -383,7 +415,9 @@ function updateWithScrollIfNeeded (query) {
 	function getUrl() {
 		var url = localStorage.getItem("lasturl");
 		if(url == undefined) {
-			if(location.protocol == "file") {
+            if (settings['base_uri']) {
+                url = settings['base_uri'];
+            } else if (location.protocol == "file") {
 				url = "http://localhost:9200"
 			}
 			else {
