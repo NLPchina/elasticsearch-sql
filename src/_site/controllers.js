@@ -1,21 +1,8 @@
-// fetch settings
-var settings = {};
-$.ajax({
-    type: 'GET',
-    url: './sql_external_settings.json',
-    dataType: 'json',
-    async: false
-}).done(function (data) {
-    try {
-        Object.keys(data).forEach(function (setting) {
-            settings[setting] = data[setting];
-        });
-    } catch (error) {
-        throw {message: 'Error processing external settings', body: data};
-    }
-}).fail(function (error) {
-    throw {message: 'Error fetching external settings from file', body: error};
-});
+// settings
+var settings = location.search.substring(1).split("&").reduce(function (r, p) {
+    r[decodeURIComponent(p.split("=")[0])] = decodeURIComponent(p.split("=")[1]);
+    return r;
+}, {});
 
 var elasticsearchSqlApp = angular.module('elasticsearchSqlApp', ["ngAnimate", "ngSanitize"]);
 
@@ -417,6 +404,9 @@ function updateWithScrollIfNeeded (query) {
 		if(url == undefined) {
             if (settings['base_uri']) {
                 url = settings['base_uri'];
+                if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+                    url = 'http://' + url;
+                }
             } else if (location.protocol == "file") {
 				url = "http://localhost:9200"
 			}
