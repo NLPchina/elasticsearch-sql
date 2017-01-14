@@ -17,6 +17,7 @@ Elasticsearch-SQL
 **2.4.0** [![2.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.4.1** [![2.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.4.2** [![2.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**2.4.3** [![2.4.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.0.1** [![5.0.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.0.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.1.1** [![5.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
@@ -58,6 +59,7 @@ Versions
 | 2.4.0                 | 2.4.0.1        | delete commands not supported  | elastic2.4.0 |
 | 2.4.1                 | 2.4.1.0        | delete commands not supported  | elastic2.4.1 |
 | 2.4.2                 | 2.4.2.1        | delete commands not supported  | elastic2.4.2 |
+| 2.4.3                 | 2.4.3.0        | delete commands not supported  | elastic2.4.3 |
 | 5.0.1                 | 5.0.1.0        | delete commands not supported  | elastic5.0.1 |
 | 5.1.1                 | 5.1.1.0        | delete commands not supported  | elastic5.1.1 |
 
@@ -124,6 +126,10 @@ Versions
 ### Elasticsearch 2.4.2
 ````
 ./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.2.1/elasticsearch-sql-2.4.2.1.zip
+````
+### Elasticsearch 2.4.3
+````
+./bin/plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/2.4.3.0/elasticsearch-sql-2.4.3.0.zip
 ````
 
 ### Elasticsearch 5.0.1
