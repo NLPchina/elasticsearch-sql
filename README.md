@@ -159,15 +159,17 @@ After doing this, you need to restart the Elasticsearch server. Otherwise you ma
 
 ## Basic Usage
 
-* on elasticsearch 1.x / 2.x 
-* Visit The elasticsearch-sql web front end:
+On elasticsearch 1.x / 2.x, visit the elasticsearch-sql web front-end:
+
 ````
 http://localhost:9200/_plugin/sql/
 ````
 
-* in order to use site on elasticsearch 5.x
-download and extract site[https://github.com/NLPchina/elasticsearch-sql/releases/download/5.0.1/es-sql-site-standalone.zip]
-```
+On elasticsearch 5.x, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.0.1/es-sql-site-standalone.zip).
+
+Then start the web front-end like this:
+
+```shell
 cd site-server
 npm install express --save
 node node-server.js 
