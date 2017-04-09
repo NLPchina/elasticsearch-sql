@@ -1,17 +1,13 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.node.NodeClient;
-import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.*;
-import org.elasticsearch.rest.action.RestStatusToXContentListener;
 import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
-import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -26,7 +22,6 @@ public class RestSqlAction extends BaseRestHandler {
 //    public static final RestSqlAction INSTANCE = new RestSqlAction();
 
 
-    @Inject
 	public RestSqlAction(Settings settings, RestController restController) {
         super(settings);
 		restController.registerHandler(RestRequest.Method.POST, "/_sql/_explain", this);
