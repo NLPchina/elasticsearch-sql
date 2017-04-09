@@ -11,6 +11,7 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
@@ -314,7 +315,7 @@ public abstract class Maker {
 
     private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {
         XContentParser parser = null;
-        parser = JsonXContent.jsonXContent.createParser(json);
+        parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, json);
         parser.nextToken();
         return ShapeBuilder.parse(parser);
     }

@@ -37,6 +37,5 @@
             "boost" : 1.0
         }
     },
-    "_source" : false,
-    "ext" : { }
+    "_source" : false
 }

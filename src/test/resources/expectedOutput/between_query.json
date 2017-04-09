@@ -15,6 +15,5 @@
             },
             "ignore_failure" : false
         }
-    },
-    "ext" : { }
+    }
 }
