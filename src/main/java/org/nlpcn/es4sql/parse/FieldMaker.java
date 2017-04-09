@@ -3,12 +3,8 @@ package org.nlpcn.es4sql.parse;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.druid.sql.ast.expr.*;
-import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
-import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
-import com.alibaba.druid.sql.parser.SQLParseException;
 import com.google.common.collect.Lists;
 import org.elasticsearch.common.collect.Tuple;
 import org.nlpcn.es4sql.SQLFunctions;
@@ -19,7 +15,6 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.ast.*;
-import org.nlpcn.es4sql.query.maker.AggMaker;
 
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
