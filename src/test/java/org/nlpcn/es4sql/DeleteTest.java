@@ -1,7 +1,6 @@
 package org.nlpcn.es4sql;
 
 
-import junit.framework.Assert;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -9,13 +8,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import sun.applet.Main;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
