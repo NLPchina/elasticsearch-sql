@@ -52,7 +52,6 @@
             "terms" : {
                 "field" : "gender",
                 "size" : 200,
-                "shard_size" : -1,
                 "min_doc_count" : 1,
                 "shard_min_doc_count" : 0,
                 "show_term_doc_count_error" : false,
@@ -66,6 +65,5 @@
                 ]
             }
         }
-    },
-    "ext" : { }
+    }
 }
