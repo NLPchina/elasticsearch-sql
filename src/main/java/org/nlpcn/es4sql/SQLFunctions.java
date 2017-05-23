@@ -113,7 +113,7 @@ public class SQLFunctions {
             String generatedFieldName = functionStr.v1();
             String returnCommand = ";return " + generatedFieldName +";" ;
             String newScript = functionStr.v2() + returnCommand;
-            functionStr = new Tuple(generatedFieldName, newScript);
+            functionStr = new Tuple<>(generatedFieldName, newScript);
         }
         return functionStr;
     }
@@ -122,7 +122,7 @@ public class SQLFunctions {
         return Math.abs(new Random().nextInt()) + "";
     }
 
-    public static Tuple<String, String> concat_ws(String split, List<SQLExpr> columns, String valueName) {
+    private static Tuple<String, String> concat_ws(String split, List<SQLExpr> columns, String valueName) {
         String name = "concat_ws_" + random();
         List<String> result = Lists.newArrayList();
 
@@ -137,7 +137,7 @@ public class SQLFunctions {
             }
 
         }
-        return new Tuple(name, "def " + name + " =" + Joiner.on("+ " + split + " +").join(result));
+        return new Tuple<>(name, "def " + name + " =" + Joiner.on("+ " + split + " +").join(result));
 
     }
 
@@ -152,15 +152,15 @@ public class SQLFunctions {
         } else {
             script = "; def " + name + " = " + valueName + ".split('" + pattern + "')[" + index + "]";
         }
-        return new Tuple(name, script);
+        return new Tuple<>(name, script);
     }
 
-    public static Tuple<String, String> date_format(String strColumn, String pattern, String valueName) {
+    private static Tuple<String, String> date_format(String strColumn, String pattern, String valueName) {
         String name = "date_format_" + random();
         if (valueName == null) {
-            return new Tuple(name, "def " + name + " = new Date(doc['" + strColumn + "'].value - 8*1000*60*60).format('" + pattern + "') ");
+            return new Tuple<>(name, "def " + name + " = new SimpleDateFormat('" + pattern + "').format(new Date(doc['" + strColumn + "'].value - 8*1000*60*60))");
         } else {
-            return new Tuple(name, strColumn + "; def " + name + " = new Date(" + valueName + " - 8*1000*60*60).format('" + pattern + "')");
+            return new Tuple<>(name, strColumn + "; def " + name + " = new SimpleDateFormat('" + pattern + "').format(new Date(" + valueName + " - 8*1000*60*60))");
         }
 
     }
@@ -170,31 +170,31 @@ public class SQLFunctions {
         return binaryOpertator("add", "+", a, b);
     }
 
-    public static Tuple<String, String> modulus(SQLExpr a, SQLExpr b) {
+    private static Tuple<String, String> modulus(SQLExpr a, SQLExpr b) {
         return binaryOpertator("modulus", "%", a, b);
     }
 
     public static Tuple<String, String> field(String a) {
         String name = "field_" + random();
-        return new Tuple(name, "def " + name + " = " + "doc['" + a + "'].value");
+        return new Tuple<>(name, "def " + name + " = " + "doc['" + a + "'].value");
     }
 
-    public static Tuple<String, String> subtract(SQLExpr a, SQLExpr b) {
+    private static Tuple<String, String> subtract(SQLExpr a, SQLExpr b) {
         return binaryOpertator("subtract", "-", a, b);
     }
 
-    public static Tuple<String, String> multiply(SQLExpr a, SQLExpr b) {
+    private static Tuple<String, String> multiply(SQLExpr a, SQLExpr b) {
         return binaryOpertator("multiply", "*", a, b);
     }
 
-    public static Tuple<String, String> divide(SQLExpr a, SQLExpr b) {
+    private static Tuple<String, String> divide(SQLExpr a, SQLExpr b) {
         return binaryOpertator("divide", "/", a, b);
     }
 
-    public static Tuple<String, String> binaryOpertator(String methodName, String operator, SQLExpr a, SQLExpr b) {
+    private static Tuple<String, String> binaryOpertator(String methodName, String operator, SQLExpr a, SQLExpr b) {
 
         String name = methodName + "_" + random();
-        return new Tuple(name,
+        return new Tuple<>(name,
                 scriptDeclare(a) + scriptDeclare(b) +
                         convertType(a) + convertType(b) +
                         " def " + name + " = " + extractName(a) + " " + operator + " " + extractName(b) ) ;
@@ -268,15 +268,15 @@ public class SQLFunctions {
 
     }
 
-    public static Tuple<String, String> mathSingleValueTemplate(String methodName, String strColumn, String valueName) {
+    private static Tuple<String, String> mathSingleValueTemplate(String methodName, String strColumn, String valueName) {
         return mathSingleValueTemplate(methodName,methodName, strColumn,valueName);
     }
-    public static Tuple<String, String> mathSingleValueTemplate(String methodName,String fieldName, String strColumn, String valueName) {
+    private static Tuple<String, String> mathSingleValueTemplate(String methodName, String fieldName, String strColumn, String valueName) {
         String name = fieldName + "_" + random();
         if (valueName == null) {
-            return new Tuple(name, "def " + name + " = " + methodName + "(doc['" + strColumn + "'].value)");
+            return new Tuple<>(name, "def " + name + " = " + methodName + "(doc['" + strColumn + "'].value)");
         } else {
-            return new Tuple(name, strColumn + ";def " + name + " = " + methodName + "(" + valueName + ")");
+            return new Tuple<>(name, strColumn + ";def " + name + " = " + methodName + "(" + valueName + ")");
         }
 
     }

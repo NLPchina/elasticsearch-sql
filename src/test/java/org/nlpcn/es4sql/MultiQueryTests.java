@@ -30,7 +30,7 @@ public class MultiQueryTests {
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals(2,searchHits.length);
         for(SearchHit hit : searchHits) {
-            Object firstname = hit.sourceAsMap().get("firstname");
+            Object firstname = hit.getSourceAsMap().get("firstname");
             Assert.assertEquals("Amber",firstname);
         }
     }
@@ -44,7 +44,7 @@ public class MultiQueryTests {
         Assert.assertEquals(2,searchHits.length);
         Set<String> names = new HashSet<>();
         for(SearchHit hit : searchHits) {
-            Object firstname = hit.sourceAsMap().get("firstname");
+            Object firstname = hit.getSourceAsMap().get("firstname");
             names.add(firstname.toString());
         }
         Assert.assertTrue("names should contain Amber",names.contains("Amber"));
@@ -60,7 +60,7 @@ public class MultiQueryTests {
         Assert.assertEquals(2,searchHits.length);
         Set<String> names = new HashSet<>();
         for(SearchHit hit : searchHits) {
-            Object firstname = hit.sourceAsMap().get("firstname");
+            Object firstname = hit.getSourceAsMap().get("firstname");
             names.add(firstname.toString());
         }
         Assert.assertTrue("names should contain Amber",names.contains("Amber"));
@@ -114,7 +114,7 @@ public class MultiQueryTests {
                 "SELECT pk FROM %s/systems WHERE system_name = 'B' ",TEST_INDEX,TEST_INDEX);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned", 1, searchHits.length);
-        Map<String, Object> sourceAsMap = searchHits[0].sourceAsMap();
+        Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
         Assert.assertEquals("source map not contained exactly one field",1,sourceAsMap.size());
         Assert.assertTrue("source map should contain pk",sourceAsMap.containsKey("pk"));
         Assert.assertEquals(3, sourceAsMap.get("pk"));
@@ -139,7 +139,7 @@ public class MultiQueryTests {
                 "SELECT pk , letter FROM %s/systems WHERE system_name = 'D' ",TEST_INDEX,TEST_INDEX);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned", 1, searchHits.length);
-        Map<String, Object> sourceAsMap = searchHits[0].sourceAsMap();
+        Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
         Assert.assertEquals("source map not contained exactly two fields",2,sourceAsMap.size());
         Assert.assertTrue("source map should contain pk",sourceAsMap.containsKey("pk"));
         Assert.assertTrue("source map should contain letter",sourceAsMap.containsKey("letter"));
@@ -154,7 +154,7 @@ public class MultiQueryTests {
                 "SELECT myId as pk , myLetter as letter FROM %s/systems WHERE system_name = 'E' ",TEST_INDEX,TEST_INDEX);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned",1,searchHits.length);
-        Map<String, Object> sourceAsMap = searchHits[0].sourceAsMap();
+        Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
         Assert.assertEquals("source map not contained exactly two fields",2,sourceAsMap.size());
         Assert.assertTrue("source map should contain pk",sourceAsMap.containsKey("pk"));
         Assert.assertTrue("source map should contain letter",sourceAsMap.containsKey("letter"));
@@ -179,7 +179,7 @@ public class MultiQueryTests {
                 "SELECT myId , myLetter as letter FROM %s/systems WHERE system_name = 'E' ",TEST_INDEX,TEST_INDEX);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned", 1, searchHits.length);
-        Map<String, Object> sourceAsMap = searchHits[0].sourceAsMap();
+        Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
         Assert.assertEquals("source map not contained exactly two fields",2,sourceAsMap.size());
         Assert.assertTrue("source map should contain pk",sourceAsMap.containsKey("myId"));
         Assert.assertTrue("source map should contain letter",sourceAsMap.containsKey("letter"));

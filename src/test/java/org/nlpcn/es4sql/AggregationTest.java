@@ -7,9 +7,8 @@ import com.google.common.collect.Range;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.InternalAggregations;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.*;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
@@ -31,7 +30,6 @@ import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits;
 import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCount;
-import org.elasticsearch.search.internal.InternalSearchHits;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -402,9 +400,9 @@ public class AggregationTest {
         Aggregations result = query(String.format("select topHits('size'=3,age='desc',include=age) from %s/account group by gender ", TEST_INDEX));
         List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
-            InternalSearchHits hits = (InternalSearchHits) ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
+            SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
-                Set<String> fields = hit.sourceAsMap().keySet();
+                Set<String> fields = hit.getSourceAsMap().keySet();
                 Assert.assertEquals(1,fields.size());
                 Assert.assertEquals("age",fields.toArray()[0]);
             }
@@ -416,9 +414,9 @@ public class AggregationTest {
         Aggregations result = query(String.format("select topHits('size'=3,'include'='age,firstname',age='desc') from %s/account group by gender ", TEST_INDEX));
         List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
-            InternalSearchHits hits = (InternalSearchHits) ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
+            SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
-                Set<String> fields = hit.sourceAsMap().keySet();
+                Set<String> fields = hit.getSourceAsMap().keySet();
                 Assert.assertEquals(2,fields.size());
                 Assert.assertTrue(fields.contains("age"));
                 Assert.assertTrue(fields.contains("firstname"));
@@ -431,9 +429,9 @@ public class AggregationTest {
         Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname',age='desc') from %s/account group by gender ", TEST_INDEX));
         List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
-            InternalSearchHits hits = (InternalSearchHits) ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
+            SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
-                Set<String> fields = hit.sourceAsMap().keySet();
+                Set<String> fields = hit.getSourceAsMap().keySet();
                 Assert.assertTrue(!fields.contains("lastname"));
             }
         }
@@ -444,9 +442,9 @@ public class AggregationTest {
         Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname','include'='firstname,lastname',age='desc') from %s/account group by gender ", TEST_INDEX));
         List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets) {
-            InternalSearchHits hits = (InternalSearchHits) ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
+            SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for (SearchHit hit : hits) {
-                Set<String> fields = hit.sourceAsMap().keySet();
+                Set<String> fields = hit.getSourceAsMap().keySet();
                 Assert.assertEquals(1, fields.size());
                 Assert.assertTrue(fields.contains("firstname"));
             }
@@ -520,8 +518,8 @@ public class AggregationTest {
 			}
 		}
 
-		Assert.assertEquals(response.getHits().totalHits(), 1000);
-		Assert.assertEquals(response.getHits().hits().length, 10);
+		Assert.assertEquals(response.getHits().getTotalHits(), 1000);
+		Assert.assertEquals(response.getHits().getHits().length, 10);
 	}
 
 	@Test
@@ -547,16 +545,16 @@ public class AggregationTest {
 			}
 		}
 
-		Assert.assertEquals(response.getHits().totalHits(), 1000);
-		Assert.assertEquals(response.getHits().hits().length, 10);
+		Assert.assertEquals(response.getHits().getTotalHits(), 1000);
+		Assert.assertEquals(response.getHits().getHits().length, 10);
 	}
 
     @Test
     public void geoHashGrid() throws SQLFeatureNotSupportedException, SqlParseException {
         Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/location GROUP BY geohash_grid(field='center',precision=5) ", TEST_INDEX));
         InternalGeoHashGrid grid = result.get("geohash_grid(field=center,precision=5)");
-        Collection<GeoHashGrid.Bucket> buckets = grid.getBuckets();
-        for (GeoHashGrid.Bucket bucket : buckets) {
+        Collection<? extends InternalMultiBucketAggregation.InternalBucket> buckets = grid.getBuckets();
+        for (InternalMultiBucketAggregation.InternalBucket bucket : buckets) {
             Assert.assertTrue(bucket.getKeyAsString().equals("w2fsm") || bucket.getKeyAsString().equals("w0p6y") );
             Assert.assertEquals(1,bucket.getDocCount());
         }

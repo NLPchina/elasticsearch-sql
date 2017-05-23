@@ -645,7 +645,7 @@ public class QueryTest {
     public void complexObjectReutrnField() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT parents.father FROM %s/gotCharacters where name.firstname = 'Brandon' LIMIT 1000", TEST_INDEX));
         Assert.assertEquals(1, response.getTotalHits());
-        Map<String, Object> sourceAsMap = response.getHits()[0].sourceAsMap();
+        Map<String, Object> sourceAsMap = response.getHits()[0].getSourceAsMap();
         Assert.assertEquals("Eddard",((HashMap<String,Object>)sourceAsMap.get("parents")).get("father"));
     }
 
@@ -653,7 +653,7 @@ public class QueryTest {
     public void queryWithATfieldOnWhere() throws IOException, SqlParseException, SQLFeatureNotSupportedException{
         SearchHits response = query(String.format("SELECT * FROM %s/gotCharacters where @wolf = 'Summer' LIMIT 1000", TEST_INDEX));
         Assert.assertEquals(1, response.getTotalHits());
-        Map<String, Object> sourceAsMap = response.getHits()[0].sourceAsMap();
+        Map<String, Object> sourceAsMap = response.getHits()[0].getSourceAsMap();
         Assert.assertEquals("Summer",sourceAsMap.get("@wolf"));
         Assert.assertEquals("Brandon",((HashMap<String,Object>)sourceAsMap.get("name")).get("firstname"));
     }
@@ -664,7 +664,7 @@ public class QueryTest {
         SearchHits response = query("SELECT name FROM " +TEST_INDEX + "/gotCharacters where name.firstname not like '%d' LIMIT 1000");
         Assert.assertEquals(3, response.getTotalHits());
         for(SearchHit hit : response.getHits()) {
-            Map<String, Object> sourceAsMap = hit.sourceAsMap();
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             String name = ((HashMap<String, Object>) sourceAsMap.get("name")).get("firstname").toString();
             Assert.assertFalse(name+" was in not like %d",name.startsWith("d"));
         }
@@ -711,7 +711,7 @@ public class QueryTest {
         Assert.assertEquals(5,hits.getHits().length);
         Assert.assertEquals(1000,hits.getTotalHits());
         for(SearchHit hit : hits){
-            Assert.assertEquals(20,hit.sourceAsMap().get("age"));
+            Assert.assertEquals(20,hit.getSourceAsMap().get("age"));
         }
     }
 
@@ -720,7 +720,7 @@ public class QueryTest {
         String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'Hattie')",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
-        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
         Assert.assertEquals("snoopy",hitAsMap.get("dog_name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4,hitAsMap.get("age"));
@@ -732,7 +732,7 @@ public class QueryTest {
         String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'Hattie') and age IN (select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys') ",TEST_INDEX,TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
-        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
         Assert.assertEquals("snoopy",hitAsMap.get("dog_name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4,hitAsMap.get("age"));
@@ -744,7 +744,7 @@ public class QueryTest {
         String query = String.format("select * from %s/dog where age = IN_TERMS (select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys')",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
-        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
         Assert.assertEquals("snoopy",hitAsMap.get("dog_name"));
         Assert.assertEquals("Hattie",hitAsMap.get("holdersName"));
         Assert.assertEquals(4, hitAsMap.get("age"));
@@ -756,7 +756,7 @@ public class QueryTest {
         String query = String.format("select * from %s/dog where _id = IDS_QUERY(dog,1)",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
-        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
         Assert.assertEquals("rex",hitAsMap.get("dog_name"));
         Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
         Assert.assertEquals(2, hitAsMap.get("age"));
@@ -768,7 +768,7 @@ public class QueryTest {
         String query = String.format("select * from %s/dog where _id = IDS_QUERY(dog,1,2,3)",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
-        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
         Assert.assertEquals("rex",hitAsMap.get("dog_name"));
         Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
         Assert.assertEquals(2, hitAsMap.get("age"));
@@ -780,7 +780,7 @@ public class QueryTest {
         String query = String.format("select * from %s/dog where _id = IDS_QUERY(dog,(select name.ofHisName from %s/gotCharacters where name.firstname <> 'Daenerys'))",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = query(query).getHits();
         Assert.assertEquals(1,hits.length);
-        Map<String, Object> hitAsMap = hits[0].sourceAsMap();
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
         Assert.assertEquals("rex",hitAsMap.get("dog_name"));
         Assert.assertEquals("Daenerys",hitAsMap.get("holdersName"));
         Assert.assertEquals(2, hitAsMap.get("age"));
