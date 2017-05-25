@@ -106,10 +106,10 @@ public class JoinTests {
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4, hits.length);
-        String house = hits[0].sourceAsMap().get("c.house").toString();
+        String house = hits[0].getSourceAsMap().get("c.house").toString();
         boolean someHouse = house.equals("Targaryen") || house.equals( "Stark") || house.equals("Lannister");
-        Assert.assertTrue(someHouse );;
-        String houseName = hits[0].sourceAsMap().get("h.hname").toString();
+        Assert.assertTrue(someHouse );
+        String houseName = hits[0].getSourceAsMap().get("h.hname").toString();
         Assert.assertEquals(house,houseName);
     }
 
@@ -472,10 +472,10 @@ public class JoinTests {
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4, hits.length);
-        Assert.assertEquals("Brandon",hits[0].sourceAsMap().get("c.name.firstname"));
-        Assert.assertEquals("Daenerys",hits[1].sourceAsMap().get("c.name.firstname"));
-        Assert.assertEquals("Eddard",hits[2].sourceAsMap().get("c.name.firstname"));
-        Assert.assertEquals("Jaime",hits[3].sourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Brandon",hits[0].getSourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Daenerys",hits[1].getSourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Eddard",hits[2].getSourceAsMap().get("c.name.firstname"));
+        Assert.assertEquals("Jaime",hits[3].getSourceAsMap().get("c.name.firstname"));
     }
 
 
@@ -494,7 +494,7 @@ public class JoinTests {
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4, hits.length);
-        Assert.assertEquals(5,hits[0].sourceAsMap().size());
+        Assert.assertEquals(5,hits[0].getSourceAsMap().size());
     }
 
 
@@ -514,7 +514,7 @@ public class JoinTests {
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(4, hits.length);
-        Assert.assertEquals(5,hits[0].sourceAsMap().size());
+        Assert.assertEquals(5,hits[0].getSourceAsMap().size());
     }
 
     @Test
@@ -535,10 +535,10 @@ public class JoinTests {
         Assert.assertEquals(4, hits.length);
         for (SearchHit hit : hits) {
             if(hit.getId().endsWith("0")){
-                Assert.assertEquals(1,hit.sourceAsMap().size());
+                Assert.assertEquals(1,hit.getSourceAsMap().size());
             }
             else {
-                Assert.assertEquals(5,hit.sourceAsMap().size());
+                Assert.assertEquals(5,hit.getSourceAsMap().size());
             }
         }
 
@@ -563,7 +563,7 @@ public class JoinTests {
 
     private boolean hitsContains(SearchHit[] hits, Map<String, Object> matchMap) {
         for(SearchHit hit : hits){
-            Map<String, Object> hitMap = hit.sourceAsMap();
+            Map<String, Object> hitMap = hit.getSourceAsMap();
             boolean matchedHit = true;
             for(Map.Entry<String,Object> entry: hitMap.entrySet()){
                 if(!matchMap.containsKey(entry.getKey())) {

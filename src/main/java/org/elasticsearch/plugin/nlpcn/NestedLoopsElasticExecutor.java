@@ -7,7 +7,6 @@ import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.internal.InternalSearchHit;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
@@ -35,8 +34,8 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     }
 
     @Override
-    protected List<InternalSearchHit> innerRun() throws SqlParseException {
-        List<InternalSearchHit> combinedResults = new ArrayList<>();
+    protected List<SearchHit> innerRun() throws SqlParseException {
+        List<SearchHit> combinedResults = new ArrayList<>();
         int totalLimit = nestedLoopsRequest.getTotalLimit();
         int multiSearchMaxSize = nestedLoopsRequest.getMultiSearchMaxSize();
         Select secondTableSelect = nestedLoopsRequest.getSecondTable().getOriginalSelect();
@@ -79,14 +78,14 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
         return combinedResults;
     }
 
-    private int combineResultsFromMultiResponses(List<InternalSearchHit> combinedResults, int totalLimit, int currentCombinedResults, SearchHit[] hits, int currentIndex, MultiSearchRequest multiSearchRequest) {
+    private int combineResultsFromMultiResponses(List<SearchHit> combinedResults, int totalLimit, int currentCombinedResults, SearchHit[] hits, int currentIndex, MultiSearchRequest multiSearchRequest) {
         MultiSearchResponse.Item[] responses = client.multiSearch(multiSearchRequest).actionGet().getResponses();
         String t1Alias = nestedLoopsRequest.getFirstTable().getAlias();
         String t2Alias = nestedLoopsRequest.getSecondTable().getAlias();
 
         for(int j =0 ; j < responses.length && currentCombinedResults < totalLimit ; j++){
             SearchHit hitFromFirstTable = hits[currentIndex+j];
-            onlyReturnedFields(hitFromFirstTable.sourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields(),nestedLoopsRequest.getFirstTable().getOriginalSelect().isSelectAll());
+            onlyReturnedFields(hitFromFirstTable.getSourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields(),nestedLoopsRequest.getFirstTable().getOriginalSelect().isSelectAll());
 
             SearchResponse multiItemResponse = responses[j].getResponse();
             updateMetaSearchResults(multiItemResponse);
@@ -95,14 +94,14 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
             SearchHits responseForHit = multiItemResponse.getHits();
 
             if(responseForHit.getHits().length == 0 && nestedLoopsRequest.getJoinType() == SQLJoinTableSource.JoinType.LEFT_OUTER_JOIN){
-                InternalSearchHit unmachedResult = createUnmachedResult(nestedLoopsRequest.getSecondTable().getReturnedFields(), currentCombinedResults, t1Alias, t2Alias, hitFromFirstTable);
+                SearchHit unmachedResult = createUnmachedResult(nestedLoopsRequest.getSecondTable().getReturnedFields(), currentCombinedResults, t1Alias, t2Alias, hitFromFirstTable);
                 combinedResults.add(unmachedResult);
                 currentCombinedResults++;
                 continue;
             }
 
             for(SearchHit matchedHit : responseForHit.getHits() ){
-                InternalSearchHit searchHit = getMergedHit(currentCombinedResults, t1Alias, t2Alias, hitFromFirstTable, matchedHit);
+                SearchHit searchHit = getMergedHit(currentCombinedResults, t1Alias, t2Alias, hitFromFirstTable, matchedHit);
                 combinedResults.add(searchHit);
                 currentCombinedResults++;
                 if(currentCombinedResults >= totalLimit) break;
@@ -113,12 +112,12 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
         return currentCombinedResults;
     }
 
-    private InternalSearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
-        onlyReturnedFields(matchedHit.sourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
-        InternalSearchHit searchHit = new InternalSearchHit(currentCombinedResults, hitFromFirstTable.id() + "|" + matchedHit.getId(), new Text(hitFromFirstTable.getType() + "|" + matchedHit.getType()), hitFromFirstTable.getFields());
+    private SearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
+        onlyReturnedFields(matchedHit.getSourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
+        SearchHit searchHit = new SearchHit(currentCombinedResults, hitFromFirstTable.getId() + "|" + matchedHit.getId(), new Text(hitFromFirstTable.getType() + "|" + matchedHit.getType()), hitFromFirstTable.getFields());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
-        searchHit.sourceAsMap().clear();
-        searchHit.sourceAsMap().putAll(hitFromFirstTable.sourceAsMap());
+        searchHit.getSourceAsMap().clear();
+        searchHit.getSourceAsMap().putAll(hitFromFirstTable.getSourceAsMap());
 
         mergeSourceAndAddAliases(matchedHit.getSource(), searchHit, t1Alias, t2Alias);
         return searchHit;
@@ -127,7 +126,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     private MultiSearchRequest createMultiSearchRequest(int multiSearchMaxSize, Where connectedWhere, SearchHit[] hits, Select secondTableSelect, Where originalWhere, int currentIndex) throws SqlParseException {
         MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
         for(int i = currentIndex  ; i < currentIndex  + multiSearchMaxSize && i< hits.length ; i++ ){
-            Map<String, Object> hitFromFirstTableAsMap = hits[i].sourceAsMap();
+            Map<String, Object> hitFromFirstTableAsMap = hits[i].getSourceAsMap();
             Where newWhere = Where.newInstance();
             if(originalWhere!=null) newWhere.addWhere(originalWhere);
             if(connectedWhere!=null){

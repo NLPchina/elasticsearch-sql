@@ -1,6 +1,6 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.search.internal.InternalSearchHit;
+import org.elasticsearch.search.SearchHit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,23 +9,23 @@ import java.util.List;
  * Created by Eliran on 28/8/2015.
  */
 public class SearchHitsResult {
-    private List<InternalSearchHit> searchHits;
+    private List<SearchHit> searchHits;
     private boolean matchedWithOtherTable;
 
     public SearchHitsResult() {
         searchHits = new ArrayList<>();
     }
 
-    public SearchHitsResult(List<InternalSearchHit> searchHits, boolean matchedWithOtherTable) {
+    public SearchHitsResult(List<SearchHit> searchHits, boolean matchedWithOtherTable) {
         this.searchHits = searchHits;
         this.matchedWithOtherTable = matchedWithOtherTable;
     }
 
-    public List<InternalSearchHit> getSearchHits() {
+    public List<SearchHit> getSearchHits() {
         return searchHits;
     }
 
-    public void setSearchHits(List<InternalSearchHit> searchHits) {
+    public void setSearchHits(List<SearchHit> searchHits) {
         this.searchHits = searchHits;
     }
 

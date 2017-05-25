@@ -174,7 +174,7 @@ public class CSVResultsExtractor {
                 }
                 mergeHeadersWithPrefix(header, name, statsHeaders);
                 Stats stats = (Stats) aggregation;
-                line.add(stats.getCountAsString());
+                line.add(String.valueOf(stats.getCount()));
                 line.add(stats.getSumAsString());
                 line.add(stats.getAvgAsString());
                 line.add(stats.getMinAsString());
@@ -256,20 +256,20 @@ public class CSVResultsExtractor {
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new HashSet<>();
         for(SearchHit hit : hits){
-            Map<String, Object> doc = hit.sourceAsMap();
+            Map<String, Object> doc = hit.getSourceAsMap();
             Map<String, SearchHitField> fields = hit.getFields();
             for(SearchHitField searchHitField : fields.values()){
-                doc.put(searchHitField.getName(),searchHitField.value());
+                doc.put(searchHitField.getName(),searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);
             if(this.indcludeId){
-                doc.put("_id", hit.id());
+                doc.put("_id", hit.getId());
             }
             if(this.includeScore){
-                doc.put("_score", hit.score());
+                doc.put("_score", hit.getScore());
             }
             if(this.includeType){
-                doc.put("_type",hit.type());
+                doc.put("_type",hit.getType());
             }
             docsAsMap.add(doc);
         }
