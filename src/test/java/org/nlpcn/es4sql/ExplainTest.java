@@ -1,8 +1,6 @@
 package org.nlpcn.es4sql;
 
 import com.google.common.io.Files;
-import junit.framework.Assert;
-import org.elasticsearch.action.ActionRequestBuilder;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
@@ -15,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLFeatureNotSupportedException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.nlpcn.es4sql.TestsConstants.DATE_FORMAT;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 import static org.hamcrest.Matchers.*;
 

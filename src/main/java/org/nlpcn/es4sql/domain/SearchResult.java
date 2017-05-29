@@ -84,10 +84,10 @@ public class SearchResult {
 	private Map<String, Object> toFieldsMap(Map<String, SearchHitField> fields) {
 		Map<String, Object> result = new HashMap<>();
 		for (Entry<String, SearchHitField> entry : fields.entrySet()) {
-			if (entry.getValue().values().size() > 1) {
-				result.put(entry.getKey(), entry.getValue().values());
+			if (entry.getValue().getValues().size() > 1) {
+				result.put(entry.getKey(), entry.getValue().getValues());
 			} else {
-				result.put(entry.getKey(), entry.getValue().value());
+				result.put(entry.getKey(), entry.getValue().getValue());
 			}
 
 		}

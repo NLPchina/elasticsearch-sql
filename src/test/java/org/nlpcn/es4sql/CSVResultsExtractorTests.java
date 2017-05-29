@@ -287,7 +287,7 @@ public class CSVResultsExtractorTests {
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(1, lines.size());
-        Assert.assertEquals("1000.0,30171.0,30.171,20.0,40.0", lines.get(0));
+        Assert.assertEquals("1000,30171.0,30.171,20.0,40.0", lines.get(0));
 
     }
 
@@ -309,7 +309,7 @@ public class CSVResultsExtractorTests {
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(1, lines.size());
         String line = lines.get(0);
-        Assert.assertTrue(line.startsWith("1000.0,30171.0,30.171,20.0,40.0,946393.0"));
+        Assert.assertTrue(line.startsWith("1000,30171.0,30.171,20.0,40.0,946393.0"));
         Assert.assertTrue(line.contains(",6.008"));
         Assert.assertTrue(line.contains(",36.103"));
     }

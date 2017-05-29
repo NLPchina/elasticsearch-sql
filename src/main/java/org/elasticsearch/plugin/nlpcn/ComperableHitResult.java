@@ -19,7 +19,7 @@ public class ComperableHitResult {
     private Map<String,Object> flattenMap;
     public ComperableHitResult(SearchHit hit , String[] fieldsOrder ,String seperator) {
         this.hit = hit;
-        Map<String, Object> hitAsMap = hit.sourceAsMap();
+        Map<String, Object> hitAsMap = hit.getSourceAsMap();
         this.flattenMap = new HashMap<>();
         List<String> results = new ArrayList<>();
         this.isAllNull = true;
