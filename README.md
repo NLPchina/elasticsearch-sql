@@ -3,7 +3,7 @@ Elasticsearch-SQL
 
 ### build status
 
-**master** [![1.X Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**1.7.6** [![1.7.6 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic1.x)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.0.0** [![2.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.1.0** [![2.1.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **2.1.1** [![2.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
@@ -57,7 +57,7 @@ Versions
 
 | elasticsearch version | latest version | remarks                        | branch       |
 | --------------------- | -------------  | -----------------------------  | ------------ |
-| 1.X	                | 1.4.9          | tested against elastic 1.4-1.6 | elastic1.x   |
+| 1.x	                | 1.7.6          | tested against elastic 1.7.6   | elastic1.x   |
 | 2.0.0                 | 2.0.4          | delete commands not supported  | elastic2.0   |
 | 2.1.0                 | 2.1.0.2        | delete commands not supported  | elastic2.1   |
 | 2.1.1                 | 2.1.1.1        | delete commands not supported  | elastic2.1.1 |
@@ -89,9 +89,9 @@ Versions
 | 5.4.0                 | 5.4.0.0        | delete commands not supported  | elastic5.4.0 |
 | 5.4.1                 | 5.4.1.0        | delete commands not supported  | elastic5.4.1 |
 
-### Elasticsearch 1.X
+### Elasticsearch 1.x
 ````
-./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.4.9/elasticsearch-sql-1.4.9.zip --install sql
+./bin/plugin -u https://github.com/NLPchina/elasticsearch-sql/releases/download/1.7.6/elasticsearch-sql-1.7.6.zip --install sql
 ````
 ### Elasticsearch 2.0.0
 ````
@@ -237,7 +237,7 @@ On elasticsearch 1.x / 2.x, visit the elasticsearch-sql web front-end:
 http://localhost:9200/_plugin/sql/
 ````
 
-On elasticsearch 5.x, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.0.1/es-sql-site-standalone.zip).
+On elasticsearch 5.x, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip).
 
 Then start the web front-end like this:
 
