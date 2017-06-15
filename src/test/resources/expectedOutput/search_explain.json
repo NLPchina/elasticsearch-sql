@@ -10,9 +10,7 @@
               "must" : [ {
                 "query" : {
                   "wildcard" : {
-                    "firstname" : {
-                      "wildcard" : "A*"
-                    }
+                    "firstname" : "A*"
                   }
                 }
               }, {
