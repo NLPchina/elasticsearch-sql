@@ -7,9 +7,9 @@ jdk:
 
 before_install:
   - wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.7.6.deb && sudo dpkg -i --force-confnew elasticsearch-1.7.6.deb
-
-services:
-  - elasticsearch
+  - sudo java -version
+  - sudo service elasticsearch start
+  - sleep 30
 
 
 script:
