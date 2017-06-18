@@ -462,6 +462,9 @@ public class AggMaker {
                 case "time_zone":
                     dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(value)));
                     break;
+                case "min_doc_count":
+                    dateHistogram.minDocCount(Long.parseLong(value));
+                    break;
 
                 case "alias":
                 case "nested":
