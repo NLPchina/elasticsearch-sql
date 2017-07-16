@@ -35,6 +35,8 @@ Elasticsearch-SQL
 **5.4.0** [![5.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.4.1** [![5.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.4.2** [![5.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**5.4.3** [![5.4.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**5.5.0** [![5.5.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.5.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -90,6 +92,8 @@ Versions
 | 5.4.0                 | 5.4.0.0        | delete commands not supported  | elastic5.4.0 |
 | 5.4.1                 | 5.4.1.0        | delete commands not supported  | elastic5.4.1 |
 | 5.4.2                 | 5.4.2.0        | delete commands not supported  | elastic5.4.2 |
+| 5.4.3                 | 5.4.3.0        | delete commands not supported  | elastic5.4.3 |
+| 5.5.0                 | 5.5.0.0        | delete commands not supported  | elastic5.5.0 |
 
 ### Elasticsearch 1.x
 ````
@@ -232,6 +236,16 @@ Versions
 ### Elasticsearch 5.4.2
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.2.0/elasticsearch-sql-5.4.2.0.zip
+````
+
+### Elasticsearch 5.4.3
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.3.0/elasticsearch-sql-5.4.3.0.zip
+````
+
+### Elasticsearch 5.5.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.5.0.0/elasticsearch-sql-5.5.0.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
