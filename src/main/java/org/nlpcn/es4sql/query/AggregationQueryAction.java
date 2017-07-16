@@ -9,6 +9,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -238,7 +239,7 @@ public class AggregationQueryAction extends QueryAction {
 
         String childType = field.getChildType();
 
-        childrenBuilder = AggregationBuilders.children(getChildrenAggName(field),childType);
+        childrenBuilder = JoinAggregationBuilders.children(getChildrenAggName(field),childType);
 
         return childrenBuilder;
     }
