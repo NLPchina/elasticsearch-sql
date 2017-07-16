@@ -394,7 +394,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithInclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,age='desc',include=age) from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
@@ -408,7 +408,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithIncludeTwoFields() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,'include'='age,firstname',age='desc') from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
@@ -423,7 +423,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithExclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname',age='desc') from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
@@ -436,7 +436,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithIncludeAndExclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname','include'='firstname,lastname',age='desc') from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets) {
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for (SearchHit hit : hits) {

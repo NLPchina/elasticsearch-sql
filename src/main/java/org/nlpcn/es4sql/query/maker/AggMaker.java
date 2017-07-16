@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.query.maker;
 import java.math.BigDecimal;
 import java.util.*;
 
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
@@ -194,7 +195,7 @@ public class AggMaker {
 
             String childrenAggName = childrenType.field + "@CHILDREN";
 
-            childrenBuilder = AggregationBuilders.children(childrenAggName,childrenType.childType);
+            childrenBuilder = JoinAggregationBuilders.children(childrenAggName,childrenType.childType);
 
             return childrenBuilder;
         }

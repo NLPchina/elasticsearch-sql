@@ -16,6 +16,7 @@ import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
 import org.nlpcn.es4sql.Util;
@@ -265,7 +266,7 @@ public abstract class Maker {
             Where whereChildren = (Where) value;
             BoolQueryBuilder childrenFilter = QueryMaker.explan(whereChildren);
             //todo: pass score mode
-            x = QueryBuilders.hasChildQuery(name, childrenFilter,ScoreMode.None);
+            x = JoinQueryBuilders.hasChildQuery(name, childrenFilter,ScoreMode.None);
 
         break;
         case SCRIPT:
