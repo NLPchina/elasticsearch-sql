@@ -1,7 +1,5 @@
 package org.nlpcn.es4sql;
 
-
-
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 
 import java.io.FileInputStream;
@@ -9,8 +7,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -41,12 +42,10 @@ import com.google.common.io.ByteStreams;
 		SQLFunctionsTest.class,
 		JDBCTests.class,
         UtilTests.class,
-        MultiQueryTests.class
-        ,
+        MultiQueryTests.class,
 		DeleteTest.class
 })
 public class MainTestSuite {
-
 
 	private static TransportClient client;
 	private static SearchDao searchDao;
@@ -64,7 +63,7 @@ public class MainTestSuite {
 		String clusterName = nodeInfos.getClusterName().value();
 		System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
 
-		// Load test data.
+		// Load test data
         if(client.admin().indices().prepareExists(TEST_INDEX).execute().actionGet().isExists()){
             client.admin().indices().prepareDelete(TEST_INDEX).get();
         }
@@ -167,10 +166,6 @@ public class MainTestSuite {
                 "}";
         client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
-
-
-
-
 
     private static void preparePhrasesIndex() {
         String dataMapping = "{  \"phrase\": {" +
@@ -277,11 +272,13 @@ public class MainTestSuite {
     }
 
     @AfterClass
-	public static void tearDown() throws InterruptedException {
+	public static void tearDown() throws Exception {
+	    DeleteIndexResponse response = client.admin().indices().prepareDelete(TEST_INDEX).get();
+	    if (!response.isAcknowledged())
+	    	throw new Exception("test indice cleansing error.");
 		System.out.println("teardown process...");
 		client.close();
 	}
-
 
 	/**
 	 * Delete all data inside specific index
@@ -309,7 +306,6 @@ public class MainTestSuite {
 
     }
 
-
 	/**
 	 * Loads all data from the json into the test
 	 * elasticsearch cluster, using TEST_INDEX
@@ -328,6 +324,7 @@ public class MainTestSuite {
 			throw new Exception(String.format("Failed during bulk load of file %s. failure message: %s", jsonPath, response.buildFailureMessage()));
 		}
 	}
+
     public static void prepareSpatialIndex(String type){
         String dataMapping = "{\n" +
                 "\t\""+type+"\" :{\n" +
@@ -349,6 +346,7 @@ public class MainTestSuite {
 
         client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
+
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
                 "\t\"odbc\" :{\n" +
@@ -392,5 +390,4 @@ public class MainTestSuite {
 		System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
 		return new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
 	}
-
 }

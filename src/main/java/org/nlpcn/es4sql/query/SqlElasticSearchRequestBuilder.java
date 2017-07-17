@@ -4,6 +4,7 @@ import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -32,7 +33,7 @@ public class SqlElasticSearchRequestBuilder implements SqlElasticRequestBuilder 
     }
 
     @Override
-    public ActionResponse get() {
+    public SearchResponse get() {
         return requestBuilder.get();
     }
 

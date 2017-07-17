@@ -5,20 +5,16 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
+import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
-import javax.naming.directory.SearchControls;
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.ParseException;
@@ -26,9 +22,7 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.nlpcn.es4sql.TestsConstants.DATE_FORMAT;
-import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
-import static org.nlpcn.es4sql.TestsConstants.TS_DATE_FORMAT;
+import static org.nlpcn.es4sql.TestsConstants.*;
 
 
 public class QueryTest {
@@ -909,22 +903,22 @@ public class QueryTest {
 
     }
 
-    private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+    private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
-        return ((SearchResponse)select.get()).getHits();
+        SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query).explain();
+        return ((SearchResponse)requestBuilder.get()).getHits();
     }
 
 
-    private SqlElasticSearchRequestBuilder getRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+    private SqlElasticSearchRequestBuilder getRequestBuilder(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         return  (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
     }
 
-    private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+    private SearchResponse getSearchResponse(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
-        SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
-        return ((SearchResponse)select.get());
+        SqlElasticRequestBuilder requestBuilder =  searchDao.explain(query).explain();
+        return ((SearchResponse)requestBuilder.get());
     }
 
 }
