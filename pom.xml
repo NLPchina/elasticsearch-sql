@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>5.5.0.0</version>
+	<version>5.5.0.1</version>
 	<packaging>jar</packaging>
 	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
@@ -98,6 +98,13 @@
 			<version>${elasticsearch.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch.plugin</groupId>
+            <artifactId>parent-join-client</artifactId>
+            <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
@@ -212,6 +219,13 @@
 						</goals>
 						<configuration>
 							<artifactItems>
+								<artifactItem>
+                                    <groupId>org.elasticsearch.plugin</groupId>
+                                    <artifactId>parent-join-client</artifactId>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>parent-join-client.jar</destFileName>
+                                </artifactItem>
 								<artifactItem>
 									<groupId>com.alibaba</groupId>
 									<artifactId>druid</artifactId>
