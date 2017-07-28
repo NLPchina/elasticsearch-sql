@@ -31,7 +31,7 @@ public class ElasticSearchResultSetMetaDataBase extends ResultSetMetaDataBase {
         for (int i = 0; i < columns.size(); ++i) {
             ColumnMetaData column = columns.get(i);
             if (column.getColumnName().equals(columnName)) {
-                return i + 1;
+                return i;
             }
         }
 
@@ -103,7 +103,7 @@ public class ElasticSearchResultSetMetaDataBase extends ResultSetMetaDataBase {
     }
 
     public ColumnMetaData getColumn(int column) {
-        return columns.get(column - 1);
+        return columns.get(column);
     }
 
     @Override
