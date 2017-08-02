@@ -22,8 +22,8 @@ public class SQLFunctions {
             "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "rint", "pow", "round",
             "random", "abs", //nummber operator
             "split", "concat_ws", "substring", "trim",//string operator
-            "add", "multiply", "divide", "subtract", "modulus",//binary operator
-            "field", "date_format"
+                "add", "multiply", "divide", "subtract", "modulus",//binary operator
+            "field", "date_format","date_format_g"
     );
 
 
@@ -58,6 +58,9 @@ public class SQLFunctions {
                         Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
                         Util.expr2Object((SQLExpr) paramers.get(1).value).toString(),
                         name);
+                break;
+            case "date_format_g":
+                functionStr = date_format_g(paramers.get(0).value.toString(),paramers.get(1).value.toString(),paramers.get(2).value.toString(),paramers.get(3).value.toString(),name);
                 break;
 
             case "floor":
@@ -318,6 +321,35 @@ public class SQLFunctions {
             return new Tuple(name, strColumn + "; def " + name + " = " + valueName + ".split('" + pattern + "')");
         }
 
+    }
+
+    public static Tuple<String, String> date_format_g(String strColumn,String inputFormat,String outFormat,String granularity,String valueName){
+        String name = "split_" + random();
+        String template =
+                "    def mill = date.getTime();\n" +
+                "    def cal = Calendar.getInstance();\n" +
+                "    cal.setTime(date);\n" +
+                "    cal.set(Calendar.SECOND, 0);\n" +
+                "    cal.set(Calendar.MILLISECOND, 0);\n" +
+                "    cal.set(Calendar.MINUTE, 0);\n" +
+                "    cal.set(Calendar.HOUR, 0);\n" +
+                "    def start = cal.getTimeInMillis()-12*3600*1000;\n" +
+                "    def result = 0;\n" +
+                "    def gy = Long.parseLong(granularity);\n"+
+                "    for(long i=start;i<start+24*3600*1000;i=i+gy){\n" +
+                "        if(mill>=i&&mill<i+gy){\n" +
+                "            result  = i;\n" +
+                "            break;\n" +
+                "        }\n" +
+                "    }\n" +
+                "    def name = new SimpleDateFormat(outFormat).format(result)";
+        if(valueName == null){
+            template = "def date = new SimpleDateFormat(inputFormat).parse(doc['strColumn'].value);".replaceAll("strColumn",strColumn)+template;
+        }else{
+            template = "def date = new SimpleDateFormat(inputFormat).parse(strColumn);".replaceAll("strColumn",valueName)+template;
+        }
+        template = template.replaceAll("inputFormat",inputFormat).replaceAll("outFormat",outFormat).replaceAll("granularity",granularity).replaceAll("name",name);
+        return new Tuple(name,template);
     }
 
 
