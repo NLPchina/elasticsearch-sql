@@ -327,7 +327,7 @@ public class SQLFunctions {
     }
 
     public static Tuple<String, String> date_format_g(String strColumn,String inputFormat,String outFormat,String granularity,String valueName){
-        String name = "split_" + random();
+        String name = "date_format_g_" + random();
         String template =
                 "    def mill = date.getTime();\n" +
                 "    def cal = Calendar.getInstance();\n" +
@@ -356,7 +356,7 @@ public class SQLFunctions {
     }
 
     public static Tuple<String, String> date_format_g_m(String strColumn,String outFormat,String granularity,String valueName){
-        String name = "split_" + random();
+        String name = "date_format_g_m_" + random();
         String template = "  def mill = doc['strColumn'].value;\n"+
                         "    def cal = Calendar.getInstance();\n" +
                         "    cal.setTime(date);\n" +
