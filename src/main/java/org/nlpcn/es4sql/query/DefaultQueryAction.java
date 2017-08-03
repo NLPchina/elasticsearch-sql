@@ -105,6 +105,7 @@ public class DefaultQueryAction extends QueryAction {
 					MethodField method = (MethodField) field;
 					if (method.getName().toLowerCase().equals("script")) {
 						handleScriptField(method);
+						includeFields.add(method.getAlias());
 					} else if (method.getName().equalsIgnoreCase("include")) {
 						for (KVValue kvValue : method.getParams()) {
 							includeFields.add(kvValue.value.toString()) ;

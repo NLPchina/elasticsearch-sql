@@ -211,23 +211,20 @@ public class SqlParser {
      * @return list of From objects represents all the sources.
      */
     private List<From> findFrom(SQLTableSource from) {
-        boolean isSqlExprTable = from.getClass().isAssignableFrom(SQLExprTableSource.class);
-
-        if (isSqlExprTable) {
+        ArrayList<From> fromList = new ArrayList<>();
+        if (from.getClass().isAssignableFrom(SQLExprTableSource.class)) {
             SQLExprTableSource fromExpr = (SQLExprTableSource) from;
             String[] split = fromExpr.getExpr().toString().split(",");
 
-            ArrayList<From> fromList = new ArrayList<>();
             for (String source : split) {
                 fromList.add(new From(source.trim(), fromExpr.getAlias()));
             }
+        }else if(from.getClass().isAssignableFrom(SQLJoinTableSource.class)){
+            SQLJoinTableSource joinTableSource = ((SQLJoinTableSource) from);
+            fromList.addAll(findFrom(joinTableSource.getLeft()));
+            fromList.addAll(findFrom(joinTableSource.getRight()));
             return fromList;
         }
-
-        SQLJoinTableSource joinTableSource = ((SQLJoinTableSource) from);
-        List<From> fromList = new ArrayList<>();
-        fromList.addAll(findFrom(joinTableSource.getLeft()));
-        fromList.addAll(findFrom(joinTableSource.getRight()));
         return fromList;
     }
 
