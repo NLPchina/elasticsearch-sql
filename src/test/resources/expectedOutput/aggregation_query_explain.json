@@ -2,7 +2,7 @@
     "from" : 0,
     "size" : 0,
     "_source" : {
-        "includes" : [ ],
+        "includes" : ["a2345"],
         "excludes" : [ ]
     },
     "stored_fields" : [

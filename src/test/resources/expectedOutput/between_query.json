@@ -3,6 +3,7 @@
     "size" : 200,
     "_source" : {
         "includes" : [
+            "test",
             "cust_code"
         ],
         "excludes" : [ ]
