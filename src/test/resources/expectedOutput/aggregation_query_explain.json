@@ -2,7 +2,11 @@
     "from" : 0,
     "size" : 0,
     "_source" : {
-        "includes" : [ ],
+        "includes" : [
+            "a",
+            "script",
+            "COUNT"
+        ],
         "excludes" : [ ]
     },
     "stored_fields" : [
