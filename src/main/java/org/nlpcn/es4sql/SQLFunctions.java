@@ -331,7 +331,7 @@ public class SQLFunctions {
         String template =
                 "    def mill = date.getTime();\n" +
                 "    def cal = Calendar.getInstance();\n" +
-                "    cal.setTime(date);\n" +
+                "    cal.setTimeInMillis(mill);\n" +
                 "    cal.set(Calendar.SECOND, 0);\n" +
                 "    cal.set(Calendar.MILLISECOND, 0);\n" +
                 "    cal.set(Calendar.MINUTE, 0);\n" +
@@ -359,7 +359,7 @@ public class SQLFunctions {
         String name = "date_format_g_m_" + random();
         String template = "  def mill = doc['strColumn'].value;\n"+
                         "    def cal = Calendar.getInstance();\n" +
-                        "    cal.setTime(date);\n" +
+                        "    cal.setTimeInMillis(mill);\n" +
                         "    cal.set(Calendar.SECOND, 0);\n" +
                         "    cal.set(Calendar.MILLISECOND, 0);\n" +
                         "    cal.set(Calendar.MINUTE, 0);\n" +
