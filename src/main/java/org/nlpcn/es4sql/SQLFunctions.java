@@ -130,20 +130,25 @@ public class SQLFunctions {
 
     public static Tuple<String, String> concat_ws(String split, List<SQLExpr> columns, String valueName) {
         String name = "concat_ws_" + random();
-        List<String> result = Lists.newArrayList();
-
+        List<String> resultCol = Lists.newArrayList();
+        List<String> resultFun = Lists.newArrayList();
         for (SQLExpr column : columns) {
             String strColumn = Util.expr2Object(column).toString();
-            if (strColumn.startsWith("def ")) {
-                result.add(strColumn);
+            if (strColumn.trim().startsWith("def ")) {
+                String[] strs = strColumn.split("def");
+                resultCol.add(strs[strs.length-1].split("=")[0].trim());
+                resultFun.add(strColumn);
             } else if (isProperty(column)) {
-                result.add("doc['" + strColumn + "'].value");
+                resultCol.add("doc['" + strColumn + "'].value");
             } else {
-                result.add("'" + strColumn + "'");
+                resultCol.add("'" + strColumn + "'");
             }
-
         }
-        return new Tuple(name, "def " + name + " =" + Joiner.on("+ " + split + " +").join(result));
+        String template = "def " + name + " =" + Joiner.on("+ " + split + " +").join(resultCol);
+        if(resultFun.size()>0){
+            template = Joiner.on("+" + "\n"+"+").join(resultFun)+";\n"+template;
+        }
+        return new Tuple(name, template);
 
     }
 
