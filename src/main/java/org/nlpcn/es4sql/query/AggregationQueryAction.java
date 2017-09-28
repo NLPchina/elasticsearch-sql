@@ -9,6 +9,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -139,13 +140,22 @@ public class AggregationQueryAction extends QueryAction {
                     lastAgg = subAgg;
                 }
             }
+
+            // add aggregation function to each groupBy
+            explanFields(request, select.getFields(), lastAgg);
+        }
+
+        if (select.getGroupBys().size() < 1) {
+            //add aggregation when having no groupBy script
+            explanFields(request, select.getFields(), lastAgg);
+
         }
 
         Map<String, KVValue> groupMap = aggMaker.getGroupMap();
         // add field
         if (select.getFields().size() > 0) {
             setFields(select.getFields());
-            explanFields(request, select.getFields(), lastAgg);
+//            explanFields(request, select.getFields(), lastAgg);
         }
 
         // add order
@@ -238,7 +248,7 @@ public class AggregationQueryAction extends QueryAction {
 
         String childType = field.getChildType();
 
-        childrenBuilder = AggregationBuilders.children(getChildrenAggName(field),childType);
+        childrenBuilder = JoinAggregationBuilders.children(getChildrenAggName(field),childType);
 
         return childrenBuilder;
     }

@@ -5,6 +5,7 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
@@ -65,7 +66,7 @@ public class QueryMaker extends Maker {
             if(condition.isNested()){
                 subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, ScoreMode.None);
             } else if(condition.isChildren()) {
-            	subQuery = QueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None);
+            	subQuery = JoinQueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None);
             }
         }
 

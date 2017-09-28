@@ -4,26 +4,22 @@ package org.nlpcn.es4sql;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.*;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalNested;
 import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested;
-import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.avg.Avg;
 import org.elasticsearch.search.aggregations.metrics.geobounds.InternalGeoBounds;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.min.Min;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
-import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.sum.InternalSum;
@@ -354,8 +350,8 @@ public class AggregationTest {
 	 */
 	@Test
 	public void countGroupByDateTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        SqlElasticSearchRequestBuilder result = (SqlElasticSearchRequestBuilder) MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM') ").explain();
-		System.out.println(result);
+        String result = MainTestSuite.getSearchDao().explain("select insert_time from online  group by date_histogram(field='insert_time','interval'='1.5h','format'='yyyy-MM','min_doc_count'=5) ").explain().toString();
+        Assert.assertTrue(result.replaceAll("\\s+", "").contains("{\"date_histogram\":{\"field\":\"insert_time\",\"format\":\"yyyy-MM\",\"interval\":\"1.5h\",\"offset\":0,\"order\":{\"_key\":\"asc\"},\"keyed\":false,\"min_doc_count\":5}"));
 	}
 
     @Test
@@ -398,7 +394,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithInclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,age='desc',include=age) from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
@@ -412,7 +408,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithIncludeTwoFields() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,'include'='age,firstname',age='desc') from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
@@ -427,7 +423,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithExclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname',age='desc') from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for(SearchHit hit: hits ){
@@ -440,7 +436,7 @@ public class AggregationTest {
     @Test
     public void topHitTest_WithIncludeAndExclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname','include'='firstname,lastname',age='desc') from %s/account group by gender ", TEST_INDEX));
-        List<Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
+        List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets) {
             SearchHits hits = ((InternalTopHits) bucket.getAggregations().asList().get(0)).getHits();
             for (SearchHit hit : hits) {

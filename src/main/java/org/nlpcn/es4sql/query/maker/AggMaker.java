@@ -1,10 +1,11 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.math.BigDecimal;
+import java.time.ZoneOffset;
 import java.util.*;
 
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -194,7 +195,7 @@ public class AggMaker {
 
             String childrenAggName = childrenType.field + "@CHILDREN";
 
-            childrenBuilder = AggregationBuilders.children(childrenAggName,childrenType.childType);
+            childrenBuilder = JoinAggregationBuilders.children(childrenAggName,childrenType.childType);
 
             return childrenBuilder;
         }
@@ -416,6 +417,9 @@ public class AggMaker {
             } else if ("format".equals(kv.key)) {
                 dateRange.format(value);
                 continue;
+            } else if ("time_zone".equals(kv.key)) {
+                dateRange.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(ZoneOffset.of(value))));
+                continue;
             } else if ("from".equals(kv.key)) {
                 dateRange.addUnboundedFrom(kv.value.toString());
                 continue;
@@ -460,7 +464,10 @@ public class AggMaker {
                     dateHistogram.format(value);
                     break;
                 case "time_zone":
-                    dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(value)));
+                    dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(ZoneOffset.of(value))));
+                    break;
+                case "min_doc_count":
+                    dateHistogram.minDocCount(Long.parseLong(value));
                     break;
 
                 case "alias":

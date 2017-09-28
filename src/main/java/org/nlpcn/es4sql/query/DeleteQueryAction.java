@@ -6,7 +6,7 @@ import org.elasticsearch.client.Client;
 
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
-import org.elasticsearch.action.bulk.byscroll.DeleteByQueryRequest;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.nlpcn.es4sql.domain.Delete;
 import org.nlpcn.es4sql.domain.Where;

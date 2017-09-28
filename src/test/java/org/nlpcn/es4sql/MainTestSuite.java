@@ -14,6 +14,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
@@ -130,7 +131,7 @@ public class MainTestSuite {
                 "}\n" +
                 "}"+
                 "} } }";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("gotCharacters").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("gotCharacters").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
     private static void prepareDogsIndex() {
@@ -143,7 +144,7 @@ public class MainTestSuite {
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("dog").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("dog").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
     private static void prepareAccountsIndex() {
@@ -164,7 +165,7 @@ public class MainTestSuite {
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
 
@@ -181,7 +182,7 @@ public class MainTestSuite {
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
     private static void prepareNestedTypeIndex() {
@@ -227,7 +228,7 @@ public class MainTestSuite {
                     "      }\n" +
                     "    }}";
 
-            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping).execute().actionGet();
+            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
     private static void prepareChildrenTypeIndex() {
@@ -256,7 +257,7 @@ public class MainTestSuite {
 				"	}"+
 				"}\n";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("childrenType").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("childrenType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
     private static void prepareParentTypeIndex() {
@@ -272,7 +273,7 @@ public class MainTestSuite {
 				"	}\n" +
 				"}\n";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("parentType").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("parentType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
     @AfterClass
@@ -346,7 +347,7 @@ public class MainTestSuite {
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
@@ -363,7 +364,7 @@ public class MainTestSuite {
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
     }
 
 	public static SearchDao getSearchDao() {
