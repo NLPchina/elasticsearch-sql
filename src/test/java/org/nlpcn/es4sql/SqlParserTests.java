@@ -986,6 +986,131 @@ public class SqlParserTests {
 
     }
 
+    @Test
+    public void castToIntTest() throws Exception {
+        String query = "select cast(age as int) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertEquals("cast_age",alias);
+        Assert.assertTrue(scriptCode.contains("doc['age'].value"));
+        Assert.assertTrue(scriptCode.contains("Double.parseDouble(doc['age'].value.toString()).intValue()"));
+    }
+
+    @Test
+    public void castToLongTest() throws Exception {
+        String query = "select cast(insert_time as long) from "+ TestsConstants.TEST_INDEX + " limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertEquals("cast_insert_time",alias);
+        Assert.assertTrue(scriptCode.contains("doc['insert_time'].value"));
+        Assert.assertTrue(scriptCode.contains("Double.parseDouble(doc['insert_time'].value.toString()).longValue()"));
+    }
+
+    @Test
+    public void castToFloatTest() throws Exception {
+        String query = "select cast(age as float) from "+ TestsConstants.TEST_INDEX + " limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertEquals("cast_age",alias);
+        Assert.assertTrue(scriptCode.contains("doc['age'].value"));
+        Assert.assertTrue(scriptCode.contains("Double.parseDouble(doc['age'].value.toString()).floatValue()"));
+    }
+
+    @Test
+    public void castToDoubleTest() throws Exception {
+        String query = "select cast(age as double) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertEquals("cast_age",alias);
+        Assert.assertTrue(scriptCode.contains("doc['age'].value"));
+        Assert.assertTrue(scriptCode.contains("Double.parseDouble(doc['age'].value.toString()).doubleValue()"));
+    }
+
+    @Test
+    public void castToStringTest() throws Exception {
+        String query = "select cast(age as string) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertEquals("cast_age",alias);
+        Assert.assertTrue(scriptCode.contains("doc['age'].value.toString()"));
+    }
+
+    @Test
+    public void castToDateTimeTest() throws Exception {
+        String query = "select cast(age as datetime) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertEquals("cast_age",alias);
+        Assert.assertTrue(scriptCode.contains("doc['age'].value"));
+        Assert.assertTrue(scriptCode.contains("new Date(Double.parseDouble(doc['age'].value.toString()).longValue())"));
+    }
+
+    @Test
+    public void castToDoubleThenDivideTest() throws Exception {
+        String query = "select cast(age as double)/2 from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        SQLExpr sqlExpr = queryToExpr(query);
+        Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
+        Field castField = select.getFields().get(0);
+        Assert.assertTrue(castField instanceof MethodField);
+
+        MethodField methodField = (MethodField) castField;
+        Assert.assertEquals("script",castField.getName());
+
+        String alias = (String) methodField.getParams().get(0).value;
+        String scriptCode = (String) methodField.getParams().get(1).value;
+        Assert.assertTrue(scriptCode.contains("doc['age'].value"));
+        Assert.assertTrue(scriptCode.contains("Double.parseDouble(doc['age'].value.toString()).doubleValue()"));
+        Assert.assertTrue(scriptCode.contains("/ 2"));
+    }
+
 
     @Test
     public void multiSelectMinusOperationCheckIndices() throws SqlParseException {
