@@ -10,6 +10,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -153,8 +155,13 @@ public class DefaultQueryAction extends QueryAction {
 	 *            list of Order object
 	 */
 	private void setSorts(List<Order> orderBys) {
+        FieldSortBuilder fsb;
 		for (Order order : orderBys) {
-			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+            fsb = SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType()));
+            if (order.getNestedPath() != null) {
+                fsb.setNestedPath(order.getNestedPath());
+            }
+            request.addSort(fsb);
 		}
 	}
 

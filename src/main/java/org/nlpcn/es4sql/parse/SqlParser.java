@@ -178,7 +178,8 @@ public class SqlParser {
     private void addOrderByToSelect(Select select, List<SQLSelectOrderByItem> items, String alias) throws SqlParseException {
         for (SQLSelectOrderByItem sqlSelectOrderByItem : items) {
             SQLExpr expr = sqlSelectOrderByItem.getExpr();
-            String orderByName = FieldMaker.makeField(expr, null, null).toString();
+            Field f = FieldMaker.makeField(expr, null, null);
+            String orderByName = f.toString();
 
             if (sqlSelectOrderByItem.getType() == null) {
                 sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
@@ -187,7 +188,7 @@ public class SqlParser {
 
             orderByName = orderByName.replace("`", "");
             if (alias != null) orderByName = orderByName.replaceFirst(alias + "\\.", "");
-            select.addOrderBy(orderByName, type);
+            select.addOrderBy(f.getNestedPath(), orderByName, type);
 
         }
     }
