@@ -11,10 +11,7 @@ import org.nlpcn.es4sql.query.QueryAction;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class RestSqlAction extends BaseRestHandler {
@@ -53,19 +50,23 @@ public class RestSqlAction extends BaseRestHandler {
             final QueryAction finalQueryAction = queryAction;
             //doing this hack because elasticsearch throws exception for un-consumed props
             Map<String,String> additionalParams = new HashMap<>();
-            List<String> additionalParamsNames = Arrays.asList("_type","_id","_score");
-            for(String paramName : additionalParamsNames) {
-                additionalParams.put(paramName, request.param(paramName));
+            for (String paramName : responseParams()) {
+                if (request.hasParam(paramName)) {
+                    additionalParams.put(paramName, request.param(paramName));
+                }
             }
             return channel -> restExecutor.execute(client,additionalParams, finalQueryAction,channel);
         }
-        } catch (SqlParseException e) {
-            e.printStackTrace();
-        } catch (SQLFeatureNotSupportedException e) {
+        } catch (SqlParseException | SQLFeatureNotSupportedException e) {
             e.printStackTrace();
         }
         return null;
-
     }
 
+    @Override
+    protected Set<String> responseParams() {
+        Set<String> responseParams = new HashSet<>(super.responseParams());
+        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "newLine", "format"));
+        return responseParams;
+    }
 }
