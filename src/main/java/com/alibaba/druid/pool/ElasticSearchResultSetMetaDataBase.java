@@ -26,11 +26,24 @@ public class ElasticSearchResultSetMetaDataBase extends ResultSetMetaDataBase {
     public List<ColumnMetaData> getColumns() {
         return columns;
     }
+
+    @Override
+    public int findColumn(String columnName) throws SQLException {
+        ColumnMetaData column;
+        for (int i = 0; i < columns.size(); ++i) {
+            column = columns.get(i);
+            if (column.getColumnName().equals(columnName)) {
+                return i + 1;
+            }
+        }
+
+        throw new SQLException("column '" + columnName + "' not found.");
+    }
     
     @Override
     public int getColumnCount() throws SQLException {
         return columns.size();
     }
     
-    
+
 }
