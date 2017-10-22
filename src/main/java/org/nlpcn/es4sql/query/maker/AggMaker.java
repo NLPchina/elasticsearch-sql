@@ -117,7 +117,7 @@ public class AggMaker {
                 return scriptedMetric(field);
             case "COUNT":
                 groupMap.put(field.getAlias(), new KVValue("COUNT", parent));
-                return makeCountAgg(field);
+                return addFieldToAgg(field, makeCountAgg(field));
             default:
                 throw new SqlParseException("the agg function not to define !");
         }
@@ -573,7 +573,7 @@ public class AggMaker {
      * @param field The count function
      * @return AggregationBuilder use to count result
      */
-    private AbstractAggregationBuilder makeCountAgg(MethodField field) {
+    private ValuesSourceAggregationBuilder makeCountAgg(MethodField field) {
 
         // Cardinality is approximate DISTINCT.
         if ("DISTINCT".equals(field.getOption())) {
@@ -591,7 +591,9 @@ public class AggMaker {
 
         // In case of count(*) we use '_index' as field parameter to count all documents
         if ("*".equals(fieldName)) {
-            return AggregationBuilders.count(field.getAlias()).field("_index");
+            KVValue kvValue = new KVValue(null, "_index");
+            field.getParams().set(0, kvValue);
+            return AggregationBuilders.count(field.getAlias()).field(kvValue.toString());
         } else {
             return AggregationBuilders.count(field.getAlias()).field(fieldName);
         }
