@@ -462,6 +462,9 @@ public class AggMaker {
                 case "time_zone":
                     dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(value)));
                     break;
+                case "order":
+                    dateHistogram.order("desc".equalsIgnoreCase(value) ? Histogram.Order.KEY_DESC : Histogram.Order.KEY_ASC);
+                    break;
 
                 case "alias":
                 case "nested":
