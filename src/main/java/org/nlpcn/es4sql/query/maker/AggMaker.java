@@ -469,6 +469,9 @@ public class AggMaker {
                 case "min_doc_count":
                     dateHistogram.minDocCount(Long.parseLong(value));
                     break;
+                case "order":
+                    dateHistogram.order("desc".equalsIgnoreCase(value) ? Histogram.Order.KEY_DESC : Histogram.Order.KEY_ASC);
+                    break;
 
                 case "alias":
                 case "nested":
