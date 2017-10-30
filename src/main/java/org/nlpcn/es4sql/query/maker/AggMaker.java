@@ -12,10 +12,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
-import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.*;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
@@ -471,6 +468,12 @@ public class AggMaker {
                     break;
                 case "order":
                     dateHistogram.order("desc".equalsIgnoreCase(value) ? Histogram.Order.KEY_DESC : Histogram.Order.KEY_ASC);
+                    break;
+                case "extended_bounds":
+                    String[] bounds = value.split(":");
+                    if (bounds.length == 2) {
+                        dateHistogram.extendedBounds(new ExtendedBounds(bounds[0], bounds[1]));
+                    }
                     break;
 
                 case "alias":
