@@ -44,6 +44,9 @@ public class ElasticSearchResultSetMetaDataBase extends ResultSetMetaDataBase {
     public int getColumnCount() throws SQLException {
         return columns.size();
     }
-    
 
+    @Override
+    public ResultSetMetaDataBase.ColumnMetaData getColumn(int column) {
+        return columns.get(column - 1);
+    }
 }
