@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -128,7 +129,7 @@ public class DefaultQueryAction extends QueryAction {
 		if (params.size() == 2) {
 			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString()));
 		} else if (params.size() == 3) {
-			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), null));
+			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), Collections.emptyMap()));
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
 		}
