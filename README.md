@@ -51,6 +51,7 @@ Elasticsearch-SQL
 **5.6.1** [![5.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.6.2** [![5.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.6.3** [![5.6.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
 **5.6.4** [![5.6.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
