@@ -51,6 +51,8 @@ Elasticsearch-SQL
 **5.6.1** [![5.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.6.2** [![5.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.6.3** [![5.6.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
+**5.6.4** [![5.6.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -116,6 +118,7 @@ Versions
 | 5.6.1                 | 5.6.1.0        | delete commands not supported  | elastic5.6.1 |
 | 5.6.2                 | 5.6.2.0        | delete commands not supported  | elastic5.6.2 |
 | 5.6.3                 | 5.6.3.0        | delete commands not supported  | elastic5.6.3 |
+| 5.6.4                 | 5.6.4.0        | delete commands not supported  | elastic5.6.4 |
 
 ### Elasticsearch 1.x
 ````
@@ -308,6 +311,11 @@ Versions
 ### Elasticsearch 5.6.3
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.6.3.0/elasticsearch-sql-5.6.3.0.zip
+````
+
+### Elasticsearch 5.6.4
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.6.4.0/elasticsearch-sql-5.6.4.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
