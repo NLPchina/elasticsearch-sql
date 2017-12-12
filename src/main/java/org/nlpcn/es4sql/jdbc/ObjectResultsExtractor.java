@@ -1,7 +1,7 @@
 package org.nlpcn.es4sql.jdbc;
 
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -247,8 +247,8 @@ public class ObjectResultsExtractor {
         Set<String> csvHeaders = new HashSet<>();
         for (SearchHit hit : hits) {
             Map<String, Object> doc = hit.getSourceAsMap();
-            Map<String, SearchHitField> fields = hit.getFields();
-            for (SearchHitField searchHitField : fields.values()) {
+            Map<String, DocumentField> fields = hit.getFields();
+            for (DocumentField searchHitField : fields.values()) {
                 doc.put(searchHitField.getName(), searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);

@@ -119,7 +119,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
         searchHit.getSourceAsMap().clear();
         searchHit.getSourceAsMap().putAll(hitFromFirstTable.getSourceAsMap());
 
-        mergeSourceAndAddAliases(matchedHit.getSource(), searchHit, t1Alias, t2Alias);
+        mergeSourceAndAddAliases(matchedHit.getSourceAsMap(), searchHit, t1Alias, t2Alias);
         return searchHit;
     }
 

@@ -13,6 +13,7 @@ import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -166,15 +167,15 @@ public class AggregationQueryAction extends QueryAction {
                     TermsAggregationBuilder termsBuilder = (TermsAggregationBuilder) temp.value;
                     switch (temp.key) {
                         case "COUNT":
-                            termsBuilder.order(Terms.Order.count(isASC(order)));
+                            termsBuilder.order(BucketOrder.count(isASC(order)));
                             break;
                         case "KEY":
-                            termsBuilder.order(Terms.Order.term(isASC(order)));
+                            termsBuilder.order(BucketOrder.key(isASC(order)));
                             // add the sort to the request also so the results get sorted as well
                             request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
                             break;
                         case "FIELD":
-                            termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
+                            termsBuilder.order(BucketOrder.aggregation(order.getName(), isASC(order)));
                             break;
                         default:
                             throw new SqlParseException(order.getName() + " can not to order");

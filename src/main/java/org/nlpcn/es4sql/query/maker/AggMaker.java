@@ -10,13 +10,13 @@ import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 
 import org.elasticsearch.search.aggregations.bucket.histogram.*;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesAggregationBuilder;
@@ -273,9 +273,9 @@ public class AggMaker {
                     break;
                 case "order":
                     if ("asc".equalsIgnoreCase(value)) {
-                        terms.order(Terms.Order.term(true));
+                        terms.order(BucketOrder.key(true));
                     } else if ("desc".equalsIgnoreCase(value)) {
-                        terms.order(Terms.Order.term(false));
+                        terms.order(BucketOrder.key(false));
                     } else {
                         throw new SqlParseException("order can only support asc/desc " + kv.toString());
                     }
@@ -319,17 +319,11 @@ public class AggMaker {
                 case "map_script_id":
                     scriptedMetricBuilder.mapScript(new Script(ScriptType.STORED, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
-                case "map_script_file":
-                    scriptedMetricBuilder.mapScript(new Script(ScriptType.FILE ,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
-                    break;
                 case "init_script":
                     scriptedMetricBuilder.initScript(new Script(paramValue));
                     break;
                 case "init_script_id":
                     scriptedMetricBuilder.initScript(new Script(ScriptType.STORED,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
-                    break;
-                case "init_script_file":
-                    scriptedMetricBuilder.initScript(new Script(ScriptType.FILE,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "combine_script":
                     scriptedMetricBuilder.combineScript(new Script(paramValue));
@@ -337,17 +331,11 @@ public class AggMaker {
                 case "combine_script_id":
                     scriptedMetricBuilder.combineScript(new Script(ScriptType.STORED, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
-                case "combine_script_file":
-                    scriptedMetricBuilder.combineScript(new Script(ScriptType.FILE, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
-                    break;
                 case "reduce_script":
                     scriptedMetricBuilder.reduceScript(new Script(ScriptType.INLINE,  Script.DEFAULT_SCRIPT_LANG , paramValue, reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_id":
                     scriptedMetricBuilder.reduceScript(new Script(ScriptType.STORED,  Script.DEFAULT_SCRIPT_LANG,paramValue, reduceScriptAdditionalParams));
-                    break;
-                case "reduce_script_file":
-                    scriptedMetricBuilder.reduceScript(new Script(ScriptType.FILE,  Script.DEFAULT_SCRIPT_LANG, paramValue, reduceScriptAdditionalParams));
                     break;
                 case "alias":
                 case "nested":
@@ -466,7 +454,7 @@ public class AggMaker {
                     dateHistogram.minDocCount(Long.parseLong(value));
                     break;
                 case "order":
-                    dateHistogram.order("desc".equalsIgnoreCase(value) ? Histogram.Order.KEY_DESC : Histogram.Order.KEY_ASC);
+                    dateHistogram.order("desc".equalsIgnoreCase(value) ? BucketOrder.key(false) : BucketOrder.key(true));
                     break;
                 case "extended_bounds":
                     String[] bounds = value.split(":");
@@ -523,20 +511,20 @@ public class AggMaker {
                 case "children":
                     break;
                 case "order":
-                    Histogram.Order order = null;
+                    BucketOrder order = null;
                     switch (value) {
                         case "key_desc":
-                            order = Histogram.Order.KEY_DESC;
+                            order = BucketOrder.key(false);
                             break;
                         case "count_asc":
-                            order = Histogram.Order.COUNT_ASC;
+                            order = BucketOrder.count(true);
                             break;
                         case "count_desc":
-                            order = Histogram.Order.COUNT_DESC;
+                            order = BucketOrder.count(false);
                             break;
                         case "key_asc":
                         default:
-                            order = Histogram.Order.KEY_ASC;
+                            order = BucketOrder.key(true);
                             break;
                     }
                     histogram.order(order);

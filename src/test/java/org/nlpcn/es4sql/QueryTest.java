@@ -61,7 +61,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT age, account_number FROM %s/account", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Assert.assertEquals(expectedSource, hit.getSource().keySet());
+			Assert.assertEquals(expectedSource, hit.getSourceAsMap().keySet());
 		}
 	}
 
@@ -73,7 +73,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT `test field` FROM %s/phrase_2", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Assert.assertEquals(expectedSource, hit.getSource().keySet());
+			Assert.assertEquals(expectedSource, hit.getSourceAsMap().keySet());
 		}
 	}
 
@@ -101,7 +101,7 @@ public class QueryTest {
 
 		// assert the results is correct according to accounts.json data.
 		Assert.assertEquals(1, response.getTotalHits());
-		Assert.assertEquals("Nogal", hits[0].getSource().get("city"));
+		Assert.assertEquals("Nogal", hits[0].getSourceAsMap().get("city"));
 	}
 
 
@@ -114,7 +114,7 @@ public class QueryTest {
 
 		// assert the results is correct according to accounts.json data.
 		Assert.assertEquals(1, response.getTotalHits());
-		Assert.assertEquals("quick fox here", hits[0].getSource().get("phrase"));
+		Assert.assertEquals("quick fox here", hits[0].getSourceAsMap().get("phrase"));
 	}
 
 
@@ -124,7 +124,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE age > %s LIMIT 1000", TEST_INDEX, someAge));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			int age = (int) hit.getSource().get("age");
+			int age = (int) hit.getSourceAsMap().get("age");
 			assertThat(age, greaterThan(someAge));
 		}
 	}
@@ -138,7 +138,7 @@ public class QueryTest {
 
 		boolean isEqualFound = false;
 		for(SearchHit hit : hits) {
-			int age = (int) hit.getSource().get("age");
+			int age = (int) hit.getSourceAsMap().get("age");
 			assertThat(age, greaterThanOrEqualTo(someAge));
 
 			if(age == someAge)
@@ -155,7 +155,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE age < %s LIMIT 1000", TEST_INDEX, someAge));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			int age = (int) hit.getSource().get("age");
+			int age = (int) hit.getSourceAsMap().get("age");
 			assertThat(age, lessThan(someAge));
 		}
 	}
@@ -169,7 +169,7 @@ public class QueryTest {
 
 		boolean isEqualFound = false;
 		for(SearchHit hit : hits) {
-			int age = (int) hit.getSource().get("age");
+			int age = (int) hit.getSourceAsMap().get("age");
 			assertThat(age, lessThanOrEqualTo(someAge));
 
 			if(age == someAge)
@@ -193,8 +193,8 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE age=32 AND gender='M' LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Assert.assertEquals(32, hit.getSource().get("age"));
-			Assert.assertEquals("M", hit.getSource().get("gender"));
+			Assert.assertEquals(32, hit.getSourceAsMap().get("age"));
+			Assert.assertEquals("M", hit.getSourceAsMap().get("gender"));
 		}
 	}
 
@@ -206,7 +206,7 @@ public class QueryTest {
 
 		// assert the results is correct according to accounts.json data.
 		Assert.assertEquals(1, response.getTotalHits());
-		Assert.assertEquals("Amber", hits[0].getSource().get("firstname"));
+		Assert.assertEquals("Amber", hits[0].getSourceAsMap().get("firstname"));
 	}
 
 	@Test
@@ -217,7 +217,7 @@ public class QueryTest {
 		// assert we got hits
 		Assert.assertNotEquals(0, response.getTotalHits());
 		for (SearchHit hit : hits) {
-			Assert.assertFalse(hit.getSource().get("firstname").toString().toLowerCase().startsWith("amb"));
+			Assert.assertFalse(hit.getSourceAsMap().get("firstname").toString().toLowerCase().startsWith("amb"));
 		}
 	}
 
@@ -236,7 +236,7 @@ public class QueryTest {
 		// assert there are results and they all have gender 'm'
 		Assert.assertNotEquals(0, response4.getTotalHits());
 		for (SearchHit hit : response4.getHits()) {
-			Assert.assertEquals("m", hit.getSource().get("gender").toString().toLowerCase());
+			Assert.assertEquals("m", hit.getSourceAsMap().get("gender").toString().toLowerCase());
 		}
 
 		SearchHits response5 = query(String.format("SELECT * FROM %s/account WHERE NOT (gender = 'm' OR gender = 'f')", TEST_INDEX));
@@ -260,7 +260,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE age BETWEEN %s AND %s LIMIT 1000", TEST_INDEX, min, max));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			int age = (int) hit.getSource().get("age");
+			int age = (int) hit.getSourceAsMap().get("age");
 			assertThat(age, allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max)));
 		}
 	}
@@ -277,11 +277,11 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE age NOT BETWEEN %s AND %s LIMIT 1000", TEST_INDEX, min, max));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, Object> source = hit.getSource();
+			Map<String, Object> source = hit.getSourceAsMap();
 
 			// ignore document which not contains the age field.
 			if(source.containsKey("age")) {
-				int age = (int) hit.getSource().get("age");
+				int age = (int) hit.getSourceAsMap().get("age");
 				assertThat(age, not(allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max))));
 			}
 		}
@@ -293,7 +293,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT age FROM %s/phrase WHERE age IN (20, 22) LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			int age = (int) hit.getSource().get("age");
+			int age = (int) hit.getSourceAsMap().get("age");
 			assertThat(age, isOneOf(20, 22));
 		}
 	}
@@ -305,7 +305,7 @@ public class QueryTest {
 		SearchHit[] hits = response.getHits();
 		Assert.assertEquals(2, response.getTotalHits());
 		for(SearchHit hit : hits) {
-			String phrase = (String) hit.getSource().get("phrase");
+			String phrase = (String) hit.getSourceAsMap().get("phrase");
 			assertThat(phrase, isOneOf("quick fox here", "fox brown"));
 		}
 	}
@@ -316,7 +316,7 @@ public class QueryTest {
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(2, response.getTotalHits());
         for(SearchHit hit : hits) {
-            String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+            String firstname =  ((Map<String,Object>) hit.getSourceAsMap().get("name")).get("firstname").toString();
             assertThat(firstname, isOneOf("Daenerys", "Eddard"));
         }
     }
@@ -326,7 +326,7 @@ public class QueryTest {
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(2, response.getTotalHits());
         for(SearchHit hit : hits) {
-            String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+            String firstname =  ((Map<String,Object>) hit.getSourceAsMap().get("name")).get("firstname").toString();
             assertThat(firstname, isOneOf("Daenerys", "Eddard"));
         }
     }
@@ -337,7 +337,7 @@ public class QueryTest {
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(1, response.getTotalHits());
         SearchHit hit = hits[0];
-        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        String firstname =  ((Map<String,Object>) hit.getSourceAsMap().get("name")).get("firstname").toString();
         Assert.assertEquals("Brandon",firstname);
     }
 
@@ -348,7 +348,7 @@ public class QueryTest {
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(1, response.getTotalHits());
         SearchHit hit = hits[0];
-        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        String firstname =  ((Map<String,Object>) hit.getSourceAsMap().get("name")).get("firstname").toString();
         Assert.assertEquals("Brandon",firstname);
     }
 
@@ -358,7 +358,7 @@ public class QueryTest {
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(1, response.getTotalHits());
         SearchHit hit = hits[0];
-        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        String firstname =  ((Map<String,Object>) hit.getSourceAsMap().get("name")).get("firstname").toString();
         Assert.assertEquals("Brandon",firstname);
     }
 
@@ -368,7 +368,7 @@ public class QueryTest {
         SearchHit[] hits = response.getHits();
         Assert.assertEquals(1, response.getTotalHits());
         SearchHit hit = hits[0];
-        String firstname =  ((Map<String,Object>) hit.getSource().get("name")).get("firstname").toString();
+        String firstname =  ((Map<String,Object>) hit.getSourceAsMap().get("name")).get("firstname").toString();
         Assert.assertEquals("Brandon",firstname);
     }
 
@@ -381,7 +381,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT age FROM %s WHERE age NOT IN (20, 22) LIMIT 1000", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, Object> source = hit.getSource();
+			Map<String, Object> source = hit.getSourceAsMap();
 
 			// ignore document which not contains the age field.
 			if(source.containsKey("age")) {
@@ -400,7 +400,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time < '2014-08-18'", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, Object> source = hit.getSource();
+			Map<String, Object> source = hit.getSourceAsMap();
 			DateTime insertTime = formatter.parseDateTime((String) source.get("insert_time"));
 
 			String errorMessage = String.format("insert_time must be smaller then 2014-08-18. found: %s", insertTime);
@@ -416,7 +416,7 @@ public class QueryTest {
         SearchHits response = query(String.format("SELECT odbc_time FROM %s/odbc WHERE odbc_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX));
         SearchHit[] hits = response.getHits();
         for(SearchHit hit : hits) {
-            Map<String, Object> source = hit.getSource();
+            Map<String, Object> source = hit.getSourceAsMap();
 			String insertTimeStr = (String) source.get("odbc_time");
 			insertTimeStr = insertTimeStr.replace("{ts '", "").replace("'}", "");
 
@@ -438,7 +438,7 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT insert_time FROM %s/online WHERE insert_time BETWEEN '2014-08-18' AND '2014-08-21' LIMIT 3", TEST_INDEX));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Map<String, Object> source = hit.getSource();
+			Map<String, Object> source = hit.getSourceAsMap();
 			DateTime insertTime = formatter.parseDateTime((String) source.get("insert_time"));
 
 			boolean isBetween =
@@ -458,7 +458,7 @@ public class QueryTest {
 		// should be 2 according to the data.
 		Assert.assertEquals(response.getTotalHits(), 2);
 		for(SearchHit hit : hits) {
-			assertThat(hit.getSource(), not(hasKey("insert_time2")));
+			assertThat(hit.getSourceAsMap(), not(hasKey("insert_time2")));
 		}
 	}
 
@@ -470,7 +470,7 @@ public class QueryTest {
 		// should be 2 according to the data.
 		Assert.assertEquals(response.getTotalHits(), 2);
 		for(SearchHit hit : hits) {
-			assertThat(hit.getSource(), hasKey("insert_time2"));
+			assertThat(hit.getSourceAsMap(), hasKey("insert_time2"));
 		}
 	}
 
@@ -484,7 +484,7 @@ public class QueryTest {
 		SearchHit[] hits = response.getHits();
 
 		for(SearchHit hit : hits) {
-			Map<String, Object> source = hit.getSource();
+			Map<String, Object> source = hit.getSourceAsMap();
 			String gender = ((String)source.get("gender")).toLowerCase();
 			int age = (int)source.get("age");
 			int account_number = (int) source.get("account_number");
@@ -503,7 +503,7 @@ public class QueryTest {
 		Assert.assertNotEquals(hits.length, 0);
 
 		for (SearchHit hit : hits) {
-			Map<String, Object> source = hit.getSource();
+			Map<String, Object> source = hit.getSourceAsMap();
 			String gender = ((String) source.get("gender")).toLowerCase();
 			int age = (int) source.get("age");
 			int account_number = (int) source.get("account_number");
@@ -519,7 +519,7 @@ public class QueryTest {
 
 		ArrayList<Integer> ages = new ArrayList<Integer>();
 		for(SearchHit hit : hits) {
-			ages.add((int)hit.getSource().get("age"));
+			ages.add((int)hit.getSourceAsMap().get("age"));
 		}
 
 		ArrayList<Integer> sortedAges = (ArrayList<Integer>)ages.clone();
@@ -535,7 +535,7 @@ public class QueryTest {
 
 		ArrayList<Integer> ages = new ArrayList<Integer>();
 		for(SearchHit hit : hits) {
-			ages.add((int)hit.getSource().get("age"));
+			ages.add((int)hit.getSourceAsMap().get("age"));
 		}
 
 		ArrayList<Integer> sortedAges = (ArrayList<Integer>)ages.clone();
@@ -551,7 +551,7 @@ public class QueryTest {
 
 		ArrayList<Integer> testFields = new ArrayList<Integer>();
 		for(SearchHit hit : hits) {
-			testFields.add((int)hit.getSource().get("test field"));
+			testFields.add((int)hit.getSourceAsMap().get("test field"));
 		}
 
 		ArrayList<Integer> sortedTestFields = (ArrayList<Integer>)testFields.clone();
@@ -582,7 +582,7 @@ public class QueryTest {
         SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_INTERSECTS(place,'POLYGON ((102 2, 103 2, 103 3, 102 3, 102 2))')", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
-        Assert.assertEquals("bigSquare",result.getSource().get("description"));
+        Assert.assertEquals("bigSquare",result.getSourceAsMap().get("description"));
     }
 
     @Test
@@ -590,14 +590,14 @@ public class QueryTest {
         SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_BOUNDING_BOX(center,100.0,1.0,101,0.0)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
+        Assert.assertEquals("square",result.getSourceAsMap().get("description"));
     }
     @Test
     public void geoDistance() throws SQLFeatureNotSupportedException, SqlParseException, InterruptedException {
         SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_DISTANCE(center,'1km',100.5,0.500001)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
+        Assert.assertEquals("square",result.getSourceAsMap().get("description"));
     }
 
     //ES5.0: geo_distance_range] queries are no longer supported for geo_point field types. Use geo_distance sort or aggregations
@@ -623,7 +623,7 @@ public class QueryTest {
         SearchHits results = query(String.format("SELECT * FROM %s/location WHERE GEO_POLYGON(center,100,0,100.5,2,101.0,0)", TEST_INDEX));
         org.junit.Assert.assertEquals(1,results.getTotalHits());
         SearchHit result = results.getAt(0);
-        Assert.assertEquals("square",result.getSource().get("description"));
+        Assert.assertEquals("square",result.getSourceAsMap().get("description"));
     }
 
     @Test

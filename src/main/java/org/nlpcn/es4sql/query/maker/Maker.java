@@ -3,13 +3,11 @@ package org.nlpcn.es4sql.query.maker;
 import java.io.IOException;
 import java.util.*;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
-import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.ToXContent;
@@ -18,12 +16,9 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
-import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
-import org.nlpcn.es4sql.domain.Query;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -200,13 +195,6 @@ public abstract class Maker {
             String distance = trimApostrophes(distanceFilterParams.getDistance());
             x = QueryBuilders.geoDistanceQuery(cond.getName()).distance(distance).point(fromPoint.getLat(),fromPoint.getLon());
             break;
-        case GEO_DISTANCE_RANGE:
-            RangeDistanceFilterParams rangeDistanceFilterParams = (RangeDistanceFilterParams) cond.getValue();
-            fromPoint = rangeDistanceFilterParams.getFrom();
-            String distanceFrom = trimApostrophes(rangeDistanceFilterParams.getDistanceFrom());
-            String distanceTo = trimApostrophes(rangeDistanceFilterParams.getDistanceTo());
-            x = QueryBuilders.geoDistanceRangeQuery(cond.getName(), fromPoint.getLat(), fromPoint.getLon()).from(distanceFrom).to(distanceTo);
-            break;
         case GEO_POLYGON:
             PolygonFilterParams polygonFilterParams = (PolygonFilterParams) cond.getValue();
             ArrayList<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
@@ -214,12 +202,6 @@ public abstract class Maker {
                 geoPoints.add(new GeoPoint(p.getLat(), p.getLon()));
             GeoPolygonQueryBuilder polygonFilterBuilder = QueryBuilders.geoPolygonQuery(cond.getName(),geoPoints);
             x = polygonFilterBuilder;
-            break;
-        case GEO_CELL:
-            CellFilterParams cellFilterParams = (CellFilterParams) cond.getValue();
-            Point geoHashPoint = cellFilterParams.getGeohashPoint();
-            GeoPoint geoPoint = new GeoPoint(geoHashPoint.getLat(),geoHashPoint.getLon());
-            x = QueryBuilders.geoHashCellQuery(cond.getName(),geoPoint).precision(cellFilterParams.getPrecision()).neighbors(cellFilterParams.isNeighbors());
             break;
         case NIN_TERMS:
         case IN_TERMS:

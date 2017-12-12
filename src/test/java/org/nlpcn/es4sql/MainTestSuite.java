@@ -13,8 +13,8 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
@@ -131,7 +131,7 @@ public class MainTestSuite {
                 "}\n" +
                 "}"+
                 "} } }";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("gotCharacters").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("gotCharacters").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareDogsIndex() {
@@ -144,7 +144,7 @@ public class MainTestSuite {
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("dog").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("dog").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareAccountsIndex() {
@@ -165,7 +165,7 @@ public class MainTestSuite {
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
 
@@ -182,7 +182,7 @@ public class MainTestSuite {
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareNestedTypeIndex() {
@@ -228,7 +228,7 @@ public class MainTestSuite {
                     "      }\n" +
                     "    }}";
 
-            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareChildrenTypeIndex() {
@@ -257,7 +257,7 @@ public class MainTestSuite {
 				"	}"+
 				"}\n";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("childrenType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("childrenType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareParentTypeIndex() {
@@ -273,7 +273,7 @@ public class MainTestSuite {
 				"	}\n" +
 				"}\n";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("parentType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("parentType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     @AfterClass
@@ -321,7 +321,7 @@ public class MainTestSuite {
 
 		BulkRequestBuilder bulkBuilder = client.prepareBulk();
 		byte[] buffer = ByteStreams.toByteArray(new FileInputStream(jsonPath));
-		bulkBuilder.add(buffer, 0, buffer.length, TEST_INDEX, null);
+		bulkBuilder.add(buffer, 0, buffer.length, TEST_INDEX, null, XContentType.JSON);
 		BulkResponse response = bulkBuilder.get();
 
 		if(response.hasFailures()) {
@@ -347,7 +347,7 @@ public class MainTestSuite {
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
@@ -364,7 +364,7 @@ public class MainTestSuite {
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
 	public static SearchDao getSearchDao() {
@@ -375,7 +375,7 @@ public class MainTestSuite {
 		return client;
 	}
 
-	protected static InetSocketTransportAddress getTransportAddress() throws UnknownHostException {
+	protected static TransportAddress getTransportAddress() throws UnknownHostException {
 		String host = System.getenv("ES_TEST_HOST");
 		String port = System.getenv("ES_TEST_PORT");
 
@@ -390,7 +390,7 @@ public class MainTestSuite {
 		}
 
 		System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
-		return new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
+		return new TransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
 	}
 
 }

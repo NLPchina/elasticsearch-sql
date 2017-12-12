@@ -466,7 +466,7 @@ public class AggregationTest {
         Assert.assertEquals(1, response1.getHits().getHits().length);
         Terms gender1 = response1.getAggregations().get("gender");
         Assert.assertEquals(2, gender1.getBuckets().size());
-        Object account1 = response1.getHits().getHits()[0].getSource().get("account_number");
+        Object account1 = response1.getHits().getHits()[0].getSourceAsMap().get("account_number");
 
         final String query2 = String.format("SELECT /*! DOCS_WITH_AGGREGATION(1,1) */" +
                 " account_number FROM %s/account GROUP BY gender", TEST_INDEX);
@@ -475,7 +475,7 @@ public class AggregationTest {
         Assert.assertEquals(1, response2.getHits().getHits().length);
         Terms gender2 = response2.getAggregations().get("gender");
         Assert.assertEquals(2, gender2.getBuckets().size());
-        Object account2 = response2.getHits().getHits()[0].getSource().get("account_number");
+        Object account2 = response2.getHits().getHits()[0].getSourceAsMap().get("account_number");
 
         Assert.assertEquals(response1.getHits().getTotalHits(), response2.getHits().getTotalHits());
         Assert.assertNotEquals(account1, account2);

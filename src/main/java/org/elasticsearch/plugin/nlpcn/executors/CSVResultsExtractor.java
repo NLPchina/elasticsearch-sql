@@ -1,21 +1,16 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
 import com.google.common.base.Joiner;
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
-import org.elasticsearch.search.aggregations.metrics.MetricsAggregator;
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBounds;
-import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
-import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
@@ -257,8 +252,8 @@ public class CSVResultsExtractor {
         Set<String> csvHeaders = new HashSet<>();
         for(SearchHit hit : hits){
             Map<String, Object> doc = hit.getSourceAsMap();
-            Map<String, SearchHitField> fields = hit.getFields();
-            for(SearchHitField searchHitField : fields.values()){
+            Map<String, DocumentField> fields = hit.getFields();
+            for(DocumentField searchHitField : fields.values()){
                 doc.put(searchHitField.getName(),searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);

@@ -28,6 +28,11 @@ public class RestSqlAction extends BaseRestHandler {
 	}
 
     @Override
+    public String getName() {
+        return "sql_action";
+    }
+
+    @Override
     protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
         String sql = request.param("sql");
 

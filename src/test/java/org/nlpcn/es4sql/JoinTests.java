@@ -399,8 +399,8 @@ public class JoinTests {
                 "ON GEO_INTERSECTS(p2.place,p1.place)",TEST_INDEX,TEST_INDEX);
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(2, hits.length);
-        Assert.assertEquals("squareRelated", hits[0].getSource().get("p2.description"));
-        Assert.assertEquals("squareRelated",hits[1].getSource().get("p2.description"));
+        Assert.assertEquals("squareRelated", hits[0].getSourceAsMap().get("p2.description"));
+        Assert.assertEquals("squareRelated",hits[1].getSourceAsMap().get("p2.description"));
     }
     @Test
     public void joinWithInQuery() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
@@ -409,7 +409,7 @@ public class JoinTests {
                 " where c.name.firstname in (select holdersName from %s/dog)", TEST_INDEX, TEST_INDEX, TEST_INDEX);
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(1, hits.length);
-        Assert.assertEquals("Daenerys", hits[0].getSource().get("c.name.firstname"));
+        Assert.assertEquals("Daenerys", hits[0].getSourceAsMap().get("c.name.firstname"));
     }
 
 

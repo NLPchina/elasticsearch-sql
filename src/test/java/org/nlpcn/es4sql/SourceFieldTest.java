@@ -20,7 +20,7 @@ public class SourceFieldTest {
 	public void includeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchHits response = query(String.format("SELECT include('*name','*ge'),include('b*'),include('*ddre*'),include('gender') FROM %s/account LIMIT 1000", TEST_INDEX));
 		for (SearchHit hit : response.getHits()) {
-			Set<String> keySet = hit.getSource().keySet();
+			Set<String> keySet = hit.getSourceAsMap().keySet();
 			for (String field : keySet) {
 				Assert.assertTrue(field.endsWith("name") || field.endsWith("ge") || field.startsWith("b") || field.contains("ddre") || field.equals("gender"));
 			}
@@ -34,7 +34,7 @@ public class SourceFieldTest {
 		SearchHits response = query(String.format("SELECT exclude('*name','*ge'),exclude('b*'),exclude('*ddre*'),exclude('gender') FROM %s/account LIMIT 1000", TEST_INDEX));
 
 		for (SearchHit hit : response.getHits()) {
-			Set<String> keySet = hit.getSource().keySet();
+			Set<String> keySet = hit.getSourceAsMap().keySet();
 			for (String field : keySet) {
 				Assert.assertFalse(field.endsWith("name") || field.endsWith("ge") || field.startsWith("b") || field.contains("ddre") || field.equals("gender"));
 			}
@@ -47,7 +47,7 @@ public class SourceFieldTest {
 		SearchHits response = query(String.format("SELECT exclude('*name','*ge'),include('b*'),exclude('*ddre*'),include('gender') FROM %s/account LIMIT 1000", TEST_INDEX));
 
 		for (SearchHit hit : response.getHits()) {
-			Set<String> keySet = hit.getSource().keySet();
+			Set<String> keySet = hit.getSourceAsMap().keySet();
 			for (String field : keySet) {
 				Assert.assertFalse(field.endsWith("name") || field.endsWith("ge") ||  field.contains("ddre") );
 				Assert.assertTrue(field.startsWith("b") || field.equals("gender"));
