@@ -311,7 +311,6 @@ public class AggMaker {
                 }
                 continue;
             }
-            if (reduceScriptAdditionalParams.size() == 0) reduceScriptAdditionalParams = null;
 
             switch (param.getKey().toLowerCase()) {
                 case "map_script":
