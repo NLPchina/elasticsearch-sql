@@ -54,6 +54,7 @@ Elasticsearch-SQL
 <br/>
 **5.6.4** [![5.6.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **5.6.5** [![5.6.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.0.0** [![6.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.0.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -121,6 +122,7 @@ Versions
 | 5.6.3                 | 5.6.3.0        | delete commands not supported  | elastic5.6.3 |
 | 5.6.4                 | 5.6.4.0        | delete commands not supported  | elastic5.6.4 |
 | 5.6.5                 | 5.6.5.0        | delete commands not supported  | elastic5.6.5 |
+| 6.0.0                 | 6.0.0.0        |                                | elastic6.0.0 |
 
 ### Elasticsearch 1.x
 ````
@@ -325,6 +327,11 @@ Versions
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/5.6.5.0/elasticsearch-sql-5.6.5.0.zip
 ````
 
+### Elasticsearch 6.0.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.0.0.0/elasticsearch-sql-6.0.0.0.zip
+````
+
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
 
 ## Basic Usage
@@ -335,7 +342,7 @@ On elasticsearch 1.x / 2.x, visit the elasticsearch-sql web front-end:
 http://localhost:9200/_plugin/sql/
 ````
 
-On elasticsearch 5.x, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip).
+On elasticsearch 5.x/6.x, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip).
 
 Then start the web front-end like this:
 
