@@ -90,10 +90,10 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
     }
 
     protected void mergeSourceAndAddAliases(Map<String,Object> secondTableHitSource, SearchHit searchHit,String t1Alias,String t2Alias) {
-        Map<String,Object> results = mapWithAliases(searchHit.getSource(), t1Alias);
+        Map<String,Object> results = mapWithAliases(searchHit.getSourceAsMap(), t1Alias);
         results.putAll(mapWithAliases(secondTableHitSource, t2Alias));
-        searchHit.getSource().clear();
-        searchHit.getSource().putAll(results);
+        searchHit.getSourceAsMap().clear();
+        searchHit.getSourceAsMap().putAll(results);
     }
 
     protected Map<String,Object> mapWithAliases(Map<String, Object> source, String alias) {

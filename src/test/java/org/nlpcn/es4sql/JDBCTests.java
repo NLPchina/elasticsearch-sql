@@ -19,10 +19,10 @@ public class JDBCTests {
     @Test
     public void testJDBC() throws Exception {
         Properties properties = new Properties();
-        properties.put("url", "jdbc:elasticsearch://127.0.0.1:9300/" + TestsConstants.TEST_INDEX);
+        properties.put("url", "jdbc:elasticsearch://127.0.0.1:9300/" + TestsConstants.TEST_INDEX_ACCOUNT);
         DruidDataSource dds = (DruidDataSource) ElasticSearchDruidDataSourceFactory.createDataSource(properties);
         Connection connection = dds.getConnection();
-        PreparedStatement ps = connection.prepareStatement("SELECT  gender,lastname,age from  " + TestsConstants.TEST_INDEX + " where lastname='Heath'");
+        PreparedStatement ps = connection.prepareStatement("SELECT  gender,lastname,age from  " + TestsConstants.TEST_INDEX_ACCOUNT + " where lastname='Heath'");
         ResultSet resultSet = ps.executeQuery();
         List<String> result = new ArrayList<String>();
         while (resultSet.next()) {

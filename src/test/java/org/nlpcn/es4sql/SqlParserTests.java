@@ -1,8 +1,6 @@
 package org.nlpcn.es4sql;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
-import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.ast.statement.SQLUnionOperator;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -14,7 +12,6 @@ import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
-import org.nlpcn.es4sql.parse.FieldMaker;
 import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
@@ -29,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+import static org.nlpcn.es4sql.TestsConstants.*;
 
 /**
  * Created by Eliran on 21/8/2015.
@@ -44,8 +41,12 @@ public class SqlParserTests {
 
     @Test
     public void joinParseCheckSelectedFieldsSplit() throws SqlParseException {
-        String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
+        String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM " +
+                TEST_INDEX_ACCOUNT +
+                "/account a " +
+                "LEFT JOIN " +
+                TEST_INDEX_DOG +
+                "/dog d on d.holdersName = a.firstname " +
                 " AND d.age < a.age " +
                 " WHERE a.firstname = 'eliran' AND " +
                 " (a.age > 10 OR a.balance > 2000)" +
@@ -67,8 +68,12 @@ public class SqlParserTests {
 
     @Test
     public void joinParseCheckConnectedFields() throws SqlParseException {
-        String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
+        String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM " +
+                TEST_INDEX_ACCOUNT +
+                "/account a " +
+                "LEFT JOIN " +
+                TEST_INDEX_DOG +
+                "/dog d on d.holdersName = a.firstname " +
                 " AND d.age < a.age " +
                 " WHERE a.firstname = 'eliran' AND " +
                 " (a.age > 10 OR a.balance > 2000)" +
@@ -97,8 +102,12 @@ public class SqlParserTests {
 
     @Test
     public void joinParseFromsAreSplitedCorrectly() throws SqlParseException {
-        String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname" +
+        String query = "SELECT a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM " +
+                TEST_INDEX_ACCOUNT +
+                "/account a " +
+                "LEFT JOIN " +
+                TEST_INDEX_DOG +
+                "/dog d on d.holdersName = a.firstname" +
                 " WHERE a.firstname = 'eliran' AND " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
@@ -108,12 +117,12 @@ public class SqlParserTests {
 
         Assert.assertNotNull(t1From);
         Assert.assertEquals(1, t1From.size());
-        Assert.assertTrue(checkFrom(t1From.get(0), "elasticsearch-sql_test_index", "account", "a"));
+        Assert.assertTrue(checkFrom(t1From.get(0), TEST_INDEX_ACCOUNT, "account", "a"));
 
         List<From> t2From = joinSelect.getSecondTable().getFrom();
         Assert.assertNotNull(t2From);
         Assert.assertEquals(1, t2From.size());
-        Assert.assertTrue(checkFrom(t2From.get(0), "elasticsearch-sql_test_index", "dog", "d"));
+        Assert.assertTrue(checkFrom(t2From.get(0), TEST_INDEX_DOG, "dog", "d"));
     }
 
     private boolean checkFrom(From from, String index, String type, String alias) {
@@ -123,8 +132,12 @@ public class SqlParserTests {
 
     @Test
     public void joinParseConditionsTestOneCondition() throws SqlParseException {
-        String query = "SELECT a.*, a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname" +
+        String query = "SELECT a.*, a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM " +
+                TEST_INDEX_ACCOUNT +
+                "/account a " +
+                "LEFT JOIN " +
+                TEST_INDEX_DOG +
+                "/dog d on d.holdersName = a.firstname" +
                 " WHERE a.firstname = 'eliran' AND " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
@@ -138,8 +151,12 @@ public class SqlParserTests {
 
     @Test
     public void joinParseConditionsTestTwoConditions() throws SqlParseException {
-        String query = "SELECT a.*, a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname " +
+        String query = "SELECT a.*, a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM " +
+                TEST_INDEX_ACCOUNT +
+                "/account a " +
+                "LEFT JOIN " +
+                TEST_INDEX_DOG +
+                "/dog d on d.holdersName = a.firstname " +
                 " AND d.age < a.age " +
                 " WHERE a.firstname = 'eliran' AND " +
                 " (a.age > 10 OR a.balance > 2000)" +
@@ -156,8 +173,12 @@ public class SqlParserTests {
 
     @Test
     public void joinSplitWhereCorrectly() throws SqlParseException {
-        String query = "SELECT a.*, a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM elasticsearch-sql_test_index/account a " +
-                "LEFT JOIN elasticsearch-sql_test_index/dog d on d.holdersName = a.firstname" +
+        String query = "SELECT a.*, a.firstname ,a.lastname , a.gender ,  d.holdersName ,d.name  FROM " +
+                TEST_INDEX_ACCOUNT +
+                "/account a " +
+                "LEFT JOIN " +
+                TEST_INDEX_DOG +
+                "/dog d on d.holdersName = a.firstname" +
                 " WHERE a.firstname = 'eliran' AND " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
@@ -170,11 +191,11 @@ public class SqlParserTests {
     }
 
     @Test
-    public void joinConditionWithComplexObjectComparisonRightSide() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+    public void joinConditionWithComplexObjectComparisonRightSide() throws SqlParseException {
         String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotHouses h " +
+                "JOIN %s/gotCharacters h " +
                 "on h.name = c.name.lastname  " +
-                "where c.name.firstname='Daenerys'", TEST_INDEX, TEST_INDEX);
+                "where c.name.firstname='Daenerys'", TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         List<Condition> conditions = joinSelect.getConnectedConditions();
         Assert.assertNotNull(conditions);
@@ -185,9 +206,9 @@ public class SqlParserTests {
     @Test
     public void joinConditionWithComplexObjectComparisonLeftSide() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
         String query = String.format("select c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotHouses h " +
+                "JOIN %s/gotCharacters h " +
                 "on c.name.lastname = h.name  " +
-                "where c.name.firstname='Daenerys'", TEST_INDEX, TEST_INDEX);
+                "where c.name.firstname='Daenerys'", TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         List<Condition> conditions = joinSelect.getConnectedConditions();
         Assert.assertNotNull(conditions);
@@ -200,9 +221,9 @@ public class SqlParserTests {
     public void limitHintsOnJoin() throws SqlParseException {
         String query = String.format("select /*! JOIN_TABLES_LIMIT(1000,null) */ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "use KEY (termsFilter) " +
-                "JOIN %s/gotHouses h " +
+                "JOIN %s/gotCharacters h " +
                 "on c.name.lastname = h.name  " +
-                "where c.name.firstname='Daenerys'", TEST_INDEX, TEST_INDEX);
+                "where c.name.firstname='Daenerys'", TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         List<Hint> hints = joinSelect.getHints();
         Assert.assertNotNull(hints);
@@ -220,9 +241,9 @@ public class SqlParserTests {
     public void hashTermsFilterHint() throws SqlParseException {
         String query = String.format("select /*! HASH_WITH_TERMS_FILTER*/ c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "use KEY (termsFilter) " +
-                "JOIN %s/gotHouses h " +
+                "JOIN %s/gotCharacters h " +
                 "on c.name.lastname = h.name  " +
-                "where c.name.firstname='Daenerys'", TEST_INDEX, TEST_INDEX);
+                "where c.name.firstname='Daenerys'", TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         List<Hint> hints = joinSelect.getHints();
         Assert.assertNotNull(hints);
@@ -237,9 +258,9 @@ public class SqlParserTests {
                 " /*! JOIN_TABLES_LIMIT(100,200) */ " +
                 "c.name.firstname,c.parents.father , h.name,h.words from %s/gotCharacters c " +
                 "use KEY (termsFilter) " +
-                "JOIN %s/gotHouses h " +
+                "JOIN %s/gotCharacters h " +
                 "on c.name.lastname = h.name  " +
-                "where c.name.firstname='Daenerys'", TEST_INDEX, TEST_INDEX);
+                "where c.name.firstname='Daenerys'", TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         List<Hint> hints = joinSelect.getHints();
@@ -260,7 +281,7 @@ public class SqlParserTests {
 
     @Test
     public void searchWithOdbcTimeFormatParse() throws SqlParseException {
-        String query = String.format("SELECT insert_time FROM %s/odbc WHERE insert_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX);
+        String query = String.format("SELECT insert_time FROM %s/odbc WHERE insert_time < {ts '2015-03-15 00:00:00.000'}", TEST_INDEX_ODBC);
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         LinkedList<Where> wheres = select.getWhere().getWheres();
@@ -391,7 +412,7 @@ public class SqlParserTests {
 
     @Test
     public void innerQueryTest() throws SqlParseException {
-        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran')", TEST_INDEX, TEST_INDEX);
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran')", TEST_INDEX_DOG, TEST_INDEX_ACCOUNT);
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Assert.assertTrue(select.containsSubQueries());
@@ -400,7 +421,7 @@ public class SqlParserTests {
 
     @Test
     public void inTermsSubQueryTest() throws SqlParseException {
-        String query = String.format("select * from %s/dog where holdersName = IN_TERMS (select firstname from %s/account where firstname = 'eliran')", TEST_INDEX, TEST_INDEX);
+        String query = String.format("select * from %s/dog where holdersName = IN_TERMS (select firstname from %s/account where firstname = 'eliran')", TEST_INDEX_DOG, TEST_INDEX_ACCOUNT);
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Assert.assertTrue(select.containsSubQueries());
@@ -410,7 +431,7 @@ public class SqlParserTests {
 
     @Test
     public void innerQueryTestTwoQueries() throws SqlParseException {
-        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran') and age IN (select name.ofHisName from %s/gotCharacters) ", TEST_INDEX, TEST_INDEX, TEST_INDEX);
+        String query = String.format("select * from %s/dog where holdersName IN (select firstname from %s/account where firstname = 'eliran') and age IN (select name.ofHisName from %s/gotCharacters) ", TEST_INDEX_DOG, TEST_INDEX_ACCOUNT, TEST_INDEX_GAME_OF_THRONES);
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Assert.assertTrue(select.containsSubQueries());
@@ -682,9 +703,9 @@ public class SqlParserTests {
     @Test
     public void parseJoinWithOneTableOrderByAttachToCorrectTable() throws SqlParseException {
         String query = String.format("select c.name.firstname , d.words from %s/gotCharacters c " +
-                        "JOIN %s/gotHouses d on d.name = c.house " +
+                        "JOIN %s/gotCharacters d on d.name = c.house " +
                         "order by c.name.firstname"
-                , TEST_INDEX, TEST_INDEX);
+                , TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         Assert.assertTrue("first table should be ordered", joinSelect.getFirstTable().isOrderdSelect());
@@ -695,9 +716,9 @@ public class SqlParserTests {
     @Test
     public void parseJoinWithOneTableOrderByRemoveAlias() throws SqlParseException {
         String query = String.format("select c.name.firstname , d.words from %s/gotCharacters c " +
-                        "JOIN %s/gotHouses d on d.name = c.house " +
+                        "JOIN %s/gotCharacters d on d.name = c.house " +
                         "order by c.name.firstname"
-                , TEST_INDEX, TEST_INDEX);
+                , TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES);
 
         JoinSelect joinSelect = parser.parseJoinSelect((SQLQueryExpr) queryToExpr(query));
         List<Order> orderBys = joinSelect.getFirstTable().getOrderBys();
@@ -988,7 +1009,7 @@ public class SqlParserTests {
 
     @Test
     public void castToIntTest() throws Exception {
-        String query = "select cast(age as int) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        String query = "select cast(age as int) from "+ TEST_INDEX_ACCOUNT + "/account limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);
@@ -1006,7 +1027,7 @@ public class SqlParserTests {
 
     @Test
     public void castToLongTest() throws Exception {
-        String query = "select cast(insert_time as long) from "+ TestsConstants.TEST_INDEX + " limit 10";
+        String query = "select cast(insert_time as long) from "+ TEST_INDEX_ACCOUNT + " limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);
@@ -1024,7 +1045,7 @@ public class SqlParserTests {
 
     @Test
     public void castToFloatTest() throws Exception {
-        String query = "select cast(age as float) from "+ TestsConstants.TEST_INDEX + " limit 10";
+        String query = "select cast(age as float) from "+ TEST_INDEX_ACCOUNT + " limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);
@@ -1042,7 +1063,7 @@ public class SqlParserTests {
 
     @Test
     public void castToDoubleTest() throws Exception {
-        String query = "select cast(age as double) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        String query = "select cast(age as double) from "+ TEST_INDEX_ACCOUNT + "/account limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);
@@ -1060,7 +1081,7 @@ public class SqlParserTests {
 
     @Test
     public void castToStringTest() throws Exception {
-        String query = "select cast(age as string) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        String query = "select cast(age as string) from "+ TEST_INDEX_ACCOUNT + "/account limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);
@@ -1077,7 +1098,7 @@ public class SqlParserTests {
 
     @Test
     public void castToDateTimeTest() throws Exception {
-        String query = "select cast(age as datetime) from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        String query = "select cast(age as datetime) from "+ TEST_INDEX_ACCOUNT + "/account limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);
@@ -1095,7 +1116,7 @@ public class SqlParserTests {
 
     @Test
     public void castToDoubleThenDivideTest() throws Exception {
-        String query = "select cast(age as double)/2 from "+ TestsConstants.TEST_INDEX + "/account limit 10";
+        String query = "select cast(age as double)/2 from "+ TEST_INDEX_ACCOUNT + "/account limit 10";
         SQLExpr sqlExpr = queryToExpr(query);
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         Field castField = select.getFields().get(0);

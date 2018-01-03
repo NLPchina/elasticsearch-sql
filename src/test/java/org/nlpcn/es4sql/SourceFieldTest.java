@@ -1,6 +1,6 @@
 package org.nlpcn.es4sql;
 
-import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+import static org.nlpcn.es4sql.TestsConstants.*;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -18,9 +18,9 @@ public class SourceFieldTest {
 
 	@Test
 	public void includeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		SearchHits response = query(String.format("SELECT include('*name','*ge'),include('b*'),include('*ddre*'),include('gender') FROM %s/account LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT include('*name','*ge'),include('b*'),include('*ddre*'),include('gender') FROM %s/account LIMIT 1000", TEST_INDEX_ACCOUNT));
 		for (SearchHit hit : response.getHits()) {
-			Set<String> keySet = hit.getSource().keySet();
+			Set<String> keySet = hit.getSourceAsMap().keySet();
 			for (String field : keySet) {
 				Assert.assertTrue(field.endsWith("name") || field.endsWith("ge") || field.startsWith("b") || field.contains("ddre") || field.equals("gender"));
 			}
@@ -29,12 +29,12 @@ public class SourceFieldTest {
 	}
 	
 	@Test
-	public void excludeTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+	public void excludeTest() throws SqlParseException, SQLFeatureNotSupportedException {
 
-		SearchHits response = query(String.format("SELECT exclude('*name','*ge'),exclude('b*'),exclude('*ddre*'),exclude('gender') FROM %s/account LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT exclude('*name','*ge'),exclude('b*'),exclude('*ddre*'),exclude('gender') FROM %s/account LIMIT 1000", TEST_INDEX_ACCOUNT));
 
 		for (SearchHit hit : response.getHits()) {
-			Set<String> keySet = hit.getSource().keySet();
+			Set<String> keySet = hit.getSourceAsMap().keySet();
 			for (String field : keySet) {
 				Assert.assertFalse(field.endsWith("name") || field.endsWith("ge") || field.startsWith("b") || field.contains("ddre") || field.equals("gender"));
 			}
@@ -42,12 +42,12 @@ public class SourceFieldTest {
 	}
 	
 	@Test
-	public void allTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+	public void allTest() throws SqlParseException, SQLFeatureNotSupportedException {
 
-		SearchHits response = query(String.format("SELECT exclude('*name','*ge'),include('b*'),exclude('*ddre*'),include('gender') FROM %s/account LIMIT 1000", TEST_INDEX));
+		SearchHits response = query(String.format("SELECT exclude('*name','*ge'),include('b*'),exclude('*ddre*'),include('gender') FROM %s/account LIMIT 1000", TEST_INDEX_ACCOUNT));
 
 		for (SearchHit hit : response.getHits()) {
-			Set<String> keySet = hit.getSource().keySet();
+			Set<String> keySet = hit.getSourceAsMap().keySet();
 			for (String field : keySet) {
 				Assert.assertFalse(field.endsWith("name") || field.endsWith("ge") ||  field.contains("ddre") );
 				Assert.assertTrue(field.startsWith("b") || field.equals("gender"));
@@ -55,7 +55,7 @@ public class SourceFieldTest {
 		}
 	}
 
-	private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
+	private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
 		SearchDao searchDao = MainTestSuite.getSearchDao();
 		SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
 		return ((SearchResponse) select.get()).getHits();

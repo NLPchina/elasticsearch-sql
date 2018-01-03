@@ -1,8 +1,6 @@
 package org.nlpcn.es4sql;
 
-
-
-import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+import static org.nlpcn.es4sql.TestsConstants.*;
 
 import java.io.FileInputStream;
 import java.net.InetAddress;
@@ -13,8 +11,8 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
@@ -41,85 +39,102 @@ import com.google.common.io.ByteStreams;
 		SQLFunctionsTest.class,
 		JDBCTests.class,
         UtilTests.class,
-        MultiQueryTests.class
-        ,
-		DeleteTest.class
+        MultiQueryTests.class,
+        DeleteTest.class
 })
 public class MainTestSuite {
-
 
 	private static TransportClient client;
 	private static SearchDao searchDao;
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-
 		Settings settings = Settings.builder().put("client.transport.ignore_cluster_name",true).build();
-
-		client = new PreBuiltTransportClient(settings).
-				addTransportAddress(getTransportAddress());
-
+		client = new PreBuiltTransportClient(settings).addTransportAddress(getTransportAddress());
 
         NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
 		String clusterName = nodeInfos.getClusterName().value();
 		System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
 
 		// Load test data.
-        if(client.admin().indices().prepareExists(TEST_INDEX).execute().actionGet().isExists()){
-            client.admin().indices().prepareDelete(TEST_INDEX).get();
-        }
-		loadBulk("src/test/resources/online.json");
+        loadBulk("src/test/resources/online.json", TEST_INDEX_ONLINE);
+
+        createTestIndex(TEST_INDEX_ACCOUNT);
         prepareAccountsIndex();
-		loadBulk("src/test/resources/accounts.json");
-        preparePhrasesIndex();
-        loadBulk("src/test/resources/phrases.json");
+		loadBulk("src/test/resources/accounts.json", TEST_INDEX_ACCOUNT);
+
+        createTestIndex(TEST_INDEX_PHRASE);
+		preparePhrasesIndex();
+        loadBulk("src/test/resources/phrases.json", TEST_INDEX_PHRASE);
+
+        createTestIndex(TEST_INDEX_DOG);
         prepareDogsIndex();
-        loadBulk("src/test/resources/dogs.json");
-        loadBulk("src/test/resources/peoples.json");
+        loadBulk("src/test/resources/dogs.json", TEST_INDEX_DOG);
+
+        createTestIndex(TEST_INDEX_PEOPLE);
+        loadBulk("src/test/resources/peoples.json", TEST_INDEX_PEOPLE);
+
+        createTestIndex(TEST_INDEX_GAME_OF_THRONES);
         prepareGameOfThronesIndex();
-        loadBulk("src/test/resources/game_of_thrones_complex.json");
-        loadBulk("src/test/resources/systems.json");
+        loadBulk("src/test/resources/game_of_thrones_complex.json", TEST_INDEX_GAME_OF_THRONES);
 
+        createTestIndex(TEST_INDEX_SYSTEM);
+        loadBulk("src/test/resources/systems.json", TEST_INDEX_SYSTEM);
+
+        createTestIndex(TEST_INDEX_ODBC);
         prepareOdbcIndex();
-        loadBulk("src/test/resources/odbc-date-formats.json");
+        loadBulk("src/test/resources/odbc-date-formats.json", TEST_INDEX_ODBC);
 
-        prepareSpatialIndex("location");
-        loadBulk("src/test/resources/locations.json");
+        createTestIndex(TEST_INDEX_LOCATION);
+        prepareSpatialIndex(TEST_INDEX_LOCATION, "location");
+        loadBulk("src/test/resources/locations.json", TEST_INDEX_LOCATION);
 
-        prepareSpatialIndex("location2");
-        loadBulk("src/test/resources/locations2.json");
+        createTestIndex(TEST_INDEX_LOCATION2);
+        prepareSpatialIndex(TEST_INDEX_LOCATION2, "location2");
+        loadBulk("src/test/resources/locations2.json", TEST_INDEX_LOCATION2);
 
+        createTestIndex(TEST_INDEX_NESTED_TYPE);
         prepareNestedTypeIndex();
-        loadBulk("src/test/resources/nested_objects.json");
+        loadBulk("src/test/resources/nested_objects.json", TEST_INDEX_NESTED_TYPE);
 
-        prepareChildrenTypeIndex();
-        prepareParentTypeIndex();
-        loadBulk("src/test/resources/parent_objects.json");
-        loadBulk("src/test/resources/children_objects.json");
-        
+        createTestIndex(TEST_INDEX_JOIN_TYPE);
+        prepareJoinTypeIndex();
+        loadBulk("src/test/resources/join_objects.json", TEST_INDEX_JOIN_TYPE);
+
         searchDao = new SearchDao(client);
 
         //refresh to make sure all the docs will return on queries
-        client.admin().indices().prepareRefresh(TEST_INDEX).execute().actionGet();
+        client.admin().indices().prepareRefresh(TEST_INDEX + "*").get();
 
 		System.out.println("Finished the setup process...");
 	}
+
+    private static void createTestIndex(String index) {
+        deleteTestIndex(index);
+        client.admin().indices().prepareCreate(index).get();
+    }
+
+    private static void deleteTestIndex(String index) {
+        if(client.admin().indices().prepareExists(index).get().isExists()){
+            client.admin().indices().prepareDelete(index).get();
+        }
+    }
 
     private static void prepareGameOfThronesIndex() {
         String dataMapping = "{  \"gotCharacters\": { " +
                 " \"properties\": {\n" +
                 " \"nickname\": {\n" +
-                "\"type\":\"string\", "+
+                "\"type\":\"text\", "+
                 "\"fielddata\":true"+
                 "},\n"+
                 " \"name\": {\n" +
                 "\"properties\": {\n" +
                 "\"firstname\": {\n" +
-                "\"type\": \"string\",\n" +
+                "\"type\": \"text\",\n" +
                 "  \"fielddata\": true\n" +
                 "},\n" +
                 "\"lastname\": {\n" +
-                "\"type\": \"string\",\n" +
+                "\"type\": \"text\",\n" +
                 "  \"fielddata\": true\n" +
                 "},\n" +
                 "\"ofHerName\": {\n" +
@@ -131,58 +146,54 @@ public class MainTestSuite {
                 "}\n" +
                 "}"+
                 "} } }";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("gotCharacters").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX_GAME_OF_THRONES).setType("gotCharacters").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareDogsIndex() {
         String dataMapping = "{  \"dog\": {" +
                 " \"properties\": {\n" +
                 "          \"dog_name\": {\n" +
-                "            \"type\": \"string\",\n" +
+                "            \"type\": \"text\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }"+
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("dog").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX_DOG).setType("dog").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareAccountsIndex() {
         String dataMapping = "{  \"account\": {" +
                 " \"properties\": {\n" +
                 "          \"gender\": {\n" +
-                "            \"type\": \"string\",\n" +
+                "            \"type\": \"text\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }," +
                 "          \"address\": {\n" +
-                "            \"type\": \"string\",\n" +
+                "            \"type\": \"text\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }," +
                 "          \"state\": {\n" +
-                "            \"type\": \"string\",\n" +
+                "            \"type\": \"text\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }" +
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("account").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX_ACCOUNT).setType("account").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
-
-
-
-
 
     private static void preparePhrasesIndex() {
         String dataMapping = "{  \"phrase\": {" +
                 " \"properties\": {\n" +
                 "          \"phrase\": {\n" +
-                "            \"type\": \"string\",\n" +
+                "            \"type\": \"text\",\n" +
                 "            \"store\": true\n" +
                 "          }" +
                 "       }"+
                 "   }" +
                 "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("phrase").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX_PHRASE).setType("phrase").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareNestedTypeIndex() {
@@ -193,12 +204,12 @@ public class MainTestSuite {
                     "            \"type\": \"nested\",\n" +
                     "            \"properties\": {\n" +
                     "              \"info\": {\n" +
-                    "                \"type\": \"string\",\n" +
-                    "                \"index\": \"not_analyzed\"\n" +
+                    "                \"type\": \"keyword\",\n" +
+                    "                \"index\": \"true\"\n" +
                     "              },\n" +
                     "              \"author\": {\n" +
-                    "                \"type\": \"string\",\n" +
-                    "                \"index\": \"not_analyzed\"\n" +
+                    "                \"type\": \"keyword\",\n" +
+                    "                \"index\": \"true\"\n" +
                     "              },\n" +
                     "              \"dayOfWeek\": {\n" +
                     "                \"type\": \"long\"\n" +
@@ -209,8 +220,8 @@ public class MainTestSuite {
                     "            \"type\": \"nested\",\n" +
                     "            \"properties\": {\n" +
                     "              \"data\": {\n" +
-                    "                \"type\": \"string\",\n" +
-                    "                \"index\": \"not_analyzed\"\n" +
+                    "                \"type\": \"keyword\",\n" +
+                    "                \"index\": \"true\"\n" +
                     "              },\n" +
                     "              \"likes\": {\n" +
                     "                \"type\": \"long\"\n" +
@@ -221,64 +232,53 @@ public class MainTestSuite {
                     "            \"type\": \"long\"\n" +
                     "          },\n" +
                     "          \"someField\": {\n" +
-                    "                \"type\": \"string\",\n" +
-                    "                \"index\": \"not_analyzed\"\n" +
+                    "                \"type\": \"keyword\",\n" +
+                    "                \"index\": \"true\"\n" +
                     "          }\n" +
                     "        }\n" +
                     "      }\n" +
                     "    }}";
 
-            client.admin().indices().preparePutMapping(TEST_INDEX).setType("nestedType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+            client.admin().indices().preparePutMapping(TEST_INDEX_NESTED_TYPE).setType("nestedType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
-    private static void prepareChildrenTypeIndex() {
-
+    private static void prepareJoinTypeIndex() {
         String dataMapping = "{\n" +
-				"	\"childrenType\": {\n" +
-				"		\"_routing\": {\n" +
-				"			\"required\": true\n" +
-				"		},\n" +
-				"		\"_parent\": {\n" +
-				"			\"type\": \"parentType\"\n" +
-				"		},\n" +
-				"		\"properties\": {\n" +
-				"			\"dayOfWeek\": {\n" +
-				"				\"type\": \"long\"\n" +
-				"			},\n" +
-				"			\"author\": {\n" +
-				"				\"index\": \"not_analyzed\",\n" +
-				"				\"type\": \"string\"\n" +
-				"			},\n" +
-				"			\"info\": {\n" +
-				"				\"index\": \"not_analyzed\",\n" +
-				"				\"type\": \"string\"\n" +
-				"			}\n" +
-				"		}\n" +
-				"	}"+
-				"}\n";
-
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("childrenType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
-    }
-
-    private static void prepareParentTypeIndex() {
-
-        String dataMapping = "{\n" +
-				"	\"parentType\": {\n" +
-				"		\"properties\": {\n" +
-				"			\"parentTile\": {\n" +
-				"				\"index\": \"not_analyzed\",\n" +
-				"				\"type\": \"string\"\n" +
-				"			}\n" +
-				"		}\n" +
-				"	}\n" +
-				"}\n";
-
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("parentType").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+                "  \"joinType\": {\n" +
+                "    \"properties\": {\n" +
+                "      \"join_field\": {\n" +
+                "        \"type\": \"join\",\n" +
+                "        \"relations\": {\n" +
+                "          \"parentType\": \"childrenType\"\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"parentTile\": {\n" +
+                "        \"index\": \"true\",\n" +
+                "        \"type\": \"keyword\"\n" +
+                "      },\n" +
+                "      \"dayOfWeek\": {\n" +
+                "        \"type\": \"long\"\n" +
+                "      },\n" +
+                "      \"author\": {\n" +
+                "        \"index\": \"true\",\n" +
+                "        \"type\": \"keyword\"\n" +
+                "      },\n" +
+                "      \"info\": {\n" +
+                "        \"index\": \"true\",\n" +
+                "        \"type\": \"keyword\"\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        client.admin().indices().preparePutMapping(TEST_INDEX_JOIN_TYPE).setType("joinType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     @AfterClass
-	public static void tearDown() throws InterruptedException {
+	public static void tearDown() {
 		System.out.println("teardown process...");
+
+        deleteTestIndex(TEST_INDEX + "*");
+
 		client.close();
 	}
 
@@ -313,22 +313,24 @@ public class MainTestSuite {
 	/**
 	 * Loads all data from the json into the test
 	 * elasticsearch cluster, using TEST_INDEX
-	 * @param jsonPath the json file represents the bulk
-	 * @throws Exception
+     * @param jsonPath the json file represents the bulk
+     * @param defaultIndex
+     * @throws Exception
 	 */
-	public static void loadBulk(String jsonPath) throws Exception {
+	public static void loadBulk(String jsonPath, String defaultIndex) throws Exception {
 		System.out.println(String.format("Loading file %s into elasticsearch cluster", jsonPath));
 
 		BulkRequestBuilder bulkBuilder = client.prepareBulk();
 		byte[] buffer = ByteStreams.toByteArray(new FileInputStream(jsonPath));
-		bulkBuilder.add(buffer, 0, buffer.length, TEST_INDEX, null);
+		bulkBuilder.add(buffer, 0, buffer.length, defaultIndex, null, XContentType.JSON);
 		BulkResponse response = bulkBuilder.get();
 
 		if(response.hasFailures()) {
 			throw new Exception(String.format("Failed during bulk load of file %s. failure message: %s", jsonPath, response.buildFailureMessage()));
 		}
 	}
-    public static void prepareSpatialIndex(String type){
+
+    public static void prepareSpatialIndex(String index, String type){
         String dataMapping = "{\n" +
                 "\t\""+type+"\" :{\n" +
                 "\t\t\"properties\":{\n" +
@@ -341,14 +343,15 @@ public class MainTestSuite {
                 "\t\t\t\t\"type\":\"geo_point\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"description\":{\n" +
-                "\t\t\t\t\"type\":\"string\"\n" +
+                "\t\t\t\t\"type\":\"text\"\n" +
                 "\t\t\t}\n" +
                 "\t\t}\n" +
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType(type).setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(index).setType(type).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
+
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
                 "\t\"odbc\" :{\n" +
@@ -358,13 +361,13 @@ public class MainTestSuite {
                 "\t\t\t\t\"format\": \"{'ts' ''yyyy-MM-dd HH:mm:ss.SSS''}\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"docCount\":{\n" +
-                "\t\t\t\t\"type\":\"string\"\n" +
+                "\t\t\t\t\"type\":\"text\"\n" +
                 "\t\t\t}\n" +
                 "\t\t}\n" +
                 "\t}\n" +
                 "}";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX).setType("odbc").setSource(dataMapping, XContentFactory.xContentType(dataMapping)).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX_ODBC).setType("odbc").setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
 	public static SearchDao getSearchDao() {
@@ -375,7 +378,7 @@ public class MainTestSuite {
 		return client;
 	}
 
-	protected static InetSocketTransportAddress getTransportAddress() throws UnknownHostException {
+	protected static TransportAddress getTransportAddress() throws UnknownHostException {
 		String host = System.getenv("ES_TEST_HOST");
 		String port = System.getenv("ES_TEST_PORT");
 
@@ -390,7 +393,6 @@ public class MainTestSuite {
 		}
 
 		System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
-		return new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
+		return new TransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
 	}
-
 }

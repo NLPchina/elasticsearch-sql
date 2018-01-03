@@ -3,7 +3,7 @@ package com.alibaba.druid.pool;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.InputStream;
@@ -37,7 +37,7 @@ public class ElasticSearchConnection implements Connection {
             for (String hostAndPort : hostAndPortArray) {
                 String host = hostAndPort.split(":")[0];
                 String port = hostAndPort.split(":")[1];
-                transportClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
+                transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
             }
             client = transportClient;
         } catch (UnknownHostException e) {
