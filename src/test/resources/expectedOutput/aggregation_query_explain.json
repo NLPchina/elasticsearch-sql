@@ -2,7 +2,11 @@
     "from" : 0,
     "size" : 0,
     "_source" : {
-        "includes" : [ ],
+        "includes" : [
+            "a",
+            "script",
+            "COUNT"
+        ],
         "excludes" : [ ]
     },
     "stored_fields" : [
@@ -12,7 +16,7 @@
     "script_fields" : {
         "a2345" : {
             "script" : {
-                "inline" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}",
+                "source" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}",
                 "lang" : "painless"
             },
             "ignore_failure" : false
@@ -23,7 +27,6 @@
             "terms" : {
                 "field" : "a",
                 "size" : 10,
-                "shard_size" : -1,
                 "min_doc_count" : 1,
                 "shard_min_doc_count" : 0,
                 "show_term_doc_count_error" : false,
@@ -32,7 +35,7 @@
                         "_count" : "desc"
                     },
                     {
-                        "_term" : "asc"
+                        "_key" : "asc"
                     }
                 ]
             },
@@ -40,11 +43,10 @@
                 "a2345" : {
                     "terms" : {
                         "script" : {
-                            "inline" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}",
+                            "source" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}",
                             "lang" : "painless"
                         },
                         "size" : 10,
-                        "shard_size" : -1,
                         "min_doc_count" : 1,
                         "shard_min_doc_count" : 0,
                         "show_term_doc_count_error" : false,
@@ -53,7 +55,7 @@
                                 "_count" : "desc"
                             },
                             {
-                                "_term" : "asc"
+                                "_key" : "asc"
                             }
                         ]
                     },
@@ -67,6 +69,5 @@
                 }
             }
         }
-    },
-    "ext" : { }
+    }
 }

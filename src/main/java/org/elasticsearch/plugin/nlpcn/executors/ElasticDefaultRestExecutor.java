@@ -2,7 +2,6 @@ package org.elasticsearch.plugin.nlpcn.executors;
 
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.ActionRequest;
-import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

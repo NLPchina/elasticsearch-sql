@@ -1,1 +1,2 @@
 script.max_compilations_per_minute: 100
+path.logs: /var/log/elasticsearch

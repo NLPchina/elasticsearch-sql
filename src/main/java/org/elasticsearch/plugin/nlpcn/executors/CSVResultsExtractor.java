@@ -1,21 +1,16 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
 import com.google.common.base.Joiner;
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
-import org.elasticsearch.search.aggregations.metrics.MetricsAggregator;
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBounds;
-import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
-import org.elasticsearch.search.aggregations.metrics.scripted.ScriptedMetric;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
@@ -174,7 +169,7 @@ public class CSVResultsExtractor {
                 }
                 mergeHeadersWithPrefix(header, name, statsHeaders);
                 Stats stats = (Stats) aggregation;
-                line.add(stats.getCountAsString());
+                line.add(String.valueOf(stats.getCount()));
                 line.add(stats.getSumAsString());
                 line.add(stats.getAvgAsString());
                 line.add(stats.getMinAsString());
@@ -256,20 +251,20 @@ public class CSVResultsExtractor {
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new HashSet<>();
         for(SearchHit hit : hits){
-            Map<String, Object> doc = hit.sourceAsMap();
-            Map<String, SearchHitField> fields = hit.getFields();
-            for(SearchHitField searchHitField : fields.values()){
-                doc.put(searchHitField.getName(),searchHitField.value());
+            Map<String, Object> doc = hit.getSourceAsMap();
+            Map<String, DocumentField> fields = hit.getFields();
+            for(DocumentField searchHitField : fields.values()){
+                doc.put(searchHitField.getName(),searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);
             if(this.indcludeId){
-                doc.put("_id", hit.id());
+                doc.put("_id", hit.getId());
             }
             if(this.includeScore){
-                doc.put("_score", hit.score());
+                doc.put("_score", hit.getScore());
             }
             if(this.includeType){
-                doc.put("_type",hit.type());
+                doc.put("_type",hit.getType());
             }
             docsAsMap.add(doc);
         }

@@ -1,7 +1,7 @@
 package org.nlpcn.es4sql.jdbc;
 
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -246,20 +246,20 @@ public class ObjectResultsExtractor {
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new HashSet<>();
         for (SearchHit hit : hits) {
-            Map<String, Object> doc = hit.sourceAsMap();
-            Map<String, SearchHitField> fields = hit.getFields();
-            for (SearchHitField searchHitField : fields.values()) {
-                doc.put(searchHitField.getName(), searchHitField.value());
+            Map<String, Object> doc = hit.getSourceAsMap();
+            Map<String, DocumentField> fields = hit.getFields();
+            for (DocumentField searchHitField : fields.values()) {
+                doc.put(searchHitField.getName(), searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);
             if (this.includeScore) {
-                doc.put("_score", hit.score());
+                doc.put("_score", hit.getScore());
             }
             if (this.includeType) {
-                doc.put("_type", hit.type());
+                doc.put("_type", hit.getType());
             }
             if (this.includeId) {
-                doc.put("_id", hit.id());
+                doc.put("_id", hit.getId());
             }
             docsAsMap.add(doc);
         }

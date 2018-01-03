@@ -10,11 +10,10 @@
     "script_fields" : {
         "test" : {
             "script" : {
-                "inline" : "if((doc['value'].value >= 100 && doc['value'].value <=200)){'aaa'} else {doc['value'].value}",
+                "source" : "if((doc['value'].value >= 100 && doc['value'].value <=200)){'aaa'} else {doc['value'].value}",
                 "lang" : "painless"
             },
             "ignore_failure" : false
         }
-    },
-    "ext" : { }
+    }
 }

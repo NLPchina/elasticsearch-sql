@@ -3,12 +3,8 @@ package org.nlpcn.es4sql.parse;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.druid.sql.ast.expr.*;
-import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
-import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
-import com.alibaba.druid.sql.parser.SQLParseException;
 import com.google.common.collect.Lists;
 import org.elasticsearch.common.collect.Tuple;
 import org.nlpcn.es4sql.SQLFunctions;
@@ -19,7 +15,6 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.ast.*;
-import org.nlpcn.es4sql.query.maker.AggMaker;
 
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
@@ -62,6 +57,16 @@ public class FieldMaker {
             return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);
         } else if (expr instanceof SQLCaseExpr) {
             String scriptCode = new CaseWhenParser((SQLCaseExpr) expr, alias, tableAlias).parse();
+            List<KVValue> methodParameters = new ArrayList<>();
+            methodParameters.add(new KVValue(alias));
+            methodParameters.add(new KVValue(scriptCode));
+            return new MethodField("script", methodParameters, null, alias);
+        }else if (expr instanceof SQLCastExpr) {
+            SQLCastExpr castExpr = (SQLCastExpr) expr;
+            if (alias == null) {
+                alias = "cast_" + castExpr.getExpr().toString();
+            }
+            String scriptCode = new CastParser(castExpr, alias, tableAlias).parse(true);
             List<KVValue> methodParameters = new ArrayList<>();
             methodParameters.add(new KVValue(alias));
             methodParameters.add(new KVValue(scriptCode));
@@ -255,6 +260,9 @@ public class FieldMaker {
                 } else throw new SqlParseException("only support script/nested/children as inner functions");
             } else if (object instanceof SQLCaseExpr) {
                 String scriptCode = new CaseWhenParser((SQLCaseExpr) object, alias, tableAlias).parse();
+                paramers.add(new KVValue("script",new SQLCharExpr(scriptCode)));
+            } else if(object instanceof SQLCastExpr) {
+                String scriptCode = new CastParser((SQLCastExpr) object, alias, tableAlias).parse(false);
                 paramers.add(new KVValue("script",new SQLCharExpr(scriptCode)));
             } else {
                 paramers.add(new KVValue(Util.removeTableAilasFromField(object, tableAlias)));

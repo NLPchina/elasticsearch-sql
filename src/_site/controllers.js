@@ -1,5 +1,25 @@
+// settings
+var settings = location.search.substring(1).split("&").reduce(function (r, p) {
+    r[decodeURIComponent(p.split("=")[0])] = decodeURIComponent(p.split("=")[1]);
+    return r;
+}, {});
 
 var elasticsearchSqlApp = angular.module('elasticsearchSqlApp', ["ngAnimate", "ngSanitize"]);
+
+// auth
+if (settings['username']) localStorage.setItem("auth", "Basic " + window.btoa(settings['username'] + ":" + settings['password']));
+if (localStorage.getItem("auth")) {
+    elasticsearchSqlApp.config(function ($httpProvider) {
+        $httpProvider.interceptors.push(function () {
+            return {
+                request: function (config) {
+                    config.headers['Authorization'] = localStorage.getItem("auth");
+                    return config;
+                }
+            };
+        });
+    });
+}
 
 elasticsearchSqlApp.controller('MainController', function ($scope, $http, $sce,$compile) {
 	scroll_url = "_search/scroll?scroll=1m&scroll_id=";
@@ -381,15 +401,19 @@ function updateWithScrollIfNeeded (query) {
 
 
 	function getUrl() {
-		var url = localStorage.getItem("lasturl");
+        var url = settings['base_uri'] || localStorage.getItem("lasturl");
 		if(url == undefined) {
-			if(location.protocol == "file") {
+            if (location.protocol == "file") {
 				url = "http://localhost:9200"
 			}
 			else {
 				url = location.protocol+'//' + location.hostname + (location.port ? ':'+location.port : '');
 			}
 		}
+
+        if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
+            url = 'http://' + url;
+        }
 
 		if(url.substr(url.length - 1, 1) != '/') {
 			url += '/'

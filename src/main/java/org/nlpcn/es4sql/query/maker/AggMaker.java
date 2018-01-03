@@ -1,24 +1,22 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.math.BigDecimal;
+import java.time.ZoneOffset;
 import java.util.*;
 
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
-import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
-import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.*;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesAggregationBuilder;
@@ -116,7 +114,7 @@ public class AggMaker {
                 return scriptedMetric(field);
             case "COUNT":
                 groupMap.put(field.getAlias(), new KVValue("COUNT", parent));
-                return makeCountAgg(field);
+                return addFieldToAgg(field, makeCountAgg(field));
             default:
                 throw new SqlParseException("the agg function not to define !");
         }
@@ -194,7 +192,7 @@ public class AggMaker {
 
             String childrenAggName = childrenType.field + "@CHILDREN";
 
-            childrenBuilder = AggregationBuilders.children(childrenAggName,childrenType.childType);
+            childrenBuilder = JoinAggregationBuilders.children(childrenAggName,childrenType.childType);
 
             return childrenBuilder;
         }
@@ -275,9 +273,9 @@ public class AggMaker {
                     break;
                 case "order":
                     if ("asc".equalsIgnoreCase(value)) {
-                        terms.order(Terms.Order.term(true));
+                        terms.order(BucketOrder.key(true));
                     } else if ("desc".equalsIgnoreCase(value)) {
-                        terms.order(Terms.Order.term(false));
+                        terms.order(BucketOrder.key(false));
                     } else {
                         throw new SqlParseException("order can only support asc/desc " + kv.toString());
                     }
@@ -313,7 +311,6 @@ public class AggMaker {
                 }
                 continue;
             }
-            if (reduceScriptAdditionalParams.size() == 0) reduceScriptAdditionalParams = null;
 
             switch (param.getKey().toLowerCase()) {
                 case "map_script":
@@ -322,17 +319,11 @@ public class AggMaker {
                 case "map_script_id":
                     scriptedMetricBuilder.mapScript(new Script(ScriptType.STORED, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
-                case "map_script_file":
-                    scriptedMetricBuilder.mapScript(new Script(ScriptType.FILE ,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
-                    break;
                 case "init_script":
                     scriptedMetricBuilder.initScript(new Script(paramValue));
                     break;
                 case "init_script_id":
                     scriptedMetricBuilder.initScript(new Script(ScriptType.STORED,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
-                    break;
-                case "init_script_file":
-                    scriptedMetricBuilder.initScript(new Script(ScriptType.FILE,Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
                 case "combine_script":
                     scriptedMetricBuilder.combineScript(new Script(paramValue));
@@ -340,17 +331,11 @@ public class AggMaker {
                 case "combine_script_id":
                     scriptedMetricBuilder.combineScript(new Script(ScriptType.STORED, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
                     break;
-                case "combine_script_file":
-                    scriptedMetricBuilder.combineScript(new Script(ScriptType.FILE, Script.DEFAULT_SCRIPT_LANG,paramValue, new HashMap<String, Object>()));
-                    break;
                 case "reduce_script":
                     scriptedMetricBuilder.reduceScript(new Script(ScriptType.INLINE,  Script.DEFAULT_SCRIPT_LANG , paramValue, reduceScriptAdditionalParams));
                     break;
                 case "reduce_script_id":
                     scriptedMetricBuilder.reduceScript(new Script(ScriptType.STORED,  Script.DEFAULT_SCRIPT_LANG,paramValue, reduceScriptAdditionalParams));
-                    break;
-                case "reduce_script_file":
-                    scriptedMetricBuilder.reduceScript(new Script(ScriptType.FILE,  Script.DEFAULT_SCRIPT_LANG, paramValue, reduceScriptAdditionalParams));
                     break;
                 case "alias":
                 case "nested":
@@ -416,6 +401,9 @@ public class AggMaker {
             } else if ("format".equals(kv.key)) {
                 dateRange.format(value);
                 continue;
+            } else if ("time_zone".equals(kv.key)) {
+                dateRange.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(ZoneOffset.of(value))));
+                continue;
             } else if ("from".equals(kv.key)) {
                 dateRange.addUnboundedFrom(kv.value.toString());
                 continue;
@@ -460,7 +448,19 @@ public class AggMaker {
                     dateHistogram.format(value);
                     break;
                 case "time_zone":
-                    dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(value)));
+                    dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(ZoneOffset.of(value))));
+                    break;
+                case "min_doc_count":
+                    dateHistogram.minDocCount(Long.parseLong(value));
+                    break;
+                case "order":
+                    dateHistogram.order("desc".equalsIgnoreCase(value) ? BucketOrder.key(false) : BucketOrder.key(true));
+                    break;
+                case "extended_bounds":
+                    String[] bounds = value.split(":");
+                    if (bounds.length == 2) {
+                        dateHistogram.extendedBounds(new ExtendedBounds(bounds[0], bounds[1]));
+                    }
                     break;
 
                 case "alias":
@@ -511,20 +511,20 @@ public class AggMaker {
                 case "children":
                     break;
                 case "order":
-                    Histogram.Order order = null;
+                    BucketOrder order = null;
                     switch (value) {
                         case "key_desc":
-                            order = Histogram.Order.KEY_DESC;
+                            order = BucketOrder.key(false);
                             break;
                         case "count_asc":
-                            order = Histogram.Order.COUNT_ASC;
+                            order = BucketOrder.count(true);
                             break;
                         case "count_desc":
-                            order = Histogram.Order.COUNT_DESC;
+                            order = BucketOrder.count(false);
                             break;
                         case "key_asc":
                         default:
-                            order = Histogram.Order.KEY_ASC;
+                            order = BucketOrder.key(true);
                             break;
                     }
                     histogram.order(order);
@@ -566,7 +566,7 @@ public class AggMaker {
      * @param field The count function
      * @return AggregationBuilder use to count result
      */
-    private AbstractAggregationBuilder makeCountAgg(MethodField field) {
+    private ValuesSourceAggregationBuilder makeCountAgg(MethodField field) {
 
         // Cardinality is approximate DISTINCT.
         if ("DISTINCT".equals(field.getOption())) {
@@ -584,7 +584,9 @@ public class AggMaker {
 
         // In case of count(*) we use '_index' as field parameter to count all documents
         if ("*".equals(fieldName)) {
-            return AggregationBuilders.count(field.getAlias()).field("_index");
+            KVValue kvValue = new KVValue(null, "_index");
+            field.getParams().set(0, kvValue);
+            return AggregationBuilders.count(field.getAlias()).field(kvValue.toString());
         } else {
             return AggregationBuilders.count(field.getAlias()).field(fieldName);
         }
