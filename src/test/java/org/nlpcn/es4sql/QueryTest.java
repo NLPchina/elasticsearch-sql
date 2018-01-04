@@ -222,6 +222,17 @@ public class QueryTest {
 	}
 
 	@Test
+    public void regexpQueryTest() throws SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select * from %s/dog where dog_name = REGEXP_QUERY('sn.*', 'INTERSECTION|COMPLEMENT|EMPTY', 10000)", TEST_INDEX);
+        SearchHit[] hits = query(query).getHits();
+        Assert.assertEquals(1, hits.length);
+        Map<String, Object> hitAsMap = hits[0].getSourceAsMap();
+        Assert.assertEquals("snoopy", hitAsMap.get("dog_name"));
+        Assert.assertEquals("Hattie", hitAsMap.get("holdersName"));
+        Assert.assertEquals(4, hitAsMap.get("age"));
+    }
+
+	@Test
 	public void doubleNotTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		SearchHits response1 = query(String.format("SELECT * FROM %s/account WHERE not gender like 'm' and not gender like 'f'", TEST_INDEX));
 		Assert.assertEquals(0, response1.getTotalHits());

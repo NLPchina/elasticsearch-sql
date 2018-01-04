@@ -20,7 +20,7 @@ import org.nlpcn.es4sql.parse.NestedType;
 public class Condition extends Where {
 
     public enum OPEAR {
-        EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_DISTANCE_RANGE, GEO_POLYGON, GEO_CELL, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT,NIN_TERMS,NTERM;
+        EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, REGEXP, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_DISTANCE_RANGE, GEO_POLYGON, GEO_CELL, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT,NIN_TERMS,NTERM;
 
         public static Map<String, OPEAR> methodNameToOpear;
 
@@ -35,6 +35,8 @@ public class Condition extends Where {
             methodNameToOpear.put("in_terms", IN_TERMS);
             methodNameToOpear.put("ids", IDS_QUERY);
             methodNameToOpear.put("ids_query", IDS_QUERY);
+            methodNameToOpear.put("regexp", REGEXP);
+            methodNameToOpear.put("regexp_query", REGEXP);
         }
 
         static {
