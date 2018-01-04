@@ -142,6 +142,22 @@ public abstract class Maker {
             queryStr = queryStr.replace("&PERCENT","%").replace("&UNDERSCORE","_");
 			x = QueryBuilders.wildcardQuery(name, queryStr);
 			break;
+        case REGEXP:
+            Object[] values = (Object[]) value;
+            RegexpQueryBuilder regexpQuery = QueryBuilders.regexpQuery(name, values[0].toString());
+            if (1 < values.length) {
+                String[] flags = values[1].toString().split("\\|");
+                RegexpFlag[] regexpFlags = new RegexpFlag[flags.length];
+                for (int i = 0; i < flags.length; ++i) {
+                    regexpFlags[i] = RegexpFlag.valueOf(flags[i]);
+                }
+                regexpQuery.flags(regexpFlags);
+            }
+            if (2 < values.length) {
+                regexpQuery.maxDeterminizedStates(Integer.parseInt(values[2].toString()));
+            }
+            x = regexpQuery;
+            break;
 		case GT:
             x = QueryBuilders.rangeQuery(name).gt(value);
 			break;
@@ -157,7 +173,7 @@ public abstract class Maker {
 		case NIN:
 		case IN:
             //todo: value is subquery? here or before
-			Object[] values = (Object[]) value;
+            values = (Object[]) value;
 			MatchPhraseQueryBuilder[] matchQueries = new MatchPhraseQueryBuilder[values.length];
 			for(int i = 0; i < values.length; i++) {
 				matchQueries[i] = QueryBuilders.matchPhraseQuery(name, values[i]);
