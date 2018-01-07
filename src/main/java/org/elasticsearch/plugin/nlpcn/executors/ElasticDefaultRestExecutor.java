@@ -1,11 +1,13 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
+import com.google.common.collect.Maps;
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.reindex.BulkIndexByScrollResponseContentListener;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.plugin.nlpcn.*;
 import org.elasticsearch.rest.BytesRestResponse;
@@ -47,7 +49,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         } else if (request instanceof SearchRequest) {
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
         } else if (request instanceof DeleteByQueryRequest) {
-            throw new UnsupportedOperationException("currently not support delete on elastic 2.x");
+            requestBuilder.getBuilder().execute(new BulkIndexByScrollResponseContentListener(channel, Maps.newHashMap()));
         } else if (request instanceof GetIndexRequest) {
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
         } else {
@@ -74,7 +76,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             SearchResponse response = future.actionGet();
             return response.toString();
         } else if (request instanceof DeleteByQueryRequest) {
-            throw new UnsupportedOperationException("currently not support delete on elastic 2.x");
+            return requestBuilder.get().toString();
         } else if (request instanceof GetIndexRequest) {
             return requestBuilder.getBuilder().execute().actionGet().toString();
         } else {
