@@ -14,11 +14,9 @@ import org.joda.time.format.DateTimeFormatter;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 
-import javax.naming.directory.SearchControls;
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.ParseException;
@@ -918,6 +916,13 @@ public class QueryTest {
             Assert.assertTrue(highlightPhrase.contains("<b>fox</b>"));
         }
 
+    }
+
+    @Test
+    public void fieldCollapsingTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select /*! COLLAPSE(\"field\":\"age\",\"inner_hits\":{\"name\":\"account\",\"size\":1,\"sort\":[{\"age\":\"asc\"}]},\"max_concurrent_group_searches\": 4) */ * from %s/account", TEST_INDEX);
+        SearchHits hits = query(query);
+        Assert.assertEquals(21, hits.getHits().length);
     }
 
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException, SQLFeatureNotSupportedException {
