@@ -1,8 +1,13 @@
 package org.nlpcn.es4sql.query;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.json.JsonXContentParser;
+import org.elasticsearch.index.query.QueryParseContext;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.nlpcn.es4sql.domain.Query;
 import org.nlpcn.es4sql.domain.Select;
@@ -10,6 +15,7 @@ import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -26,6 +32,19 @@ public abstract class QueryAction {
 		this.client = client;
 		this.query = query;
 	}
+
+    protected void updateRequestWithCollapse(Select select, SearchRequestBuilder request) throws SqlParseException {
+        JsonFactory jsonFactory = new JsonFactory();
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.COLLAPSE && hint.getParams() != null && 0 < hint.getParams().length) {
+                try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, jsonFactory.createParser(hint.getParams()[0].toString()))) {
+                    request.setCollapse(CollapseBuilder.fromXContent(new QueryParseContext(parser)));
+                } catch (IOException e) {
+                    throw new SqlParseException("could not parse collapse hint: " + e.getMessage());
+                }
+            }
+        }
+    }
 
     protected void updateRequestWithIndexAndRoutingOptions(Select select, SearchRequestBuilder request) {
         for(Hint hint : select.getHints()){
