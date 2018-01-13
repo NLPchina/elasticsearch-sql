@@ -140,7 +140,10 @@ public class HintFactory {
             }
             return new Hint(HintType.MINUS_USE_TERMS_OPTIMIZATION, new Object[]{shouldLowerStringOnTerms});
         }
-
+        if (hintAsString.startsWith("! COLLAPSE")) {
+            String[] collapses = getParamsFromHint(hintAsString, "! COLLAPSE");
+            return new Hint(HintType.COLLAPSE, new String[]{"{" + String.join(",", collapses) + "}"});
+        }
 
         return null;
     }

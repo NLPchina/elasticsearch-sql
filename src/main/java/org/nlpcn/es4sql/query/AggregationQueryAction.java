@@ -191,6 +191,7 @@ public class AggregationQueryAction extends QueryAction {
         request.setSearchType(SearchType.DEFAULT);
         updateRequestWithIndexAndRoutingOptions(select, request);
         updateRequestWithHighlight(select, request);
+        updateRequestWithCollapse(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }

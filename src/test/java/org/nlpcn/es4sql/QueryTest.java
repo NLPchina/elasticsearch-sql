@@ -916,6 +916,13 @@ public class QueryTest {
 
     }
 
+    @Test
+    public void fieldCollapsingTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        String query = String.format("select /*! COLLAPSE(\"field\":\"age\",\"inner_hits\":{\"name\":\"account\",\"size\":1,\"sort\":[{\"age\":\"asc\"}]},\"max_concurrent_group_searches\": 4) */ * from %s/account", TEST_INDEX_ACCOUNT);
+        SearchHits hits = query(query);
+        Assert.assertEquals(21, hits.getHits().length);
+    }
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
