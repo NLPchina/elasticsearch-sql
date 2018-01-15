@@ -210,6 +210,27 @@ public class AggregationTest {
 		}
 	}
 
+    @Test
+    public void postFilterTest() throws Exception {
+        SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(String.format("SELECT /*! POST_FILTER({\"term\":{\"gender\":\"m\"}}) */ COUNT(*) FROM %s/account GROUP BY gender", TEST_INDEX_ACCOUNT));
+        SearchResponse res = (SearchResponse) select.get();
+        Assert.assertEquals(507, res.getHits().totalHits);
+
+        Aggregations result = res.getAggregations();
+        Terms gender = result.get("gender");
+        for (Terms.Bucket bucket : gender.getBuckets()) {
+            String key = bucket.getKey().toString();
+            long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
+            if (key.equalsIgnoreCase("m")) {
+                Assert.assertEquals(507, count);
+            } else if (key.equalsIgnoreCase("f")) {
+                Assert.assertEquals(493, count);
+            } else {
+                throw new Exception(String.format("Unexpected key. expected: m OR f. found: %s", key));
+            }
+        }
+    }
+
 	@Test
 	public void multipleGroupByTest() throws Exception {
 		Set expectedAges = new HashSet<Integer>(ContiguousSet.create(Range.closed(20, 40), DiscreteDomain.integers()));
