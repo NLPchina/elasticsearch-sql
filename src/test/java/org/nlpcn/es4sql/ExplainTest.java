@@ -71,6 +71,12 @@ public class ExplainTest {
         assertThat(result.replaceAll("\\s+",""), equalTo(expectedOutput.replaceAll("\\s+","")));
     }
 
+    @Test
+    public void orderByOnNestedFieldTest() throws Exception {
+        String result = explain(String.format("SELECT * FROM %s ORDER BY NESTED('message.info','message')", TEST_INDEX_NESTED_TYPE));
+        assertThat(result.replaceAll("\\s+", ""), equalTo("{\"from\":0,\"size\":200,\"sort\":[{\"message.info\":{\"order\":\"asc\",\"nested\":{\"path\":\"message\"}}}]}"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();

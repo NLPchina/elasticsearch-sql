@@ -8,11 +8,11 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.NestedSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -158,7 +158,11 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setSorts(List<Order> orderBys) {
 		for (Order order : orderBys) {
-			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+            if (order.getNestedPath() != null) {
+                request.addSort(SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType())).setNestedSort(new NestedSortBuilder(order.getNestedPath())));
+            } else {
+                request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+            }
 		}
 	}
 
