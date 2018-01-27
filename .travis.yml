@@ -17,7 +17,7 @@ before_install:
   # update to java 8
   - sudo update-java-alternatives -s java-8-oracle
   - export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.5.deb && sudo dpkg -i --force-confnew elasticsearch-5.6.5.deb
+  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.6.deb && sudo dpkg -i --force-confnew elasticsearch-5.6.6.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
   - sudo java -version
