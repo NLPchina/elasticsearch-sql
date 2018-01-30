@@ -285,6 +285,9 @@ public class AggMaker {
                 case "reverse_nested":
                 case "children":
                     break;
+                case "execution_hint":
+                    terms.executionHint(value);
+                    break;
                 default:
                     throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
             }
