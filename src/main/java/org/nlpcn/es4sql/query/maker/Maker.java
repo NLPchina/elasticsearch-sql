@@ -1,10 +1,14 @@
 package org.nlpcn.es4sql.query.maker;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
+import com.alibaba.druid.sql.ast.expr.SQLBooleanExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
 import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
@@ -224,16 +228,16 @@ public abstract class Maker {
             Object[] termValues = (Object[]) value;
             if(termValues.length == 1 && termValues[0] instanceof SubQueryExpression)
                 termValues = ((SubQueryExpression) termValues[0]).getValues();
-            String[] termValuesStrings = new String[termValues.length];
+            Object[] termValuesObjects = new Object[termValues.length];
             for (int i=0;i<termValues.length;i++){
-                termValuesStrings[i] = termValues[i].toString();
+                termValuesObjects[i] = parseTermValue(termValues[i]);
             }
-            x = QueryBuilders.termsQuery(name,termValuesStrings);
+            x = QueryBuilders.termsQuery(name,termValuesObjects);
         break;
         case NTERM:
         case TERM:
             Object term  =( (Object[]) value)[0];
-            x = QueryBuilders.termQuery(name,term.toString());
+            x = QueryBuilders.termQuery(name, parseTermValue(term));
             break;
         case IDS_QUERY:
             Object[] idsParameters = (Object[]) value;
@@ -330,4 +334,28 @@ public abstract class Maker {
 		return bqb;
 	}
 
+    private Object parseTermValue(Object termValue) {
+        if (termValue instanceof SQLNumericLiteralExpr) {
+            termValue = ((SQLNumericLiteralExpr) termValue).getNumber();
+            if (termValue instanceof BigDecimal || termValue instanceof Double) {
+                termValue = ((Number) termValue).doubleValue();
+            } else if (termValue instanceof Float) {
+                termValue = ((Number) termValue).floatValue();
+            } else if (termValue instanceof BigInteger || termValue instanceof Long) {
+                termValue = ((Number) termValue).longValue();
+            } else if (termValue instanceof Integer) {
+                termValue = ((Number) termValue).intValue();
+            } else if (termValue instanceof Short) {
+                termValue = ((Number) termValue).shortValue();
+            } else if (termValue instanceof Byte) {
+                termValue = ((Number) termValue).byteValue();
+            }
+        } else if (termValue instanceof SQLBooleanExpr) {
+            termValue = ((SQLBooleanExpr) termValue).getValue();
+        } else {
+            termValue = termValue.toString();
+        }
+
+        return termValue;
+    }
 }
