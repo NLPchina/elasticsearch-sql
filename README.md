@@ -63,6 +63,8 @@ Elasticsearch-SQL
 **6.1.1** [![6.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **6.1.2** [![6.1.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **6.1.3** [![6.1.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.2.0** [![6.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.2.1** [![6.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -138,6 +140,8 @@ Versions
 | 6.1.1                 | 6.1.1.0        |                                | elastic6.1.1 |
 | 6.1.2                 | 6.1.2.0        |                                | elastic6.1.2 |
 | 6.1.3                 | 6.1.3.0        |                                | elastic6.1.3 |
+| 6.2.0                 | 6.2.0.0        |                                | elastic6.2.0 |
+| 6.2.1                 | 6.2.1.0        |                                | elastic6.2.1 |
 
 ### Elasticsearch 1.x
 ````
@@ -380,6 +384,16 @@ Versions
 ### Elasticsearch 6.1.3
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.1.3.0/elasticsearch-sql-6.1.3.0.zip
+````
+
+### Elasticsearch 6.2.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.2.0.0/elasticsearch-sql-6.2.0.0.zip
+````
+
+### Elasticsearch 6.2.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.2.1.0/elasticsearch-sql-6.2.1.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
