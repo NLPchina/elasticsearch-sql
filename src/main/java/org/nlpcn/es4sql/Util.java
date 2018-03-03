@@ -139,7 +139,7 @@ public class Util {
         double[] ds = new double[params.size()];
         int i = 0;
         for (KVValue v : params) {
-            ds[i] = ((Number) v.value).doubleValue();
+            ds[i] = Double.parseDouble(v.value.toString());
             i++;
         }
         return ds;
