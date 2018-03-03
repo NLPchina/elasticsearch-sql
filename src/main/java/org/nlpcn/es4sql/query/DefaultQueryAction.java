@@ -3,6 +3,8 @@ package org.nlpcn.es4sql.query;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
@@ -39,7 +41,7 @@ public class DefaultQueryAction extends QueryAction {
 
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-		this.request = client.prepareSearch();
+		this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 		setIndicesAndTypes();
 
 		setFields(select.getFields());
