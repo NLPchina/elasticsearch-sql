@@ -63,7 +63,13 @@ public class QueryMaker extends Maker {
         if(where instanceof Condition){
             Condition condition = (Condition) where;
 
-            if(condition.isNested()){
+            if (condition.isNested()) {
+                // bugfix #628
+                if ("missing".equalsIgnoreCase(String.valueOf(condition.getValue())) && (condition.getOpear() == Condition.OPEAR.IS || condition.getOpear() == Condition.OPEAR.EQ)) {
+                    boolQuery.mustNot(QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), ScoreMode.None));
+                    return;
+                }
+
                 subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, ScoreMode.None);
             } else if(condition.isChildren()) {
             	subQuery = JoinQueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None);
