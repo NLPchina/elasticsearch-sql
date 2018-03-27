@@ -107,6 +107,14 @@ public abstract class Maker {
 			MatchPhraseQueryBuilder matchPhraseQuery = QueryBuilders.matchPhraseQuery(name, paramer.value);
 			bqb = Paramer.fullParamer(matchPhraseQuery, paramer);
 			break;
+
+        case "multimatchquery":
+        case "multi_match":
+        case "multimatch":
+            paramer = Paramer.parseParamer(value);
+            MultiMatchQueryBuilder multiMatchQuery = QueryBuilders.multiMatchQuery(paramer.value).fields(paramer.fieldsBoosts);
+            bqb = Paramer.fullParamer(multiMatchQuery, paramer);
+            break;
 		default:
 			throw new SqlParseException("it did not support this query method " + value.getMethodName());
 

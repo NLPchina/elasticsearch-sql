@@ -1,17 +1,17 @@
 package org.nlpcn.es4sql.domain;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
-import org.elasticsearch.index.query.WildcardQueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -22,6 +22,11 @@ public class Paramer {
 	public Float boost;
 	public String value;
     public Integer slop;
+
+    public Map<String, Float> fieldsBoosts = new HashMap<>();
+    public String type;
+    public Float tieBreaker;
+    public Operator operator;
 
 	public static Paramer parseParamer(SQLMethodInvokeExpr method) throws SqlParseException {
 		Paramer instance = new Paramer();
@@ -49,6 +54,27 @@ public class Paramer {
                         break;
                     case "slop":
                         instance.slop = Integer.parseInt(Util.expr2Object(sqlExpr.getRight()).toString());
+                        break;
+
+                    case "fields":
+                        int index;
+                        for (String f : Strings.split(Util.expr2Object(sqlExpr.getRight()).toString(), ",")) {
+                            index = f.lastIndexOf('^');
+                            if (-1 < index) {
+                                instance.fieldsBoosts.put(f.substring(0, index), Float.parseFloat(f.substring(index + 1)));
+                            } else {
+                                instance.fieldsBoosts.put(f, 1.0F);
+                            }
+                        }
+                        break;
+                    case "type":
+                        instance.type = Util.expr2Object(sqlExpr.getRight()).toString();
+                        break;
+                    case "tie_breaker":
+                        instance.tieBreaker = Float.parseFloat(Util.expr2Object(sqlExpr.getRight()).toString());
+                        break;
+                    case "operator":
+                        instance.operator = Operator.fromString(Util.expr2Object(sqlExpr.getRight()).toString());
                         break;
                     default:
                         break;
@@ -104,6 +130,34 @@ public class Paramer {
 
         if (paramer.slop != null) {
             query.phraseSlop(paramer.slop);
+        }
+
+        return query;
+    }
+
+    public static ToXContent fullParamer(MultiMatchQueryBuilder query, Paramer paramer) {
+        if (paramer.analysis != null) {
+            query.analyzer(paramer.analysis);
+        }
+
+        if (paramer.boost != null) {
+            query.boost(paramer.boost);
+        }
+
+        if (paramer.slop != null) {
+            query.slop(paramer.slop);
+        }
+
+        if (paramer.type != null) {
+            query.type(paramer.type);
+        }
+
+        if (paramer.tieBreaker != null) {
+            query.tieBreaker(paramer.tieBreaker);
+        }
+
+        if (paramer.operator != null) {
+            query.operator(paramer.operator);
         }
 
         return query;

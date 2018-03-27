@@ -77,7 +77,14 @@ public class ExplainTest {
         assertThat(result.replaceAll("\\s+", ""), equalTo("{\"from\":0,\"size\":200,\"sort\":[{\"message.info\":{\"order\":\"asc\",\"nested\":{\"path\":\"message\"}}}]}"));
     }
 
-    private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
+    @Test
+    public void multiMatchQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        String expectedOutput = Files.toString(new File("src/test/resources/expectedOutput/multi_match_query.json"), StandardCharsets.UTF_8).replaceAll("\r", "");
+        String result = explain(String.format("SELECT * FROM %s WHERE q=multimatch(query='this is a test',fields='subject^3,message',analyzer='standard',type='best_fields',boost=1.0,slop=0,tie_breaker=0.3,operator='and')", TEST_INDEX_ACCOUNT));
+        assertThat(result.replaceAll("\\s+", ""), equalTo(expectedOutput.replaceAll("\\s+", "")));
+    }
+
+    private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
         return requestBuilder.explain();
