@@ -57,6 +57,7 @@ public class SQLFunctions {
                 functionStr = date_format(
                         Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
                         Util.expr2Object((SQLExpr) paramers.get(1).value).toString(),
+                        2 < paramers.size() ? Util.expr2Object((SQLExpr) paramers.get(2).value).toString() : null,
                         name);
                 break;
 
@@ -155,10 +156,12 @@ public class SQLFunctions {
         return new Tuple<>(name, script);
     }
 
-    private static Tuple<String, String> date_format(String strColumn, String pattern, String valueName) {
+    private static Tuple<String, String> date_format(String strColumn, String pattern, String zoneId, String valueName) {
         String name = "date_format_" + random();
         if (valueName == null) {
-            return new Tuple<>(name, "def " + name + " = new SimpleDateFormat('" + pattern + "').format(new Date(doc['" + strColumn + "'].value - 8*1000*60*60))");
+            return new Tuple<>(name, "def " + name + " = DateTimeFormatter.ofPattern('" + pattern + "').withZone(" +
+                    (zoneId != null ? "ZoneId.of('" + zoneId + "')" : "ZoneId.systemDefault()") +
+                    ").format(Instant.ofEpochMilli(doc['" + strColumn + "'].value.getMillis()))");
         } else {
             return new Tuple<>(name, strColumn + "; def " + name + " = new SimpleDateFormat('" + pattern + "').format(new Date(" + valueName + " - 8*1000*60*60))");
         }
