@@ -1,9 +1,13 @@
 package org.nlpcn.es4sql.query.maker;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -17,6 +21,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.*;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesAggregationBuilder;
@@ -253,6 +258,7 @@ public class AggMaker {
         String aggName = gettAggNameFromParamsOrAlias(field);
         TermsAggregationBuilder terms = AggregationBuilders.terms(aggName);
         String value = null;
+        IncludeExclude include = null, exclude = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
             switch (kv.key.toLowerCase()) {
@@ -288,10 +294,27 @@ public class AggMaker {
                 case "execution_hint":
                     terms.executionHint(value);
                     break;
+                case "include":
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, value)) {
+                        parser.nextToken();
+                        include = IncludeExclude.parseInclude(parser);
+                    } catch (IOException e) {
+                        throw new SqlParseException("parse include[" + value + "] error: " + e.getMessage());
+                    }
+                    break;
+                case "exclude":
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, value)) {
+                        parser.nextToken();
+                        exclude = IncludeExclude.parseExclude(parser);
+                    } catch (IOException e) {
+                        throw new SqlParseException("parse exclude[" + value + "] error: " + e.getMessage());
+                    }
+                    break;
                 default:
                     throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
             }
         }
+        terms.includeExclude(IncludeExclude.merge(include, exclude));
         return terms;
     }
 
