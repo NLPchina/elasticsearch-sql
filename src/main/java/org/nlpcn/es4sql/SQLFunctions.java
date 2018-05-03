@@ -221,7 +221,7 @@ public class SQLFunctions {
         String newScript = variance[variance.length - 1];
         if (newScript.trim().startsWith("def ")) {
             //for now ,if variant is string,then change to double.
-            return newScript.substring(4).split("=")[0].trim();
+            return newScript.trim().substring(4).split("=")[0].trim();
         } else return scriptStr;
     }
 
@@ -232,7 +232,7 @@ public class SQLFunctions {
         String newScript = variance[variance.length - 1];
         if (newScript.trim().startsWith("def ")) {
             //for now ,if variant is string,then change to double.
-            String temp = newScript.substring(4).split("=")[0].trim();
+            String temp = newScript.trim().substring(4).split("=")[0].trim();
 
             return " if( " + temp + " instanceof String) " + temp + "= Double.parseDouble(" + temp.trim() + "); ";
         } else return "";
