@@ -38,20 +38,26 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         SqlElasticRequestBuilder requestBuilder = queryAction.explain();
         ActionRequest request = requestBuilder.request();
 
-        if (requestBuilder instanceof JoinRequestBuilder) {
+        //zhongshu-comment 应该是分别对应6中QueryAction子类实现
+        if (requestBuilder instanceof JoinRequestBuilder) { //zhongshu-comment 对应连接查询：ESJoinQueryAction
             ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client, requestBuilder);
             executor.run();
             executor.sendResponse(channel);
-        } else if (requestBuilder instanceof MultiQueryRequestBuilder) {
+
+        } else if (requestBuilder instanceof MultiQueryRequestBuilder) { //zhongshu-comment 对应union查询：MultiQueryAction
             ElasticHitsExecutor executor = MultiRequestExecutorFactory.createExecutor(client, (MultiQueryRequestBuilder) requestBuilder);
             executor.run();
             sendDefaultResponse(executor.getHits(), channel);
-        } else if (request instanceof SearchRequest) {
+
+        } else if (request instanceof SearchRequest) { //zhongshu-comment
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
-        } else if (request instanceof DeleteByQueryRequest) {
+
+        } else if (request instanceof DeleteByQueryRequest) { //zhongshu-comment
             requestBuilder.getBuilder().execute(new BulkIndexByScrollResponseContentListener(channel, Maps.newHashMap()));
-        } else if (request instanceof GetIndexRequest) {
+
+        } else if (request instanceof GetIndexRequest) { //zhongshu-comment
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
+
         } else {
             throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }

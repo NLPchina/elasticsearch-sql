@@ -168,6 +168,7 @@ public abstract class QueryAction {
 
     /**
 	 * Prepare the request, and return ES request.
+     * zhongshu-comment 将sql字符串解析后的java对象，转换为es的查询请求对象
 	 * @return ActionRequestBuilder (ES request)
 	 * @throws SqlParseException
 	 */
