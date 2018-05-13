@@ -6,6 +6,7 @@ import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponseContentListener;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -47,11 +48,13 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             executor.run();
             sendDefaultResponse(executor.getHits(), channel);
         } else if (request instanceof SearchRequest) {
-            client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
+            client.search((SearchRequest) request, new RestStatusToXContentListener<>(channel));
         } else if (request instanceof DeleteByQueryRequest) {
             requestBuilder.getBuilder().execute(new BulkIndexByScrollResponseContentListener(channel, Maps.newHashMap()));
         } else if (request instanceof GetIndexRequest) {
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
+        } else if (request instanceof SearchScrollRequest) {
+            client.searchScroll((SearchScrollRequest) request, new RestStatusToXContentListener<>(channel));
         } else {
             throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }

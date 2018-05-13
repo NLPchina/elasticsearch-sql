@@ -60,15 +60,17 @@ public class HintFactory {
             int multiSearchSize = Integer.parseInt(number[0]);
             return new Hint(HintType.NL_MULTISEARCH_SIZE,new Object[]{multiSearchSize});
         }
-        if(hintAsString.startsWith("! USE_SCROLL")){
-            String[] scrollParams = getParamsFromHint(hintAsString,"! USE_SCROLL");
-            int docsPerShardFetch = 50;
-            int timeout = 60000;
-            if(scrollParams != null && scrollParams.length ==2) {
-                docsPerShardFetch = Integer.parseInt(scrollParams[0]);
-                timeout = Integer.parseInt(scrollParams[1]);
+        if (hintAsString.startsWith("! USE_SCROLL")) {
+            String[] scrollParams = getParamsFromHint(hintAsString, "! USE_SCROLL");
+            if (scrollParams != null && scrollParams.length == 2) {
+                String param = scrollParams[0];
+                return new Hint(HintType.USE_SCROLL,
+                        new Object[]{(param.startsWith("\"") && param.endsWith("\"")) || (param.startsWith("'") && param.endsWith("'")) ? param.substring(1, param.length() - 1) :
+                                Integer.parseInt(param),
+                                Integer.parseInt(scrollParams[1])});
+            } else {
+                return new Hint(HintType.USE_SCROLL, new Object[]{50, 60000});
             }
-            return new Hint(HintType.USE_SCROLL, new Object[]{docsPerShardFetch,timeout});
         }
         if(hintAsString.startsWith("! IGNORE_UNAVAILABLE")){
             return new Hint(HintType.IGNORE_UNAVAILABLE,null);
