@@ -37,14 +37,27 @@ public class SqlParser {
         return select;
     }
 
+    /**
+     * zhongshu-comment 在访问AST里面的子句、token
+     * @param query
+     * @return
+     * @throws SqlParseException
+     */
     public Select parseSelect(MySqlSelectQueryBlock query) throws SqlParseException {
 
         Select select = new Select();
+        //zhongshu-comment SqlParser类没有成员变量，里面全是方法，所以将this传到WhereParser对象时是无状态的，
+        //                  即SqlParser对象并没有给WhereParser传递任何属性，也不存在WhereParser修改SqlParser的成员变量值这一说
+        //                 WhereParser只是单纯想调用SqlParser的方法而已
         WhereParser whereParser = new WhereParser(this, query);
 
-
+        /*
+        zhongshu-comment 例如sql：select a,sum(b),case when c='a' then 1 else 2 end as my_c from tbl，
+        那findSelect()就是解析这一部分了：a,sum(b),case when c='a' then 1 else 2 end as my_c
+         */
         findSelect(query, select, query.getFrom().getAlias());
 
+        //todo 看到这里
         select.getFrom().addAll(findFrom(query.getFrom()));
 
         select.setWhere(whereParser.findWhere());

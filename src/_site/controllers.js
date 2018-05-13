@@ -180,6 +180,7 @@ function updateWithScrollIfNeeded (query) {
     if(selectedQuery != "" && selectedQuery != undefined){
       query = selectedQuery;
     }
+
     query = updateWithScrollIfNeeded(query);
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
