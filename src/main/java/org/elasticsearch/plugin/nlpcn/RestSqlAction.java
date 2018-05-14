@@ -52,7 +52,7 @@ public class RestSqlAction extends BaseRestHandler {
             } else {
                 Map<String, String> params = request.params();
 
-                //zhongshu-comment 生成一个负责用rest方式查询es的对象RestExecutor
+                //zhongshu-comment 生成一个负责用rest方式查询es的对象RestExecutor，返回的实现类是：ElasticDefaultRestExecutor
                 RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
                 final QueryAction finalQueryAction = queryAction;
                 //doing this hack because elasticsearch throws exception for un-consumed props
@@ -66,6 +66,7 @@ public class RestSqlAction extends BaseRestHandler {
                 //zhongshu-comment restExecutor.execute()方法里会调用es查询的相关rest api
                 //zhongshu-comment restExecutor.execute()方法的第1、4个参数是框架传进来的参数，第2、3个参数是可以自己生成的参数，所以要多注重一点
                 //zhongshu-comment 默认调用的是ElasticDefaultRestExecutor这个子类
+                //todo 这是什么语法：搜索java8 -> lambda表达式：https://blog.csdn.net/ioriogami/article/details/12782141
                 return channel -> restExecutor.execute(client, additionalParams, finalQueryAction, channel);
             }
         } catch (SqlParseException | SQLFeatureNotSupportedException e) {

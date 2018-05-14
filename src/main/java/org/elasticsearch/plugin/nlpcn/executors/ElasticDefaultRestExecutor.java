@@ -32,11 +32,13 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
 
     /**
      * Execute the ActionRequest and returns the REST response using the channel.
+     * zhongshu-comment 第二个参数Map<String, String> params 并没有被使用
      */
     @Override
     public void execute(Client client, Map<String, String> params, QueryAction queryAction, RestChannel channel) throws Exception {
+        //zhongshu-comment queryAction的使命结束了，交由SqlElasticRequestBuilder接力，SqlElasticRequestBuilder是es-sql自己定义的一个类，不是es原生api
         SqlElasticRequestBuilder requestBuilder = queryAction.explain();
-        ActionRequest request = requestBuilder.request();
+        ActionRequest request = requestBuilder.request(); //zhongshu-comment ActionRequest是es的原生api
 
         //zhongshu-comment 应该是分别对应6中QueryAction子类实现
         if (requestBuilder instanceof JoinRequestBuilder) { //zhongshu-comment 对应连接查询：ESJoinQueryAction

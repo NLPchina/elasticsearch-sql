@@ -52,25 +52,33 @@ public class SqlParser {
         WhereParser whereParser = new WhereParser(this, query);
 
         /*
-        zhongshu-comment 例如sql：select a,sum(b),case when c='a' then 1 else 2 end as my_c from tbl，
+        zhongshu-comment 例如sql：select   a,sum(b),case when c='a' then 1 else 2 end as my_c   from tbl，
         那findSelect()就是解析这一部分了：a,sum(b),case when c='a' then 1 else 2 end as my_c
          */
         findSelect(query, select, query.getFrom().getAlias());
 
-        //todo 看到这里
         select.getFrom().addAll(findFrom(query.getFrom()));
 
         select.setWhere(whereParser.findWhere());
 
+        //zhongshu-comment 这个应该是针对where子查询的，而不是from子查询，貌似又不是解析from子查询的，报错了
+        //zhongshu-comment 也许es本身就不支持子查询，所以es-sql就没实现，那这个fillSubQueries是什么啊？？
+        //todo 看不懂，测试了好几个常见的sql，都没有进去该方法，那就先不理了，看别的
         select.fillSubQueries();
 
+        //zhongshu-comment 解析sql语句中的注释：select /*! USE_SCROLL(10,120000) */ * FROM spark_es_table
+        //hint单词的意思是提示，即sql中的注释内容
+        // /* 和 */之间是sql的注释内容，这是sql本身的语法，然后sql解析器会将注释块之间的内容“! USE_SCROLL(10,120000) ”抽取出来
+        // ! USE_SCROLL是es-sql自己定义的一套规则，
+        // 在不增加mysql原有语法的情况下，利用注释来灵活地扩展es-sql的功能，这样就能使用druid的mysql语法解析器了，无需自己实现
+        // 注意：!叹号和USE_SCROLL之间要空且只能空一格
         select.getHints().addAll(parseHints(query.getHints()));
 
         findLimit(query.getLimit(), select);
 
         findOrderBy(query, select);
 
-        findGroupBy(query, select);
+        findGroupBy(query, select); //zhongshu-comment aggregations
         return select;
     }
 
@@ -220,11 +228,13 @@ public class SqlParser {
 
     /**
      * Parse the from clause
-     *
+     * zhongshu-comment 只解析了一般查询和join查询，没有解析子查询
      * @param from the from clause.
      * @return list of From objects represents all the sources.
      */
     private List<From> findFrom(SQLTableSource from) {
+        //zhongshu-comment class1.isAssignableFrom(class2) class2是不是class1的子类或者子接口
+        //改成用instanceof 应该也行吧：from instanceof SQLExprTableSource
         boolean isSqlExprTable = from.getClass().isAssignableFrom(SQLExprTableSource.class);
 
         if (isSqlExprTable) {

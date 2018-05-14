@@ -568,6 +568,10 @@ public class WhereParser {
         } else if (expr instanceof SQLPropertyExpr) {
             return expr;
         } else {
+            /*
+            zhongshu-comment 解析where子查询时会抛出这样的异常：
+            Failed to parse SqlExpression of type class com.alibaba.druid.sql.ast.expr.SQLQueryExpr. expression value: com.alibaba.druid.sql.ast.statement.SQLSelect@1d60737e
+             */
             throw new SqlParseException(
                     String.format("Failed to parse SqlExpression of type %s. expression value: %s", expr.getClass(), expr)
             );
