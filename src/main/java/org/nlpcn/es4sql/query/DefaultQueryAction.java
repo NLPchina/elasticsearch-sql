@@ -35,6 +35,11 @@ public class DefaultQueryAction extends QueryAction {
 		this.select = select;
 	}
 
+	/**
+	 * zhongshu-comment 只被调用了一次，就在AggregationQueryAction类中
+	 * @param request
+	 * @throws SqlParseException
+	 */
 	public void intialize(SearchRequestBuilder request) throws SqlParseException {
 		this.request = request;
 	}
@@ -42,7 +47,7 @@ public class DefaultQueryAction extends QueryAction {
 	//zhongshu-comment 将sql字符串解析后的java对象，转换为es的查询请求对象
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-		//zhongshu-comment es搜索请求对象，调用的是es的api
+		//zhongshu-comment es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
 		this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 		setIndicesAndTypes();
 

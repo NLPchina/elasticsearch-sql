@@ -199,6 +199,7 @@ public class FieldMaker {
         }
 
         //zhongshu-comment 字段的别名不为空 && 别名和字段名不一样
+        //zhongshu-comment bug，应该改为 !alias.equals(name)，
         if (alias != null && alias != name && !Util.isFromJoinOrUnionTable(expr)) {
 
             /*

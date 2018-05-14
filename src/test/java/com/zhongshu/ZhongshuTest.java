@@ -1,25 +1,40 @@
 package com.zhongshu;
 
+import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
+import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.ESActionFactory;
 import org.elasticsearch.client.Client;
+import org.nlpcn.es4sql.query.QueryAction;
 
 import java.sql.SQLFeatureNotSupportedException;
 
 /**
  * @author zhongshu
  * @since 2018/5/13 下午1:58
+ * zhongshu-comment 以下所有sql例子都建议：不要给表加别名，字段名的别名不要和字段名一样
  */
 public class ZhongshuTest {
 
     String sql = null;
     Client client = null;
-    @Test
-    public void testESActionFactoryCreate () throws SQLFeatureNotSupportedException, SqlParseException {
 
-        sql = "select /*gg abc*/ a mya, b + 1 as myb, floor(c), case when d = 1 then 'hehe' when d <> 2 then 'haha' else 'gg' end as myd from TEST_TBL tbl";
+    @Test
+    public void testSelectStar() throws SQLFeatureNotSupportedException, SqlParseException {
+        sql = "select * from tbl_a";
         ESActionFactory.create(client, sql);
+    }
+
+    @Test
+    public void testESActionFactoryCreate () throws Exception {
+
+//        sql = "select zs as zs, a mya, b + 1 as myb, floor(c), case when d = 1 then 'hehe' when d <> 2 then 'haha' else 'gg' end as myd from TEST_TBL";
+        sql = "select a, floor(num) my_b, case when os = 'iOS' then 'hehe' else 'haha' end as my_os from t_zhongshu_test";
+        QueryAction queryAction = ESActionFactory.create(client, sql);
+        RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(null);
+        restExecutor.execute(client, null, queryAction, null);
+        System.out.println();
     }
 
     @Test
@@ -71,5 +86,13 @@ public class ZhongshuTest {
 //                "left join " +
 //                "TEST_TBL tbl on e.e_id = tbl.tbl_id";
         ESActionFactory.create(client, sql);
+    }
+
+    @Test
+    public void testStr () {
+        String a = "abc";
+        String b = "abc";
+        System.out.println(a == b);
+        System.out.println(a != b);
     }
 }
