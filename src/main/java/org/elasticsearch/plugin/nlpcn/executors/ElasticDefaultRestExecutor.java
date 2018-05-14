@@ -51,13 +51,13 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             executor.run();
             sendDefaultResponse(executor.getHits(), channel);
 
-        } else if (request instanceof SearchRequest) { //zhongshu-comment
+        } else if (request instanceof SearchRequest) { //zhongshu-comment 对应的QueryAction实现子类：DefaultQueryAction、AggregationQueryAction
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
 
-        } else if (request instanceof DeleteByQueryRequest) { //zhongshu-comment
+        } else if (request instanceof DeleteByQueryRequest) { //zhongshu-comment 对应的QueryAction实现子类：DeleteQueryAction
             requestBuilder.getBuilder().execute(new BulkIndexByScrollResponseContentListener(channel, Maps.newHashMap()));
 
-        } else if (request instanceof GetIndexRequest) { //zhongshu-comment
+        } else if (request instanceof GetIndexRequest) { //zhongshu-comment 对应的QueryAction实现子类：ShowQueryAction
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
 
         } else {
