@@ -38,7 +38,10 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
     public void execute(Client client, Map<String, String> params, QueryAction queryAction, RestChannel channel) throws Exception {
         //zhongshu-comment queryAction的使命结束了，交由SqlElasticRequestBuilder接力，SqlElasticRequestBuilder是es-sql自己定义的一个类，不是es原生api
         SqlElasticRequestBuilder requestBuilder = queryAction.explain();
-        ActionRequest request = requestBuilder.request(); //zhongshu-comment ActionRequest是es的原生api
+
+        //zhongshu-comment 看这行，将QueryAction对象转为es查询对象，这个是重点了，到这步就已经成功将sql字符串转化为es查询请求了
+        //zhongshu-comment ActionRequest是es的原生api
+        ActionRequest request = requestBuilder.request();
 
         //zhongshu-comment 应该是分别对应6中QueryAction子类实现
         if (requestBuilder instanceof JoinRequestBuilder) { //zhongshu-comment 对应连接查询：ESJoinQueryAction
@@ -51,13 +54,19 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             executor.run();
             sendDefaultResponse(executor.getHits(), channel);
 
-        } else if (request instanceof SearchRequest) { //zhongshu-comment 对应的QueryAction实现子类：DefaultQueryAction、AggregationQueryAction
+        } else if (request instanceof SearchRequest) {
+            //zhongshu-comment 对应的QueryAction实现子类：DefaultQueryAction、AggregationQueryAction，
+            //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticSearchRequestBuilder
             client.search((SearchRequest) request, new RestStatusToXContentListener<SearchResponse>(channel));
 
-        } else if (request instanceof DeleteByQueryRequest) { //zhongshu-comment 对应的QueryAction实现子类：DeleteQueryAction
+        } else if (request instanceof DeleteByQueryRequest) {
+            //zhongshu-comment 对应的QueryAction实现子类：DeleteQueryAction
+            //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticDeleteByQueryRequestBuilder
             requestBuilder.getBuilder().execute(new BulkIndexByScrollResponseContentListener(channel, Maps.newHashMap()));
 
-        } else if (request instanceof GetIndexRequest) { //zhongshu-comment 对应的QueryAction实现子类：ShowQueryAction
+        } else if (request instanceof GetIndexRequest) {
+            //zhongshu-comment 对应的QueryAction实现子类：ShowQueryAction
+            //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：是一个匿名内部类，跳进去queryAction.explain()看
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
 
         } else {

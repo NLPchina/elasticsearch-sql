@@ -47,10 +47,11 @@ public class DefaultQueryAction extends QueryAction {
 	//zhongshu-comment 将sql字符串解析后的java对象，转换为es的查询请求对象
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-		//zhongshu-comment es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
+		//zhongshu-comment 变量request是es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
 		this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 		setIndicesAndTypes();
 
+		//zhongshu-comment 将Select对象中封装的sql token信息转换并传到成员变量es搜索请求对象request中
 		setFields(select.getFields());
 
 		setWhere(select.getWhere());
@@ -102,11 +103,15 @@ public class DefaultQueryAction extends QueryAction {
 
 	/**
 	 * Set source filtering on a search request.
-	 * 
+	 * zhongshu-comment 即es dsl中的include和exclude
 	 * @param fields
 	 *            list of fields to source filter.
 	 */
 	public void setFields(List<Field> fields) throws SqlParseException {
+		/*
+		zhongshu-comment select * from tbl_a;
+		select * 这种sql语句的select.getFields().size()为0
+		 */
 		if (select.getFields().size() > 0) {
 			ArrayList<String> includeFields = new ArrayList<String>();
 			ArrayList<String> excludeFields = new ArrayList<String>();
@@ -115,9 +120,11 @@ public class DefaultQueryAction extends QueryAction {
 				if (field instanceof MethodField) {
 					MethodField method = (MethodField) field;
 					if (method.getName().toLowerCase().equals("script")) {
+						//zhongshu-comment scripted_field only allows script(name,script) or script(name,lang,script)
 						handleScriptField(method);
 					} else if (method.getName().equalsIgnoreCase("include")) {
 						for (KVValue kvValue : method.getParams()) {
+							//zhongshu-comment select a,b,c 中的a、b、c字段add到includeFields中
 							includeFields.add(kvValue.value.toString()) ;
 						}
 					} else if (method.getName().equalsIgnoreCase("exclude")) {
@@ -130,16 +137,31 @@ public class DefaultQueryAction extends QueryAction {
 				}
 			}
 
-			request.setFetchSource(includeFields.toArray(new String[includeFields.size()]), excludeFields.toArray(new String[excludeFields.size()]));
+			request.setFetchSource(
+					includeFields.toArray(new String[includeFields.size()]),
+					excludeFields.toArray(new String[excludeFields.size()])
+			);
 		}
 	}
 
+	/**
+	 * zhongshu-comment scripted_field only allows script(name,script) or script(name,lang,script)
+	 * @param method
+	 * @throws SqlParseException
+	 */
 	private void handleScriptField(MethodField method) throws SqlParseException {
 		List<KVValue> params = method.getParams();
 		if (params.size() == 2) {
 			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString()));
 		} else if (params.size() == 3) {
-			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), Collections.emptyMap()));
+			request.addScriptField(params.get(0).value.toString(),
+									new Script(
+											ScriptType.INLINE,
+											params.get(1).value.toString(),
+											params.get(2).value.toString(),
+											Collections.emptyMap()
+									)
+			);
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
 		}

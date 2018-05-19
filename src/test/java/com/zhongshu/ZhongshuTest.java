@@ -89,6 +89,37 @@ public class ZhongshuTest {
     }
 
     @Test
+    public void testWhereClause() throws SQLFeatureNotSupportedException, SqlParseException {
+//        sql = "select a,b,c as my_c from tbl where a = 1";
+//        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and c = 3";
+//        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and c = 3 and 1 > 1";
+//        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and (c = 3 or d = 4) and e>1";
+
+        /*
+        zhongshu-comment 这个sql例子举得不错，能比较清晰地呈现出它是如何解析where子句的，涵盖的情况比较全，最后的解析结果是：
+        OR a = 1 Condition
+        OR b = 2 and (c = 3 or d = 4) Where
+            AND b = 2 Condition
+            AND (c = 3 or d = 4) Where
+                OR c = 3 Condition
+                OR d = 4 Condition
+        OR e > 1 Condition
+
+        归纳总结：
+            1、最小单元的条件就是一个Condition对象，例如：a=1、e>1这些
+            2、如果组合了多个Condition的话，那就是一个Where对象，例如：b = 2 and (c = 3 or d = 4)
+                要将Where对象进行拆分，拆成最细的Condition对象：b=2、c=3、d=4
+            3、Condition有优先级之分And就被分在一块
+                根据or去切分，然后and的聚在一块，例如下语句就分成3块：
+                a = 1
+                b = 2 and (c = 3 or d = 4)
+                e > 1
+         */
+        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and (c = 3 or d = 4) or e > 1";
+        ESActionFactory.create(client, sql);
+    }
+
+    @Test
     public void testStr () {
         String a = "abc";
         String b = "abc";

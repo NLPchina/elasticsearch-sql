@@ -80,7 +80,11 @@ public class WhereParser {
 
     public void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
 
-
+        /*
+        zhongshu-comment SQLBinaryOpExpr举例：
+            eg1：a = 1
+            eg2：a = 1 AND b = 2 OR c = 3
+         */
         if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
             if (explanSpecialCondWithBothSidesAreLiterals(bExpr, where)) {
@@ -175,7 +179,7 @@ public class WhereParser {
         return false;
     }
 
-
+    //zhongshu-comment isCondition的意思吗？判断是不是一个判断条件，例如：a=1 或者 floor(a)=1这种最小的单元
     private boolean isCond(SQLBinaryOpExpr expr) {
         SQLExpr leftSide = expr.getLeft();
         if (leftSide instanceof SQLMethodInvokeExpr) {
@@ -201,14 +205,14 @@ public class WhereParser {
             if (binarySub.getOperator().priority != bExpr.getOperator().priority) {
                 Where subWhere = new Where(bExpr.getOperator().name);
                 where.addWhere(subWhere);
-                parseWhere(binarySub, subWhere);
+                parseWhere(binarySub, subWhere);//zhongshu-comment 递归调用parseWhere()，解析出where子句中的多个条件
             } else {
-                parseWhere(binarySub, where);
+                parseWhere(binarySub, where);//zhongshu-comment 递归调用parseWhere()，解析出where子句中的多个条件
             }
         } else if (sub instanceof SQLNotExpr) {
             Where subWhere = new Where(bExpr.getOperator().name);
             where.addWhere(subWhere);
-            parseWhere(((SQLNotExpr) sub).getExpr(), subWhere);
+            parseWhere(((SQLNotExpr) sub).getExpr(), subWhere);//zhongshu-comment 递归调用parseWhere()，解析出where子句中的多个条件
             negateWhere(subWhere);
         } else {
             explanCond(bExpr.getOperator().name, sub, where);

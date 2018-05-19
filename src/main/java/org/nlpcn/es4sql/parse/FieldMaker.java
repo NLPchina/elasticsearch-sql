@@ -31,7 +31,7 @@ public class FieldMaker {
             //make a SCRIPT method field;
             return makeField(makeBinaryMethodField((SQLBinaryOpExpr) expr, alias, true), alias, tableAlias);
 
-        } else if (expr instanceof SQLAllColumnExpr) {
+        } else if (expr instanceof SQLAllColumnExpr) {//zhongshu-comment 对应select * 的情况
         } else if (expr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
 
@@ -282,7 +282,7 @@ public class FieldMaker {
             }
 
         }
-
+        //zhongshu-comment script字段不会走这个分支
         //just check we can find the function
         if (SQLFunctions.buildInFunctions.contains(finalMethodName)) {
             if (alias == null && first) {

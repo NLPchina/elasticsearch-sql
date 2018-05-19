@@ -26,13 +26,19 @@ public class QueryMaker extends Maker {
 
     public static BoolQueryBuilder explan(Where where,boolean isQuery) throws SqlParseException {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+
+        //zhongshu-comment 一直取，取到最深的那个where
         while (where.getWheres().size() == 1) {
             where = where.getWheres().getFirst();
         }
+
+        //zhongshu-comment where.getWheres().size()的长度等于0 或者 大于1
         new QueryMaker().explanWhere(boolQuery, where);
+		//zhongshu-comment isQuery为true，应该就是要计算_score的
         if(isQuery){
             return boolQuery;
         }
+        //zhongshu-comment isQuery为false，应该就是使用filter，不需要计算_score
         return QueryBuilders.boolQuery().filter(boolQuery);
     }
 

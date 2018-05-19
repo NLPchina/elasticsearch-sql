@@ -16,8 +16,8 @@ public class Where implements Cloneable{
 		return new Where(CONN.AND);
 	}
 
-	private LinkedList<Where> wheres = new LinkedList<>();
-
+	//zhongshu-comment 只有wheres和conn这两个属性
+	private LinkedList<Where> wheres = new LinkedList<>();//zhongshu-comment 不会被子类Condition继承
 	protected CONN conn;
 
 	public Where(String connStr) {
