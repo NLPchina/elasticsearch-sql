@@ -126,6 +126,9 @@ public class ZhongshuTest {
     }
 
     @Test
+    public
+
+    @Test
     public void testStr () {
         String a = "abc";
         String b = "abc";

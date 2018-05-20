@@ -108,7 +108,8 @@ public class AggMaker {
 
     /**
      * Create aggregation according to the SQL function.
-     *
+     * zhongshu-comment 根据sql中的函数来生成一些agg，例如sql中的count()、sum()函数，这是最里边的那个agg了，eg：
+     *                  select a,b,count(c),sum(d) from tbl group by a,b
      * @param field  SQL function
      * @param parent parentAggregation
      * @return AggregationBuilder represents the SQL function

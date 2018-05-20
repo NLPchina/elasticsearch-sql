@@ -143,14 +143,24 @@ public class AggregationQueryAction extends QueryAction {
                 }//zhongshu-comment 单条线的aggs循环结束
             }
 
-            // add aggregation function to each groupBy
-            // zhongshu-comment each groupBy即多条线的aggs
+            // add aggregation function to each groupBy zhongshu-comment each groupBy即多条线的aggs
+            /*
+            zhongshu-comment 前面的解析都是针对group by子句中的那些字段，但group by子句中的那些字段并没有指明要统计什么指标啊，到底是count？sum？还是avg呢？
+                             到底要统计什么指标是在select子句中指明的。
+            例如：select c,d,sum(a),count(b) from tbl group by c,d;
+            上面的逻辑就是解析group by字段中的c和d，接下来的 explanFields() 就是解析sum(a)和count(b)了
+             */
             explanFields(request, select.getFields(), lastAgg);
 
         }//zhongshu-comment 多条线的aggs循环结束
 
         if (select.getGroupBys().size() < 1) {
             //add aggregation when having no groupBy script
+            /*
+            zhongshu-comment 假如sql中没有group by子句，但是别的情况有可能会触发aggs的，例如sql：
+            select sum(a),count(b) from tbl;
+            这种情况就是只有一个组，所有数据就是一个组，不分组做聚合，所以还是会用到aggs的
+             */
             explanFields(request, select.getFields(), lastAgg);
 
         }
@@ -345,6 +355,11 @@ public class AggregationQueryAction extends QueryAction {
 
                 if (field.getName().equals("script")) {
                     request.addStoredField(field.getAlias());
+
+                    /*
+                    zhongshu-comment 将request传进去defaultQueryAction对象是为了调用setFields()中的这一行代码：request.setFetchSource(),
+                                     给request设置include字段和exclude字段
+                     */
                     DefaultQueryAction defaultQueryAction = new DefaultQueryAction(client, select);
                     defaultQueryAction.intialize(request);
                     List<Field> tempFields = Lists.newArrayList(field);
@@ -359,6 +374,9 @@ public class AggregationQueryAction extends QueryAction {
                     request.addAggregation(makeAgg);
                 }
             } else if (field instanceof Field) {
+                /*
+                zhongshu-comment 为什么Filed类型的字段不需要像MethodField类型字段一样设置include、exclude字段：request.setFetchSource()
+                 */
                 request.addStoredField(field.getName());
             } else {
                 throw new SqlParseException("it did not support this field method " + field);
