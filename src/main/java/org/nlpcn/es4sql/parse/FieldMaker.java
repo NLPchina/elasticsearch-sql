@@ -56,8 +56,10 @@ public class FieldMaker {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
             return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);
         } else if (expr instanceof SQLCaseExpr) {
+            //zhongshu-comment case when走这个分支
             String scriptCode = new CaseWhenParser((SQLCaseExpr) expr, alias, tableAlias).parse();
             List<KVValue> methodParameters = new ArrayList<>();
+            //zhongshu-comment group by子句中case when是没有别名的，这时alias=null，调用KVValue的toString()会报空指针
             methodParameters.add(new KVValue(alias));
             methodParameters.add(new KVValue(scriptCode));
             return new MethodField("script", methodParameters, null, alias);

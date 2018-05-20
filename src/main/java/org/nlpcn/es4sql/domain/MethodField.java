@@ -49,7 +49,7 @@ public class MethodField extends Field {
 		if (option != null) {
 			return this.name + "(" + option + " " + Util.joiner(params, ",") + ")";
 		}
-		return this.name + "(" + Util.joiner(params, ",") + ")";
+		return this.name + "(" + Util.joiner(params, ",") + ")";//zhongshu-comment 报错
 	}
 
 	public String getOption() {

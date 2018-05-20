@@ -85,7 +85,7 @@ public class CaseWhenParser {
                 SQLExpr valueExpr = condition.getValueExpr();
                 if(valueExpr instanceof SQLNullExpr) {
                     codes.add("(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
-                } else {
+                } else {//zhongshu-comment (doc['c'].value=='1')
                     codes.add("(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
                 }
             }

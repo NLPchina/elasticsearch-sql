@@ -55,11 +55,11 @@ public class SqlParser {
         zhongshu-comment 例如sql：select   a,sum(b),case when c='a' then 1 else 2 end as my_c   from tbl，
         那findSelect()就是解析这一部分了：a,sum(b),case when c='a' then 1 else 2 end as my_c
          */
-        findSelect(query, select, query.getFrom().getAlias());
+        findSelect(query, select, query.getFrom().getAlias()); //zhongshu-comment 看过
 
-        select.getFrom().addAll(findFrom(query.getFrom()));
+        select.getFrom().addAll(findFrom(query.getFrom())); //zhongshu-comment 看过
 
-        select.setWhere(whereParser.findWhere());
+        select.setWhere(whereParser.findWhere()); //zhongshu-comment 看过
 
         //zhongshu-comment 这个应该是针对where子查询的，而不是from子查询，貌似又不是解析from子查询的，报错了
         //zhongshu-comment 也许es本身就不支持子查询，所以es-sql就没实现，那这个fillSubQueries是什么啊？？
@@ -76,7 +76,8 @@ public class SqlParser {
 
         findLimit(query.getLimit(), select);
 
-        findOrderBy(query, select);
+        //zhongshu-comment 和那个_score有关
+        findOrderBy(query, select); //zhongshu-comment 还没看
 
         findGroupBy(query, select); //zhongshu-comment aggregations
         return select;
@@ -122,9 +123,9 @@ public class SqlParser {
                 MySqlSelectGroupByExpr sqlSelectGroupByExpr = (MySqlSelectGroupByExpr) sqlExpr;
                 sqlExpr = sqlSelectGroupByExpr.getExpr();
             }
-
             if ((sqlExpr instanceof SQLParensIdentifierExpr || !(sqlExpr instanceof SQLIdentifierExpr || sqlExpr instanceof SQLMethodInvokeExpr)) && !standardGroupBys.isEmpty()) {
                 // flush the standard group bys
+                // zhongshu-comment 先将standardGroupBys里面的字段传到select对象的groupBys字段中，然后给standardGroupBys分配一个没有元素的新的list
                 select.addGroupBy(convertExprsToFields(standardGroupBys, sqlTableSource));
                 standardGroupBys = new ArrayList<>();
             }
@@ -150,6 +151,7 @@ public class SqlParser {
         List<Field> fields = new ArrayList<>(exprs.size());
         for (SQLExpr expr : exprs) {
             //here we suppose groupby field will not have alias,so set null in second parameter
+            //zhongshu-comment case when 有别名过不了语法解析，没有别名执行下面语句会报空指针
             fields.add(FieldMaker.makeField(expr, null, sqlTableSource.getAlias()));
         }
         return fields;
@@ -203,7 +205,7 @@ public class SqlParser {
             String orderByName = f.toString();
 
             if (sqlSelectOrderByItem.getType() == null) {
-                sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC);
+                sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC); //zhongshu-comment 默认是升序排序
             }
             String type = sqlSelectOrderByItem.getType().toString();
 

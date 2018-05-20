@@ -52,14 +52,42 @@ public class AggMaker {
      */
     public AggregationBuilder makeGroupAgg(Field field) throws SqlParseException {
 
+        //zhongshu-comment script类型的MethodField
         if (field instanceof MethodField && field.getName().equals("script")) {
             MethodField methodField = (MethodField) field;
+                /*
+                TermsAggregationBuilder termsBuilder的样例：
+                来自这条sql的group by子句的gg字段解析结果：
+                select a,case when c='1' then 'haha' when c='2' then 'book' else 'hbhb' end as gg from tbl_a group by a,gg
+                {
+                    "gg":{ //aggs的名字就叫gg
+                        "terms":{
+                            "script":{
+                                "source":"if((doc['c'].value=='1')){'haha'} else if((doc['c'].value=='2')){'book'} else {'hbhb'}",
+                                "lang":"painless"
+                            },
+                            "size":10,
+                            "min_doc_count":1,
+                            "shard_min_doc_count":0,
+                            "show_term_doc_count_error":false,
+                            "order":[
+                                {
+                                    "_count":"desc"
+                                },
+                                {
+                                    "_key":"asc"
+                                }
+                            ]
+                        }
+                    }
+                }
+             */
             TermsAggregationBuilder termsBuilder = AggregationBuilders.terms(methodField.getAlias()).script(new Script(methodField.getParams().get(1).value.toString()));
             groupMap.put(methodField.getAlias(), new KVValue("KEY", termsBuilder));
             return termsBuilder;
         }
 
-
+        //zhongshu-comment filter类型的MethodField
         if (field instanceof MethodField) {
 
             MethodField methodField = (MethodField) field;

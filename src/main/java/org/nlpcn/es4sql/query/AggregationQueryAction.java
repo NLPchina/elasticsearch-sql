@@ -50,14 +50,14 @@ public class AggregationQueryAction extends QueryAction {
 
         setIndicesAndTypes();
 
-        setWhere(select.getWhere());
+        setWhere(select.getWhere()); //zhongshu-comment 和DefaultQueryAction的setWhere()一样
         AggregationBuilder lastAgg = null;
-
+        //zhongshu-comment 因为es的aggs是可以多条线的，a线可能是group by 省,城市，b线可能是group by 性别、年龄，所以select的groupBys字段是双层List，第一层是a线、b线，第二层是每条线要group by哪些字段
         for (List<Field> groupBy : select.getGroupBys()) {
             if (!groupBy.isEmpty()) {
                 Field field = groupBy.get(0);
 
-
+                //zhongshu-comment 使得group by可以使用select子句中字段的别名
                 //make groupby can reference to field alias
                 lastAgg = getGroupAgg(field, select);
 
@@ -102,6 +102,7 @@ public class AggregationQueryAction extends QueryAction {
                     request.addAggregation(lastAgg);
                 }
 
+                //zhongshu-comment 下标从1开始
                 for (int i = 1; i < groupBy.size(); i++) {
                     field = groupBy.get(i);
                     AggregationBuilder subAgg = getGroupAgg(field, select);
@@ -137,13 +138,16 @@ public class AggregationQueryAction extends QueryAction {
                         lastAgg.subAggregation(subAgg);
                     }
 
+                    //zhongshu-comment 令lastAgg指向subAgg对象，然后继续下一个循环，就能达到这样的效果：a aggs下包着b aggs，b aggs下包着c aggs，c aggs下包着d aggs
                     lastAgg = subAgg;
-                }
+                }//zhongshu-comment 单条线的aggs循环结束
             }
 
             // add aggregation function to each groupBy
+            // zhongshu-comment each groupBy即多条线的aggs
             explanFields(request, select.getFields(), lastAgg);
-        }
+
+        }//zhongshu-comment 多条线的aggs循环结束
 
         if (select.getGroupBys().size() < 1) {
             //add aggregation when having no groupBy script
@@ -184,7 +188,7 @@ public class AggregationQueryAction extends QueryAction {
                 }
             }
         }
-
+        //zhongshu-comment 这个要看一下
         setLimitFromHint(this.select.getHints());
 
         request.setSearchType(SearchType.DEFAULT);
@@ -212,7 +216,17 @@ public class AggregationQueryAction extends QueryAction {
             }
         }
 
-        if (!refrence) lastAgg = aggMaker.makeGroupAgg(field);
+        /*
+        zhongshu-comment reference的意思是引用，在该代码上下文的意思是group by中使用了select子句中字段的别名
+        refrence为false，就代表没有引用了别名，就是一般的Field、一般的group by而已，和我平常写的一样
+        "aggs":{
+            "city_agg":{
+                "field":"city"
+             }
+         }
+         */
+        if (!refrence)
+            lastAgg = aggMaker.makeGroupAgg(field);
         
         return lastAgg;
     }

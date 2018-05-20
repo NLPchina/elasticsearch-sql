@@ -25,13 +25,13 @@ import java.util.Map;
  */
 public abstract class QueryAction {
 
-	protected org.nlpcn.es4sql.domain.Query query;
-	protected Client client;
+    protected org.nlpcn.es4sql.domain.Query query;
+    protected Client client;
 
-	public QueryAction(Client client, Query query) {
-		this.client = client;
-		this.query = query;
-	}
+    public QueryAction(Client client, Query query) {
+        this.client = client;
+        this.query = query;
+    }
 
     protected void updateRequestWithCollapse(Select select, SearchRequestBuilder request) throws SqlParseException {
         JsonFactory jsonFactory = new JsonFactory();
@@ -55,16 +55,16 @@ public abstract class QueryAction {
     }
 
     protected void updateRequestWithIndexAndRoutingOptions(Select select, SearchRequestBuilder request) {
-        for(Hint hint : select.getHints()){
-            if(hint.getType() == HintType.IGNORE_UNAVAILABLE){
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.IGNORE_UNAVAILABLE) {
                 //saving the defaults from TransportClient search
                 request.setIndicesOptions(IndicesOptions.fromOptions(true, false, true, false, IndicesOptions.strictExpandOpenAndForbidClosed()));
             }
-            if(hint.getType() == HintType.ROUTINGS){
+            if (hint.getType() == HintType.ROUTINGS) {
                 Object[] routings = hint.getParams();
                 String[] routingsAsStringArray = new String[routings.length];
-                for(int i=0;i<routings.length;i++){
-                    routingsAsStringArray[i]=routings[i].toString();
+                for (int i = 0; i < routings.length; i++) {
+                    routingsAsStringArray[i] = routings[i].toString();
                 }
                 request.setRouting(routingsAsStringArray);
             }
@@ -74,33 +74,32 @@ public abstract class QueryAction {
     protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
         boolean foundAnyHighlights = false;
         HighlightBuilder highlightBuilder = new HighlightBuilder();
-        for(Hint hint : select.getHints()){
-            if(hint.getType() == HintType.HIGHLIGHT){
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.HIGHLIGHT) {
                 HighlightBuilder.Field highlightField = parseHighlightField(hint.getParams());
-                if(highlightField != null){
+                if (highlightField != null) {
                     foundAnyHighlights = true;
                     highlightBuilder.field(highlightField);
                 }
             }
         }
-        if(foundAnyHighlights){
+        if (foundAnyHighlights) {
             request.highlighter(highlightBuilder);
         }
     }
 
-    protected HighlightBuilder.Field parseHighlightField(Object[] params)
-    {
-        if(params == null || params.length == 0 || params.length > 2){
+    protected HighlightBuilder.Field parseHighlightField(Object[] params) {
+        if (params == null || params.length == 0 || params.length > 2) {
             //todo: exception.
         }
         HighlightBuilder.Field field = new HighlightBuilder.Field(params[0].toString());
-        if(params.length == 1){
+        if (params.length == 1) {
             return field;
         }
-        Map<String,Object> highlightParams = (Map<String,Object>) params[1];
+        Map<String, Object> highlightParams = (Map<String, Object>) params[1];
 
-        for (Map.Entry<String,Object> param : highlightParams.entrySet()){
-            switch (param.getKey()){
+        for (Map.Entry<String, Object> param : highlightParams.entrySet()) {
+            switch (param.getKey()) {
                 case "type":
                     field.highlighterType((String) param.getValue());
                     break;
@@ -126,7 +125,7 @@ public abstract class QueryAction {
                     field.highlightFilter((Boolean) param.getValue());
                     break;
                 case "matched_fields":
-                    field.matchedFields((String[]) ((ArrayList)param.getValue()).toArray(new String[((ArrayList) param.getValue()).size()]));
+                    field.matchedFields((String[]) ((ArrayList) param.getValue()).toArray(new String[((ArrayList) param.getValue()).size()]));
                     break;
                 case "no_match_size":
                     field.noMatchSize((Integer) param.getValue());
@@ -141,10 +140,10 @@ public abstract class QueryAction {
                     field.phraseLimit((Integer) param.getValue());
                     break;
                 case "post_tags":
-                    field.postTags((String[]) ((ArrayList)param.getValue()).toArray(new String[((ArrayList) param.getValue()).size()]));
+                    field.postTags((String[]) ((ArrayList) param.getValue()).toArray(new String[((ArrayList) param.getValue()).size()]));
                     break;
                 case "pre_tags":
-                    field.preTags((String[]) ((ArrayList)param.getValue()).toArray(new String[((ArrayList) param.getValue()).size()]));
+                    field.preTags((String[]) ((ArrayList) param.getValue()).toArray(new String[((ArrayList) param.getValue()).size()]));
                     break;
                 case "require_field_match":
                     field.requireFieldMatch((Boolean) param.getValue());
@@ -155,10 +154,10 @@ public abstract class QueryAction {
         return field;
     }
 
-    private char[] fromArrayListToCharArray(ArrayList arrayList){
+    private char[] fromArrayListToCharArray(ArrayList arrayList) {
         char[] chars = new char[arrayList.size()];
-        int i=0;
-        for(Object item : arrayList){
+        int i = 0;
+        for (Object item : arrayList) {
             chars[i] = item.toString().charAt(0);
             i++;
         }
@@ -167,10 +166,11 @@ public abstract class QueryAction {
 
 
     /**
-	 * Prepare the request, and return ES request.
+     * Prepare the request, and return ES request.
      * zhongshu-comment 将sql字符串解析后的java对象，转换为es的查询请求对象
-	 * @return ActionRequestBuilder (ES request)
-	 * @throws SqlParseException
-	 */
-	public abstract SqlElasticRequestBuilder explain() throws SqlParseException;
+     *
+     * @return ActionRequestBuilder (ES request)
+     * @throws SqlParseException
+     */
+    public abstract SqlElasticRequestBuilder explain() throws SqlParseException;
 }

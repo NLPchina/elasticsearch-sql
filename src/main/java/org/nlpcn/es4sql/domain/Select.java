@@ -73,7 +73,7 @@ public class Select extends Query {
 	}
 
 	public void addOrderBy(String nestedPath, String name, String type) {
-		if ("_score".equals(name)) {
+		if ("_score".equals(name)) { //zhongshu-comment 可以直接在order by子句中写_score，根据该字段排序 select * from tbl order by _score asc
 			isQuery = true;
 		}
 		this.orderBys.add(new Order(nestedPath, name, type));

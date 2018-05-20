@@ -55,16 +55,20 @@ public class DefaultQueryAction extends QueryAction {
 		setFields(select.getFields());
 
 		setWhere(select.getWhere());
-		setSorts(select.getOrderBys());
+		setSorts(select.getOrderBys()); //zhongshu-comment
 		setLimit(select.getOffset(), select.getRowCount());
 
 		boolean usedScroll = useScrollIfNeeded(select.isOrderdSelect());
 		if (!usedScroll) {
 			request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 		}
+
+		//zhongshu-comment The routing values to control the shards that the search will be executed on.
 		updateRequestWithIndexAndRoutingOptions(select, request);
 		updateRequestWithHighlight(select, request);
 		updateRequestWithCollapse(select, request);
+
+		//zhongshu-comment 后置过滤，对查询结果做后置过滤，这个过滤仅仅作用于返回的hits数据，不会影响到aggs的结果，aggs的结果本来是怎样的就是怎样的
 		updateRequestWithPostFilter(select, request);
 		SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
@@ -82,6 +86,9 @@ public class DefaultQueryAction extends QueryAction {
 		if (scrollHint != null) {
 			int scrollSize = (Integer) scrollHint.getParams()[0];
 			int timeoutInMilli = (Integer) scrollHint.getParams()[1];
+
+			//zhongshu-comment 假如我的sql没有order by的话，就默认按"_doc"字段升序排列
+			//zhongshu-comment 那隐含意思是不是使用scroll获取数据一定要排序？
 			if (!existsOrderBy)
 				request.addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC);
 			request.setScroll(new TimeValue(timeoutInMilli)).setSize(scrollSize);
@@ -190,9 +197,15 @@ public class DefaultQueryAction extends QueryAction {
 	private void setSorts(List<Order> orderBys) {
 		for (Order order : orderBys) {
             if (order.getNestedPath() != null) {
-                request.addSort(SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType())).setNestedSort(new NestedSortBuilder(order.getNestedPath())));
+                request.addSort(
+                		SortBuilders.fieldSort(order.getName())
+								.order(SortOrder.valueOf(order.getType()))
+								.setNestedSort(new NestedSortBuilder(order.getNestedPath()))
+				);
             } else {
-                request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+                request.addSort(
+                		order.getName(),
+						SortOrder.valueOf(order.getType()));
             }
 		}
 	}

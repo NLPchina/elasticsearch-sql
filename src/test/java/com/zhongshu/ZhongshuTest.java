@@ -22,8 +22,11 @@ public class ZhongshuTest {
 
     @Test
     public void testSelectStar() throws SQLFeatureNotSupportedException, SqlParseException {
-        sql = "select * from tbl_a";
-        ESActionFactory.create(client, sql);
+        sql = "select a,case when c='1' then 'haha' when c='2' then 'book' else 'hbhb' end as gg from tbl_a group by a,gg"; // order by a asc,c desc,d asc limit 8,12";
+//        sql = "select * from tbl_a group by a,b, case when c='1' then 'haha' when c='2' then 'book' else 'hbhb' end order by a asc,c desc,d asc limit 8,12";
+//        sql = "select * from tbl_a group by a,b";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
     }
 
     @Test
@@ -92,6 +95,7 @@ public class ZhongshuTest {
     public void testWhereClause() throws SQLFeatureNotSupportedException, SqlParseException {
 //        sql = "select a,b,c as my_c from tbl where a = 1";
 //        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and c = 3";
+        sql = "select a,b,c as my_c from tbl where a = 1 and b = 2 and c = 3";
 //        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and c = 3 and 1 > 1";
 //        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and (c = 3 or d = 4) and e>1";
 
@@ -115,8 +119,10 @@ public class ZhongshuTest {
                 b = 2 and (c = 3 or d = 4)
                 e > 1
          */
-        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and (c = 3 or d = 4) or e > 1";
-        ESActionFactory.create(client, sql);
+//        sql = "select a,b,c as my_c from tbl where a = 1 or b = 2 and (c = 3 or d = 4) or e > 1";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+
     }
 
     @Test
