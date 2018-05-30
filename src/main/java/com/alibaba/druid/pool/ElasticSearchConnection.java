@@ -4,7 +4,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,12 +24,13 @@ public class ElasticSearchConnection implements Connection {
 
     private Client client;
 
-    public ElasticSearchConnection(String jdbcUrl) {
+    public ElasticSearchConnection(String jdbcUrl, Properties info) {
 
-
-        Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
+        Settings.Builder builder = Settings.builder();
+        info.forEach((k, v) -> builder.put(k.toString(), v.toString()));
+        Settings settings = builder.build();
         try {
-            TransportClient transportClient = new PreBuiltTransportClient(settings);
+            TransportClient transportClient = new PreBuiltXPackTransportClient(settings);
 
             String hostAndPortArrayStr = jdbcUrl.split("/")[2];
             String[] hostAndPortArray = hostAndPortArrayStr.split(",");
