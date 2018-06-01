@@ -7,6 +7,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.nlpcn.es4sql.domain.KVValue;
 
 import java.util.List;
@@ -62,17 +63,20 @@ public class SQLFunctions {
                         name);
                 break;
 
-            case "floor":
+            case "abs":
             case "round":
+            case "floor":
             case "ceil":
             case "cbrt":
             case "rint":
-            case "pow":
             case "exp":
             case "sqrt":
                 functionStr = mathSingleValueTemplate("Math."+methodName,methodName,Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
                 break;
 
+            case "pow":
+                functionStr = mathDoubleValueTemplate("Math."+methodName, methodName, Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), Util.expr2Object((SQLExpr) paramers.get(1).value).toString(), name);
+                break;
 
             case "substring":
                 functionStr = substring(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
@@ -300,6 +304,15 @@ public class SQLFunctions {
 
         return strSingleValueTemplate("trim", strColumn, valueName);
 
+    }
+
+    private static Tuple<String, String> mathDoubleValueTemplate(String methodName, String fieldName, String val1, String val2, String valueName) {
+        String name = fieldName + "_" + random();
+        if (valueName == null) {
+            return new Tuple(name, "def "+name+" = "+methodName+"(doc['"+val1+"'].value, "+val2+")");
+        } else {
+            return new Tuple(name, val1 + ";def "+name+" = "+methodName+"("+valueName+", "+val2+")");
+        }
     }
 
     private static Tuple<String, String> mathSingleValueTemplate(String methodName, String strColumn, String valueName) {
