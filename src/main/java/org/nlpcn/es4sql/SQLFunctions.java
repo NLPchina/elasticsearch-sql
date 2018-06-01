@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql;
 
+import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.base.Joiner;
@@ -19,7 +20,7 @@ public class SQLFunctions {
 
     //Groovy Built In Functions
     public final static Set<String> buildInFunctions = Sets.newHashSet(
-            "exp", "log", "log10", "sqrt", "cbrt", "ceil", "floor", "rint", "pow", "round",
+            "exp", "log", "log2", "log10", "log10", "sqrt", "cbrt", "ceil", "floor", "rint", "pow", "round",
             "random", "abs", //nummber operator
             "split", "concat_ws", "substring", "trim",//string operator
             "add", "multiply", "divide", "subtract", "modulus",//binary operator
@@ -63,8 +64,6 @@ public class SQLFunctions {
 
             case "floor":
             case "round":
-            case "log":
-            case "log10":
             case "ceil":
             case "cbrt":
             case "rint":
@@ -105,6 +104,24 @@ public class SQLFunctions {
 
             case "field":
                 functionStr = field(Util.expr2Object((SQLExpr) paramers.get(0).value).toString());
+                break;
+
+            case "log2":
+                functionStr = log(SQLUtils.toSQLExpr("2"), (SQLExpr) paramers.get(0).value, name);
+                break;
+            case "log10":
+                functionStr = log(SQLUtils.toSQLExpr("10"), (SQLExpr) paramers.get(0).value, name);
+                break;
+            case "log":
+                List<SQLExpr> logs = Lists.newArrayList();
+                for (int i = 0; i < paramers.size(); i++) {
+                    logs.add((SQLExpr) paramers.get(0).value);
+                }
+                if (logs.size() > 1) {
+                    functionStr = log(logs.get(0), logs.get(1), name);
+                } else {
+                    functionStr = log(SQLUtils.toSQLExpr("Math.E"), logs.get(0), name);
+                }
                 break;
 
             default:
@@ -251,6 +268,20 @@ public class SQLFunctions {
 
         return mathSingleValueTemplate("log10", strColumn, valueName);
 
+    }
+    public static Tuple<String, String> log(SQLExpr base, SQLExpr strColumn, String valueName) {
+        String name = "log_" + random();
+        String result;
+        if (valueName == null) {
+            if (isProperty(strColumn)) {
+                result = "def " + name + " = Math.log(doc['" + Util.expr2Object(strColumn).toString() + "'].value)/Math.log("+Util.expr2Object(base).toString()+")";
+            } else {
+                result = "def " + name + " = Math.log(" + Util.expr2Object(strColumn).toString() + ")/Math.log("+Util.expr2Object(base).toString()+")";
+            }
+        } else {
+            result = Util.expr2Object(strColumn).toString()+";def "+name+" = Math.log("+valueName+")/Math.log("+Util.expr2Object(base).toString()+")";
+        }
+        return new Tuple(name, result);
     }
 
     public static Tuple<String, String> sqrt(String strColumn, String valueName) {
