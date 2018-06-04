@@ -97,8 +97,10 @@ public class CaseWhenParser {
                 SQLExpr nameExpr = condition.getNameExpr();
                 SQLExpr valueExpr = condition.getValueExpr();
                 if(valueExpr instanceof SQLNullExpr) {
-                    codes.add("(" + "doc['" + nameExpr.toString() + "']" + ".empty)");//zhongshu-comment 空值查询的意思吗？例如：查a字段没有值的那些文档，是这个意思吗
-                } else {//zhongshu-comment 该分支示例：(doc['c'].value=='1')
+                    //zhongshu-comment 空值查询的意思吗？例如：查a字段没有值的那些文档，是这个意思吗
+                    codes.add("(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
+                } else {
+                    //zhongshu-comment 该分支示例：(doc['c'].value=='1')
                     codes.add("(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
                 }
             }
