@@ -10,10 +10,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.NestedSortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.sort.*;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
@@ -160,8 +157,16 @@ public class DefaultQueryAction extends QueryAction {
 		for (Order order : orderBys) {
             if (order.getNestedPath() != null) {
                 request.addSort(SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType())).setNestedSort(new NestedSortBuilder(order.getNestedPath())));
-            } else {
-                request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+            } else if (order.getName().contains("script(")) { //zhongshu-comment 该分支是我后来加的，用于兼容order by case when那种情况
+
+				String scriptStr = order.getName().substring("script(".length(), order.getName().length() - 1);
+				Script script = new Script(scriptStr);
+				ScriptSortBuilder scriptSortBuilder = SortBuilders.scriptSort(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+				scriptSortBuilder = scriptSortBuilder.order(SortOrder.valueOf(order.getType()));
+				request.addSort(scriptSortBuilder);
+			} else {
+
+            	request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
             }
 		}
 	}
