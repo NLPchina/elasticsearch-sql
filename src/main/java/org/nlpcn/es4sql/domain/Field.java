@@ -11,7 +11,7 @@ import org.nlpcn.es4sql.parse.NestedType;
  */
 public class Field implements Cloneable{
 
-	protected String name;
+	protected String name; //zhongshu-comment 在这里拼上script(....)
 	private String alias;
     private NestedType nested;
     private ChildrenType children;

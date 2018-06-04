@@ -637,7 +637,9 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 *  SQL Select
 *  SQL Delete
 *  SQL Where
+    * can use "case when" in where clause
 *  SQL Order By
+    * can use "case when" in order by clause
 *  SQL Group By
 *  SQL AND & OR
 *  SQL Like
@@ -663,9 +665,20 @@ http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
 *  SQL log10
 *  SQL substring
 *  SQL round
+    * eg: round(10.135, 2) --> 10.14
 *  SQL sqrt
 *  SQL concat_ws
 *  SQL union and minus
+*  SQL case when
+    * can use "in"、"not in" judge in case when clause
+    * can execute simple calculation in case when clause, eg : case when 1 = 1 then field_1 + field_2 else 0 end
+*  SQL if
+    * select if(sex='1','男','女') from t_user;
+*  SQL limit
+    * can set aggregation bucket size and shard size by setting limit, shardSize = 20 * bucketSize
+    * eg: select city,count(*) as user_count from t_user group by city limit 100;
+    * on the above example, the bucket size is 100, shard size is 20*100 = 2000
+    
 
 ## JDBC Support (Experimental feature)
 

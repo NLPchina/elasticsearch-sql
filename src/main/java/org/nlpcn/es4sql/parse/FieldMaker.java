@@ -31,7 +31,7 @@ public class FieldMaker {
             //make a SCRIPT method field;
             return makeField(makeBinaryMethodField((SQLBinaryOpExpr) expr, alias, true), alias, tableAlias);
 
-        } else if (expr instanceof SQLAllColumnExpr) {
+        } else if (expr instanceof SQLAllColumnExpr) {//zhongshu-comment 对应select * 的情况
         } else if (expr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
 
@@ -56,9 +56,14 @@ public class FieldMaker {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
             return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);
         } else if (expr instanceof SQLCaseExpr) {
+            //zhongshu-comment case when走这个分支
             String scriptCode = new CaseWhenParser((SQLCaseExpr) expr, alias, tableAlias).parse();
             List<KVValue> methodParameters = new ArrayList<>();
-            methodParameters.add(new KVValue(alias));
+            /*zhongshu-comment group by子句中case when是没有别名的，这时alias=null，调用KVValue的toString()会报空指针
+            methodParameters.add(new KVValue(alias)); //zhongshu-comment 这是原语句，被我注释掉了，改为下面带非空判断的语句*/
+            if (null != alias && alias.trim().length() != 0) {
+                methodParameters.add(new KVValue(alias));
+            }
             methodParameters.add(new KVValue(scriptCode));
             return new MethodField("script", methodParameters, null, alias);
         }else if (expr instanceof SQLCastExpr) {
@@ -198,9 +203,21 @@ public class FieldMaker {
             field = new Field(newFieldName, alias);
         }
 
+        //zhongshu-comment 字段的别名不为空 && 别名和字段名不一样
         if (alias != null && !alias.equals(name) && !Util.isFromJoinOrUnionTable(expr)) {
+
+            /*
+            zhongshu-comment newFieldName是字段原来的名字，这句话应该是用于es dsl的
+            使用别名有很多种情况：
+                1、最简单的就是select field_1 as a from tbl
+                2、调用函数处理字段之后，select floor(field_1) as a from tbl
+                3、执行表达式，select field_1 + field_2 as a from tbl
+                4、case when field_1='a' then 'haha' else 'hehe' end as a
+                5、........
+            所以这个if分支就是为了处理以上这些情况的
+             */
             List<SQLExpr> paramers = Lists.newArrayList();
-            paramers.add(new SQLCharExpr(alias));
+            paramers.add(new SQLCharExpr(alias)); //zhongshu-comment 别名
             paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));
             field = makeMethodField("script", paramers, null, alias, tableAlias, true);
         }
@@ -272,9 +289,9 @@ public class FieldMaker {
             }
 
         }
-
+        //zhongshu-comment script字段不会走这个分支
         //just check we can find the function
-        if (SQLFunctions.buildInFunctions.contains(finalMethodName)) {
+        if (SQLFunctions.buildInFunctions.contains(finalMethodName.toLowerCase())) {
             if (alias == null && first) {
                 alias = "field_" + SQLFunctions.random();//paramers.get(0).value.toString();
             }
@@ -286,7 +303,12 @@ public class FieldMaker {
                 //variance
                 paramers.add(new KVValue(newFunctions.v1()));
             } else {
-                paramers.add(new KVValue(alias));
+                
+                if(newFunctions.v1().toLowerCase().contains("if")){
+                    paramers.add(new KVValue(newFunctions.v1()));
+                }else {
+                    paramers.add(new KVValue(alias));
+                }
             }
 
             paramers.add(new KVValue(newFunctions.v2()));

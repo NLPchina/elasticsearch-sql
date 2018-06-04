@@ -155,7 +155,7 @@ public class ElasticSqlExprParser extends SQLExprParser {
 
         return expr;
     }
-
+    //zhongshu-comment 比父类的AGGREGATE_FUNCTIONS 多了 GROUP_CONCAT 这个function
     public static String[] AGGREGATE_FUNCTIONS = {"AVG", "COUNT", "GROUP_CONCAT", "MAX", "MIN", "STDDEV", "SUM"};
 
 

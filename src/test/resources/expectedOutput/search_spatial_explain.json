@@ -1,6 +1,6 @@
 {
   "from" : 0,
-  "size" : 200,
+  "size" : 1000,
   "query" : {
       "bool" : {
             "filter" : [

@@ -101,8 +101,14 @@ public class Util {
             return ((SQLNumericLiteralExpr) expr).getNumber();
         } else if (expr instanceof SQLNullExpr) {
             return ((SQLNullExpr) expr).toString().toLowerCase();
+        } else if (expr instanceof  SQLBinaryOpExpr) {
+            //zhongshu-comment 该分支由忠树添加
+            String left = "doc['" + ((SQLBinaryOpExpr) expr).getLeft().toString() + "'].value";
+            String operator = ((SQLBinaryOpExpr) expr).getOperator().getName();
+            String right = "doc['" + ((SQLBinaryOpExpr) expr).getRight().toString() + "'].value";
+            return left + operator + right;
         }
-        throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
+        throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got " + expr.getClass().toString() + " with value:" + expr.toString());
     }
 
     public static boolean isFromJoinOrUnionTable(SQLExpr expr) {
@@ -139,7 +145,7 @@ public class Util {
         double[] ds = new double[params.size()];
         int i = 0;
         for (KVValue v : params) {
-            ds[i] = Double.parseDouble(v.value.toString());
+            ds[i] = ((Number) v.value).doubleValue();
             i++;
         }
         return ds;

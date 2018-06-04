@@ -5,10 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-import com.alibaba.druid.sql.ast.expr.SQLBooleanExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
+import com.alibaba.druid.sql.ast.expr.*;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.search.join.ScoreMode;
@@ -33,6 +30,7 @@ import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
+import org.nlpcn.es4sql.parse.CaseWhenParser;
 import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.spatial.*;
@@ -216,18 +214,43 @@ public abstract class Maker {
 			break;
 		case NIN:
 		case IN:
-            //todo: value is subquery? here or before
-            values = (Object[]) value;
-			MatchPhraseQueryBuilder[] matchQueries = new MatchPhraseQueryBuilder[values.length];
-			for(int i = 0; i < values.length; i++) {
-				matchQueries[i] = QueryBuilders.matchPhraseQuery(name, values[i]);
-			}
 
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            for(MatchPhraseQueryBuilder matchQuery : matchQueries) {
-                boolQuery.should(matchQuery);
+		    if (cond.getNameExpr() instanceof SQLCaseExpr) {
+                /*
+                zhongshu-comment 调用CaseWhenParser解析将Condition的nameExpr属性对象解析为script query
+                参考了SqlParser.findSelect()方法，看它是如何解析select中的case when字段的
+                 */
+                String scriptCode = new CaseWhenParser((SQLCaseExpr) cond.getNameExpr(), null, null).parseCaseWhenInWhere((Object[]) value);
+                /*
+                zhongshu-comment
+                参考DefaultQueryAction.handleScriptField() 将上文得到的scriptCode封装为es的Script对象，
+                但又不是完全相同，因为DefaultQueryAction.handleScriptField()是处理select子句中的case when查询，对应es的script_field查询，
+                而此处是处理where子句中的case when查询，对应的是es的script query，具体要看官网文档，搜索关键字是"script query"
+
+                搜索结果如下：
+                1、文档
+                    https://www.elastic.co/guide/en/elasticsearch/reference/6.1/query-dsl-script-query.html
+                2、java api
+                    https://www.elastic.co/guide/en/elasticsearch/client/java-api/6.1/java-specialized-queries.html
+                 */
+
+                x = QueryBuilders.scriptQuery(new Script(scriptCode));
+
+            } else {
+                //todo: value is subquery? here or before
+                values = (Object[]) value;
+                MatchPhraseQueryBuilder[] matchQueries = new MatchPhraseQueryBuilder[values.length];
+                for(int i = 0; i < values.length; i++) {
+                    matchQueries[i] = QueryBuilders.matchPhraseQuery(name, values[i]);
+                }
+
+                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+                for(MatchPhraseQueryBuilder matchQuery : matchQueries) {
+                    boolQuery.should(matchQuery);
+                }
+                x = boolQuery;
             }
-            x = boolQuery;
+
 			break;
 		case BETWEEN:
 		case NBETWEEN:
