@@ -17,7 +17,7 @@ public class Where implements Cloneable{
 	}
 
 	//zhongshu-comment 只有wheres和conn这两个属性
-	private LinkedList<Where> wheres = new LinkedList<>();//zhongshu-comment 不会被子类Condition继承
+	private LinkedList<Where> wheres = new LinkedList<>();//zhongshu-comment 不会被子类Condition继承，但是子类可以通过get() set()方法访问吧？
 	protected CONN conn;
 
 	public Where(String connStr) {

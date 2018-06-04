@@ -351,9 +351,11 @@ public class AggregationQueryAction extends QueryAction {
 
     private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder groupByAgg) throws SqlParseException {
         for (Field field : fields) {
+
             if (field instanceof MethodField) {
 
                 if (field.getName().equals("script")) {
+                    //question addStoredField()是什么鬼？
                     request.addStoredField(field.getAlias());
 
                     /*
@@ -364,6 +366,11 @@ public class AggregationQueryAction extends QueryAction {
                     defaultQueryAction.intialize(request);
                     List<Field> tempFields = Lists.newArrayList(field);
                     defaultQueryAction.setFields(tempFields);
+
+                    /*
+                     zhongshu-comment 因为field.getName().equals("script")的那些字段一般都是作为维度而不是统计指标、度量metric，
+                                        所以就要continue，不能继续下边的创建agg
+                    */
                     continue;
                 }
 
@@ -371,12 +378,12 @@ public class AggregationQueryAction extends QueryAction {
                 if (groupByAgg != null) {
                     groupByAgg.subAggregation(makeAgg);
                 } else {
+                    //question 不懂为什么将一个null的agg加到request中，这应该是dsl语法问题，先不需要深究
                     request.addAggregation(makeAgg);
                 }
             } else if (field instanceof Field) {
-                /*
-                zhongshu-comment 为什么Filed类型的字段不需要像MethodField类型字段一样设置include、exclude字段：request.setFetchSource()
-                 */
+
+                //question 为什么Filed类型的字段不需要像MethodField类型字段一样设置include、exclude字段：request.setFetchSource()
                 request.addStoredField(field.getName());
             } else {
                 throw new SqlParseException("it did not support this field method " + field);

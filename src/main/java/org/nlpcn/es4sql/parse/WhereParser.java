@@ -283,7 +283,7 @@ public class WhereParser {
                 }
                 where.addWhere(condition);
             }
-        } else if (expr instanceof SQLInListExpr) {
+        } else if (expr instanceof SQLInListExpr) { //zhongshu-comment 解析in和not in语句
             SQLInListExpr siExpr = (SQLInListExpr) expr;
             String leftSide = siExpr.getExpr().toString();
 
@@ -543,6 +543,12 @@ public class WhereParser {
         return values.toArray();
     }
 
+    /**
+     * zhongshu-comment 该放方法只用于解析in、not in括号中的列表，将括号中的多个值转为数组Object[]
+     * @param targetList
+     * @return
+     * @throws SqlParseException
+     */
     private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
         Object[] value = new Object[targetList.size()];
         for (int i = 0; i < targetList.size(); i++) {

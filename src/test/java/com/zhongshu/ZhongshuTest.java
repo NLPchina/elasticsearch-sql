@@ -2,6 +2,7 @@ package com.zhongshu;
 
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
+import org.junit.After;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.ESActionFactory;
@@ -19,6 +20,12 @@ public class ZhongshuTest {
 
     String sql = null;
     Client client = null;
+
+    @After
+    public void execute() throws SQLFeatureNotSupportedException, SqlParseException {
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+    }
 
     @Test
     public void testSelectStar() throws SQLFeatureNotSupportedException, SqlParseException {
@@ -126,7 +133,19 @@ public class ZhongshuTest {
     }
 
     @Test
-    public
+    public void testGroupBy() {
+        sql = "select " +
+                "count(*), " +
+                "gg, " +
+                "a as my_a, " +
+                "floor(b) as my_b , " +
+                "count(c) as my_count, " +
+                "sum(d), " +
+                "case when e='1' then 'hehe' when e='2' then 'haha' else 'book' end as my_e " +
+                "from tbl " +
+                "group by my_a, my_b";
+        System.out.println(sql);
+    }
 
     @Test
     public void testStr () {
@@ -134,5 +153,23 @@ public class ZhongshuTest {
         String b = "abc";
         System.out.println(a == b);
         System.out.println(a != b);
+    }
+
+    @Test
+    public void testOrderByCaseWhen() throws SQLFeatureNotSupportedException, SqlParseException {
+        sql = "SELECT dt, os, appid\n" +
+                "FROM t_od_xps2_app_channel_cube_report\n" +
+                "WHERE dt >= '2018-05-29'\n" +
+                "\tAND dt <= '2018-05-29'\n" +
+                "ORDER BY CASE WHEN accounttype = '1' THEN effect_inv ELSE theo_inv END";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+    }
+
+    @Test
+    public void testInJudge() throws SqlParseException, SQLFeatureNotSupportedException {
+        sql = "select dt, case when a in ('1', '2', '3') then 'hehe' else 'gg' end as a from tbl";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
     }
 }
