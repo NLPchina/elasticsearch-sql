@@ -58,7 +58,7 @@ public class Paramer {
 
                     case "fields":
                         int index;
-                        for (String f : Strings.split(Util.expr2Object(sqlExpr.getRight()).toString(), ",")) {
+                        for (String f : Strings.splitStringByCommaToArray(Util.expr2Object(sqlExpr.getRight()).toString())) {
                             index = f.lastIndexOf('^');
                             if (-1 < index) {
                                 instance.fieldsBoosts.put(f.substring(0, index), Float.parseFloat(f.substring(index + 1)));
