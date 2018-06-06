@@ -35,7 +35,6 @@ public class ESActionFactory {
 	/**
 	 * Create the compatible Query object
 	 * based on the SQL query.
-	 *
 	 * @param sql The SQL query.
 	 * @return Query object.
 	 */
@@ -44,21 +43,24 @@ public class ESActionFactory {
         String firstWord = sql.substring(0, sql.indexOf(' '));
         switch (firstWord.toUpperCase()) {
 			case "SELECT":
+			    //zhongshu-comment 将sql字符串解析成AST，即SQLQueryExpr sqlExpr就是AST了，下面的代码就开始访问AST、从中获取token
 				SQLQueryExpr sqlExpr = (SQLQueryExpr) toSqlExpr(sql);
-                if(isMulti(sqlExpr)){
+                if(isMulti(sqlExpr)){//zhongshu-comment 判断是不是union查询，union查询两个select语句，btw：子查询也有多个select语句，至少2个
                     MultiQuerySelect multiSelect = new SqlParser().parseMultiSelect((SQLUnionQuery) sqlExpr.getSubQuery().getQuery());
                     handleSubQueries(client,multiSelect.getFirstSelect());
                     handleSubQueries(client,multiSelect.getSecondSelect());
                     return new MultiQueryAction(client, multiSelect);
                 }
-                else if(isJoin(sqlExpr,sql)){
+                else if(isJoin(sqlExpr,sql)){//zhongshu-comment join连接查询
                     JoinSelect joinSelect = new SqlParser().parseJoinSelect(sqlExpr);
                     handleSubQueries(client, joinSelect.getFirstTable());
                     handleSubQueries(client, joinSelect.getSecondTable());
                     return ESJoinQueryActionFactory.createJoinAction(client, joinSelect);
                 }
                 else {
+                    //zhongshu-comment 先看懂这个分支
                     Select select = new SqlParser().parseSelect(sqlExpr);
+                    //todo 看不懂，测试了好几个常见的sql，都没有进去该方法，那就先不理了，看别的
                     handleSubQueries(client, select);
                     return handleSelect(client, select);
                 }
@@ -130,9 +132,11 @@ public class ESActionFactory {
     }
 
     private static SQLExpr toSqlExpr(String sql) {
-        SQLExprParser parser = new ElasticSqlExprParser(sql);
-        SQLExpr expr = parser.expr();
 
+        SQLExprParser parser = new ElasticSqlExprParser(sql); //zhongshu-comment 这个SQLExprParser parser应该就是语法解析器
+        SQLExpr expr = parser.expr(); //zhongshu-comment 这个expr应该就是解析sql之后得到的AST了
+
+        //zhongshu-comment 调用parser.expr()方法解析完sql语句后，发现最后一个token不是End Of File的话，即该sql语句貌似是残缺的，可能是用户输入了一个未结束的sql
         if (parser.getLexer().token() != Token.EOF) {
             throw new ParserException("illegal sql expr : " + sql);
         }

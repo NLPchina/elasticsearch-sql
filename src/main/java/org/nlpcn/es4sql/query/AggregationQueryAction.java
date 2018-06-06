@@ -5,18 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
-import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
@@ -47,18 +46,18 @@ public class AggregationQueryAction extends QueryAction {
 
     @Override
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-        this.request = client.prepareSearch();
+        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 
         setIndicesAndTypes();
 
-        setWhere(select.getWhere());
+        setWhere(select.getWhere()); //zhongshu-comment 和DefaultQueryAction的setWhere()一样
         AggregationBuilder lastAgg = null;
-
+        //zhongshu-comment 因为es的aggs是可以多条线的，a线可能是group by 省,城市，b线可能是group by 性别、年龄，所以select的groupBys字段是双层List，第一层是a线、b线，第二层是每条线要group by哪些字段
         for (List<Field> groupBy : select.getGroupBys()) {
             if (!groupBy.isEmpty()) {
                 Field field = groupBy.get(0);
 
-
+                //zhongshu-comment 使得group by可以使用select子句中字段的别名
                 //make groupby can reference to field alias
                 lastAgg = getGroupAgg(field, select);
 
@@ -103,6 +102,7 @@ public class AggregationQueryAction extends QueryAction {
                     request.addAggregation(lastAgg);
                 }
 
+                //zhongshu-comment 下标从1开始
                 for (int i = 1; i < groupBy.size(); i++) {
                     field = groupBy.get(i);
                     AggregationBuilder subAgg = getGroupAgg(field, select);
@@ -138,16 +138,29 @@ public class AggregationQueryAction extends QueryAction {
                         lastAgg.subAggregation(subAgg);
                     }
 
+                    //zhongshu-comment 令lastAgg指向subAgg对象，然后继续下一个循环，就能达到这样的效果：a aggs下包着b aggs，b aggs下包着c aggs，c aggs下包着d aggs
                     lastAgg = subAgg;
-                }
+                }//zhongshu-comment 单条线的aggs循环结束
             }
 
-            // add aggregation function to each groupBy
+            // add aggregation function to each groupBy zhongshu-comment each groupBy即多条线的aggs
+            /*
+            zhongshu-comment 前面的解析都是针对group by子句中的那些字段，但group by子句中的那些字段并没有指明要统计什么指标啊，到底是count？sum？还是avg呢？
+                             到底要统计什么指标是在select子句中指明的。
+            例如：select c,d,sum(a),count(b) from tbl group by c,d;
+            上面的逻辑就是解析group by字段中的c和d，接下来的 explanFields() 就是解析sum(a)和count(b)了
+             */
             explanFields(request, select.getFields(), lastAgg);
-        }
+
+        }//zhongshu-comment 多条线的aggs循环结束
 
         if (select.getGroupBys().size() < 1) {
             //add aggregation when having no groupBy script
+            /*
+            zhongshu-comment 假如sql中没有group by子句，但是别的情况有可能会触发aggs的，例如sql：
+            select sum(a),count(b) from tbl;
+            这种情况就是只有一个组，所有数据就是一个组，不分组做聚合，所以还是会用到aggs的
+             */
             explanFields(request, select.getFields(), lastAgg);
 
         }
@@ -185,7 +198,7 @@ public class AggregationQueryAction extends QueryAction {
                 }
             }
         }
-
+        //zhongshu-comment 这个要看一下
         setLimitFromHint(this.select.getHints());
 
         request.setSearchType(SearchType.DEFAULT);
@@ -213,7 +226,17 @@ public class AggregationQueryAction extends QueryAction {
             }
         }
 
-        if (!refrence) lastAgg = aggMaker.makeGroupAgg(field);
+        /*
+        zhongshu-comment reference的意思是引用，在该代码上下文的意思是group by中使用了select子句中字段的别名
+        refrence为false，就代表没有引用了别名，就是一般的Field、一般的group by而已，和我平常写的一样
+        "aggs":{
+            "city_agg":{
+                "field":"city"
+             }
+         }
+         */
+        if (!refrence)
+            lastAgg = aggMaker.makeGroupAgg(field);
         
         return lastAgg;
     }
@@ -328,14 +351,26 @@ public class AggregationQueryAction extends QueryAction {
 
     private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder groupByAgg) throws SqlParseException {
         for (Field field : fields) {
+
             if (field instanceof MethodField) {
 
                 if (field.getName().equals("script")) {
+                    //question addStoredField()是什么鬼？
                     request.addStoredField(field.getAlias());
+
+                    /*
+                    zhongshu-comment 将request传进去defaultQueryAction对象是为了调用setFields()中的这一行代码：request.setFetchSource(),
+                                     给request设置include字段和exclude字段
+                     */
                     DefaultQueryAction defaultQueryAction = new DefaultQueryAction(client, select);
                     defaultQueryAction.intialize(request);
                     List<Field> tempFields = Lists.newArrayList(field);
                     defaultQueryAction.setFields(tempFields);
+
+                    /*
+                     zhongshu-comment 因为field.getName().equals("script")的那些字段一般都是作为维度而不是统计指标、度量metric，
+                                        所以就要continue，不能继续下边的创建agg
+                    */
                     continue;
                 }
 
@@ -343,9 +378,12 @@ public class AggregationQueryAction extends QueryAction {
                 if (groupByAgg != null) {
                     groupByAgg.subAggregation(makeAgg);
                 } else {
+                    //question 不懂为什么将一个null的agg加到request中，这应该是dsl语法问题，先不需要深究
                     request.addAggregation(makeAgg);
                 }
             } else if (field instanceof Field) {
+
+                //question 为什么Filed类型的字段不需要像MethodField类型字段一样设置include、exclude字段：request.setFetchSource()
                 request.addStoredField(field.getName());
             } else {
                 throw new SqlParseException("it did not support this field method " + field);

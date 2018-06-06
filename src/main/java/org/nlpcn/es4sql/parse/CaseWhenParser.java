@@ -20,6 +20,8 @@ import java.util.List;
  */
 public class CaseWhenParser {
     private SQLCaseExpr caseExpr;
+
+    //zhongshu-comment 以下这两个属性貌似没有被使用
     private String alias;
     private String tableAlias;
 
@@ -59,6 +61,12 @@ public class CaseWhenParser {
         return Joiner.on(" ").join(result);
     }
 
+    /**
+     * zhongshu-comment 这个方法应该设为private比较合适，因为只在上文的parse()方法中被调用了
+     * @param where
+     * @return
+     * @throws SqlParseException
+     */
     public String explain(Where where) throws SqlParseException {
         List<String> codes = new ArrayList<String>();
         while (where.getWheres().size() == 1) {
@@ -74,18 +82,25 @@ public class CaseWhenParser {
         if (where instanceof Condition) {
             Condition condition = (Condition) where;
 
-            if (condition.getValue() instanceof ScriptFilter) {
+            if (condition.getValue() instanceof ScriptFilter) {//zhongshu-comment 对应这种情况
                 codes.add("(" + ((ScriptFilter) condition.getValue()).getScript() + ")");
             } else if (condition.getOpear() == OPEAR.BETWEEN) {
                 Object[] objs = (Object[]) condition.getValue();
                 codes.add("(" + "doc['" + condition.getName() + "'].value >= " + objs[0] + " && doc['"
                         + condition.getName() + "'].value <=" + objs[1] + ")");
-            } else {
+            }
+//            else if (condition.getOpear() == OPEAR.IN || condition.getOpear() == OPEAR.NIN) {
+//                //zhongshu-comment 增加该分支，可以解析case when判断语句中的in、not in判断语句
+                  //todo
+//            }
+            else {
                 SQLExpr nameExpr = condition.getNameExpr();
                 SQLExpr valueExpr = condition.getValueExpr();
                 if(valueExpr instanceof SQLNullExpr) {
+                    //zhongshu-comment 空值查询的意思吗？例如：查a字段没有值的那些文档，是这个意思吗
                     codes.add("(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
                 } else {
+                    //zhongshu-comment 该分支示例：(doc['c'].value=='1')
                     codes.add("(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
                 }
             }

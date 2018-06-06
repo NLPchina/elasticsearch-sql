@@ -80,7 +80,11 @@ public class WhereParser {
 
     public void parseWhere(SQLExpr expr, Where where) throws SqlParseException {
 
-
+        /*
+        zhongshu-comment SQLBinaryOpExpr举例：
+            eg1：a = 1
+            eg2：a = 1 AND b = 2 OR c = 3
+         */
         if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr bExpr = (SQLBinaryOpExpr) expr;
             if (explanSpecialCondWithBothSidesAreLiterals(bExpr, where)) {
@@ -175,7 +179,7 @@ public class WhereParser {
         return false;
     }
 
-
+    //zhongshu-comment isCondition的意思吗？判断是不是一个判断条件，例如：a=1 或者 floor(a)=1这种最小的单元
     private boolean isCond(SQLBinaryOpExpr expr) {
         SQLExpr leftSide = expr.getLeft();
         if (leftSide instanceof SQLMethodInvokeExpr) {
@@ -201,14 +205,14 @@ public class WhereParser {
             if (binarySub.getOperator().priority != bExpr.getOperator().priority) {
                 Where subWhere = new Where(bExpr.getOperator().name);
                 where.addWhere(subWhere);
-                parseWhere(binarySub, subWhere);
+                parseWhere(binarySub, subWhere);//zhongshu-comment 递归调用parseWhere()，解析出where子句中的多个条件
             } else {
-                parseWhere(binarySub, where);
+                parseWhere(binarySub, where);//zhongshu-comment 递归调用parseWhere()，解析出where子句中的多个条件
             }
         } else if (sub instanceof SQLNotExpr) {
             Where subWhere = new Where(bExpr.getOperator().name);
             where.addWhere(subWhere);
-            parseWhere(((SQLNotExpr) sub).getExpr(), subWhere);
+            parseWhere(((SQLNotExpr) sub).getExpr(), subWhere);//zhongshu-comment 递归调用parseWhere()，解析出where子句中的多个条件
             negateWhere(subWhere);
         } else {
             explanCond(bExpr.getOperator().name, sub, where);
@@ -279,7 +283,7 @@ public class WhereParser {
                 }
                 where.addWhere(condition);
             }
-        } else if (expr instanceof SQLInListExpr) {
+        } else if (expr instanceof SQLInListExpr) { //zhongshu-comment 解析in和not in语句
             SQLInListExpr siExpr = (SQLInListExpr) expr;
             String leftSide = siExpr.getExpr().toString();
 
@@ -539,6 +543,12 @@ public class WhereParser {
         return values.toArray();
     }
 
+    /**
+     * zhongshu-comment 该放方法只用于解析in、not in括号中的列表，将括号中的多个值转为数组Object[]
+     * @param targetList
+     * @return
+     * @throws SqlParseException
+     */
     private Object[] parseValue(List<SQLExpr> targetList) throws SqlParseException {
         Object[] value = new Object[targetList.size()];
         for (int i = 0; i < targetList.size(); i++) {
@@ -568,6 +578,10 @@ public class WhereParser {
         } else if (expr instanceof SQLPropertyExpr) {
             return expr;
         } else {
+            /*
+            zhongshu-comment 解析where子查询时会抛出这样的异常：
+            Failed to parse SqlExpression of type class com.alibaba.druid.sql.ast.expr.SQLQueryExpr. expression value: com.alibaba.druid.sql.ast.statement.SQLSelect@1d60737e
+             */
             throw new SqlParseException(
                     String.format("Failed to parse SqlExpression of type %s. expression value: %s", expr.getClass(), expr)
             );
