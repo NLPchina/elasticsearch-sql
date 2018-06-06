@@ -89,18 +89,19 @@ public class CaseWhenParser {
                 codes.add("(" + "doc['" + condition.getName() + "'].value >= " + objs[0] + " && doc['"
                         + condition.getName() + "'].value <=" + objs[1] + ")");
             }
-//            else if (condition.getOpear() == OPEAR.IN || condition.getOpear() == OPEAR.NIN) {
-//                //zhongshu-comment 增加该分支，可以解析case when判断语句中的in、not in判断语句
-                  //todo
-//            }
-            else {
+            else if (condition.getOpear() == OPEAR.IN) {// in
+                //zhongshu-comment 增加该分支，可以解析case when判断语句中的in、not in判断语句
+                parseInNotInJudge(condition, codes, "==", "||");
+            } else if (condition.getOpear() == OPEAR.NIN) { // not in
+                parseInNotInJudge(condition, codes, "!=", "&&");
+            } else {
                 SQLExpr nameExpr = condition.getNameExpr();
                 SQLExpr valueExpr = condition.getValueExpr();
                 if(valueExpr instanceof SQLNullExpr) {
                     //zhongshu-comment 空值查询的意思吗？例如：查a字段没有值的那些文档，是这个意思吗
                     codes.add("(" + "doc['" + nameExpr.toString() + "']" + ".empty)");
                 } else {
-                    //zhongshu-comment 该分支示例：(doc['c'].value=='1')
+                    //zhongshu-comment 该分支示例：(doc['c'].value==1)
                     codes.add("(" + Util.getScriptValueWithQuote(nameExpr, "'") + condition.getOpertatorSymbol() + Util.getScriptValueWithQuote(valueExpr, "'") + ")");
                 }
             }
@@ -114,4 +115,27 @@ public class CaseWhenParser {
         }
     }
 
+    private void parseInNotInJudge(Condition condition, List<String> codes, String judgeOperator, String booleanOperator) throws SqlParseException {
+        Object[] objArr = (Object[]) condition.getValue();
+        if (objArr.length == 0)
+            throw new SqlParseException("you should assign some value in bracket!!");
+
+        String script = "(";
+        String template = "doc['" + condition.getName() + "'].value " + judgeOperator + " %s " + booleanOperator;
+        for (Object obj : objArr) {
+            script = script + String.format(template, parseInNotInValueWithQuote(obj));
+        }
+        script = script.substring(0, script.length() - booleanOperator.length());//去掉末尾的&&
+        script += ")"; //(doc['a'].value == 1 &&doc['a'].value == 2 &&doc['a'].value == 3 )
+        codes.add(script);
+    }
+
+    private Object parseInNotInValueWithQuote(Object obj) {
+        //zhongshu-comment 因为我们的表就只有String 和 double两种类型，所以就只判断了这两种情况
+        if (obj instanceof String) {
+            return "'" + obj + "'";
+        } else {
+            return obj;
+        }
+    }
 }

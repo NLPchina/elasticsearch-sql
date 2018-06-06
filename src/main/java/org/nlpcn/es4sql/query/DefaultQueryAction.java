@@ -45,7 +45,10 @@ public class DefaultQueryAction extends QueryAction {
 	//zhongshu-comment 将sql字符串解析后的java对象，转换为es的查询请求对象
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-		this.request = client.prepareSearch();//zhongshu-comment conflict
+//		this.request = client.prepareSearch();//zhongshu-comment conflict
+		//zhongshu-comment 变量request是es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
+		this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
+
 		setIndicesAndTypes();
 
 		//zhongshu-comment 将Select对象中封装的sql token信息转换并传到成员变量es搜索请求对象request中

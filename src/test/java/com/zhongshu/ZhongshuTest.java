@@ -179,7 +179,7 @@ public class ZhongshuTest {
 
     @Test
     public void testInJudge() throws SqlParseException, SQLFeatureNotSupportedException {
-        sql = "select dt, case when a in ('1', '2', '3') then 'hehe' else 'gg' end as a from tbl";
+        sql = "select dt, case when a in ('1', '2', '3') then 'hehe' when b=2 then 'haha' when c not in (7,8,9) then 'book' else 'gg' end as a from tbl";
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
     }
