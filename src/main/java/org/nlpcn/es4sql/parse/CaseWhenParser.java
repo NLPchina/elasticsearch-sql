@@ -121,11 +121,11 @@ public class CaseWhenParser {
             throw new SqlParseException("you should assign some value in bracket!!");
 
         String script = "(";
-        String template = "doc['" + condition.getName() + "'].value " + judgeOperator + " %s " + booleanOperator;
+        String template = "doc['" + condition.getName() + "'].value " + judgeOperator + " %s " + booleanOperator + " "; //结尾这个空格就只空一格
         for (Object obj : objArr) {
             script = script + String.format(template, parseInNotInValueWithQuote(obj));
         }
-        script = script.substring(0, script.length() - booleanOperator.length());//去掉末尾的&&
+        script = script.substring(0, script.lastIndexOf(booleanOperator));//去掉末尾的&&
         script += ")"; //(doc['a'].value == 1 &&doc['a'].value == 2 &&doc['a'].value == 3 )
         codes.add(script);
     }

@@ -45,8 +45,18 @@ public class DefaultQueryAction extends QueryAction {
 	//zhongshu-comment 将sql字符串解析后的java对象，转换为es的查询请求对象
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-//		this.request = client.prepareSearch();//zhongshu-comment conflict
-		//zhongshu-comment 变量request是es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
+		/*
+		zhongshu-comment 6.1.1.5这个版本和elastic6.1.1这个分支用的是这一行代码
+		但是在本地调试时我的client没有实例化，并没有去连es，所以这行代码会报空指针
+		那就将这行注释掉吧，以后就用下面那行
+		 */
+//		this.request = client.prepareSearch();
+
+		/*
+		zhongshu-comment  6.2.4.1这个版本和master_zhongshu_dev_01用的是这一行代码，虽然client为null，但是下面这行代码并不会报空指针
+							为了在本地调试、执行下文的那些代码获得es的dsl，所以就使用这行代码，暂时将上面哪一行注释掉，上线的时候记得替换掉
+		变量request是es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
+		 */
 		this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 
 		setIndicesAndTypes();
