@@ -57,7 +57,6 @@ public class SQLFunctions {
                 functionStr = date_format(
                         Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
                         Util.expr2Object((SQLExpr) paramers.get(1).value).toString(),
-                        2 < paramers.size() ? Util.expr2Object((SQLExpr) paramers.get(2).value).toString() : null,
                         name);
                 break;
 
@@ -156,12 +155,10 @@ public class SQLFunctions {
         return new Tuple<>(name, script);
     }
 
-    private static Tuple<String, String> date_format(String strColumn, String pattern, String zoneId, String valueName) {
+    private static Tuple<String, String> date_format(String strColumn, String pattern, String valueName) {
         String name = "date_format_" + random();
         if (valueName == null) {
-            return new Tuple<>(name, "def " + name + " = DateTimeFormatter.ofPattern('" + pattern + "').withZone(" +
-                    (zoneId != null ? "ZoneId.of('" + zoneId + "')" : "ZoneId.systemDefault()") +
-                    ").format(Instant.ofEpochMilli(doc['" + strColumn + "'].value.getMillis()))");
+            return new Tuple<>(name, "def " + name + " = new SimpleDateFormat('" + pattern + "').format(new Date(doc['" + strColumn + "'].value - 8*1000*60*60))");
         } else {
             return new Tuple<>(name, strColumn + "; def " + name + " = new SimpleDateFormat('" + pattern + "').format(new Date(" + valueName + " - 8*1000*60*60))");
         }
@@ -221,7 +218,7 @@ public class SQLFunctions {
         String newScript = variance[variance.length - 1];
         if (newScript.trim().startsWith("def ")) {
             //for now ,if variant is string,then change to double.
-            return newScript.trim().substring(4).split("=")[0].trim();
+            return newScript.substring(4).split("=")[0].trim();
         } else return scriptStr;
     }
 
@@ -232,7 +229,7 @@ public class SQLFunctions {
         String newScript = variance[variance.length - 1];
         if (newScript.trim().startsWith("def ")) {
             //for now ,if variant is string,then change to double.
-            String temp = newScript.trim().substring(4).split("=")[0].trim();
+            String temp = newScript.substring(4).split("=")[0].trim();
 
             return " if( " + temp + " instanceof String) " + temp + "= Double.parseDouble(" + temp.trim() + "); ";
         } else return "";

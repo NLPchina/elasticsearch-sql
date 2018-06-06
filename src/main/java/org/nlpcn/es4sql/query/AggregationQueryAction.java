@@ -46,7 +46,7 @@ public class AggregationQueryAction extends QueryAction {
 
     @Override
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
+        this.request = client.prepareSearch();
 
         setIndicesAndTypes();
 

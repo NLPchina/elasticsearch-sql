@@ -293,7 +293,6 @@ public class AggMaker {
         String aggName = gettAggNameFromParamsOrAlias(field);
         TermsAggregationBuilder terms = AggregationBuilders.terms(aggName);
         String value = null;
-        IncludeExclude include = null, exclude = null;
         for (KVValue kv : field.getParams()) {
             value = kv.value.toString();
             switch (kv.key.toLowerCase()) {
@@ -326,30 +325,10 @@ public class AggMaker {
                 case "reverse_nested":
                 case "children":
                     break;
-                case "execution_hint":
-                    terms.executionHint(value);
-                    break;
-                case "include":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, value)) {
-                        parser.nextToken();
-                        include = IncludeExclude.parseInclude(parser);
-                    } catch (IOException e) {
-                        throw new SqlParseException("parse include[" + value + "] error: " + e.getMessage());
-                    }
-                    break;
-                case "exclude":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, value)) {
-                        parser.nextToken();
-                        exclude = IncludeExclude.parseExclude(parser);
-                    } catch (IOException e) {
-                        throw new SqlParseException("parse exclude[" + value + "] error: " + e.getMessage());
-                    }
-                    break;
                 default:
                     throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
             }
         }
-        terms.includeExclude(IncludeExclude.merge(include, exclude));
         return terms;
     }
 

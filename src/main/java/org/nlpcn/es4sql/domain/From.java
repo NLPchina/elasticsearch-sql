@@ -16,17 +16,6 @@ public class From {
 	 * @param from The part after the FROM keyword.
 	 */
 	public From(String from) {
-		if (from.startsWith("<")) {
-			index = from;
-			if (!from.endsWith(">")) {
-				int i = from.lastIndexOf('/');
-				if (-1 < i) {
-					index = from.substring(0, i);
-					type = from.substring(i + 1);
-				}
-			}
-			return;
-		}
 		String[] parts = from.split("/");
 		this.index = parts[0].trim();
 		if (parts.length == 2) {

@@ -27,7 +27,7 @@ public class ExplainTest {
     @Test
     public void aggregationQuery() throws IOException, SqlParseException, NoSuchMethodException, IllegalAccessException, SQLFeatureNotSupportedException, InvocationTargetException {
         String expectedOutput = Files.toString(new File("src/test/resources/expectedOutput/aggregation_query_explain.json"), StandardCharsets.UTF_8).replaceAll("\r","");
-        String result = explain(String.format("SELECT a, CASE WHEN gender='0' then 'aaa' else 'bbb'end a2345,count(c) FROM %s GROUP BY terms('field'='a','execution_hint'='global_ordinals'),a2345", TEST_INDEX_ACCOUNT));
+        String result = explain(String.format("SELECT a, CASE WHEN gender='0' then 'aaa' else 'bbb'end a2345,count(c) FROM %s GROUP BY terms('field'='a'),a2345", TEST_INDEX_ACCOUNT));
 
         assertThat(result.replaceAll("\\s+",""), equalTo(expectedOutput.replaceAll("\\s+","")));
     }
@@ -77,21 +77,8 @@ public class ExplainTest {
         assertThat(result.replaceAll("\\s+", ""), equalTo("{\"from\":0,\"size\":200,\"sort\":[{\"message.info\":{\"order\":\"asc\",\"nested\":{\"path\":\"message\"}}}]}"));
     }
 
-    @Test
-    public void multiMatchQuery() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        String expectedOutput = Files.toString(new File("src/test/resources/expectedOutput/multi_match_query.json"), StandardCharsets.UTF_8).replaceAll("\r", "");
-        String result = explain(String.format("SELECT * FROM %s WHERE q=multimatch(query='this is a test',fields='subject^3,message',analyzer='standard',type='best_fields',boost=1.0,slop=0,tie_breaker=0.3,operator='and')", TEST_INDEX_ACCOUNT));
-        assertThat(result.replaceAll("\\s+", ""), equalTo(expectedOutput.replaceAll("\\s+", "")));
-    }
 
-    @Test
-    public void termsIncludeExcludeExplainTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        System.out.println(explain("SELECT * FROM index GROUP BY terms(field='correspond_brand_name',size='10',alias='correspond_brand_name',include='\".*sport.*\"',exclude='\"water_.*\"')"));
-        System.out.println(explain("SELECT * FROM index GROUP BY terms(field='correspond_brand_name',size='10',alias='correspond_brand_name',include='[\"mazda\", \"honda\"]',exclude='[\"rover\", \"jensen\"]')"));
-        System.out.println(explain("SELECT * FROM index GROUP BY terms(field='correspond_brand_name',size='10',alias='correspond_brand_name',include='{\"partition\":0,\"num_partitions\":20}')"));
-    }
-
-    private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
+    private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
         return requestBuilder.explain();

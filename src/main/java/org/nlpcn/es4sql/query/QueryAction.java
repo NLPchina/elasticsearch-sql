@@ -88,7 +88,8 @@ public abstract class QueryAction {
         }
     }
 
-    protected HighlightBuilder.Field parseHighlightField(Object[] params) {
+    protected HighlightBuilder.Field parseHighlightField(Object[] params)
+    {
         if (params == null || params.length == 0 || params.length > 2) {
             //todo: exception.
         }

@@ -156,8 +156,7 @@ public class CSVResultsExtractor {
             if(!header.contains(name)){
                 header.add(name);
             }
-            NumericMetricsAggregation.SingleValue agg = (NumericMetricsAggregation.SingleValue) aggregation;
-            line.add(!Double.isInfinite(agg.value()) ? agg.getValueAsString() : "null");
+            line.add(((NumericMetricsAggregation.SingleValue) aggregation).getValueAsString());
         }
         //todo:Numeric MultiValue - Stats,ExtendedStats,Percentile...
         else if(aggregation instanceof NumericMetricsAggregation.MultiValue){

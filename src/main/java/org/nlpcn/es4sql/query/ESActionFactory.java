@@ -132,7 +132,6 @@ public class ESActionFactory {
     }
 
     private static SQLExpr toSqlExpr(String sql) {
-
         SQLExprParser parser = new ElasticSqlExprParser(sql); //zhongshu-comment 这个SQLExprParser parser应该就是语法解析器
         SQLExpr expr = parser.expr(); //zhongshu-comment 这个expr应该就是解析sql之后得到的AST了
 
