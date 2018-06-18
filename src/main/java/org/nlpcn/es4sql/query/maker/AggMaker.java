@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
@@ -296,7 +297,7 @@ public class AggMaker {
                     terms.executionHint(value);
                     break;
                 case "include":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, value)) {
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
                         parser.nextToken();
                         include = IncludeExclude.parseInclude(parser);
                     } catch (IOException e) {
@@ -304,7 +305,7 @@ public class AggMaker {
                     }
                     break;
                 case "exclude":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, value)) {
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
                         parser.nextToken();
                         exclude = IncludeExclude.parseExclude(parser);
                     } catch (IOException e) {

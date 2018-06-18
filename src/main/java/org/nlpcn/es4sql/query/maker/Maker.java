@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
+import org.elasticsearch.common.geo.parsers.ShapeParser;
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentParser;
@@ -326,9 +328,9 @@ public abstract class Maker {
 
     private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {
         XContentParser parser = null;
-        parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, json);
+        parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, json);
         parser.nextToken();
-        return ShapeBuilder.parse(parser);
+        return ShapeParser.parse(parser);
     }
 
     private String trimApostrophes(String str) {

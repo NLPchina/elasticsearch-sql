@@ -3,8 +3,8 @@ package org.elasticsearch.plugin.nlpcn;
 import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -67,7 +67,6 @@ public class ElasticUtils {
                 , "failed", metaResults.getFailedShards()));
         builder.field("hits",hits) ;
         builder.endObject();
-
-        return builder.string();
+        return BytesReference.bytes(builder).utf8ToString();
     }
 }

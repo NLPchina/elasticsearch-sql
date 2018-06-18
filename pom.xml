@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>6.2.4.6</version>
+	<version>6.3.0.0</version>
 	<packaging>jar</packaging>
 	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
@@ -45,7 +45,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<runSuite>**/MainTestSuite.class</runSuite>
 		<elasticsearch.plugin.name>sql</elasticsearch.plugin.name>
-		<elasticsearch.version>6.2.4</elasticsearch.version>
+		<elasticsearch.version>6.3.0</elasticsearch.version>
 		<elasticsearch.plugin.classname>org.elasticsearch.plugin.nlpcn.SqlPlug</elasticsearch.plugin.classname>
 	</properties>
 
@@ -93,14 +93,15 @@
         <dependency>
             <groupId>org.locationtech.spatial4j</groupId>
             <artifactId>spatial4j</artifactId>
-            <version>0.6</version>
+            <version>0.7</version>
         </dependency>
 
-		<dependency>
-			<groupId>com.vividsolutions</groupId>
-			<artifactId>jts</artifactId>
-			<version>1.13</version>
-		</dependency>
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.15.0</version>
+            <scope>provided</scope>
+        </dependency>
 
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
@@ -113,6 +114,20 @@
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>x-pack-transport</artifactId>
             <version>${elasticsearch.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+		<dependency>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
+            <version>3.2.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.58</version>
             <scope>provided</scope>
         </dependency>
 

@@ -16,7 +16,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -50,7 +50,7 @@ public class MainTestSuite {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		Settings settings = Settings.builder().put("client.transport.ignore_cluster_name",true).build();
-		client = new PreBuiltTransportClient(settings).addTransportAddress(getTransportAddress());
+		client = new PreBuiltXPackTransportClient(settings).addTransportAddress(getTransportAddress());
 
         NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
 		String clusterName = nodeInfos.getClusterName().value();
