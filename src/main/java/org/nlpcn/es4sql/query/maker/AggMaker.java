@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentParser;
@@ -570,7 +571,8 @@ public class AggMaker {
      */
     private RangeAggregationBuilder rangeBuilder(MethodField field) {
 
-        LinkedList<KVValue> params = new LinkedList<>(field.getParams());
+        // ignore alias param
+        LinkedList<KVValue> params = field.getParams().stream().filter(kv -> !"alias".equals(kv.key)).collect(Collectors.toCollection(LinkedList::new));
 
         String fieldName = params.poll().toString();
 
