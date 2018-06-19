@@ -179,7 +179,15 @@ public class ZhongshuTest {
 
     @Test
     public void testInJudge() throws SqlParseException, SQLFeatureNotSupportedException {
-        sql = "select dt, case when a in ('1', '2', '3') then 'hehe' when b=2 then 'haha' when c not in (7,8,9) then 'book' else 'gg' end as a from tbl";
+//        sql = "select dt, case when a in ('1', '2', '3') then 'hehe' when b=2 then 'haha' when c not in (7,8,9) then 'book' else 'gg' end as a from tbl";
+        sql = "select dt,case when os in ('Android', 'iOS') then 'hello' else 'world' end abc from t_zhongshu_test";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+    }
+
+    @Test
+    public void testRound() throws SqlParseException, SQLFeatureNotSupportedException {
+        sql = "SELECT round(av_num/v_num,4) as av_rate1 FROM t_md_xps2_all_inv_consume_report WHERE dt = '2018-06-14' limit 100";
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
     }
