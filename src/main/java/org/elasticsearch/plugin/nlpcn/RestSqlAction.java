@@ -1,5 +1,12 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
+import com.sohu.SqlUtil;
 import org.elasticsearch.client.node.NodeClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
@@ -40,6 +47,11 @@ public class RestSqlAction extends BaseRestHandler {
             sql = request.content().utf8ToString();
         }
         try {
+            int groupByFieldCount = SqlUtil.getGroupByFieldCount(sql);
+            if (groupByFieldCount > 7) {
+                throw new Exception("group by field count can not large than 7");
+            }
+
             SearchDao searchDao = new SearchDao(client);
             QueryAction queryAction = null;
 
@@ -70,6 +82,8 @@ public class RestSqlAction extends BaseRestHandler {
                 return channel -> restExecutor.execute(client, additionalParams, finalQueryAction, channel);
             }
         } catch (SqlParseException | SQLFeatureNotSupportedException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
