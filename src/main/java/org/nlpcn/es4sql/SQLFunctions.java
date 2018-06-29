@@ -29,7 +29,7 @@ public class SQLFunctions {
 
     public static Tuple<String, String> function(String methodName, List<KVValue> paramers, String name,boolean returnValue) {
         Tuple<String, String> functionStr = null;
-        switch (methodName) {
+        switch (methodName.toLowerCase()) {
             case "if":
                 String nameIF = "";
                 String caseString = "";
