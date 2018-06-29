@@ -289,7 +289,7 @@ public class FieldMaker {
         }
         //zhongshu-comment script字段不会走这个分支
         //just check we can find the function
-        if (SQLFunctions.buildInFunctions.contains(finalMethodName)) {
+        if (SQLFunctions.buildInFunctions.contains(finalMethodName.toLowerCase())) {
             if (alias == null && first) {
                 alias = "field_" + SQLFunctions.random();//paramers.get(0).value.toString();
             }
@@ -301,7 +301,12 @@ public class FieldMaker {
                 //variance
                 paramers.add(new KVValue(newFunctions.v1()));
             } else {
-                paramers.add(new KVValue(alias));
+                
+                if(newFunctions.v1().toLowerCase().contains("if")){
+                    paramers.add(new KVValue(newFunctions.v1()));
+                }else {
+                    paramers.add(new KVValue(alias));
+                }
             }
 
             paramers.add(new KVValue(newFunctions.v2()));

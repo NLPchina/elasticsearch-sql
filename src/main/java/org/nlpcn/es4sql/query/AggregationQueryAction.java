@@ -46,7 +46,8 @@ public class AggregationQueryAction extends QueryAction {
 
     @Override
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-        this.request = client.prepareSearch();
+//        this.request = client.prepareSearch();//zhongshu-comment elastic6.1.1的写法
+        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE); //zhongshu-comment master的写法
 
         setIndicesAndTypes();
 

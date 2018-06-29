@@ -260,7 +260,7 @@ public class ZhongshuTest {
                 "sum(count_click) as count_click,\n" +
                 "sum(sum_charge) as sum_charge \n" +
                 "FROM t_fact_tracking_charge where 1=1 and appid in ('news','newssdk','wapnews','pcnews','tv','h5tv','pctv','union','wapunion','squirrel')\n" +
-                "and dt=20180628 group by aid order by count_v desc";
+                "and dt=20180628 group by aid,appid order by count_v desc";
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
     }
