@@ -191,4 +191,77 @@ public class ZhongshuTest {
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
     }
+
+    @Test
+    public void testStringOrderBy() throws SQLFeatureNotSupportedException, SqlParseException {
+        sql = "SELECT dt\n" +
+                "\t, CASE\n" +
+                "\t\tWHEN data_source = '0' THEN '新品算'\n" +
+                "\t\tWHEN data_source = '1' THEN '汇算'\n" +
+                "\t\tELSE data_source\n" +
+                "\tEND AS data_source, os, platform_id, ssp_id, adslotid\n" +
+                "\t, adposition_name, ad_source, appid, appdelaytrack, bidtype\n" +
+                "\t, stock, v_num, av_num, click_num\n" +
+                "\t, CASE\n" +
+                "\t\tWHEN ad_source = '中长尾' THEN charge\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS charge, av_stock, v_rate, av_rate, ctr1\n" +
+                "\t, ctr2\n" +
+                "\t, CASE\n" +
+                "\t\tWHEN ad_source = '中长尾' THEN ecpm1\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS ecpm1\n" +
+                "\t, CASE\n" +
+                "\t\tWHEN ad_source = '中长尾' THEN ecpm2\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS ecpm2\n" +
+                "\t, CASE\n" +
+                "\t\tWHEN ad_source = '中长尾' THEN acp\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS acp\n" +
+                "FROM t_md_xps2_all_inv_consume_report_v2\n" +
+                "WHERE dt >= '2018-05-20'\n" +
+                "AND dt <= '2018-06-19'\n" +
+                "AND 1 = 1\n" +
+                "AND data_source NOT IN ('all', '全部')\n" +
+                "AND ad_source = '全部'\n" +
+                "AND os = '全部'\n" +
+                "AND appdelaytrack = '全部'\n" +
+                "AND platform_id = '全部'\n" +
+                "AND appid = '全部'\n" +
+                "AND ssp_id = '全部'\n" +
+                "AND bidtype = '全部'\n" +
+                "AND adslotid IN ('全部')\n" +
+                "ORDER BY dt DESC, CASE\n" +
+                "\tWHEN data_source = '0' THEN '新品算'\n" +
+                "\tWHEN data_source = '1' THEN '汇算'\n" +
+                "\tELSE data_source\n" +
+                "END ASC";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+    }
+
+    @Test
+    public void testIf() throws SqlParseException, SQLFeatureNotSupportedException{
+        sql = "SELECT IF(t.a=1,'1','2') from t";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+    }
+
+    @Test
+    public void testGroupBySize() throws SQLFeatureNotSupportedException, SqlParseException {
+        sql = "SELECT \n" +
+                "aid,\n" +
+                "appid,\n" +
+                "accounttype,\n" +
+                "(case when bidtype='1' then 'CPD' when bidtype='2' then 'CPM' when bidtype='3' then 'CPC' when bidtype='4' then 'DCPM' else '其它' end ) as bidtype,\n" +
+                "sum(count_v) as count_v,\n" +
+                "sum(count_av) as count_av,\n" +
+                "sum(count_click) as count_click,\n" +
+                "sum(sum_charge) as sum_charge \n" +
+                "FROM t_fact_tracking_charge where 1=1 and appid in ('news','newssdk','wapnews','pcnews','tv','h5tv','pctv','union','wapunion','squirrel')\n" +
+                "and dt=20180628 group by aid order by count_v desc";
+        QueryAction qa = ESActionFactory.create(client, sql);
+        qa.explain();
+    }
 }

@@ -218,7 +218,8 @@ public class DefaultQueryAction extends QueryAction {
             } else if (order.getName().contains("script(")) { //zhongshu-comment 该分支是我后来加的，用于兼容order by case when那种情况
 				String scriptStr = order.getName().substring("script(".length(), order.getName().length() - 1);
 				Script script = new Script(scriptStr);
-				ScriptSortBuilder scriptSortBuilder = SortBuilders.scriptSort(script, ScriptSortBuilder.ScriptSortType.NUMBER);
+				ScriptSortBuilder scriptSortBuilder = SortBuilders.scriptSort(script, order.getScriptSortType());
+
 				scriptSortBuilder = scriptSortBuilder.order(SortOrder.valueOf(order.getType()));
 				request.addSort(scriptSortBuilder);
 			} else {

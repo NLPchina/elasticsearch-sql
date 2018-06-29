@@ -9,6 +9,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 
+import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintFactory;
@@ -211,9 +212,22 @@ public class SqlParser {
 
             orderByName = orderByName.replace("`", "");
             if (alias != null) orderByName = orderByName.replaceFirst(alias + "\\.", "");
-            select.addOrderBy(f.getNestedPath(), orderByName, type);
 
+            ScriptSortBuilder.ScriptSortType scriptSortType = judgeIsStringSort(expr);
+            select.addOrderBy(f.getNestedPath(), orderByName, type, scriptSortType);
         }
+    }
+
+    private ScriptSortBuilder.ScriptSortType judgeIsStringSort(SQLExpr expr) {
+        if (expr instanceof SQLCaseExpr) {
+            List<SQLCaseExpr.Item> itemList = ((SQLCaseExpr) expr).getItems();
+            for (SQLCaseExpr.Item item : itemList) {
+                if (item.getValueExpr() instanceof SQLCharExpr) {
+                    return ScriptSortBuilder.ScriptSortType.STRING;
+                }
+            }
+        }
+        return ScriptSortBuilder.ScriptSortType.NUMBER;
     }
 
     private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {

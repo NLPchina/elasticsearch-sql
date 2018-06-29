@@ -61,10 +61,14 @@ public class AggregationQueryAction extends QueryAction {
                 //make groupby can reference to field alias
                 lastAgg = getGroupAgg(field, select);
 
+                /*
+                zhongshu-comment 假如limit是比200小，那shard size就设为5000，
+                                 假如limit是比200大，那shard size等于size的为准？
+                 */
                 if (lastAgg != null && lastAgg instanceof TermsAggregationBuilder && !(field instanceof MethodField)) {
                     //if limit size is too small, increasing shard  size is required
                     if (select.getRowCount() < 200) {
-                        ((TermsAggregationBuilder) lastAgg).shardSize(2000);
+                        ((TermsAggregationBuilder) lastAgg).shardSize(5000);
                         for (Hint hint : select.getHints()) {
                             if (hint.getType() == HintType.SHARD_SIZE) {
                                 if (hint.getParams() != null && hint.getParams().length != 0 && hint.getParams()[0] != null) {
@@ -73,9 +77,9 @@ public class AggregationQueryAction extends QueryAction {
                             }
                         }
                     }
-                    if(select.getRowCount()>0) {
-                        ((TermsAggregationBuilder) lastAgg).size(select.getRowCount());
-                    }
+
+                    setSize(lastAgg);
+                    setShardSize(lastAgg);
                 }
 
                 if (field.isNested()) {
@@ -111,7 +115,8 @@ public class AggregationQueryAction extends QueryAction {
 
 //                        //((TermsAggregationBuilder) subAgg).size(0);
 //                    }
-
+                    setSize(subAgg);
+                    setShardSize(subAgg);
                     if (field.isNested()) {
                         AggregationBuilder nestedBuilder = createNestedAggregation(field);
 
@@ -209,7 +214,20 @@ public class AggregationQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }
-    
+
+    private void setSize (AggregationBuilder agg) {
+        if(select.getRowCount()>0) {
+            ((TermsAggregationBuilder) agg).size(select.getRowCount());
+        }
+    }
+    private void setShardSize(AggregationBuilder agg) {
+        int defaultShardSize = 20 * select.getRowCount();
+        if (defaultShardSize > 5000)
+            ((TermsAggregationBuilder) agg).shardSize(defaultShardSize);
+        else
+            ((TermsAggregationBuilder) agg).shardSize(5000);//保证最少是5000
+    }
+
     private AggregationBuilder getGroupAgg(Field field, Select select2) throws SqlParseException {
         boolean refrence = false;
         AggregationBuilder lastAgg = null;
