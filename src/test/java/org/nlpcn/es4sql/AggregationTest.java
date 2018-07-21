@@ -840,5 +840,28 @@ public class AggregationTest {
     }
 
 
+    @Test
+    public void termsWithScript() throws Exception {
+        String query = "select count(*), avg(number) from source group by terms('alias'='asdf', substring(field, 0, 1)), date_histogram('alias'='time', 'field'='timestamp', 'interval'='20d ', 'format'='yyyy-MM-dd') limit 1000";
+        String result = MainTestSuite.getSearchDao().explain(query).explain().toString();
+        Assert.assertTrue(result.contains("\"script\":{\"source\""));
+        Assert.assertTrue(result.contains("substring(0,1)"));
+    }
 
+    @Test
+    public void groupByScriptedDateHistogram() throws Exception {
+        String query = "select count(*), avg(number) from source group by date_histogram('alias'='time', ceil(timestamp), 'interval'='20d ', 'format'='yyyy-MM-dd') limit 1000";
+        String result = MainTestSuite.getSearchDao().explain(query).explain().toString();
+        Assert.assertTrue(result.contains("Math.ceil(doc['timestamp'].value);"));
+        Assert.assertTrue(result.contains("\"script\":{\"source\""));
+    }
+
+    @Test
+    public void groupByScriptedHistogram() throws Exception {
+	    String query = "select count(*) from source group by histogram('alias'='field', pow(field,1))";
+	    String result = MainTestSuite.getSearchDao().explain(query).explain().toString();
+	    System.out.println(result);
+	    Assert.assertTrue(result.contains("Math.pow(doc['field'].value, 1)"));
+        Assert.assertTrue(result.contains("\"script\":{\"source\""));
+    }
 }

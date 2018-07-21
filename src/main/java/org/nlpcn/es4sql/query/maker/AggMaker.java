@@ -262,58 +262,63 @@ public class AggMaker {
         String value = null;
         IncludeExclude include = null, exclude = null;
         for (KVValue kv : field.getParams()) {
-            value = kv.value.toString();
-            switch (kv.key.toLowerCase()) {
-                case "field":
-                    terms.field(value);
-                    break;
-                case "size":
-                    terms.size(Integer.parseInt(value));
-                    break;
-                case "shard_size":
-                    terms.shardSize(Integer.parseInt(value));
-                    break;
-                case "min_doc_count":
-                    terms.minDocCount(Integer.parseInt(value));
-                    break;
-                case "missing":
-                    terms.missing(value);
-                    break;
-                case "order":
-                    if ("asc".equalsIgnoreCase(value)) {
-                        terms.order(BucketOrder.key(true));
-                    } else if ("desc".equalsIgnoreCase(value)) {
-                        terms.order(BucketOrder.key(false));
-                    } else {
-                        throw new SqlParseException("order can only support asc/desc " + kv.toString());
-                    }
-                    break;
-                case "alias":
-                case "nested":
-                case "reverse_nested":
-                case "children":
-                    break;
-                case "execution_hint":
-                    terms.executionHint(value);
-                    break;
-                case "include":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
-                        parser.nextToken();
-                        include = IncludeExclude.parseInclude(parser);
-                    } catch (IOException e) {
-                        throw new SqlParseException("parse include[" + value + "] error: " + e.getMessage());
-                    }
-                    break;
-                case "exclude":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
-                        parser.nextToken();
-                        exclude = IncludeExclude.parseExclude(parser);
-                    } catch (IOException e) {
-                        throw new SqlParseException("parse exclude[" + value + "] error: " + e.getMessage());
-                    }
-                    break;
-                default:
-                    throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
+            if(kv.value.toString().contains("doc[")) {
+                String script = kv.value +  "; return " + kv.key;
+                terms.script(new Script(script));
+            } else {
+                value = kv.value.toString();
+                switch (kv.key.toLowerCase()) {
+                    case "field":
+                        terms.field(value);
+                        break;
+                    case "size":
+                        terms.size(Integer.parseInt(value));
+                        break;
+                    case "shard_size":
+                        terms.shardSize(Integer.parseInt(value));
+                        break;
+                    case "min_doc_count":
+                        terms.minDocCount(Integer.parseInt(value));
+                        break;
+                    case "missing":
+                        terms.missing(value);
+                        break;
+                    case "order":
+                        if ("asc".equalsIgnoreCase(value)) {
+                            terms.order(BucketOrder.key(true));
+                        } else if ("desc".equalsIgnoreCase(value)) {
+                            terms.order(BucketOrder.key(false));
+                        } else {
+                            throw new SqlParseException("order can only support asc/desc " + kv.toString());
+                        }
+                        break;
+                    case "alias":
+                    case "nested":
+                    case "reverse_nested":
+                    case "children":
+                        break;
+                    case "execution_hint":
+                        terms.executionHint(value);
+                        break;
+                    case "include":
+                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                            parser.nextToken();
+                            include = IncludeExclude.parseInclude(parser);
+                        } catch (IOException e) {
+                            throw new SqlParseException("parse include[" + value + "] error: " + e.getMessage());
+                        }
+                        break;
+                    case "exclude":
+                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                            parser.nextToken();
+                            exclude = IncludeExclude.parseExclude(parser);
+                        } catch (IOException e) {
+                            throw new SqlParseException("parse exclude[" + value + "] error: " + e.getMessage());
+                        }
+                        break;
+                    default:
+                        throw new SqlParseException("terms aggregation err or not define field " + kv.toString());
+                }
             }
         }
         terms.includeExclude(IncludeExclude.merge(include, exclude));
@@ -464,40 +469,45 @@ public class AggMaker {
         DateHistogramAggregationBuilder dateHistogram = AggregationBuilders.dateHistogram(alias).format(TIME_FARMAT);
         String value = null;
         for (KVValue kv : field.getParams()) {
-            value = kv.value.toString();
-            switch (kv.key.toLowerCase()) {
-                case "interval":
-                    dateHistogram.dateHistogramInterval(new DateHistogramInterval(kv.value.toString()));
-                    break;
-                case "field":
-                    dateHistogram.field(value);
-                    break;
-                case "format":
-                    dateHistogram.format(value);
-                    break;
-                case "time_zone":
-                    dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(ZoneOffset.of(value))));
-                    break;
-                case "min_doc_count":
-                    dateHistogram.minDocCount(Long.parseLong(value));
-                    break;
-                case "order":
-                    dateHistogram.order("desc".equalsIgnoreCase(value) ? BucketOrder.key(false) : BucketOrder.key(true));
-                    break;
-                case "extended_bounds":
-                    String[] bounds = value.split(":");
-                    if (bounds.length == 2) {
-                        dateHistogram.extendedBounds(new ExtendedBounds(bounds[0], bounds[1]));
-                    }
-                    break;
+            if(kv.value.toString().contains("doc[")) {
+                String script = kv.value +  "; return " + kv.key;
+                dateHistogram.script(new Script(script));
+            } else {
+                value = kv.value.toString();
+                switch (kv.key.toLowerCase()) {
+                    case "interval":
+                        dateHistogram.dateHistogramInterval(new DateHistogramInterval(kv.value.toString()));
+                        break;
+                    case "field":
+                        dateHistogram.field(value);
+                        break;
+                    case "format":
+                        dateHistogram.format(value);
+                        break;
+                    case "time_zone":
+                        dateHistogram.timeZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(ZoneOffset.of(value))));
+                        break;
+                    case "min_doc_count":
+                        dateHistogram.minDocCount(Long.parseLong(value));
+                        break;
+                    case "order":
+                        dateHistogram.order("desc".equalsIgnoreCase(value) ? BucketOrder.key(false) : BucketOrder.key(true));
+                        break;
+                    case "extended_bounds":
+                        String[] bounds = value.split(":");
+                        if (bounds.length == 2) {
+                            dateHistogram.extendedBounds(new ExtendedBounds(bounds[0], bounds[1]));
+                        }
+                        break;
 
-                case "alias":
-                case "nested":
-                case "reverse_nested":
-                case "children":
-                    break;
-                default:
-                    throw new SqlParseException("date range err or not define field " + kv.toString());
+                    case "alias":
+                    case "nested":
+                    case "reverse_nested":
+                    case "children":
+                        break;
+                    default:
+                        throw new SqlParseException("date range err or not define field " + kv.toString());
+                }
             }
         }
         return dateHistogram;
@@ -517,48 +527,53 @@ public class AggMaker {
         HistogramAggregationBuilder histogram = AggregationBuilders.histogram(aggName);
         String value = null;
         for (KVValue kv : field.getParams()) {
-            value = kv.value.toString();
-            switch (kv.key.toLowerCase()) {
-                case "interval":
-                    histogram.interval(Long.parseLong(value));
-                    break;
-                case "field":
-                    histogram.field(value);
-                    break;
-                case "min_doc_count":
-                    histogram.minDocCount(Long.parseLong(value));
-                    break;
-                case "extended_bounds":
-                    String[] bounds = value.split(":");
-                    if (bounds.length == 2)
-                        histogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
-                    break;
-                case "alias":
-                case "nested":
-                case "reverse_nested":
-                case "children":
-                    break;
-                case "order":
-                    BucketOrder order = null;
-                    switch (value) {
-                        case "key_desc":
-                            order = BucketOrder.key(false);
-                            break;
-                        case "count_asc":
-                            order = BucketOrder.count(true);
-                            break;
-                        case "count_desc":
-                            order = BucketOrder.count(false);
-                            break;
-                        case "key_asc":
-                        default:
-                            order = BucketOrder.key(true);
-                            break;
-                    }
-                    histogram.order(order);
-                    break;
-                default:
-                    throw new SqlParseException("histogram err or not define field " + kv.toString());
+            if(kv.value.toString().contains("doc[")) {
+                String script = kv.value +  "; return " + kv.key;
+                histogram.script(new Script(script));
+            } else {
+                value = kv.value.toString();
+                switch (kv.key.toLowerCase()) {
+                    case "interval":
+                        histogram.interval(Long.parseLong(value));
+                        break;
+                    case "field":
+                        histogram.field(value);
+                        break;
+                    case "min_doc_count":
+                        histogram.minDocCount(Long.parseLong(value));
+                        break;
+                    case "extended_bounds":
+                        String[] bounds = value.split(":");
+                        if (bounds.length == 2)
+                            histogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
+                        break;
+                    case "alias":
+                    case "nested":
+                    case "reverse_nested":
+                    case "children":
+                        break;
+                    case "order":
+                        BucketOrder order = null;
+                        switch (value) {
+                            case "key_desc":
+                                order = BucketOrder.key(false);
+                                break;
+                            case "count_asc":
+                                order = BucketOrder.count(true);
+                                break;
+                            case "count_desc":
+                                order = BucketOrder.count(false);
+                                break;
+                            case "key_asc":
+                            default:
+                                order = BucketOrder.key(true);
+                                break;
+                        }
+                        histogram.order(order);
+                        break;
+                    default:
+                        throw new SqlParseException("histogram err or not define field " + kv.toString());
+                }
             }
         }
         return histogram;
