@@ -6,10 +6,13 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.common.xcontent.json.JsonXContentParser;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -17,6 +20,7 @@ import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.search.aggregations.InternalOrder;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 
 import org.elasticsearch.search.aggregations.bucket.histogram.*;
@@ -289,7 +293,24 @@ public class AggMaker {
                         } else if ("desc".equalsIgnoreCase(value)) {
                             terms.order(BucketOrder.key(false));
                         } else {
-                            throw new SqlParseException("order can only support asc/desc " + kv.toString());
+                            List<BucketOrder> orderElements = new ArrayList<>();
+                            try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(value))) {
+                                XContentParser.Token currentToken = parser.nextToken();
+                                if (currentToken == XContentParser.Token.START_OBJECT) {
+                                    orderElements.add(InternalOrder.Parser.parseOrderParam(parser));
+                                } else if (currentToken == XContentParser.Token.START_ARRAY) {
+                                    for (currentToken = parser.nextToken(); currentToken != XContentParser.Token.END_ARRAY; currentToken = parser.nextToken()) {
+                                        if (currentToken == XContentParser.Token.START_OBJECT) {
+                                            orderElements.add(InternalOrder.Parser.parseOrderParam(parser));
+                                        } else {
+                                            throw new ParsingException(parser.getTokenLocation(), "Invalid token in order array");
+                                        }
+                                    }
+                                }
+                            } catch (IOException e) {
+                                throw new SqlParseException("couldn't parse order: " + e.getMessage());
+                            }
+                            terms.order(orderElements);
                         }
                         break;
                     case "alias":

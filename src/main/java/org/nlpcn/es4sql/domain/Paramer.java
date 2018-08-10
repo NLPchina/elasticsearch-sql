@@ -28,6 +28,8 @@ public class Paramer {
     public Float tieBreaker;
     public Operator operator;
 
+    public String default_field;
+
 	public static Paramer parseParamer(SQLMethodInvokeExpr method) throws SqlParseException {
 		Paramer instance = new Paramer();
 		List<SQLExpr> parameters = method.getParameters();
@@ -76,6 +78,11 @@ public class Paramer {
                     case "operator":
                         instance.operator = Operator.fromString(Util.expr2Object(sqlExpr.getRight()).toString());
                         break;
+
+                    case "default_field":
+                        instance.default_field = Util.expr2Object(sqlExpr.getRight()).toString();
+                        break;
+
                     default:
                         break;
                 }
@@ -130,6 +137,10 @@ public class Paramer {
 
         if (paramer.slop != null) {
             query.phraseSlop(paramer.slop);
+        }
+
+        if (paramer.default_field != null) {
+            query.defaultField(paramer.default_field);
         }
 
         return query;
