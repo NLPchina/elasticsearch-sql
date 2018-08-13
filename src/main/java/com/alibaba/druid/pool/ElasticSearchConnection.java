@@ -595,7 +595,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        return null;
+        return new ElasticSearchDatabaseMetaData();
     }
 
     @Override
@@ -745,7 +745,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public boolean isValid(int timeout) throws SQLException {
-        return false;
+        return true;
     }
 
     @Override
