@@ -625,8 +625,7 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
     }
 
     /**
-     * 由于Elastic Search没有数据库这种概念，所以将配置的连接名设置为数据库名
-     *
+     * Get Table information
      * @param catalog
      * @param schemaPattern
      * @param tableNamePattern
@@ -650,7 +649,7 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
                     SearchDao searchDao = new SearchDao(client);
                     SqlElasticRequestBuilder requestBuilder = searchDao.explain("show *").explain();
                     GetIndexResponse getIndexResponse = (GetIndexResponse) requestBuilder.get();
-                    // 索引名/表名  -> 索引元数据/表元数据
+                    // indeName/tableName  -> indexMetaData/tableMetaData
                     ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getIndexResponse.getMappings();
 
                     mappings.forEach(tableMap -> {
