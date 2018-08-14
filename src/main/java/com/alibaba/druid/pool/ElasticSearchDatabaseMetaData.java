@@ -636,24 +636,25 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
      */
     @Override
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
-        if (!StringUtils.isEmpty(tableNamePattern)) {
-            List<String> headerList = Arrays.asList("TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE", "REMARKS",
-                    "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME", "REF_GENERATION");
-            List<List<Object>> bodyList = new ArrayList<>();
-            if (types == null) {
-                types = new String[]{"TABLE"};
-            }
 
-            for (String type : types) {
-                if (StringUtils.equalsIgnoreCase(type, "TABLE")) {
-                    try {
-                        SearchDao searchDao = new SearchDao(client);
-                        SqlElasticRequestBuilder requestBuilder = searchDao.explain("select *").explain();
-                        GetIndexResponse getIndexResponse = (GetIndexResponse) requestBuilder.get();
-                        // 索引名/表名  -> 索引元数据/表元数据
-                        ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getIndexResponse.getMappings();
+        List<String> headerList = Arrays.asList("TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE", "REMARKS",
+                "TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "SELF_REFERENCING_COL_NAME", "REF_GENERATION");
+        List<List<Object>> bodyList = new ArrayList<>();
+        if (types == null) {
+            types = new String[]{"TABLE"};
+        }
 
-                        mappings.forEach(tableMap -> {
+        for (String type : types) {
+            if (StringUtils.equalsIgnoreCase(type, "TABLE")) {
+                try {
+                    SearchDao searchDao = new SearchDao(client);
+                    SqlElasticRequestBuilder requestBuilder = searchDao.explain("show *").explain();
+                    GetIndexResponse getIndexResponse = (GetIndexResponse) requestBuilder.get();
+                    // 索引名/表名  -> 索引元数据/表元数据
+                    ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getIndexResponse.getMappings();
+
+                    mappings.forEach(tableMap -> {
+                        if (schemaPattern == null || StringUtils.equalsIgnoreCase(tableNamePattern, tableMap.key)) {
                             List<Object> tableSchemaDataList = new ArrayList<>();
                             tableSchemaDataList.add(""); // TABLE_CAT
                             tableSchemaDataList.add(this.defaultSchema); // TABLE_SCHEM
@@ -666,20 +667,16 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
                             tableSchemaDataList.add("");
                             tableSchemaDataList.add("");
                             bodyList.add(tableSchemaDataList);
-
-                        });
-                        break;
-                    } catch (SqlParseException e) {
-                        throw new SQLException("sql parse exception");
-                    }
+                        }
+                    });
+                    break;
+                } catch (SqlParseException e) {
+                    throw new SQLException("sql parse exception");
                 }
             }
-
-            return new ElasticSearchResultSet(null, headerList, bodyList);
-
-        } else {
-            throw new IllegalArgumentException("tableNamePattern can't be empty");
         }
+
+        return new ElasticSearchResultSet(null, headerList, bodyList);
     }
 
     @Override
