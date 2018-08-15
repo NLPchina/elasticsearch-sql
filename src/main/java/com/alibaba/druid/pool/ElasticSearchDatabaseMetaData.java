@@ -18,9 +18,11 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
 
     private Client client;
     private String defaultSchema;
+    private String url;
 
-    public ElasticSearchDatabaseMetaData(Client client, String defaultSchema) {
+    public ElasticSearchDatabaseMetaData(Client client, String url, String defaultSchema) {
         this.client = client;
+        this.url = url;
         this.defaultSchema = defaultSchema;
     }
 
@@ -81,7 +83,7 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
 
     @Override
     public String getDriverName() throws SQLException {
-        return null;
+        return "Elastic Search JDBC";
     }
 
     @Override
@@ -629,6 +631,7 @@ public class ElasticSearchDatabaseMetaData implements DatabaseMetaData {
      * @param catalog
      * @param schemaPattern
      * @param tableNamePattern
+     *
      * @param types
      * @return
      * @throws SQLException

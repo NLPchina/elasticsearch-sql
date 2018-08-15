@@ -23,17 +23,18 @@ import java.util.concurrent.Executor;
 public class ElasticSearchConnection implements Connection {
 
     private Client client;
+    private String url;
     private String defaultSchema;
 
     public ElasticSearchConnection(String jdbcUrl) {
 
+        this.url = jdbcUrl;
+        this.defaultSchema = jdbcUrl.split("/")[3];
 
         Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
         try {
             TransportClient transportClient = new PreBuiltTransportClient(settings);
-
             String hostAndPortArrayStr = jdbcUrl.split("/")[2];
-            this.defaultSchema = jdbcUrl.split("/")[3];
             String[] hostAndPortArray = hostAndPortArrayStr.split(",");
 
             for (String hostAndPort : hostAndPortArray) {
@@ -597,7 +598,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        return new ElasticSearchDatabaseMetaData(this.client, this.defaultSchema);
+        return new ElasticSearchDatabaseMetaData(this.client, this.url, this.defaultSchema);
     }
 
     @Override
@@ -788,7 +789,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public String getSchema() throws SQLException {
-        return defaultSchema;
+        return this.defaultSchema;
     }
 
     @Override
