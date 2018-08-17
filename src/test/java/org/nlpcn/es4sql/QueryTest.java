@@ -66,7 +66,7 @@ public class QueryTest {
 		String[] arr = new String[] {"test field"};
 		Set expectedSource = new HashSet(Arrays.asList(arr));
 
-		SearchHits response = query(String.format("SELECT `test field` FROM %s/phrase where `test field` is not null", TEST_INDEX_PHRASE));
+		SearchHits response = query(String.format("SELECT ['test field'] FROM %s/phrase where ['test field'] is not null", TEST_INDEX_PHRASE));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
 			Assert.assertEquals(expectedSource, hit.getSourceAsMap().keySet());
