@@ -1,5 +1,6 @@
 package com.alibaba.druid.pool;
 
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -82,4 +83,13 @@ public class ElasticSearchDruidPooledConnection extends DruidPooledConnection {
         holder.getDataSource().initStatement(this, stmtHolder.getStatement());
     }
 
+    /**
+     * 获得数据库元数据
+     * @return
+     * @throws SQLException
+     */
+    @Override
+    public DatabaseMetaData getMetaData() throws SQLException {
+        return super.getMetaData();
+    }
 }
