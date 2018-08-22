@@ -243,13 +243,17 @@ public class WhereParser {
                     Object[] methodParametersValue = getMethodValuesWithSubQueries(method);
 
                     Condition condition = null;
-
+                    // fix OPEAR
+                    Condition.OPEAR oper = Condition.OPEAR.methodNameToOpear.get(methodName);
+                    if (soExpr.getOperator() == SQLBinaryOperator.LessThanOrGreater || soExpr.getOperator() == SQLBinaryOperator.NotEqual) {
+                        oper = oper.negative();
+                    }
                     if (isNested)
-                        condition = new Condition(Where.CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getLeft(), Condition.OPEAR.methodNameToOpear.get(methodName), methodParametersValue, soExpr.getRight(), nestedType);
+                        condition = new Condition(Where.CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getLeft(), oper, methodParametersValue, soExpr.getRight(), nestedType);
                     else if (isChildren)
-                        condition = new Condition(Where.CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getLeft(), Condition.OPEAR.methodNameToOpear.get(methodName), methodParametersValue, soExpr.getRight(), childrenType);
+                        condition = new Condition(Where.CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getLeft(), oper, methodParametersValue, soExpr.getRight(), childrenType);
                     else
-                        condition = new Condition(Where.CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getLeft(), Condition.OPEAR.methodNameToOpear.get(methodName), methodParametersValue, soExpr.getRight(), null);
+                        condition = new Condition(Where.CONN.valueOf(opear), soExpr.getLeft().toString(), soExpr.getLeft(), oper, methodParametersValue, soExpr.getRight(), null);
 
                     where.addWhere(condition);
                     methodAsOpear = true;
