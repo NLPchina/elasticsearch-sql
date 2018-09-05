@@ -243,7 +243,7 @@ public class ZhongshuTest {
 
     @Test
     public void testIf() throws SqlParseException, SQLFeatureNotSupportedException{
-        sql = "SELECT IF(t.a=1,'1','2') from t";
+        sql = "select if(name='Joe','hehe','gg') from t_zhongshu_test_hive2es";
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
     }
@@ -263,5 +263,90 @@ public class ZhongshuTest {
                 "and dt=20180628 group by aid,appid order by count_v desc";
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
+    }
+
+    @Test
+    public void testBoge() {
+        sql = "select \n" +
+                "dt\n" +
+                ",ad_source\n" +
+                ",CASE WHEN platform_id = 'PC' and os not in ('全部') THEN 'unknown' ELSE os  END AS os\n" +
+                ",platform_id\n" +
+                ",appid\n" +
+                ",bidtype\n" +
+                ",adslotid\n" +
+                ",adposition_name\n" +
+                ",adpostion_type\n" +
+                ",is_effect\n" +
+                ",theo_inv\n" +
+                ",v_num\n" +
+                ",av_num\n" +
+                ",click_num\n" +
+                ",charge\n" +
+                ",av_stock\n" +
+                ",av_stock_real\n" +
+                ",v_rate\n" +
+                ",av_rate\n" +
+                ",ctr1\n" +
+                ",ctr2\n" +
+                ",ecpm1\n" +
+                ",ecpm2\n" +
+                ",acp\n" +
+                ",case when theo_inv>v_num_high then 0 else theo_inv-v_num_high end as bid_inv\n" +
+                ",v_num_high\n" +
+                ",av_num_high\n" +
+                ",click_num_high\n" +
+                ",av_stock_tail\n" +
+                ",av_stock_tail_real\n" +
+                ",v_num_tail\n" +
+                ",av_num_tail\n" +
+                ",click_num_tail\n" +
+                ",ctr_tail\n" +
+                ",charge_tail\n" +
+                ",ecpm_tail\n" +
+                ",acp_tail\n" +
+                "from\n" +
+                "t_md_xps2_report_consume_video\n" +
+                "where dt>='2018-09-03' and dt<='2018-09-03' and ssp_id not in ('全部','媒体')";
+    }
+
+    @Test
+    public void testBoge2() {
+        sql = "SELECT dt, ad_source\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN platform_id = 'PC'\n" +
+                "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\t\tELSE os\n" +
+                "\tEND AS os, platform_id, appid, bidtype, adslotid\n" +
+                "\t, adposition_name, adpostion_type, is_effect, theo_inv, v_num\n" +
+                "\t, av_num, click_num, charge, av_stock, av_stock_real\n" +
+                "\t, v_rate, av_rate, ctr1, ctr2, ecpm1\n" +
+                "\t, ecpm2, acp\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN theo_inv <= v_num_high THEN 0\n" +
+                "\t\tELSE theo_inv - v_num_high\n" +
+                "\tEND AS bid_inv, v_num_high, av_num_high, click_num_high, av_stock_tail\n" +
+                "\t, av_stock_tail_real, v_num_tail, av_num_tail, click_num_tail, ctr_tail\n" +
+                "\t, charge_tail, ecpm_tail, acp_tail\n" +
+                "FROM t_md_xps2_report_consume_video\n" +
+                "WHERE (dt >= '2018-09-04'\n" +
+                "\tAND dt <= '2018-09-04'\n" +
+                "\tAND ssp_id NOT IN ('全部', '媒体')\n" +
+                "\tAND 1 = 1\n" +
+                "\tAND ad_source NOT IN ('all', '全部')\n" +
+                "\tAND os = '全部'\n" +
+                "\tAND platform_id IN ('全部')\n" +
+                "\tAND appid IN ('全部')\n" +
+                "\tAND bidtype IN ('全部')\n" +
+                "\tAND adslotid IN ('全部')\n" +
+                "\tAND adpostion_type = '全部'\n" +
+                "\tAND is_effect NOT IN ('all', '全部'))\n" +
+                "ORDER BY dt DESC, CASE \n" +
+                "\tWHEN platform_id = 'PC'\n" +
+                "\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\tELSE os\n" +
+                "END ASC, platform_id DESC, appid ASC, ssp_id DESC, charge DESC\n" +
+                "LIMIT 0, 10";
+        System.out.println(sql);
     }
 }

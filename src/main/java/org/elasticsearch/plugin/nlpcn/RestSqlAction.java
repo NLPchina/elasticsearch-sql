@@ -47,10 +47,11 @@ public class RestSqlAction extends BaseRestHandler {
             sql = request.content().utf8ToString();
         }
         try {
-            int groupByFieldCount = SqlUtil.getGroupByFieldCount(sql);
-            if (groupByFieldCount > 7) {
-                throw new Exception("group by field count can not large than 7");
-            }
+            //zhongshu-comment 放开这个限制
+            //            int groupByFieldCount = SqlUtil.getGroupByFieldCount(sql);
+//            if (groupByFieldCount > 7) {
+//                throw new Exception("group by field count can not large than 7");
+//            }
 
             SearchDao searchDao = new SearchDao(client);
             QueryAction queryAction = null;
