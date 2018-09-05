@@ -1,0 +1,18 @@
+{"index":{"_type": "joinType", "_id":"1"}}
+{"messageTile": "a", "join_field": "parentType"}
+{"index":{"_type": "joinType", "_id":"2"}}
+{"messageTile": "b", "join_field": "parentType"}
+{"index":{"_type": "joinType", "_id":"3"}}
+{"messageTile": "c", "join_field": "parentType"}
+{"index":{"_type": "joinType", "_id":"4"}}
+{"messageTile": "d", "join_field": "parentType"}
+{"index":{"_type": "joinType", "_id":"5", "_routing": "1"}}
+{"info":"a","author":"e","dayOfWeek":1, "join_field": {"name": "childrenType", "parent": "1"}}
+{"index":{"_type": "joinType", "_id":"6", "_routing": "2"}}
+{"info":"b","author":"f","dayOfWeek":2, "join_field": {"name": "childrenType", "parent": "2"}}
+{"index":{"_type": "joinType", "_id":"7", "_routing": "3"}}
+{"info":"c","author":"g","dayOfWeek":1, "join_field": {"name": "childrenType", "parent": "3"}}
+{"index":{"_type": "joinType", "_id":"8", "_routing": "4"}}
+{"info":"d","author":"h","dayOfWeek":3, "join_field": {"name": "childrenType", "parent": "4"}}
+{"index":{"_type": "joinType", "_id":"9", "_routing": "1"}}
+{"info":"a","author":"h","dayOfWeek":3, "join_field": {"name": "childrenType", "parent": "1"}}

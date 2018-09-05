@@ -84,9 +84,6 @@ public class ScriptFilter {
             case "STORED":
                 this.scriptType = ScriptType.STORED;
                 break;
-            case "FILE":
-                this.scriptType = ScriptType.FILE;
-                break;
         }
     }
 

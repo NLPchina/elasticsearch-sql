@@ -30,19 +30,16 @@
                                             }
                                         }
                                     ],
-                                    "disable_coord" : false,
                                     "adjust_pure_negative" : true,
                                     "boost" : 1.0
                                 }
                             }
                         ],
-                        "disable_coord" : false,
                         "adjust_pure_negative" : true,
                         "boost" : 1.0
                     }
                 }
             ],
-            "disable_coord" : false,
             "adjust_pure_negative" : true,
             "boost" : 1.0
         }
@@ -52,7 +49,6 @@
             "terms" : {
                 "field" : "gender",
                 "size" : 200,
-                "shard_size" : -1,
                 "min_doc_count" : 1,
                 "shard_min_doc_count" : 0,
                 "show_term_doc_count_error" : false,
@@ -61,11 +57,10 @@
                         "_count" : "desc"
                     },
                     {
-                        "_term" : "asc"
+                        "_key" : "asc"
                     }
                 ]
             }
         }
-    },
-    "ext" : { }
+    }
 }

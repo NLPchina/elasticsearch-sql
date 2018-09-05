@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -17,15 +16,16 @@ import java.util.Map;
  */
 public class ElasticSearchResultSet implements ResultSet {
 
-    Iterator<List<Object>> iterator;
-    List<Object> current = null;
-    List<String> headers = null;
+    private int index = -1;
+    private List<List<Object>> rows;
+    private List<Object> current = null;
+    private List<String> headers = null;
 
 
     private ResultSetMetaData metaData;
 
     public ElasticSearchResultSet(Statement statement, final List<String> headers, final List<List<Object>> lines) {
-        this.iterator = lines.iterator();
+        this.rows = lines;
         this.headers = headers;
         metaData = new ElasticSearchResultSetMetaDataBase(headers);
 
@@ -33,11 +33,22 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public boolean next() throws SQLException {
-        boolean hasNext = iterator.hasNext();
-        if (hasNext) {
-            current = iterator.next();
+        boolean b;
+        int size = this.rows.size();
+        if (size == 0) {
+            b = false;
+        } else {
+            this.current = null;
+            this.index++;
+            if (this.index > size) {
+                this.index = size;
+            } else if (this.index < size) {
+                this.current = this.rows.get(this.index);
+            }
+
+            b = this.current != null;
         }
-        return hasNext;
+        return b;
     }
 
     @Override
@@ -82,7 +93,7 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        return ((Float) current.get(columnIndex)).floatValue();
+        return (Float) current.get(columnIndex);
     }
 
     @Override
@@ -268,62 +279,154 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public boolean isBeforeFirst() throws SQLException {
-        return false;
+        return this.index == -1 && this.rows.size() != 0;
     }
 
     @Override
     public boolean isAfterLast() throws SQLException {
-        return false;
+        return this.index >= this.rows.size() && this.rows.size() != 0;
     }
 
     @Override
     public boolean isFirst() throws SQLException {
-        return false;
+        return this.index == 0;
     }
 
     @Override
     public boolean isLast() throws SQLException {
-        return false;
+        return this.rows.size() != 0 && (this.index == (this.rows.size() - 1));
     }
 
     @Override
     public void beforeFirst() throws SQLException {
+        if (this.rows.size() == 0) {
+            return;
+        }
 
+        this.index = -1;
+        this.current = null;
     }
 
     @Override
     public void afterLast() throws SQLException {
-
+        if (this.rows.size() != 0) {
+            this.index = this.rows.size();
+            this.current = null;
+        }
     }
 
     @Override
     public boolean first() throws SQLException {
-        return false;
+        boolean b = true;
+        if (this.rows.isEmpty()) {
+            b = false;
+        } else {
+            this.index = 0;
+            this.current = this.rows.get(this.index);
+        }
+
+        return b;
     }
 
     @Override
     public boolean last() throws SQLException {
-        return false;
+        boolean b = true;
+        int size = this.rows.size();
+        if (size == 0) {
+            b = false;
+        } else {
+            this.index = size - 1;
+            this.current = this.rows.get(this.index);
+        }
+
+        return b;
     }
 
     @Override
     public int getRow() throws SQLException {
-        return 0;
+        return (this.index < 0) || isAfterLast() || this.rows.isEmpty() ? 0 : this.index + 1;
     }
 
     @Override
     public boolean absolute(int row) throws SQLException {
-        return false;
+        boolean b;
+        int size = this.rows.size();
+        if (size == 0) {
+            b = false;
+        } else {
+            if (row == 0) {
+                beforeFirst();
+                b = false;
+            } else if (row == 1) {
+                b = first();
+            } else if (row == -1) {
+                b = last();
+            } else if (row > size) {
+                afterLast();
+                b = false;
+            } else {
+                if (row < 0) {
+                    int newRowPosition = size + row + 1;
+                    if (newRowPosition <= 0) {
+                        beforeFirst();
+                        b = false;
+                    } else {
+                        b = absolute(newRowPosition);
+                    }
+                } else {
+                    row--;
+                    this.index = row;
+                    this.current = (row < 0) || (row >= size) ? null : this.rows.get(row);
+
+                    b = true;
+                }
+            }
+        }
+
+        return b;
     }
 
     @Override
     public boolean relative(int rows) throws SQLException {
-        return false;
+        int size = this.rows.size();
+        if (size == 0) {
+            return false;
+        }
+
+        this.index += rows;
+        if (this.index < -1) {
+            this.index = -1;
+        } else if (this.index > size) {
+            this.index = size;
+        }
+
+        this.current = (this.index < 0) || (this.index >= size) ? null : this.rows.get(this.index);
+
+        return !isAfterLast() && !isBeforeFirst();
     }
 
     @Override
     public boolean previous() throws SQLException {
-        return false;
+        int rowIndex = this.index;
+        boolean b;
+
+        if ((rowIndex - 1) >= 0) {
+            rowIndex--;
+            this.index = rowIndex;
+            this.current = (rowIndex < 0) || (rowIndex >= this.rows.size()) ? null : (this.rows.get(rowIndex));
+
+            b = true;
+        } else if ((rowIndex - 1) == -1) {
+            rowIndex--;
+            this.index = rowIndex;
+            this.current = null;
+
+            b = false;
+        } else {
+            b = false;
+        }
+
+        return b;
     }
 
     @Override

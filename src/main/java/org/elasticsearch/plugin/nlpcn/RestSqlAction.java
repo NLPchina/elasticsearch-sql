@@ -1,24 +1,17 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.node.NodeClient;
-import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.*;
-import org.elasticsearch.rest.action.RestStatusToXContentListener;
 import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
-import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class RestSqlAction extends BaseRestHandler {
@@ -26,7 +19,6 @@ public class RestSqlAction extends BaseRestHandler {
 //    public static final RestSqlAction INSTANCE = new RestSqlAction();
 
 
-    @Inject
 	public RestSqlAction(Settings settings, RestController restController) {
         super(settings);
 		restController.registerHandler(RestRequest.Method.POST, "/_sql/_explain", this);
@@ -34,6 +26,11 @@ public class RestSqlAction extends BaseRestHandler {
 		restController.registerHandler(RestRequest.Method.POST, "/_sql", this);
 		restController.registerHandler(RestRequest.Method.GET, "/_sql", this);
 	}
+
+    @Override
+    public String getName() {
+        return "sql_action";
+    }
 
     @Override
     protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
@@ -58,19 +55,23 @@ public class RestSqlAction extends BaseRestHandler {
             final QueryAction finalQueryAction = queryAction;
             //doing this hack because elasticsearch throws exception for un-consumed props
             Map<String,String> additionalParams = new HashMap<>();
-            List<String> additionalParamsNames = Arrays.asList("_type","_id","_score");
-            for(String paramName : additionalParamsNames) {
-                additionalParams.put(paramName, request.param(paramName));
+            for (String paramName : responseParams()) {
+                if (request.hasParam(paramName)) {
+                    additionalParams.put(paramName, request.param(paramName));
+                }
             }
             return channel -> restExecutor.execute(client,additionalParams, finalQueryAction,channel);
         }
-        } catch (SqlParseException e) {
-            e.printStackTrace();
-        } catch (SQLFeatureNotSupportedException e) {
+        } catch (SqlParseException | SQLFeatureNotSupportedException e) {
             e.printStackTrace();
         }
         return null;
-
     }
 
+    @Override
+    protected Set<String> responseParams() {
+        Set<String> responseParams = new HashSet<>(super.responseParams());
+        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "newLine", "format"));
+        return responseParams;
+    }
 }

@@ -5,16 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
@@ -45,7 +46,7 @@ public class AggregationQueryAction extends QueryAction {
 
     @Override
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-        this.request = client.prepareSearch();
+        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 
         setIndicesAndTypes();
 
@@ -139,13 +140,22 @@ public class AggregationQueryAction extends QueryAction {
                     lastAgg = subAgg;
                 }
             }
+
+            // add aggregation function to each groupBy
+            explanFields(request, select.getFields(), lastAgg);
+        }
+
+        if (select.getGroupBys().size() < 1) {
+            //add aggregation when having no groupBy script
+            explanFields(request, select.getFields(), lastAgg);
+
         }
 
         Map<String, KVValue> groupMap = aggMaker.getGroupMap();
         // add field
         if (select.getFields().size() > 0) {
             setFields(select.getFields());
-            explanFields(request, select.getFields(), lastAgg);
+//            explanFields(request, select.getFields(), lastAgg);
         }
 
         // add order
@@ -156,15 +166,15 @@ public class AggregationQueryAction extends QueryAction {
                     TermsAggregationBuilder termsBuilder = (TermsAggregationBuilder) temp.value;
                     switch (temp.key) {
                         case "COUNT":
-                            termsBuilder.order(Terms.Order.count(isASC(order)));
+                            termsBuilder.order(BucketOrder.count(isASC(order)));
                             break;
                         case "KEY":
-                            termsBuilder.order(Terms.Order.term(isASC(order)));
+                            termsBuilder.order(BucketOrder.key(isASC(order)));
                             // add the sort to the request also so the results get sorted as well
                             request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
                             break;
                         case "FIELD":
-                            termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
+                            termsBuilder.order(BucketOrder.aggregation(order.getName(), isASC(order)));
                             break;
                         default:
                             throw new SqlParseException(order.getName() + " can not to order");
@@ -180,6 +190,8 @@ public class AggregationQueryAction extends QueryAction {
         request.setSearchType(SearchType.DEFAULT);
         updateRequestWithIndexAndRoutingOptions(select, request);
         updateRequestWithHighlight(select, request);
+        updateRequestWithCollapse(select, request);
+        updateRequestWithPostFilter(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }
@@ -238,7 +250,7 @@ public class AggregationQueryAction extends QueryAction {
 
         String childType = field.getChildType();
 
-        childrenBuilder = AggregationBuilders.children(getChildrenAggName(field),childType);
+        childrenBuilder = JoinAggregationBuilders.children(getChildrenAggName(field),childType);
 
         return childrenBuilder;
     }

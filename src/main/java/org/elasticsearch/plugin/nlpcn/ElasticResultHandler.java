@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class ElasticResultHandler {
     public static Object getFieldValue(SearchHit hit,String field){
-        return deepSearchInMap(hit.sourceAsMap(),field);
+        return deepSearchInMap(hit.getSourceAsMap(),field);
     }
 
     private static Object deepSearchInMap(Map<String, Object> fieldsMap, String name) {

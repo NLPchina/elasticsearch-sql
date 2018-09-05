@@ -126,7 +126,7 @@ public class ESActionFactory {
 
     private static boolean isJoin(SQLQueryExpr sqlExpr,String sql) {
         MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
-        return query.getFrom() instanceof  SQLJoinTableSource && sql.toLowerCase().contains("join");
+        return query.getFrom() instanceof SQLJoinTableSource && ((SQLJoinTableSource) query.getFrom()).getJoinType() != SQLJoinTableSource.JoinType.COMMA && sql.toLowerCase().contains("join");
     }
 
     private static SQLExpr toSqlExpr(String sql) {

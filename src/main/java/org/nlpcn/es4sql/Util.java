@@ -11,7 +11,6 @@ import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
-import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -139,7 +138,7 @@ public class Util {
         double[] ds = new double[params.size()];
         int i = 0;
         for (KVValue v : params) {
-            ds[i] = ((Number) v.value).doubleValue();
+            ds[i] = Double.parseDouble(v.value.toString());
             i++;
         }
         return ds;

@@ -4,7 +4,6 @@ package org.nlpcn.es4sql;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
@@ -30,6 +29,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.nlpcn.es4sql.TestsConstants.*;
+
 /**
  * Created by allwefantasy on 8/25/16.
  */
@@ -46,7 +47,7 @@ public class SQLFunctionsTest {
     public void functionFieldAliasAndGroupByAlias() throws Exception {
         String query = "SELECT " +
                 "floor(substring(address,0,3)*20) as key," +
-                "sum(age) cvalue FROM " + TestsConstants.TEST_INDEX + "/account where address is not null " +
+                "sum(age) cvalue FROM " + TEST_INDEX_ACCOUNT + "/account where address is not null " +
                 "group by key order by cvalue desc limit 10  ";
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
         System.out.println(searchDao.explain(query).explain().explain());
@@ -64,7 +65,7 @@ public class SQLFunctionsTest {
         //here is a bug,if only script fields are included,then all fields will return; fix later
         String query = "SELECT " +
                 "substring(address,0,3) as key,address from " +
-                TestsConstants.TEST_INDEX + "/account where address is not null " +
+                TEST_INDEX_ACCOUNT + "/account where address is not null " +
                 "order by address desc limit 10  ";
 
         CSVResult csvResult = getCsvResult(false, query);
@@ -80,7 +81,7 @@ public class SQLFunctionsTest {
         //here is a bug,csv field with spa
         String query = "SELECT " +
                 "address as key,age from " +
-                TestsConstants.TEST_INDEX + "/account where address is not null " +
+                TEST_INDEX_ACCOUNT + "/account where address is not null " +
                 "limit 10  ";
 
         CSVResult csvResult = getCsvResult(false, query);
@@ -95,7 +96,7 @@ public class SQLFunctionsTest {
         //here is a bug,csv field with spa
         String query = "SELECT " +
                 "age as key,sum(age) from " +
-                TestsConstants.TEST_INDEX + "/account where address is not null " +
+                TEST_INDEX_ACCOUNT + "/account where address is not null " +
                 " group by key limit 10  ";
 
         CSVResult csvResult = getCsvResult(false, query);
@@ -112,7 +113,7 @@ public class SQLFunctionsTest {
         //here is a bug,csv field with spa
         String query = "SELECT " +
                 " concat_ws('-',age,'-'),address from " +
-                TestsConstants.TEST_INDEX + "/account " +
+                TEST_INDEX_ACCOUNT + "/account " +
                 " limit 10  ";
 
         CSVResult csvResult = getCsvResult(false, query);
@@ -170,7 +171,7 @@ public class SQLFunctionsTest {
 
         String query = "SELECT " +
                 " * from " +
-                TestsConstants.TEST_INDEX + "/account " +
+                TEST_INDEX_ACCOUNT + "/account " +
                 " where floor(split(address,' ')[0]+0) > b limit 1000  ";
 
         Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
@@ -195,7 +196,7 @@ public class SQLFunctionsTest {
 
         String query = "SELECT " +
                 " * from " +
-                TestsConstants.TEST_INDEX + "/account " +
+                TEST_INDEX_ACCOUNT + "/account " +
                 " where floor(split(address,' ')[0]+0) = floor(split(address,' ')[0]+0) limit 1000  ";
 
         Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
@@ -214,7 +215,7 @@ public class SQLFunctionsTest {
 
         String query = "SELECT " +
                 " * from " +
-                TestsConstants.TEST_INDEX + "/account " +
+                TEST_INDEX_ACCOUNT + "/account " +
                 " where a = b limit 1000  ";
 
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
@@ -234,7 +235,7 @@ public class SQLFunctionsTest {
         //here is a bug,csv field with spa
         String query = "SELECT " +
                 " concat_ws('-',age,address),address from " +
-                TestsConstants.TEST_INDEX + "/account " +
+                TEST_INDEX_ACCOUNT + "/account " +
                 " limit 10  ";
 
         CSVResult csvResult = getCsvResult(false, query);
@@ -242,6 +243,28 @@ public class SQLFunctionsTest {
         List<String> contents = csvResult.getLines();
         Assert.assertTrue(headers.size() == 2);
         Assert.assertTrue(contents.get(0).contains("-"));
+    }
+
+    @Test
+    public void functionLogs() throws Exception {
+        String query = "SELECT log10(100) as a, log(1) as b, log(2, 4) as c, log2(8) as d from "
+                + TEST_INDEX_ACCOUNT + "/account limit 1";
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> content = csvResult.getLines();
+        Assert.assertTrue(content.toString().contains("2.0"));
+        Assert.assertTrue(content.toString().contains("1.0"));
+        Assert.assertTrue(content.toString().contains("0.0"));
+        Assert.assertTrue(content.toString().contains("3.0"));
+    }
+
+    @Test
+    public void functionPow() throws Exception {
+        String query = "SELECT pow(account_number, 2) as key,"+
+                "abs(age - 60) as new_age from " + TEST_INDEX_ACCOUNT + "/account limit 1";
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> content = csvResult.getLines();
+        Assert.assertTrue(content.toString().contains("625"));
+        Assert.assertTrue(content.toString().contains("21"));
     }
 
     // todo: change when split is back on language
@@ -265,11 +288,11 @@ public class SQLFunctionsTest {
 //    }
 
 
-    private CSVResult getCsvResult(boolean flat, String query) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+    private CSVResult getCsvResult(boolean flat, String query) throws Exception {
         return getCsvResult(flat, query, false, false,false);
     }
 
-    private CSVResult getCsvResult(boolean flat, String query, boolean includeScore, boolean includeType,boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+    private CSVResult getCsvResult(boolean flat, String query, boolean includeScore, boolean includeType,boolean includeId) throws Exception {
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution = QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);

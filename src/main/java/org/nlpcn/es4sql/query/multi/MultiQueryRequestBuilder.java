@@ -4,16 +4,14 @@ import com.alibaba.druid.sql.ast.statement.SQLUnionOperator;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
-import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Select;
-import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
 import java.io.IOException;
@@ -56,7 +54,7 @@ public class MultiQueryRequestBuilder implements SqlElasticRequestBuilder{
 
             XContentBuilder secondBuilder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
             this.secondSearchRequest.request().source().toXContent(secondBuilder, ToXContent.EMPTY_PARAMS);
-            String explained = String.format("performing %s on :\n left query:\n%s\n right query:\n%s", this.relation.name,firstBuilder.string(), secondBuilder.string());
+            String explained = String.format("performing %s on :\n left query:\n%s\n right query:\n%s", this.relation.name, BytesReference.bytes(firstBuilder).utf8ToString(), BytesReference.bytes(secondBuilder).utf8ToString());
 
             return explained;
         } catch (IOException e) {

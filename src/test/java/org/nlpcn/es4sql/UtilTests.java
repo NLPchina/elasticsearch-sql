@@ -15,6 +15,7 @@ public class UtilTests {
     public void clearEmptyPaths_EmptyMap_ShouldReturnTrue(){
         Map<String,Object> map = new HashMap<>();
         boolean result = Util.clearEmptyPaths(map);
+        //
         Assert.assertTrue(result);
     }
 

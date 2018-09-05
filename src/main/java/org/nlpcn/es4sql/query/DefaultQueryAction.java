@@ -1,17 +1,18 @@
 package org.nlpcn.es4sql.query;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchType;
+
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.NestedSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.*;
 import org.nlpcn.es4sql.domain.hints.Hint;
@@ -38,7 +39,18 @@ public class DefaultQueryAction extends QueryAction {
 
 	@Override
 	public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-		this.request = client.prepareSearch();
+        Hint scrollHint = null;
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.USE_SCROLL) {
+                scrollHint = hint;
+                break;
+            }
+        }
+        if (scrollHint != null && scrollHint.getParams()[0] instanceof String) {
+            return new SqlElasticSearchRequestBuilder(new SearchScrollRequestBuilder(client, SearchScrollAction.INSTANCE, (String) scrollHint.getParams()[0]).setScroll(new TimeValue((Integer) scrollHint.getParams()[1])));
+        }
+
+        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
 		setIndicesAndTypes();
 
 		setFields(select.getFields());
@@ -47,34 +59,21 @@ public class DefaultQueryAction extends QueryAction {
 		setSorts(select.getOrderBys());
 		setLimit(select.getOffset(), select.getRowCount());
 
-		boolean usedScroll = useScrollIfNeeded(select.isOrderdSelect());
-		if (!usedScroll) {
-			request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		}
-		updateRequestWithIndexAndRoutingOptions(select, request);
+        //
+        if (scrollHint != null) {
+            if (!select.isOrderdSelect())
+                request.addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC);
+            request.setSize((Integer) scrollHint.getParams()[0]).setScroll(new TimeValue((Integer) scrollHint.getParams()[1]));
+        } else {
+            request.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+        }
+        updateRequestWithIndexAndRoutingOptions(select, request);
 		updateRequestWithHighlight(select, request);
-
+		updateRequestWithCollapse(select, request);
+		updateRequestWithPostFilter(select, request);
 		SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
 		return sqlElasticRequestBuilder;
-	}
-
-	private boolean useScrollIfNeeded(boolean existsOrderBy) {
-		Hint scrollHint = null;
-		for (Hint hint : select.getHints()) {
-			if (hint.getType() == HintType.USE_SCROLL) {
-				scrollHint = hint;
-				break;
-			}
-		}
-		if (scrollHint != null) {
-			int scrollSize = (Integer) scrollHint.getParams()[0];
-			int timeoutInMilli = (Integer) scrollHint.getParams()[1];
-			if (!existsOrderBy)
-				request.addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC);
-			request.setScroll(new TimeValue(timeoutInMilli)).setSize(scrollSize);
-		}
-		return scrollHint != null;
 	}
 
 	/**
@@ -128,7 +127,7 @@ public class DefaultQueryAction extends QueryAction {
 		if (params.size() == 2) {
 			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString()));
 		} else if (params.size() == 3) {
-			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), null));
+			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), Collections.emptyMap()));
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
 		}
@@ -156,7 +155,11 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setSorts(List<Order> orderBys) {
 		for (Order order : orderBys) {
-			request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+            if (order.getNestedPath() != null) {
+                request.addSort(SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType())).setNestedSort(new NestedSortBuilder(order.getNestedPath())));
+            } else {
+                request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+            }
 		}
 	}
 
