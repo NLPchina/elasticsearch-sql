@@ -1,5 +1,8 @@
 package org.nlpcn.es4sql.jdbc;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
@@ -46,9 +49,9 @@ public class ObjectResultsExtractor {
             List<List<Object>> lines = new ArrayList<>();
             lines.add(new ArrayList<Object>());
             handleAggregations((Aggregations) queryResult, headers, lines);
-            
+
             // remove empty line。
-            if(lines.get(0).size() == 0) {
+            if (lines.get(0).size() == 0) {
                 lines.remove(0);
             }
             //todo: need to handle more options for aggregations:
@@ -245,13 +248,18 @@ public class ObjectResultsExtractor {
 
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new HashSet<>();
+        HashSet<String> objects = Sets.newHashSet();
+        HashMap<String, Object> resultMaps = Maps.newHashMap();
         for (SearchHit hit : hits) {
             Map<String, Object> doc = hit.sourceAsMap();
             Map<String, SearchHitField> fields = hit.getFields();
             for (SearchHitField searchHitField : fields.values()) {
                 doc.put(searchHitField.getName(), searchHitField.value());
+                resultMaps.put(searchHitField.getName(), searchHitField.value());
             }
             mergeHeaders(csvHeaders, doc, flat);
+            objects.addAll(csvHeaders);
+            objects.addAll(resultMaps.keySet());
             if (this.includeScore) {
                 doc.put("_score", hit.score());
             }
@@ -266,14 +274,19 @@ public class ObjectResultsExtractor {
         ArrayList<String> headersList = new ArrayList<>(csvHeaders);
         if (this.includeScore) {
             headersList.add("_score");
+            objects.add("_score");
         }
         if (this.includeType) {
             headersList.add("_type");
+            objects.add("_type");
         }
         if (this.includeId) {
             headersList.add("_id");
+            objects.add("_id");
         }
-        return headersList;
+        ArrayList<String> resultHeaders = Lists.newArrayList();
+        resultHeaders.addAll(objects);
+        return resultHeaders;
     }
 
     private Object findFieldValue(String header, Map<String, Object> doc, boolean flat) {
