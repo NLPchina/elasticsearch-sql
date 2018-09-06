@@ -13,8 +13,9 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
 /**
@@ -23,6 +24,8 @@ import java.util.concurrent.Executor;
 public class ElasticSearchConnection implements Connection {
 
     private Client client;
+    //关闭标识
+    private boolean closeStatus = true;
 
     public ElasticSearchConnection(String jdbcUrl) {
 
@@ -40,6 +43,7 @@ public class ElasticSearchConnection implements Connection {
                 transportClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
             }
             client = transportClient;
+            closeStatus = false;
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -585,12 +589,13 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public void close() throws SQLException {
-
+        this.getClient().close();
+        closeStatus = true;
     }
 
     @Override
     public boolean isClosed() throws SQLException {
-        return false;
+        return closeStatus;
     }
 
     @Override
