@@ -405,6 +405,13 @@ public class WhereParser {
 
                 where.addWhere(condition);
             } else if (methodName.toLowerCase().equals("script")) {
+                /*
+                zhongshu-comment 这里也是Script Query，但是貌似没见过有走这个分支的sql
+                1、文档
+                    https://www.elastic.co/guide/en/elasticsearch/reference/6.1/query-dsl-script-query.html
+                2、java api
+                    https://www.elastic.co/guide/en/elasticsearch/client/java-api/6.1/java-specialized-queries.html
+                 */
                 ScriptFilter scriptFilter = new ScriptFilter();
                 if (!scriptFilter.tryParseFromMethodExpr(methodExpr)) {
                     throw new SqlParseException("could not parse script filter");

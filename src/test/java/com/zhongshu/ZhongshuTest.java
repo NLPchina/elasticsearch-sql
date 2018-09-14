@@ -436,7 +436,7 @@ public class ZhongshuTest {
                 "\t\tWHEN platform_id = 'PC'\n" +
                 "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
                 "\t\tELSE os\n" +
-                "\tEND IN ('Android')\n" +
+                "\tEND NOT IN ('Android', 'iOS', 'WP')\n" +
                 "LIMIT 0, 10";
     }
 }

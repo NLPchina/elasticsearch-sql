@@ -184,11 +184,20 @@ public abstract class Maker {
                  */
                 String scriptCode = new CaseWhenParser((SQLCaseExpr) cond.getNameExpr(), null, null).parseCaseWhenInWhere((Object[]) value);
                 /*
-                todo 参考DefaultQueryAction.handleScriptField() 将上文得到的scriptCode封装为es的Script对象，
+                zhongshu-comment
+                参考DefaultQueryAction.handleScriptField() 将上文得到的scriptCode封装为es的Script对象，
                 但又不是完全相同，因为DefaultQueryAction.handleScriptField()是处理select子句中的case when查询，对应es的script_field查询，
                 而此处是处理where子句中的case when查询，对应的是es的script query，具体要看官网文档，搜索关键字是"script query"
+
+                搜索结果如下：
+                1、文档
+                    https://www.elastic.co/guide/en/elasticsearch/reference/6.1/query-dsl-script-query.html
+                2、java api
+                    https://www.elastic.co/guide/en/elasticsearch/client/java-api/6.1/java-specialized-queries.html
                  */
-                System.out.println();
+
+                x = QueryBuilders.scriptQuery(new Script(scriptCode));
+
             } else {
                 //todo: value is subquery? here or before
                 values = (Object[]) value;
