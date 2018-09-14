@@ -182,12 +182,13 @@ public abstract class Maker {
                 zhongshu-comment 调用CaseWhenParser解析将Condition的nameExpr属性对象解析为script query
                 参考了SqlParser.findSelect()方法，看它是如何解析select中的case when字段的
                  */
-                String scriptCode = new CaseWhenParser((SQLCaseExpr) cond.getNameExpr(), null, null).parseCaseWhenInWhere();
+                String scriptCode = new CaseWhenParser((SQLCaseExpr) cond.getNameExpr(), null, null).parseCaseWhenInWhere((Object[]) value);
                 /*
                 todo 参考DefaultQueryAction.handleScriptField() 将上文得到的scriptCode封装为es的Script对象，
                 但又不是完全相同，因为DefaultQueryAction.handleScriptField()是处理select子句中的case when查询，对应es的script_field查询，
                 而此处是处理where子句中的case when查询，对应的是es的script query，具体要看官网文档，搜索关键字是"script query"
                  */
+                System.out.println();
             } else {
                 //todo: value is subquery? here or before
                 values = (Object[]) value;
