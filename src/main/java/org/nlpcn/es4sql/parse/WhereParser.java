@@ -1,24 +1,10 @@
 package org.nlpcn.es4sql.parse;
 
+import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOperator;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
-import com.alibaba.druid.sql.ast.expr.SQLInListExpr;
-import com.alibaba.druid.sql.ast.expr.SQLInSubQueryExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNotExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNullExpr;
-import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
-import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
-import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
-import com.alibaba.druid.sql.ast.expr.SQLTextLiteralExpr;
-import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
@@ -310,9 +296,24 @@ public class WhereParser {
                 condition = new Condition(Where.CONN.valueOf(opear), leftSide, null, siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()), null, nestedType);
             else if (isChildren)
                 condition = new Condition(Where.CONN.valueOf(opear), leftSide, null, siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()), null, childrenType);
-            else
-                condition = new Condition(Where.CONN.valueOf(opear), leftSide, null, siExpr.isNot() ? "NOT IN" : "IN", parseValue(siExpr.getTargetList()), null);
+            else if (siExpr.getExpr() instanceof SQLCaseExpr) {
+                //zhongshu-comment todo 增加代码
 
+                condition = new Condition(Where.CONN.valueOf(opear),
+                        leftSide, //zhongshu-comment 这个参数传过去也没有，只是SQLCaseExpr对象的地址
+                        siExpr.getExpr(), //zhongshu-comment 这个才是有用的参数，是SQLCaseExpr对象
+                        siExpr.isNot() ? "NOT IN" : "IN",
+                        parseValue(siExpr.getTargetList()),
+                        null);
+            }
+            else {
+                condition = new Condition(Where.CONN.valueOf(opear),
+                        leftSide,
+                        null,
+                        siExpr.isNot() ? "NOT IN" : "IN",
+                        parseValue(siExpr.getTargetList()),
+                        null);
+            }
             where.addWhere(condition);
         } else if (expr instanceof SQLBetweenExpr) {
             SQLBetweenExpr between = ((SQLBetweenExpr) expr);

@@ -134,7 +134,7 @@ public class DefaultQueryAction extends QueryAction {
 			ArrayList<String> excludeFields = new ArrayList<String>();
 
 			for (Field field : fields) {
-				if (field instanceof MethodField) {
+				if (field instanceof MethodField) { //zhongshu-comment MethodField是Field的子类，而且Field也就只有MethodField这一个子类了
 					MethodField method = (MethodField) field;
 					if (method.getName().toLowerCase().equals("script")) {
 						/*

@@ -23,6 +23,7 @@ public class ZhongshuTest {
 
     @After
     public void execute() throws SQLFeatureNotSupportedException, SqlParseException {
+        System.out.println("sql=\n" + sql);
         QueryAction qa = ESActionFactory.create(client, sql);
         qa.explain();
     }
@@ -347,6 +348,95 @@ public class ZhongshuTest {
                 "\tELSE os\n" +
                 "END ASC, platform_id DESC, appid ASC, ssp_id DESC, charge DESC\n" +
                 "LIMIT 0, 10";
-        System.out.println(sql);
+
+    }
+
+    /**
+     * 松哥提的那个sql问题
+     * ubi平台生成的子查询sql：select * from (SELECT dt, CASE WHEN platform_id = 'PC' and os not in ('全部') THEN 'unknown' ELSE os END AS os, platform_id, ssp_id, adslotid, adposition_name, ad_source, appid, appdelaytrack, bidtype, theo_inv, v_num, av_num, click_num, CASE WHEN ad_source = '中长尾' THEN charge ELSE '-' END AS charge, CASE WHEN av_num >= v_num THEN av_num ELSE v_stock END AS av_stock, CASE WHEN appid in ('squirrel') THEN av_stock_real WHEN ssp_id = '视频' and platform_id in ('APP', 'WAP') THEN av_stock_real WHEN adslotid in ('15695', '15696', '15650') THEN av_stock_real WHEN ssp_id = '资讯版' THEN av_stock_real WHEN adslotid in ('1000001', '1000002', '1000003', '1000004') THEN av_stock_real ELSE '-' END AS av_stock_real, v_rate, av_rate, ctr1, ctr2, CASE WHEN ad_source = '中长尾' THEN ecpm1 ELSE '-' END AS ecpm1, CASE WHEN ad_source = '中长尾' THEN ecpm2 ELSE '-' END AS ecpm2, CASE WHEN ad_source = '中长尾' THEN acp ELSE '-' END AS acp FROM t_md_xps2_all_inv_consume_report WHERE dt >= '2018-09-04' AND dt <= '2018-09-10' and ssp_id = '视频' and ad_source='全部' and appdelaytrack='全部' and bidtype='全部' ) tmp where 1=1 and os in ('Android') and platform_id not in ('all','全部') and appid in ('全部') and ssp_id = '视频' and adslotid in ('全部') order by dt desc,os asc,platform_id desc,appid asc,ssp_id desc,theo_inv desc limit 0, 10
+     * 该方法测试的sql是已经经过es-query-service去子查询之后的sql
+     * 解决方法；
+     * 两步
+     * 1、修改es-query-service，将select中的case when替换掉where中的字段
+     * 2、修改es-sql项目，加代码解析sql where子句，使其可以将case when解析为script字段
+     */
+    @Test
+    public void testSongge() {
+        //zhongshu-comment 原始的sql
+        /*
+        sql = "SELECT dt\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN platform_id = 'PC'\n" +
+                "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\t\tELSE os\n" +
+                "\tEND AS os, platform_id, ssp_id, adslotid, adposition_name\n" +
+                "\t, ad_source, appid, appdelaytrack, bidtype, theo_inv\n" +
+                "\t, v_num, av_num, click_num\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN ad_source = '中长尾' THEN charge\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS charge\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN av_num >= v_num THEN av_num\n" +
+                "\t\tELSE v_stock\n" +
+                "\tEND AS av_stock\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN appid IN ('squirrel') THEN av_stock_real\n" +
+                "\t\tWHEN ssp_id = '视频'\n" +
+                "\t\tAND platform_id IN ('APP', 'WAP') THEN av_stock_real\n" +
+                "\t\tWHEN adslotid IN ('15695', '15696', '15650') THEN av_stock_real\n" +
+                "\t\tWHEN ssp_id = '资讯版' THEN av_stock_real\n" +
+                "\t\tWHEN adslotid IN ('1000001', '1000002', '1000003', '1000004') THEN av_stock_real\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS av_stock_real, v_rate, av_rate, ctr1, ctr2\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN ad_source = '中长尾' THEN ecpm1\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS ecpm1\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN ad_source = '中长尾' THEN ecpm2\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS ecpm2\n" +
+                "\t, CASE \n" +
+                "\t\tWHEN ad_source = '中长尾' THEN acp\n" +
+                "\t\tELSE '-'\n" +
+                "\tEND AS acp\n" +
+                "FROM t_md_xps2_all_inv_consume_report\n" +
+                "WHERE (dt >= '2018-09-04'\n" +
+                "\tAND dt <= '2018-09-10'\n" +
+                "\tAND ssp_id = '视频'\n" +
+                "\tAND ad_source = '全部'\n" +
+                "\tAND appdelaytrack = '全部'\n" +
+                "\tAND bidtype = '全部'\n" +
+                "\tAND 1 = 1\n" +
+                "\tAND CASE \n" +
+                "\t\tWHEN platform_id = 'PC'\n" +
+                "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\t\tELSE os\n" +
+                "\tEND IN ('Android')\n" +
+                "\tAND platform_id NOT IN ('all', '全部')\n" +
+                "\tAND appid IN ('全部')\n" +
+                "\tAND ssp_id = '视频'\n" +
+                "\tAND adslotid IN ('全部'))\n" +
+                "ORDER BY dt DESC, CASE \n" +
+                "\tWHEN platform_id = 'PC'\n" +
+                "\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\tELSE os\n" +
+                "END ASC, platform_id DESC, appid ASC, ssp_id DESC, theo_inv DESC\n" +
+                "LIMIT 0, 10";
+                */
+        sql = "SELECT CASE \n" +
+                "\t\tWHEN platform_id = 'PC'\n" +
+                "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\t\tELSE os\n" +
+                "\tEND AS os\n" +
+                "FROM t_md_xps2_all_inv_consume_report\n" +
+                "WHERE \n" +
+                "\tCASE \n" +
+                "\t\tWHEN platform_id = 'PC'\n" +
+                "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
+                "\t\tELSE os\n" +
+                "\tEND IN ('Android')\n" +
+                "LIMIT 0, 10";
     }
 }

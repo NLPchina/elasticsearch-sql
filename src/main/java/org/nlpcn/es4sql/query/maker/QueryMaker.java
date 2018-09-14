@@ -57,13 +57,14 @@ public class QueryMaker extends Maker {
 			addSubQuery(
 					boolQuery,
 					where,
-					(QueryBuilder) make((Condition) where));
+					(QueryBuilder) make((Condition) where) //zhongshu-comment 重点方法 就是这里解析最细粒度的where条件
+			);
 		} else {
 			/*
 			zhongshu-comment select a,b,c as my_c from tbl where a = 1 or b = 2 and (c = 3 or d = 4) or e > 1
 			上面这条sql中的“b = 2 and (c = 3 or d = 4)”这部分会走该分支，
 			因为“b = 2 and (c = 3 or d = 4)”被封装为Where类型的对象，而不是Condition对象
-			对应的具体知识点见：搜索-->es插件开发-->es-sql-->代码阅读-->如何解析where条件
+			对应的具体笔记见：搜索-->es插件开发-->es-sql-->代码阅读-->如何解析where条件
 			 */
 			BoolQueryBuilder subQuery = QueryBuilders.boolQuery();
 

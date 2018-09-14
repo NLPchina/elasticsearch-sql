@@ -59,8 +59,8 @@ public class FieldMaker {
             //zhongshu-comment case when走这个分支
             String scriptCode = new CaseWhenParser((SQLCaseExpr) expr, alias, tableAlias).parse();
             List<KVValue> methodParameters = new ArrayList<>();
-            //zhongshu-comment group by子句中case when是没有别名的，这时alias=null，调用KVValue的toString()会报空指针
-//            methodParameters.add(new KVValue(alias)); //zhongshu-comment 这是原语句，被我注释掉了，改为下面带非空判断的语句
+            /*zhongshu-comment group by子句中case when是没有别名的，这时alias=null，调用KVValue的toString()会报空指针
+            methodParameters.add(new KVValue(alias)); //zhongshu-comment 这是原语句，被我注释掉了，改为下面带非空判断的语句*/
             if (null != alias && alias.trim().length() != 0) {
                 methodParameters.add(new KVValue(alias));
             }

@@ -58,7 +58,7 @@ public class ESActionFactory {
                     return ESJoinQueryActionFactory.createJoinAction(client, joinSelect);
                 }
                 else {
-                    //zhongshu-comment 先看懂这个分支
+                    //zhongshu-comment 大部分查询都是走这个分支，先看懂这个分支
                     Select select = new SqlParser().parseSelect(sqlExpr);
                     //todo 看不懂，测试了好几个常见的sql，都没有进去handleSubQueries该方法，那就先不理了，看别的
                     handleSubQueries(client, select);

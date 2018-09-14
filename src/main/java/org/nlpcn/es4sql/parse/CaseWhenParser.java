@@ -39,6 +39,17 @@ public class CaseWhenParser {
             SQLExpr conditionExpr = item.getConditionExpr();
 
             WhereParser parser = new WhereParser(new SqlParser(), conditionExpr);
+            /*
+            zhongshu-comment 将case when的各种条件判断转换为script的if-else判断，举例如下
+            case when：
+                CASE
+		        WHEN platform_id = 'PC' AND os NOT IN ('全部') THEN 'unknown'
+		        ELSE os
+
+		     script的if-else：
+		        将上文case when例子中的WHEN platform_id = 'PC' AND os NOT IN ('全部') THEN 'unknown' 解析成如下的script：
+		        (doc['platform_id'].value=='PC') && (doc['os'].value != '全部' )
+             */
             String scriptCode = explain(parser.findWhere());
             if (scriptCode.startsWith(" &&")) {
                 scriptCode = scriptCode.substring(3);
@@ -57,8 +68,22 @@ public class CaseWhenParser {
             result.add("else {" + Util.getScriptValueWithQuote(elseExpr, "'") + "}");
         }
 
-
         return Joiner.on(" ").join(result);
+    }
+
+    /**
+     * zhongshu-comment
+     * 1、该方法的作用：将在where子句中的case when解析为es script
+     * 2、该种情况的es script和select、group by、order by等子句中的case when的es script不一样，
+     *      因为在where子句中script的返回值是布尔类型，所以script中需要有个布尔判断，
+     *      而其他情况的script返回值就是转换后的值，该值一般是字符串、数值
+     * @author zhongshu
+     * @return
+     * @throws SqlParseException
+     */
+    public String parseCaseWhenInWhere() throws SqlParseException {
+        //todo
+        return null;
     }
 
     /**
@@ -115,6 +140,14 @@ public class CaseWhenParser {
         }
     }
 
+    /**
+     * @author zhongshu
+     * @param condition
+     * @param codes
+     * @param judgeOperator
+     * @param booleanOperator
+     * @throws SqlParseException
+     */
     private void parseInNotInJudge(Condition condition, List<String> codes, String judgeOperator, String booleanOperator) throws SqlParseException {
         Object[] objArr = (Object[]) condition.getValue();
         if (objArr.length == 0)
@@ -130,6 +163,11 @@ public class CaseWhenParser {
         codes.add(script);
     }
 
+    /**
+     * @author zhongshu
+     * @param obj
+     * @return
+     */
     private Object parseInNotInValueWithQuote(Object obj) {
         //zhongshu-comment 因为我们的表就只有String 和 double两种类型，所以就只判断了这两种情况
         if (obj instanceof String) {
