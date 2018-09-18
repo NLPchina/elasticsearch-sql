@@ -10,6 +10,7 @@ import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBounds;
+import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
 import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
@@ -183,16 +184,13 @@ public class CSVResultsExtractor {
                 }
             }
             else if( aggregation instanceof Percentiles){
-                String[] percentileHeaders = new String[]{"1.0", "5.0", "25.0", "50.0", "75.0", "95.0", "99.0"};
-                mergeHeadersWithPrefix(header, name, percentileHeaders);
+                List<String> percentileHeaders = new ArrayList<>(7);
                 Percentiles percentiles = (Percentiles) aggregation;
-                line.add(percentiles.percentileAsString(1.0));
-                line.add(percentiles.percentileAsString(5.0));
-                line.add(percentiles.percentileAsString(25.0));
-                line.add(percentiles.percentileAsString(50.0));
-                line.add(percentiles.percentileAsString(75));
-                line.add(percentiles.percentileAsString(95.0));
-                line.add(percentiles.percentileAsString(99.0));
+                for (Percentile p : percentiles) {
+                    percentileHeaders.add(String.valueOf(p.getPercent()));
+                    line.add(percentiles.percentileAsString(p.getPercent()));
+                }
+                mergeHeadersWithPrefix(header, name, percentileHeaders.toArray(new String[0]));
             }
             else {
                 throw new CsvExtractorException("unknown NumericMetricsAggregation.MultiValue:" + aggregation.getClass());
