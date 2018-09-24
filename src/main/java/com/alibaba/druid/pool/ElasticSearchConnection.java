@@ -1,20 +1,15 @@
 package com.alibaba.druid.pool;
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
 /**
@@ -22,31 +17,14 @@ import java.util.concurrent.Executor;
  */
 public class ElasticSearchConnection implements Connection {
 
-    private Client client;
-    //关闭标识
+    private final Client client;
+
+    // 关闭标识
     private boolean closeStatus = true;
 
-    public ElasticSearchConnection(String jdbcUrl, Properties info) {
-
-        Settings.Builder builder = Settings.builder();
-        info.forEach((k, v) -> builder.put(k.toString(), v.toString()));
-        Settings settings = builder.build();
-        try {
-            TransportClient transportClient = new PreBuiltXPackTransportClient(settings);
-
-            String hostAndPortArrayStr = jdbcUrl.split("/")[2];
-            String[] hostAndPortArray = hostAndPortArrayStr.split(",");
-
-            for (String hostAndPort : hostAndPortArray) {
-                String host = hostAndPort.split(":")[0];
-                String port = hostAndPort.split(":")[1];
-                transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
-            }
-            client = transportClient;
-            closeStatus = false;
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+    public ElasticSearchConnection(Client client) {
+        this.client = client;
+        this.closeStatus = false;
     }
 
     public Client getClient() {
@@ -589,9 +567,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public void close() throws SQLException {
-        this.getClient().close();
         closeStatus = true;
-
     }
 
     @Override
@@ -631,7 +607,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-        return 0;
+        return Connection.TRANSACTION_NONE;
     }
 
     @Override

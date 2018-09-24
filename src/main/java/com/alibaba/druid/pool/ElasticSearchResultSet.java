@@ -21,14 +21,12 @@ public class ElasticSearchResultSet implements ResultSet {
     private List<Object> current = null;
     private List<String> headers = null;
 
-
     private ResultSetMetaData metaData;
 
     public ElasticSearchResultSet(Statement statement, final List<String> headers, final List<List<Object>> lines) {
         this.rows = lines;
         this.headers = headers;
         metaData = new ElasticSearchResultSetMetaDataBase(headers);
-
     }
 
     @Override
@@ -63,12 +61,12 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public String getString(int columnIndex) throws SQLException {
-        return (String) current.get(columnIndex);
+        return (String) current.get(columnIndex - 1);
     }
 
     @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
-        return (Boolean) current.get(columnIndex);
+        return (Boolean) current.get(columnIndex - 1);
     }
 
     @Override
@@ -78,27 +76,27 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public short getShort(int columnIndex) throws SQLException {
-        return ((Short) current.get(columnIndex));
+        return ((Short) current.get(columnIndex - 1));
     }
 
     @Override
     public int getInt(int columnIndex) throws SQLException {
-        return ((Integer) current.get(columnIndex));
+        return ((Integer) current.get(columnIndex - 1));
     }
 
     @Override
     public long getLong(int columnIndex) throws SQLException {
-        return (Long) current.get(columnIndex);
+        return (Long) current.get(columnIndex - 1);
     }
 
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        return (Float) current.get(columnIndex);
+        return (Float) current.get(columnIndex - 1);
     }
 
     @Override
     public double getDouble(int columnIndex) throws SQLException {
-        return (Double) current.get(columnIndex);
+        return (Double) current.get(columnIndex - 1);
     }
 
     @Override
@@ -113,17 +111,17 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public Date getDate(int columnIndex) throws SQLException {
-        return (Date) current.get(columnIndex);
+        return (Date) current.get(columnIndex - 1);
     }
 
     @Override
     public Time getTime(int columnIndex) throws SQLException {
-        return (Time) current.get(columnIndex);
+        return (Time) current.get(columnIndex - 1);
     }
 
     @Override
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
-        return (Timestamp) current.get(columnIndex);
+        return (Timestamp) current.get(columnIndex - 1);
     }
 
     @Override
@@ -243,7 +241,7 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public Object getObject(int columnIndex) throws SQLException {
-        return current.get(columnIndex);
+        return current.get(columnIndex - 1);
 
     }
 
