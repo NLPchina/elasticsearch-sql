@@ -22,8 +22,7 @@ import java.util.List;
  */
 public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPreparedStatement {
 
-
-    Client client = null;
+    private final Client client;
 
     public ElasticSearchDruidPooledPreparedStatement(DruidPooledConnection conn, PreparedStatementHolder holder) throws SQLException {
         super(conn, holder);
@@ -41,8 +40,6 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         conn.beforeExecute();
         try {
-
-
             ObjectResult extractor = getObjectResult(true, getSql(), false, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
