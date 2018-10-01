@@ -1,15 +1,18 @@
 package org.nlpcn.es4sql.query.maker;
 
-
+import com.fasterxml.jackson.core.JsonFactory;
 import org.apache.lucene.search.join.ScoreMode;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.json.JsonXContentParser;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
+import java.io.IOException;
 
 public class QueryMaker extends Maker {
 
@@ -64,13 +67,29 @@ public class QueryMaker extends Maker {
             Condition condition = (Condition) where;
 
             if (condition.isNested()) {
+                InnerHitBuilder ihb = null;
+                if (condition.getInnerHits() != null) {
+                    try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(condition.getInnerHits()))) {
+                        ihb = InnerHitBuilder.fromXContent(parser);
+                    } catch (IOException e) {
+                        throw new IllegalArgumentException("couldn't parse inner_hits: " + e.getMessage(), e);
+                    }
+                }
+
                 // bugfix #628
                 if ("missing".equalsIgnoreCase(String.valueOf(condition.getValue())) && (condition.getOpear() == Condition.OPEAR.IS || condition.getOpear() == Condition.OPEAR.EQ)) {
-                    boolQuery.mustNot(QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), ScoreMode.None));
+                    NestedQueryBuilder q = QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), ScoreMode.None);
+                    if (ihb != null) {
+                        q.innerHit(ihb);
+                    }
+                    boolQuery.mustNot(q);
                     return;
                 }
 
                 subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, ScoreMode.None);
+                if (ihb != null) {
+                    ((NestedQueryBuilder) subQuery).innerHit(ihb);
+                }
             } else if(condition.isChildren()) {
             	subQuery = JoinQueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None);
             }

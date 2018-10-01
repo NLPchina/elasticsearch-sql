@@ -390,7 +390,7 @@ public class WhereParser {
                     throw new SqlParseException("could not fill nested from expr:" + expr);
                 }
 
-                Condition condition = new Condition(Where.CONN.valueOf(opear), nestedType.path, null, methodName.toUpperCase(), nestedType.where, null);
+                Condition condition = new Condition(Where.CONN.valueOf(opear), nestedType.path, null, methodName.toUpperCase(), nestedType.where, null, nestedType);
 
                 where.addWhere(condition);
             } else if (methodName.toLowerCase().equals("children")) {

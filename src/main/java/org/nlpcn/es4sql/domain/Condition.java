@@ -84,6 +84,7 @@ public class Condition extends Where {
 
     private boolean isNested;
     private String nestedPath;
+    private String innerHits;
 
     private boolean isChildren;
     private String childType;
@@ -114,6 +115,7 @@ public class Condition extends Where {
 
                 this.isNested = true;
                 this.nestedPath = nestedType.path;
+                this.innerHits = nestedType.getInnerHits();
                 this.isChildren = false;
                 this.childType = "";
             } else if (relationshipType instanceof ChildrenType) {
@@ -229,6 +231,7 @@ public class Condition extends Where {
 
                 this.isNested = true;
                 this.nestedPath = nestedType.path;
+                this.innerHits = nestedType.getInnerHits();
                 this.isChildren = false;
                 this.childType = "";
             } else if (relationshipType instanceof ChildrenType) {
@@ -320,6 +323,14 @@ public class Condition extends Where {
         this.nestedPath = nestedPath;
     }
 
+    public String getInnerHits() {
+        return innerHits;
+    }
+
+    public void setInnerHits(String innerHits) {
+        this.innerHits = innerHits;
+    }
+
     public boolean isChildren() {
         return isChildren;
     }
@@ -344,6 +355,10 @@ public class Condition extends Where {
             result = "nested condition ";
             if (this.getNestedPath() != null) {
                 result += "on path:" + this.getNestedPath() + " ";
+            }
+
+            if (this.getInnerHits() != null) {
+                result += "inner_hits:" + this.getInnerHits() + " ";
             }
         } else if (this.isChildren()) {
             result = "children condition ";
