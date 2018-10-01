@@ -1,48 +1,30 @@
 package com.alibaba.druid.pool;
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
 /**
- * Created by allwefantasy on 8/30/16.
+ * @author zxh
+ * @date 2018/8/05 10:55
  */
 public class ElasticSearchConnection implements Connection {
 
-    private Client client;
+    private final Client client;
+    /**连接关闭状态*/
+    private boolean closeStatus;
 
-    public ElasticSearchConnection(String jdbcUrl) {
-
-
-        Settings settings = Settings.builder().put("client.transport.ignore_cluster_name", true).build();
-        try {
-            TransportClient transportClient = new PreBuiltTransportClient(settings);
-
-            String hostAndPortArrayStr = jdbcUrl.split("/")[2];
-            String[] hostAndPortArray = hostAndPortArrayStr.split(",");
-
-            for (String hostAndPort : hostAndPortArray) {
-                String host = hostAndPort.split(":")[0];
-                String port = hostAndPort.split(":")[1];
-                transportClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), Integer.parseInt(port)));
-            }
-            client = transportClient;
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+    public ElasticSearchConnection(Client client) {
+        this.client = client;
+        this.closeStatus = false;
     }
 
     public Client getClient() {
@@ -585,12 +567,12 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public void close() throws SQLException {
-
+        closeStatus = true;
     }
 
     @Override
     public boolean isClosed() throws SQLException {
-        return false;
+        return closeStatus;
     }
 
     @Override
@@ -625,7 +607,7 @@ public class ElasticSearchConnection implements Connection {
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-        return 0;
+        return Connection.TRANSACTION_NONE;
     }
 
     @Override

@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Eliran on 3/10/2015.
+ * @author zxh
+ * @date 2018/8/06 10:11
  */
 public class ElasticResultHandler {
     public static Object getFieldValue(SearchHit hit,String field){
@@ -24,8 +25,12 @@ public class ElasticResultHandler {
             Map<String,Object> currentObject = fieldsMap;
             for(int i=0;i<path.length-1 ;i++){
                 Object valueFromCurrentMap = currentObject.get(path[i]);
-                if(valueFromCurrentMap == null) return null;
-                if(!Map.class.isAssignableFrom(valueFromCurrentMap.getClass())) return null;
+                if(valueFromCurrentMap == null) {
+                    return null;
+                }
+                if(!Map.class.isAssignableFrom(valueFromCurrentMap.getClass())) {
+                    return null;
+                }
                 currentObject = (Map<String, Object>) valueFromCurrentMap;
             }
             return currentObject.get(path[path.length-1]);
