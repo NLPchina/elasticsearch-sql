@@ -18,12 +18,13 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 
 /**
- * Created by allwefantasy on 8/30/16.
+ * @author zxh
+ * @date 2018/8/17 23:55
  */
 public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPreparedStatement {
 
 
-    Client client = null;
+    private Client client = null;
 
     public ElasticSearchDruidPooledPreparedStatement(DruidPooledConnection conn, PreparedStatementHolder holder) throws SQLException {
         super(conn, holder);
@@ -46,12 +47,9 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
             ObjectResult extractor = getObjectResult(true, getSql(), false, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
+            long totalHits = extractor.getTotalHits();
 
-            ResultSet rs = new ElasticSearchResultSet(this, headers, lines);
-
-            if (rs == null) {
-                return null;
-            }
+            ResultSet rs = new ElasticSearchResultSet(this, headers, lines, totalHits);
 
             DruidPooledResultSet poolableResultSet = new DruidPooledResultSet(this, rs);
             addResultSetTrace(poolableResultSet);

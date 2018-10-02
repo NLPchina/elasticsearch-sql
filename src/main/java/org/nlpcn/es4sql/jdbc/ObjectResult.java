@@ -3,15 +3,18 @@ package org.nlpcn.es4sql.jdbc;
 import java.util.List;
 
 /**
- * Created by allwefantasy on 8/30/16.
+ * @author zxh
+ * @date 2018/8/06 10:11
  */
 public class ObjectResult {
     private final List<String> headers;
     private final List<List<Object>> lines;
+    private long totalHits;
 
-    public ObjectResult(List<String> headers, List<List<Object>> lines) {
+    public ObjectResult(List<String> headers, List<List<Object>> lines, long totalHits) {
         this.headers = headers;
         this.lines = lines;
+        this.totalHits = totalHits;
     }
 
     public List<String> getHeaders() {
@@ -20,5 +23,9 @@ public class ObjectResult {
 
     public List<List<Object>> getLines() {
         return lines;
+    }
+
+    public long getTotalHits(){
+        return this.totalHits;
     }
 }

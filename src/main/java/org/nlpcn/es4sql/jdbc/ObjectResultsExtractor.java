@@ -35,11 +35,13 @@ public class ObjectResultsExtractor {
 
     public ObjectResult extractResults(Object queryResult, boolean flat) throws ObjectResultsExtractException {
         if (queryResult instanceof SearchHits) {
-            SearchHit[] hits = ((SearchHits) queryResult).getHits();
+            SearchHits searchHits = (SearchHits) queryResult;
+            SearchHit[] hits = searchHits.getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
             List<String> headers = createHeadersAndFillDocsMap(flat, hits, docsAsMap);
             List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers);
-            return new ObjectResult(headers, lines);
+            long totalHits = searchHits.getTotalHits();
+            return new ObjectResult(headers, lines, totalHits);
         }
         if (queryResult instanceof Aggregations) {
             List<String> headers = new ArrayList<>();
@@ -55,7 +57,7 @@ public class ObjectResultsExtractor {
             //Aggregations that inhrit from base
             //ScriptedMetric
 
-            return new ObjectResult(headers, lines);
+            return new ObjectResult(headers, lines, 1);
 
         }
         return null;
