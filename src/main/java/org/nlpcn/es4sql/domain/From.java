@@ -2,8 +2,9 @@ package org.nlpcn.es4sql.domain;
 
 
 /**
- * @author zxh
- * @date 2018/9/27 18:42
+ * Represents the from clause.
+ * Contains index and type which the
+ * query refer to.
  */
 public class From {
 	private String index;
@@ -15,7 +16,7 @@ public class From {
 	 * @param from The part after the FROM keyword.
 	 */
 	public From(String from) {
-		String[] parts = from.split("\\.");
+		String[] parts = from.split("/");
 		this.index = parts[0].trim();
 		if (parts.length == 2) {
 			this.type = parts[1].trim();
