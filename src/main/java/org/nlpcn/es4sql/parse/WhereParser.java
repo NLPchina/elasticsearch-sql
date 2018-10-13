@@ -142,7 +142,7 @@ public class WhereParser {
         //join is not support
         if ((bExpr.getLeft() instanceof SQLPropertyExpr || bExpr.getLeft() instanceof SQLIdentifierExpr) &&
                 (bExpr.getRight() instanceof SQLPropertyExpr || bExpr.getRight() instanceof SQLIdentifierExpr) &&
-                Sets.newHashSet("=", "<", ">", ">=", "<=").contains(bExpr.getOperator().getName()) &&
+                Sets.newHashSet("=", "<", ">", ">=", "<=","<>","!=").contains(bExpr.getOperator().getName()) &&
                 !Util.isFromJoinOrUnionTable(bExpr)
 
                 ) {
@@ -150,6 +150,9 @@ public class WhereParser {
             String operator = bExpr.getOperator().getName();
             if (operator.equals("=")) {
                 operator = "==";
+            }else
+            if (operator.equals("<>")) {
+                operator = "!=";
             }
 
             String leftProperty = Util.expr2Object(bExpr.getLeft()).toString();
@@ -218,6 +221,13 @@ public class WhereParser {
     private void explanCond(String opear, SQLExpr expr, Where where) throws SqlParseException {
         if (expr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr soExpr = (SQLBinaryOpExpr) expr;
+
+            if (explanSpecialCondWithBothSidesAreLiterals(soExpr, where)) {
+                return;
+            }
+            if (explanSpecialCondWithBothSidesAreProperty(soExpr, where)) {
+                return;
+            }
             boolean methodAsOpear = false;
 
             boolean isNested = false;
