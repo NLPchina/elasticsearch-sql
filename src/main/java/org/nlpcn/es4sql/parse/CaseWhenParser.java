@@ -4,8 +4,6 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCaseExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNullExpr;
 import com.google.common.base.Joiner;
-import org.elasticsearch.common.inject.internal.Join;
-import org.nlpcn.es4sql.SQLFunctions;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
@@ -75,7 +73,7 @@ public class CaseWhenParser {
             Condition condition = (Condition) where;
 
             if (condition.getValue() instanceof ScriptFilter) {
-                codes.add("(" + ((ScriptFilter) condition.getValue()).getScript() + ")");
+                codes.add(String.format("Function.identity().compose((o)->{%s}).apply(null)", ((ScriptFilter) condition.getValue()).getScript()));
             } else if (condition.getOpear() == OPEAR.BETWEEN) {
                 Object[] objs = (Object[]) condition.getValue();
                 codes.add("(" + "doc['" + condition.getName() + "'].value >= " + objs[0] + " && doc['"
