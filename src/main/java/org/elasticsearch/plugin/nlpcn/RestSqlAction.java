@@ -1,7 +1,11 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.node.NodeClient;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.*;
@@ -16,8 +20,7 @@ import java.util.*;
 
 public class RestSqlAction extends BaseRestHandler {
 
-//    public static final RestSqlAction INSTANCE = new RestSqlAction();
-
+    private static final Logger LOGGER = ESLoggerFactory.getLogger(RestSqlAction.class);
 
 	public RestSqlAction(Settings settings, RestController restController) {
         super(settings);
@@ -33,7 +36,13 @@ public class RestSqlAction extends BaseRestHandler {
     }
 
     @Override
-    protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
+    protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) {
+        try (XContentParser parser = request.contentOrSourceParamParser()) {
+            parser.mapStrings().forEach((k, v) -> request.params().putIfAbsent(k, v));
+        } catch (IOException e) {
+            LOGGER.warn("Please use json format params, like: {\"sql\":\"SELECT * FROM test\"}");
+        }
+
         String sql = request.param("sql");
 
         if (sql == null) {
@@ -48,7 +57,7 @@ public class RestSqlAction extends BaseRestHandler {
         // TODO add unittests to explain. (rest level?)
         if (request.path().endsWith("/_explain")) {
             final String jsonExplanation = queryAction.explain().explain();
-            return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.OK, jsonExplanation));
+            return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.OK, XContentType.JSON.mediaType(), jsonExplanation));
         } else {
             Map<String, String> params = request.params();
             RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
