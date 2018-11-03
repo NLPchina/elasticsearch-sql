@@ -16,7 +16,6 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 
 import com.alibaba.druid.sql.ast.*;
 
-
 public class Util {
     public static String joiner(List<KVValue> lists, String oper) {
 
@@ -74,6 +73,8 @@ public class Util {
             value = "*";
         } else if (expr instanceof SQLValuableExpr) {
             value = ((SQLValuableExpr) expr).getValue();
+        } else if (expr instanceof SQLBooleanExpr) {
+            value = ((SQLBooleanExpr) expr).getValue();
         } else {
             //throw new SqlParseException("can not support this type " + expr.getClass());
         }

@@ -15,20 +15,21 @@ import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
-
-
 public class Paramer {
-	public String analysis;
+	private String analysis;
 	public Float boost;
 	public String value;
     public Integer slop;
 
     public Map<String, Float> fieldsBoosts = new HashMap<>();
     public String type;
-    public Float tieBreaker;
+    private Float tieBreaker;
     public Operator operator;
 
-    public String default_field;
+    private String defaultField;
+
+    private Boolean inOrder;
+    public String clauses;
 
 	public static Paramer parseParamer(SQLMethodInvokeExpr method) throws SqlParseException {
 		Paramer instance = new Paramer();
@@ -80,7 +81,14 @@ public class Paramer {
                         break;
 
                     case "default_field":
-                        instance.default_field = Util.expr2Object(sqlExpr.getRight()).toString();
+                        instance.defaultField = Util.expr2Object(sqlExpr.getRight()).toString();
+                        break;
+
+                    case "in_order":
+                        instance.inOrder = Boolean.valueOf(Util.expr2Object(sqlExpr.getRight()).toString());
+                        break;
+                    case "clauses":
+                        instance.clauses = Util.expr2Object(sqlExpr.getRight()).toString();
                         break;
 
                     default:
@@ -139,8 +147,8 @@ public class Paramer {
             query.phraseSlop(paramer.slop);
         }
 
-        if (paramer.default_field != null) {
-            query.defaultField(paramer.default_field);
+        if (paramer.defaultField != null) {
+            query.defaultField(paramer.defaultField);
         }
 
         return query;
@@ -169,6 +177,18 @@ public class Paramer {
 
         if (paramer.operator != null) {
             query.operator(paramer.operator);
+        }
+
+        return query;
+    }
+
+    public static ToXContent fullParamer(SpanNearQueryBuilder query, Paramer paramer) {
+        if (paramer.boost != null) {
+            query.boost(paramer.boost);
+        }
+
+        if (paramer.inOrder != null) {
+            query.inOrder(paramer.inOrder);
         }
 
         return query;

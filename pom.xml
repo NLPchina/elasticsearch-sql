@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>6.4.2.1</version>
+	<version>6.4.2.2</version>
 	<packaging>jar</packaging>
 	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
@@ -40,7 +40,6 @@
 		</developer>
 	</developers>
 
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<runSuite>**/MainTestSuite.class</runSuite>
@@ -74,13 +73,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<version>1.1.41</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -162,10 +154,7 @@
             <artifactId>guava</artifactId>
             <version>15.0</version>
         </dependency>
-
-
     </dependencies>
-
 
 	<build>
 		<resources>
