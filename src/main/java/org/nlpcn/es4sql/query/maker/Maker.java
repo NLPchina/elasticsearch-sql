@@ -140,7 +140,7 @@ public abstract class Maker {
 
             //
             SpanNearQueryBuilder spanNearQuery = QueryBuilders.spanNearQuery(clauses.get(0), paramer.slop);
-            for (int i = 1; i < clauses.size(); i++) {
+            for (int i = 1; i < clauses.size(); ++i) {
                 spanNearQuery.addClause(clauses.get(i));
             }
 
