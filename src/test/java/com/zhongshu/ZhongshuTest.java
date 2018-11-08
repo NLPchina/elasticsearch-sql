@@ -363,7 +363,7 @@ public class ZhongshuTest {
     @Test
     public void testSongge() {
         //zhongshu-comment 原始的sql
-        /*
+
         sql = "SELECT dt\n" +
                 "\t, CASE \n" +
                 "\t\tWHEN platform_id = 'PC'\n" +
@@ -424,7 +424,9 @@ public class ZhongshuTest {
                 "\tELSE os\n" +
                 "END ASC, platform_id DESC, appid ASC, ssp_id DESC, theo_inv DESC\n" +
                 "LIMIT 0, 10";
-                */
+        System.out.println();
+
+        /*
         sql = "SELECT CASE \n" +
                 "\t\tWHEN platform_id = 'PC'\n" +
                 "\t\tAND os NOT IN ('全部') THEN 'unknown'\n" +
@@ -438,5 +440,54 @@ public class ZhongshuTest {
                 "\t\tELSE os\n" +
                 "\tEND NOT IN ('Android', 'iOS', 'WP')\n" +
                 "LIMIT 0, 10";
+                */
+    }
+
+    @Test
+    public void testSongge2(){
+        sql = "SELECT SUM(CASE \n" +
+                "\t\tWHEN (ett = 'v'\n" +
+                "\t\tAND bidtype = '2'\n" +
+                "\t\tAND priority_f = 'p_70_75'\n" +
+                "\t\tAND accounttype = '1') THEN sum_charge\n" +
+                "\t\tWHEN (ett = 'av'\n" +
+                "\t\tAND bidtype = '4'\n" +
+                "\t\tAND ac_20 = '1'\n" +
+                "\t\tAND priority_f = 'p_70_75'\n" +
+                "\t\tAND accounttype = '1') THEN sum_charge\n" +
+                "\t\tWHEN (ett = 'click'\n" +
+                "\t\tAND bidtype = '3'\n" +
+                "\t\tAND priority_f = 'p_70_75'\n" +
+                "\t\tAND accounttype = '1') THEN sum_charge\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS sum_charge, SUM(CASE \n" +
+                "\t\tWHEN ett = 'v' THEN count_num\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS v\n" +
+                "\t, SUM(CASE \n" +
+                "\t\tWHEN ett = 'av' THEN count_num\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS total_av, SUM(CASE \n" +
+                "\t\tWHEN ett = 'av'\n" +
+                "\t\tAND ac_20 = '1' THEN count_num\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS count_av\n" +
+                "\t, SUM(CASE \n" +
+                "\t\tWHEN ett = 'click' THEN count_num\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS count_click, SUM(CASE \n" +
+                "\t\tWHEN ett = 'na' THEN count_num\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS na\n" +
+                "\t, SUM(CASE \n" +
+                "\t\tWHEN ett = 'naa' THEN count_num\n" +
+                "\t\tELSE 0\n" +
+                "\tEND) AS naa, aid, adslotid\n" +
+                "\t, appid, bidtype, priority_f, accounttype\n" +
+                "FROM t_xps2_track_stream_aid_d\n" +
+                "WHERE 1 = 1\n" +
+                "\tAND dt = 20181018\n" +
+                "GROUP BY adslotid, aid, appid, accounttype, priority_f, bidtype\n" +
+                "LIMIT 10000000";
     }
 }
