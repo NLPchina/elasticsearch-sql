@@ -23,7 +23,8 @@ public class Select extends Query {
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
-	private int rowCount = 1000;
+	public static final int DEFAULT_ROWCOUNT = 1000;
+	private int rowCount = DEFAULT_ROWCOUNT;
     private boolean containsSubQueries;
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;

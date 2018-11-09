@@ -79,7 +79,7 @@ public class AggregationQueryAction extends QueryAction {
                         }
                     }
 
-                    setSize(lastAgg);
+                    setSize(lastAgg, field);
                     setShardSize(lastAgg);
                 }
 
@@ -116,7 +116,7 @@ public class AggregationQueryAction extends QueryAction {
 
 //                        //((TermsAggregationBuilder) subAgg).size(0);
 //                    }
-                    setSize(subAgg);
+                    setSize(subAgg, field);
                     setShardSize(subAgg);
                     if (field.isNested()) {
                         AggregationBuilder nestedBuilder = createNestedAggregation(field);
@@ -216,12 +216,28 @@ public class AggregationQueryAction extends QueryAction {
         return sqlElasticRequestBuilder;
     }
 
-    private void setSize (AggregationBuilder agg) {
-        if(select.getRowCount()>0) {
-            try {
-                ((TermsAggregationBuilder) agg).size(select.getRowCount());
-            } catch (Exception e) {
-                e.printStackTrace();
+    private void setSize (AggregationBuilder agg, Field field) {
+        if (field instanceof MethodField) { //zhongshu-comment MethodField可以自定义聚合的size
+            MethodField mf = ((MethodField) field);
+            Object customSize = mf.getParamsAsMap().get("size");
+            if (customSize == null) { //zhongshu-comment 假如用户没有在MethodField指定agg的size，就将默认的rowCount设置为agg的size
+                if(select.getRowCount()>0) {
+                    try {
+                        ((TermsAggregationBuilder) agg).size(select.getRowCount());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                //zhongshu-comment 不需要任何操作，因为之前步骤的代码已经将自定义的size设置到agg对象中了
+            }
+        } else {
+            if(select.getRowCount()>0) {
+                try {
+                    ((TermsAggregationBuilder) agg).size(select.getRowCount());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
