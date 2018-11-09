@@ -490,4 +490,12 @@ public class ZhongshuTest {
                 "GROUP BY adslotid, aid, appid, accounttype, priority_f, bidtype\n" +
                 "LIMIT 10000000";
     }
+
+    @Test
+    public void test13(){
+        sql = "SELECT COUNT(*) FROM elasticsearch-sql_test_index_account/account \n" +
+                "GROUP BY \n" +
+                "\tgender, \n" +
+                "\tterms('alias'='ageAgg','field'='age','size'=3)";
+    }
 }

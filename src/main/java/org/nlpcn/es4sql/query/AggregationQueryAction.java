@@ -218,7 +218,11 @@ public class AggregationQueryAction extends QueryAction {
 
     private void setSize (AggregationBuilder agg) {
         if(select.getRowCount()>0) {
-            ((TermsAggregationBuilder) agg).size(select.getRowCount());
+            try {
+                ((TermsAggregationBuilder) agg).size(select.getRowCount());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
     private void setShardSize(AggregationBuilder agg) {
