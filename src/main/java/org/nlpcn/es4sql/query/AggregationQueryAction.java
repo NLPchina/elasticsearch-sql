@@ -14,6 +14,7 @@ import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
@@ -217,6 +218,9 @@ public class AggregationQueryAction extends QueryAction {
     }
 
     private void setSize (AggregationBuilder agg, Field field) {
+        if (agg instanceof HistogramAggregationBuilder)
+            return;
+
         if (field instanceof MethodField) { //zhongshu-comment MethodField可以自定义聚合的size
             MethodField mf = ((MethodField) field);
             Object customSize = mf.getParamsAsMap().get("size");
@@ -242,6 +246,9 @@ public class AggregationQueryAction extends QueryAction {
         }
     }
     private void setShardSize(AggregationBuilder agg) {
+        if (agg instanceof HistogramAggregationBuilder)
+            return;
+
         int defaultShardSize = 20 * select.getRowCount();
         if (defaultShardSize > 5000)
             ((TermsAggregationBuilder) agg).shardSize(defaultShardSize);
