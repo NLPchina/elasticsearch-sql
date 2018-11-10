@@ -129,7 +129,7 @@ $scope.fetchAll = function(){
         })
         .error(function(data, status, headers, config) {
           if(data == "") {
-            $scope.error = "Error occured! response is not avalible.";
+            $scope.error = "Error occured! response is not available.";
     	  }
     	  else {
     	  	$scope.error = JSON.stringify(data);
@@ -180,6 +180,7 @@ function updateWithScrollIfNeeded (query) {
     if(selectedQuery != "" && selectedQuery != undefined){
       query = selectedQuery;
     }
+
     query = updateWithScrollIfNeeded(query);
 		$http.post($scope.url + "_sql", query)
 		.success(function(data, status, headers, config) {
@@ -217,7 +218,7 @@ function updateWithScrollIfNeeded (query) {
         })
         .error(function(data, status, headers, config) {
           if(data == "") {
-            $scope.error = "Error occured! response is not avalible.";
+            $scope.error = "Error occured! response is not available.";
     	  }
     	  else {
     	  	$scope.error = JSON.stringify(data);
@@ -256,7 +257,7 @@ function updateWithScrollIfNeeded (query) {
         .error(function(data, status, headers, config) {
         	$scope.resultExplan = false;
           if(data == "") {
-            $scope.error = "Error occured! response is not avalible.";
+            $scope.error = "Error occured! response is not available.";
     	  }
     	  else {
     	  	$scope.error = JSON.stringify(data);
@@ -350,7 +351,7 @@ function updateWithScrollIfNeeded (query) {
         })
         .error(function(data, status, headers, config) {
           if(data == "") {
-            $scope.error = "Error occured! response is not avalible.";
+            $scope.error = "Error occured! response is not available.";
         }
         else {
           $scope.error = JSON.stringify(data);

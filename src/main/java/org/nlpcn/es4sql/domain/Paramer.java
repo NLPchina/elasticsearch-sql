@@ -1,17 +1,17 @@
 package org.nlpcn.es4sql.domain;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
-import org.elasticsearch.index.query.WildcardQueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -22,6 +22,7 @@ public class Paramer {
 	public Float boost;
 	public String value;
     public Integer slop;
+
 
 	public static Paramer parseParamer(SQLMethodInvokeExpr method) throws SqlParseException {
 		Paramer instance = new Paramer();
@@ -50,6 +51,7 @@ public class Paramer {
                     case "slop":
                         instance.slop = Integer.parseInt(Util.expr2Object(sqlExpr.getRight()).toString());
                         break;
+
                     default:
                         break;
                 }
@@ -105,6 +107,7 @@ public class Paramer {
         if (paramer.slop != null) {
             query.phraseSlop(paramer.slop);
         }
+
 
         return query;
     }

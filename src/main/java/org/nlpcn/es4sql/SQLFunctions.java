@@ -23,13 +23,34 @@ public class SQLFunctions {
             "random", "abs", //nummber operator
             "split", "concat_ws", "substring", "trim",//string operator
             "add", "multiply", "divide", "subtract", "modulus",//binary operator
-            "field", "date_format"
+            "field", "date_format", "if"
     );
 
 
     public static Tuple<String, String> function(String methodName, List<KVValue> paramers, String name,boolean returnValue) {
         Tuple<String, String> functionStr = null;
-        switch (methodName) {
+        switch (methodName.toLowerCase()) {
+            case "if":
+                String nameIF = "";
+                String caseString = "";
+                if(paramers.get(0).value instanceof SQLInListExpr){
+                    nameIF += methodName+"("+((SQLInListExpr) paramers.get(0).value).getExpr()+" in (";
+                    String left = "doc['"+((SQLInListExpr) paramers.get(0).value).getExpr().toString()+"'].value";
+                    List<SQLExpr> targetList = ((SQLInListExpr) paramers.get(0).value).getTargetList();
+                    for(SQLExpr a:targetList){
+                        caseString += left + " == '" + a.toString() + "' ||";
+                        nameIF += a.toString()+",";
+                    }
+                    caseString = caseString.substring(0,caseString.length()-2);
+                    nameIF = nameIF.substring(0,nameIF.length()-1)+"),";
+                }else{
+                    String left = "doc['"+paramers.get(0).key+"'].value";
+                    caseString += left + " == '" + paramers.get(0).value+"'";
+                    nameIF = methodName+"("+paramers.get(0).toString()+",";
+                }
+                nameIF += paramers.get(1).value+","+paramers.get(2).value+")";
+                functionStr = new Tuple<>(nameIF,"if(("+caseString+")){"+paramers.get(1).value+"} else {"+paramers.get(2).value+"}");
+                break;
             case "split":
                 if (paramers.size() == 3) {
                     functionStr = split(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
@@ -62,6 +83,12 @@ public class SQLFunctions {
 
             case "floor":
             case "round":
+                if (paramers.size() == 2) {
+                    //zhongshu-comment es的round()默认是保留到个位，这里给round()函数加上精确到小数点后第几位的功能
+                    int decimalPrecision = Integer.parseInt(paramers.get(1).value.toString());
+                    functionStr = mathRoundTemplate("Math."+methodName,methodName,Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name, decimalPrecision);
+                    break;
+                }
             case "log":
             case "log10":
             case "ceil":
@@ -109,7 +136,7 @@ public class SQLFunctions {
             default:
 
         }
-        if(returnValue){
+        if(returnValue && !methodName.equalsIgnoreCase("if")){
             String generatedFieldName = functionStr.v1();
             String returnCommand = ";return " + generatedFieldName +";" ;
             String newScript = functionStr.v2() + returnCommand;
@@ -277,6 +304,23 @@ public class SQLFunctions {
             return new Tuple<>(name, "def " + name + " = " + methodName + "(doc['" + strColumn + "'].value)");
         } else {
             return new Tuple<>(name, strColumn + ";def " + name + " = " + methodName + "(" + valueName + ")");
+        }
+
+    }
+
+    private static Tuple<String, String> mathRoundTemplate(String methodName, String fieldName, String strColumn, String valueName, int decimalPrecision) {
+
+        StringBuilder sb = new StringBuilder("1");
+        for (int i = 0; i < decimalPrecision; i++) {
+            sb.append("0");
+        }
+        double num = Double.parseDouble(sb.toString());
+
+        String name = fieldName + "_" + random();
+        if (valueName == null) {
+            return new Tuple<>(name, "def " + name + " = " + methodName + "((doc['" + strColumn + "'].value) * " + num + ")/" + num);
+        } else {
+            return new Tuple<>(name, strColumn + ";def " + name + " = " + methodName + "((" + valueName + ") * " + num + ")/" + num);
         }
 
     }

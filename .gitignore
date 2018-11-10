@@ -20,3 +20,4 @@ src/_site/vendor/codemirror/mode/jinja2/.goutputstream-*
 src/_site/node_modules
 src/site-server/node_modules
 *~
+.DS_Store

@@ -1,9 +1,13 @@
 package org.nlpcn.es4sql.query.maker;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -17,6 +21,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.*;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesAggregationBuilder;
@@ -36,6 +41,7 @@ import org.nlpcn.es4sql.parse.NestedType;
 
 public class AggMaker {
 
+    //question 这个groupMap用来干嘛？？
     private Map<String, KVValue> groupMap = new HashMap<>();
 
     /**
@@ -47,14 +53,45 @@ public class AggMaker {
      */
     public AggregationBuilder makeGroupAgg(Field field) throws SqlParseException {
 
+        //zhongshu-comment script类型的MethodField
         if (field instanceof MethodField && field.getName().equals("script")) {
             MethodField methodField = (MethodField) field;
+                /*
+                TermsAggregationBuilder termsBuilder的样例：
+                来自这条sql的group by子句的gg字段解析结果：
+                select a,case when c='1' then 'haha' when c='2' then 'book' else 'hbhb' end as gg from tbl_a group by a,gg
+                {
+                    "gg":{ //aggs的名字就叫gg
+                        "terms":{
+                            "script":{
+                                "source":"if((doc['c'].value=='1')){'haha'} else if((doc['c'].value=='2')){'book'} else {'hbhb'}",
+                                "lang":"painless"
+                            },
+                            "size":10,
+                            "min_doc_count":1,
+                            "shard_min_doc_count":0,
+                            "show_term_doc_count_error":false,
+                            "order":[
+                                {
+                                    "_count":"desc"
+                                },
+                                {
+                                    "_key":"asc"
+                                }
+                            ]
+                        }
+                    }
+                }
+             */
             TermsAggregationBuilder termsBuilder = AggregationBuilders.terms(methodField.getAlias()).script(new Script(methodField.getParams().get(1).value.toString()));
+
+            //question 这里为什么要将这些信息加到groupMap中？
             groupMap.put(methodField.getAlias(), new KVValue("KEY", termsBuilder));
+
             return termsBuilder;
         }
 
-
+        //zhongshu-comment filter类型的MethodField
         if (field instanceof MethodField) {
 
             MethodField methodField = (MethodField) field;
@@ -75,14 +112,17 @@ public class AggMaker {
 
     /**
      * Create aggregation according to the SQL function.
-     *
+     * zhongshu-comment 根据sql中的函数来生成一些agg，例如sql中的count()、sum()函数，这是agg链中最里边的那个agg了，eg：
+     *                  select a,b,count(c),sum(d) from tbl group by a,b
      * @param field  SQL function
      * @param parent parentAggregation
      * @return AggregationBuilder represents the SQL function
      * @throws SqlParseException in case of unrecognized function
      */
     public AggregationBuilder makeFieldAgg(MethodField field, AggregationBuilder parent) throws SqlParseException {
+        //question 加到groupMap里是为了什么
         groupMap.put(field.getAlias(), new KVValue("FIELD", parent));
+
         ValuesSourceAggregationBuilder builder;
         field.setAlias(fixAlias(field.getAlias()));
         switch (field.getName().toUpperCase()) {
@@ -582,10 +622,27 @@ public class AggMaker {
 
         String fieldName = field.getParams().get(0).value.toString();
 
+        /*
+        zhongshu-comment count(1) count(0)这种应该是查不到东西的，除非你的字段名就叫做1、0这样
+            es的count是针对某个字段做count的，见下面的dsl，对os这个字段做count
+                "aggregations": {
+                    "COUNT(os)": {
+                      "value_count": {
+                        "field": "os"
+                      }
+                    }
+                 }
+
+            假如你是写count(*)，那es-sql就帮你转成对"_index"字段做count，每一条数据都会有"_index"字段，该字段存储的是索引的名字
+         */
         // In case of count(*) we use '_index' as field parameter to count all documents
         if ("*".equals(fieldName)) {
             KVValue kvValue = new KVValue(null, "_index");
             field.getParams().set(0, kvValue);
+            /*
+            zhongshu-comment 这个看起来有点多此一举：先将"_index"字符串封装到KVValue中，然后再kv.toString()得到"_index"字符串，还不如直接将"_index"传进去AggregationBuilders.count(field.getAlias()).field("_index");
+            其实目的是为了改变形参MethodField field的params参数中的值，由"*"改为"_index"
+             */
             return AggregationBuilders.count(field.getAlias()).field(kvValue.toString());
         } else {
             return AggregationBuilders.count(field.getAlias()).field(fieldName);

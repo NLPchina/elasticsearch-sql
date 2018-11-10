@@ -25,7 +25,7 @@ public class ShowQueryAction extends QueryAction {
         String indexName = sql.split(" ")[1];
         final GetIndexRequestBuilder  indexRequestBuilder ;
         String type = null;
-        if(indexName.contains("/")){
+        if (indexName.contains("/")) {
             String[] indexAndType = indexName.split("\\/");
             indexName = indexAndType[0];
             type = indexAndType[1];

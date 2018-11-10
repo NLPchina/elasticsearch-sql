@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.domain;
 
+import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 
@@ -22,7 +23,8 @@ public class Select extends Query {
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
-	private int rowCount = 200;
+	public static final int DEFAULT_ROWCOUNT = 1000;
+	private int rowCount = DEFAULT_ROWCOUNT;
     private boolean containsSubQueries;
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
@@ -72,11 +74,14 @@ public class Select extends Query {
 		return rowCount;
 	}
 
-	public void addOrderBy(String nestedPath, String name, String type) {
-		if ("_score".equals(name)) {
+	public void addOrderBy(String nestedPath, String name, String type, ScriptSortBuilder.ScriptSortType scriptSortType) {
+		if ("_score".equals(name)) { //zhongshu-comment 可以直接在order by子句中写_score，根据该字段排序 select * from tbl order by _score asc
 			isQuery = true;
 		}
-		this.orderBys.add(new Order(nestedPath, name, type));
+		Order order = new Order(nestedPath, name, type);
+
+		order.setScriptSortType(scriptSortType);
+		this.orderBys.add(order);
 	}
 
 

@@ -88,6 +88,10 @@ public class Condition extends Where {
     private boolean isChildren;
     private String childType;
 
+    public Condition(CONN conn) {
+        super(conn);
+    }
+
     public Condition(CONN conn, String field, SQLExpr nameExpr, String condition, Object obj, SQLExpr valueExpr) throws SqlParseException {
         this(conn, field, nameExpr, condition, obj, valueExpr, null);
     }
