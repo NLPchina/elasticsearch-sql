@@ -2,7 +2,6 @@ package com.alibaba.druid.pool;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
@@ -23,8 +22,7 @@ import java.util.List;
  */
 public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPreparedStatement {
 
-
-    Client client = null;
+    private final Client client;
 
     public ElasticSearchDruidPooledPreparedStatement(DruidPooledConnection conn, PreparedStatementHolder holder) throws SQLException {
         super(conn, holder);
@@ -42,8 +40,6 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         conn.beforeExecute();
         try {
-
-
             ObjectResult extractor = getObjectResult(true, getSql(), false, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();

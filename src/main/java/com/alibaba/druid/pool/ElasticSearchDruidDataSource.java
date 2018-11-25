@@ -5,7 +5,8 @@ import com.alibaba.druid.TransactionTimeoutException;
 import com.alibaba.druid.VERSION;
 import com.alibaba.druid.filter.AutoLoad;
 import com.alibaba.druid.filter.Filter;
-import com.alibaba.druid.pool.vendor.*;
+import com.alibaba.druid.pool.vendor.MySqlExceptionSorter;
+import com.alibaba.druid.pool.vendor.MySqlValidConnectionChecker;
 import com.alibaba.druid.proxy.DruidDriver;
 import com.alibaba.druid.proxy.jdbc.DataSourceProxyConfig;
 import com.alibaba.druid.proxy.jdbc.TransactionInfo;
@@ -24,7 +25,11 @@ import com.alibaba.druid.support.logging.LogFactory;
 import com.alibaba.druid.util.*;
 import com.alibaba.druid.wall.WallFilter;
 import com.alibaba.druid.wall.WallProviderStatValue;
-
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -32,11 +37,11 @@ import javax.management.ObjectName;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-
 import javax.sql.ConnectionEvent;
 import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
-
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -114,6 +119,9 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
     public static ThreadLocal<Long> waitNanosLocal = new ThreadLocal<Long>();
 
     private boolean logDifferentThread = true;
+
+    // elasticsearch client
+    private volatile Client client;
 
     public ElasticSearchDruidDataSource() {
         this(false);
@@ -655,7 +663,33 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
 
     @Override
     public Connection createPhysicalConnection(String url, Properties info) throws SQLException {
-        Connection conn = new ElasticSearchConnection(url);
+        if (client == null) {
+            synchronized (this) {
+                if (client == null) {
+                    Settings.Builder builder = Settings.builder();
+                    for (Map.Entry<Object, Object> entry : info.entrySet()) {
+                        builder.put(entry.getKey().toString(), entry.getValue().toString());
+                    }
+
+                    String[] hostAndPortArray = url.split("/")[2].split(",");
+                    int length = hostAndPortArray.length;
+                    TransportAddress[] addresses = new TransportAddress[length];
+                    try {
+                        String[] hostAndPortArr;
+                        for (int i = 0; i < length; ++i) {
+                            hostAndPortArr = hostAndPortArray[i].split(":");
+                            addresses[i] = new InetSocketTransportAddress(InetAddress.getByName(hostAndPortArr[0]), Integer.parseInt(hostAndPortArr[1]));
+                        }
+                    } catch (UnknownHostException e) {
+                        throw new SQLException(e);
+                    }
+
+                    client = TransportClient.builder().settings(builder.build()).build().addTransportAddresses(addresses);
+                }
+            }
+        }
+
+        Connection conn = new ElasticSearchConnection(client);
         createCount.incrementAndGet();
 
         return conn;
@@ -1279,6 +1313,12 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
                 }
             }
             poolingCount = 0;
+
+            // close elasticsearch client
+            if (this.client != null) {
+                this.client.close();
+            }
+
             unregisterMbean();
 
             enable = false;
