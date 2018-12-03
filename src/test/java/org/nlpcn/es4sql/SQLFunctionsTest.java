@@ -267,6 +267,14 @@ public class SQLFunctionsTest {
         Assert.assertTrue(content.toString().contains("21"));
     }
 
+    @Test
+    public void testSumTwoFields() throws Exception {
+        String query = "SELECT SUM(account_number+age) AS sum from " + TEST_INDEX_PEOPLE + "/people";
+        CSVResult csvResult = getCsvResult(false, query);
+        List<String> content = csvResult.getLines();
+        Assert.assertTrue(content.toString().contains("752"));
+    }
+
     // todo: change when split is back on language
 //    @Test
 //    public void split_field() throws Exception {

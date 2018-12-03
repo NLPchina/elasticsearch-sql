@@ -198,7 +198,7 @@ public class FieldMaker {
             field = new Field(newFieldName, alias);
         }
 
-        if (alias != null && alias != name && !Util.isFromJoinOrUnionTable(expr)) {
+        if (alias != null && !alias.equals(name) && !Util.isFromJoinOrUnionTable(expr)) {
             List<SQLExpr> paramers = Lists.newArrayList();
             paramers.add(new SQLCharExpr(alias));
             paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));
@@ -220,7 +220,8 @@ public class FieldMaker {
                 if (SQLFunctions.buildInFunctions.contains(binaryOpExpr.getOperator().toString().toLowerCase())) {
                     SQLMethodInvokeExpr mExpr = makeBinaryMethodField(binaryOpExpr, alias, first);
                     MethodField abc = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null, tableAlias, false);
-                    paramers.add(new KVValue(abc.getParams().get(0).toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
+                    String key = abc.getParams().get(0).toString(), value = abc.getParams().get(1).toString();
+                    paramers.add(new KVValue(key, new SQLCharExpr(first && !SQLFunctions.buildInFunctions.contains(finalMethodName) ? String.format("%s;return %s;", value, key) : value)));
                 } else {
                     if (!binaryOpExpr.getOperator().getName().equals("=")) {
                         paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr, null, tableAlias)));
@@ -256,7 +257,8 @@ public class FieldMaker {
                 } else if (SQLFunctions.buildInFunctions.contains(methodName)) {
                     //throw new SqlParseException("only support script/nested as inner functions");
                     MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
-                    paramers.add(new KVValue(abc.getParams().get(0).toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
+                    String key = abc.getParams().get(0).toString(), value = abc.getParams().get(1).toString();
+                    paramers.add(new KVValue(key, new SQLCharExpr(first && !SQLFunctions.buildInFunctions.contains(finalMethodName) ? String.format("%s;return %s;", value, key) : value)));
                 } else throw new SqlParseException("only support script/nested/children as inner functions");
             } else if (object instanceof SQLCaseExpr) {
                 String scriptCode = new CaseWhenParser((SQLCaseExpr) object, alias, tableAlias).parse();
