@@ -66,7 +66,7 @@ public class QueryMaker extends Maker {
         if(where instanceof Condition){
             Condition condition = (Condition) where;
 
-            if (condition.isNested()) {
+            if (condition.isNested() && !(subQuery instanceof NestedQueryBuilder)) {
                 InnerHitBuilder ihb = null;
                 if (condition.getInnerHits() != null) {
                     try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(condition.getInnerHits()))) {
