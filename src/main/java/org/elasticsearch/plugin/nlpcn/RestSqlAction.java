@@ -1,8 +1,8 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.node.NodeClient;
-import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -20,7 +20,7 @@ import java.util.*;
 
 public class RestSqlAction extends BaseRestHandler {
 
-    private static final Logger LOGGER = ESLoggerFactory.getLogger(RestSqlAction.class);
+    private static final Logger LOGGER = LogManager.getLogger();
 
 	public RestSqlAction(Settings settings, RestController restController) {
         super(settings);
