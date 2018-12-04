@@ -515,11 +515,11 @@ public class WhereParser {
 
         String operator = soExpr.getOperator().getName();
 
-        if (operator.equals("=")) {
+        if ("=".equals(operator)) {
             operator = "==";
         }
 
-        String finalStr = v1Dec + v2Dec + v1 + " " + operator + " " + v2;
+        String finalStr = String.format("%s%s((Comparable)%s).compareTo(%s) %s 0", v1Dec, v2Dec, v1, v2, operator);
 
         SQLMethodInvokeExpr scriptMethod = new SQLMethodInvokeExpr("script", null);
         scriptMethod.addParameter(new SQLCharExpr(finalStr));
