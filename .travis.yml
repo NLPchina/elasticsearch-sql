@@ -1,13 +1,26 @@
 language: java
 
 jdk:
-  - openjdk8
+  - oraclejdk8
 
 before_install:
-  - sudo apt update
-  - sudo apt install openjdk-8-jdk
-  - export PATH=$PATH:$JAVA_HOME/bin
-  - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
+  - sudo add-apt-repository -y ppa:webupd8team/java
+  - sudo apt-get update
+  - sudo apt-get install -y oracle-java8-installer || true
+
+  #todo remove this kludge and the above || true when the ppa is fixed
+  - pushd /var/lib/dpkg/info
+  - sudo sed -i 's|JAVA_VERSION=8u191|JAVA_VERSION=8u192|' oracle-java8-installer.*
+  - sudo sed -i 's|PARTNER_URL=https://download.oracle.com/otn-pub/java/jdk/8u191-b12/2787e4a523244c269598db4e85c51e0c/|PARTNER_URL=https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/|' oracle-java8-installer.*
+  - sudo sed -i 's|SHA256SUM_TGZ="53c29507e2405a7ffdbba627e6d64856089b094867479edc5ede4105c1da0d65"|SHA256SUM_TGZ="6d34ae147fc5564c07b913b467de1411c795e290356538f22502f28b76a323c2"|' oracle-java8-installer.*
+  - sudo sed -i 's|J_DIR=jdk1.8.0_191|J_DIR=jdk1.8.0_192|' oracle-java8-installer.*
+  - popd
+  - sudo apt-get update
+
+  - sudo apt-get install -y oracle-java8-installer
+
+  - sudo update-java-alternatives -s java-8-oracle
+  - export JAVA_HOME=/usr/lib/jvm/java-8-oracle
   - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.5.0.deb && sudo dpkg -i --force-confnew elasticsearch-6.5.0.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
