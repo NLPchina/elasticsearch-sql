@@ -10,10 +10,10 @@ before_install:
 
   #todo remove this kludge and the above || true when the ppa is fixed
   - pushd /var/lib/dpkg/info
-  - sudo sed -i 'JAVA_VERSION=8u191' oracle-java8-installer.*
-  - sudo sed -i 'PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u191-b12/2787e4a523244c269598db4e85c51e0c/' oracle-java8-installer.*
-  - sudo sed -i 'SHA256SUM_TGZ="53c29507e2405a7ffdbba627e6d64856089b094867479edc5ede4105c1da0d65"' oracle-java8-installer.*
-  - sudo sed -i 'J_DIR=jdk1.8.0_191' oracle-java8-installer.*
+  - sudo sed -i 's|JAVA_VERSION=8u191|JAVA_VERSION=8u192|' oracle-java8-installer.*
+  - sudo sed -i 's|PARTNER_URL=https://download.oracle.com/otn-pub/java/jdk/8u191-b12/2787e4a523244c269598db4e85c51e0c/|PARTNER_URL=https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/|' oracle-java8-installer.*
+  - sudo sed -i 's|SHA256SUM_TGZ="53c29507e2405a7ffdbba627e6d64856089b094867479edc5ede4105c1da0d65"|SHA256SUM_TGZ="6d34ae147fc5564c07b913b467de1411c795e290356538f22502f28b76a323c2"|' oracle-java8-installer.*
+  - sudo sed -i 's|J_DIR=jdk1.8.0_191|J_DIR=jdk1.8.0_192|' oracle-java8-installer.*
   - popd
   - sudo apt-get update
 
