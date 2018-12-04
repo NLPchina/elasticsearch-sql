@@ -6,8 +6,7 @@ jdk:
 before_install:
   - sudo apt update
   - sudo apt install openjdk-8-jdk
-
-  - sudo update-java-alternatives -s java-8-openjdk
+  - export PATH=$PATH:$JAVA_HOME/bin
   - export JAVA_HOME=/usr/lib/jvm/java-8-openjdk
   - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.5.0.deb && sudo dpkg -i --force-confnew elasticsearch-6.5.0.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
