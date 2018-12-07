@@ -521,6 +521,9 @@ public class AggMaker {
                             dateHistogram.extendedBounds(new ExtendedBounds(bounds[0], bounds[1]));
                         }
                         break;
+                    case "offset":
+                        dateHistogram.offset(value);
+                        break;
 
                     case "alias":
                     case "nested":
