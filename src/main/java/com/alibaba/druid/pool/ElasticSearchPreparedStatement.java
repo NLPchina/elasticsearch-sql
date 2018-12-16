@@ -298,6 +298,11 @@ public class ElasticSearchPreparedStatement implements PreparedStatement {
 
     @Override
     public void close() throws SQLException {
+        if (this.results != null) {
+            this.results.close();
+        }
+
+        this.results = null;
     }
 
     @Override

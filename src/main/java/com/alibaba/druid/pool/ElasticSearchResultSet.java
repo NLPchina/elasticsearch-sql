@@ -51,7 +51,10 @@ public class ElasticSearchResultSet implements ResultSet {
 
     @Override
     public void close() throws SQLException {
-
+        this.rows = null;
+        this.current = null;
+        this.headers = null;
+        this.metaData = null;
     }
 
     @Override
