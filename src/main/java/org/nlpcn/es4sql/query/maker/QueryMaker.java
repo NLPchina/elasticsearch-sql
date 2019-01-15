@@ -91,9 +91,10 @@ public class QueryMaker extends Maker {
         if(where instanceof Condition){
             Condition condition = (Condition) where;
 
-            if (condition.isNested() && !(subQuery instanceof NestedQueryBuilder)) {
-                InnerHitBuilder ihb = null;
-                if (condition.getInnerHits() != null) {
+			if (condition.isNested()) {
+				boolean isNestedQuery = subQuery instanceof NestedQueryBuilder;
+				InnerHitBuilder ihb = null;
+				if (condition.getInnerHits() != null) {
                     try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(condition.getInnerHits()))) {
                         ihb = InnerHitBuilder.fromXContent(parser);
                     } catch (IOException e) {
@@ -103,15 +104,17 @@ public class QueryMaker extends Maker {
 
                 // bugfix #628
                 if ("missing".equalsIgnoreCase(String.valueOf(condition.getValue())) && (condition.getOpear() == Condition.OPEAR.IS || condition.getOpear() == Condition.OPEAR.EQ)) {
-                    NestedQueryBuilder q = QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), ScoreMode.None);
-                    if (ihb != null) {
-                        q.innerHit(ihb);
+                    NestedQueryBuilder q = isNestedQuery ? (NestedQueryBuilder) subQuery : QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), ScoreMode.None);
+					if (ihb != null) {
+						q.innerHit(ihb);
                     }
                     boolQuery.mustNot(q);
                     return;
                 }
 
-                subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, ScoreMode.None);
+                if (!isNestedQuery) {
+					subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, ScoreMode.None);
+				}
                 if (ihb != null) {
                     ((NestedQueryBuilder) subQuery).innerHit(ihb);
                 }
