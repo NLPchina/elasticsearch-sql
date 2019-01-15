@@ -113,7 +113,7 @@ public abstract class Maker {
         case "multi_match":
         case "multimatch":
             paramer = Paramer.parseParamer(value);
-            MultiMatchQueryBuilder multiMatchQuery = QueryBuilders.multiMatchQuery(paramer.value).fields(paramer.fieldsBoosts);
+            MultiMatchQueryBuilder multiMatchQuery = QueryBuilders.multiMatchQuery(paramer.value);
             bqb = Paramer.fullParamer(multiMatchQuery, paramer);
             break;
 
@@ -137,7 +137,7 @@ public abstract class Maker {
             }
 
             //
-            SpanNearQueryBuilder spanNearQuery = QueryBuilders.spanNearQuery(clauses.get(0), paramer.slop);
+            SpanNearQueryBuilder spanNearQuery = QueryBuilders.spanNearQuery(clauses.get(0), Optional.ofNullable(paramer.slop).orElse(SpanNearQueryBuilder.DEFAULT_SLOP));
             for (int i = 1; i < clauses.size(); ++i) {
                 spanNearQuery.addClause(clauses.get(i));
             }

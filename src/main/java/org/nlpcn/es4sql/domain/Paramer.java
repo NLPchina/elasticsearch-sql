@@ -2,6 +2,7 @@ package org.nlpcn.es4sql.domain;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
@@ -10,6 +11,7 @@ import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
 import org.elasticsearch.common.Strings;
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.index.query.*;
 import org.nlpcn.es4sql.Util;
@@ -17,16 +19,17 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 
 public class Paramer {
 	private String analysis;
-	public Float boost;
+    private Float boost;
 	public String value;
     public Integer slop;
 
-    public Map<String, Float> fieldsBoosts = new HashMap<>();
-    public String type;
+    private Map<String, Float> fieldsBoosts = new HashMap<>();
+    private String type;
     private Float tieBreaker;
-    public Operator operator;
+    private Operator operator;
 
     private String defaultField;
+    private String minimumShouldMatch;
 
     private Boolean inOrder;
     public String clauses;
@@ -90,6 +93,9 @@ public class Paramer {
                     case "clauses":
                         instance.clauses = Util.expr2Object(sqlExpr.getRight()).toString();
                         break;
+                    case "minimum_should_match":
+                        instance.minimumShouldMatch = Util.expr2Object(sqlExpr.getRight()).toString();
+                        break;
 
                     default:
                         break;
@@ -124,6 +130,15 @@ public class Paramer {
 		if (paramer.boost != null) {
 			query.boost(paramer.boost);
 		}
+
+        if (paramer.operator != null) {
+            query.operator(paramer.operator);
+        }
+
+        if (paramer.minimumShouldMatch != null) {
+            query.minimumShouldMatch(paramer.minimumShouldMatch);
+        }
+
 		return query;
 	}
 
@@ -150,6 +165,24 @@ public class Paramer {
         if (paramer.defaultField != null) {
             query.defaultField(paramer.defaultField);
         }
+
+        if (paramer.tieBreaker != null) {
+            query.tieBreaker(paramer.tieBreaker);
+        }
+
+        if (paramer.operator != null) {
+            query.defaultOperator(paramer.operator);
+        }
+
+        if (paramer.type != null) {
+            query.type(MultiMatchQueryBuilder.Type.parse(paramer.type.toLowerCase(Locale.ROOT), LoggingDeprecationHandler.INSTANCE));
+        }
+
+        if (paramer.minimumShouldMatch != null) {
+            query.minimumShouldMatch(paramer.minimumShouldMatch);
+        }
+
+        query.fields(paramer.fieldsBoosts);
 
         return query;
     }
@@ -178,6 +211,12 @@ public class Paramer {
         if (paramer.operator != null) {
             query.operator(paramer.operator);
         }
+
+        if (paramer.minimumShouldMatch != null) {
+            query.minimumShouldMatch(paramer.minimumShouldMatch);
+        }
+
+        query.fields(paramer.fieldsBoosts);
 
         return query;
     }
