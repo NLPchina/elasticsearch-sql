@@ -14,8 +14,6 @@ import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
@@ -219,18 +217,13 @@ public class AggregationQueryAction extends QueryAction {
     }
 
     private void setSize (AggregationBuilder agg, Field field) {
-        if (agg instanceof HistogramAggregationBuilder || agg instanceof DateHistogramAggregationBuilder)
-            return;
-
         if (field instanceof MethodField) { //zhongshu-comment MethodField可以自定义聚合的size
             MethodField mf = ((MethodField) field);
             Object customSize = mf.getParamsAsMap().get("size");
             if (customSize == null) { //zhongshu-comment 假如用户没有在MethodField指定agg的size，就将默认的rowCount设置为agg的size
                 if(select.getRowCount()>0) {
-                    try {
+                    if (agg instanceof TermsAggregationBuilder) {
                         ((TermsAggregationBuilder) agg).size(select.getRowCount());
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
             } else {
@@ -238,23 +231,18 @@ public class AggregationQueryAction extends QueryAction {
             }
         } else {
             if(select.getRowCount()>0) {
-                try {
+                if (agg instanceof TermsAggregationBuilder) {
                     ((TermsAggregationBuilder) agg).size(select.getRowCount());
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         }
     }
-    private void setShardSize(AggregationBuilder agg) {
-        if (agg instanceof HistogramAggregationBuilder || agg instanceof DateHistogramAggregationBuilder)
-            return;
 
-        int defaultShardSize = 20 * select.getRowCount();
-        if (defaultShardSize > 5000)
-            ((TermsAggregationBuilder) agg).shardSize(defaultShardSize);
-        else
-            ((TermsAggregationBuilder) agg).shardSize(5000);//保证最少是5000
+    private void setShardSize(AggregationBuilder agg) {
+        if (agg instanceof TermsAggregationBuilder) {
+            int defaultShardSize = 20 * select.getRowCount();
+            ((TermsAggregationBuilder) agg).shardSize(Math.max(defaultShardSize, 5000));
+        }
     }
 
     private AggregationBuilder getGroupAgg(Field field, Select select2) throws SqlParseException {
