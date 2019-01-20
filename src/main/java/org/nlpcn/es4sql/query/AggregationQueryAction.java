@@ -186,7 +186,13 @@ public class AggregationQueryAction extends QueryAction {
                     TermsAggregationBuilder termsBuilder = (TermsAggregationBuilder) temp.value;
                     switch (temp.key) {
                         case "COUNT":
-                            termsBuilder.order(BucketOrder.count(isASC(order)));
+                        	String orderName = order.getName();
+                        	if(isAliasFiled(orderName)) {
+                        		termsBuilder.order(BucketOrder.aggregation(orderName, isASC(order)));
+                        	}else {
+                        		termsBuilder.order(BucketOrder.count(isASC(order)));
+							}
+                            
                             break;
                         case "KEY":
                             termsBuilder.order(BucketOrder.key(isASC(order)));
@@ -475,4 +481,16 @@ public class AggregationQueryAction extends QueryAction {
         request.setFrom(from);
         request.setSize(size);
     }
+    //判断某个字段名称是否是别名
+    private boolean isAliasFiled(String filedName) {
+       if(select.getFields().size() > 0) {
+           for (Field field : select.getFields()) {
+	           if(null !=field.getAlias() &&  field.getAlias().equals(filedName)) {
+	               return true;
+	           }
+           }
+       }
+       return false;
+    }
+
 }
