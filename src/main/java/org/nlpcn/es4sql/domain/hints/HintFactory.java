@@ -151,6 +151,10 @@ public class HintFactory {
             String postFilter = getParamFromHint(hintAsString, "! POST_FILTER");
             return new Hint(HintType.POST_FILTER, new String[]{postFilter});
         }
+        if (hintAsString.startsWith("! STATS")) {
+            String[] statsGroups = getParamsFromHint(hintAsString, "! STATS");
+            return new Hint(HintType.STATS, statsGroups);
+        }
 
         return null;
     }

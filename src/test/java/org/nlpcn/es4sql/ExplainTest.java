@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql;
 
+import com.alibaba.druid.support.json.JSONUtils;
 import com.google.common.io.Files;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -99,6 +101,12 @@ public class ExplainTest {
     @Test
     public void testCountDistinctExplain() throws SqlParseException, SQLFeatureNotSupportedException {
         System.out.println(explain("SELECT COUNT(DISTINCT sourceIP.keyword) AS size FROM dataflow WHERE startTime > 525757149439 AND startTime < 1525757449439 GROUP BY appName.keyword ORDER BY size DESC"));
+    }
+
+    @Test
+    public void testStatsGroupsExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        Map map = (Map) JSONUtils.parse(explain("SELECT /*! STATS(group1, group2) */ * FROM index"));
+        assertThat(map.get("stats").toString(), equalTo("[group1, group2]"));
     }
 
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {

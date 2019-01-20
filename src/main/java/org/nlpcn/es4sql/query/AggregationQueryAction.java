@@ -217,6 +217,7 @@ public class AggregationQueryAction extends QueryAction {
         updateRequestWithHighlight(select, request);
         updateRequestWithCollapse(select, request);
         updateRequestWithPostFilter(select, request);
+        updateRequestWithStats(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }

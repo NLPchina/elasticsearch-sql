@@ -19,4 +19,5 @@ public enum HintType
     MINUS_USE_TERMS_OPTIMIZATION,
     COLLAPSE,
     POST_FILTER,
+    STATS
 }
