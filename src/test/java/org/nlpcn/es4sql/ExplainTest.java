@@ -96,6 +96,11 @@ public class ExplainTest {
         System.out.println(explain("SELECT * FROM index WHERE q=span_near(boost=10.0,slop=12,in_order=false,clauses='[{\"span_term\":{\"field\":\"value1\"}},{\"span_term\":{\"field\":\"value2\"}},{\"span_term\":{\"field\":\"value3\"}}]')"));
     }
 
+    @Test
+    public void testCountDistinctExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("SELECT COUNT(DISTINCT sourceIP.keyword) AS size FROM dataflow WHERE startTime > 525757149439 AND startTime < 1525757449439 GROUP BY appName.keyword ORDER BY size DESC"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
