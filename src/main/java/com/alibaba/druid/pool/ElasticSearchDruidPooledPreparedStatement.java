@@ -43,10 +43,6 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
             ResultSet rs = new ElasticSearchResultSet(this, headers, lines);
 
-            if (rs == null) {
-                return null;
-            }
-
             DruidPooledResultSet poolableResultSet = new DruidPooledResultSet(this, rs);
             addResultSetTrace(poolableResultSet);
 
@@ -91,7 +87,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         QueryAction queryAction = searchDao.explain(query);
         Object execution = QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new ObjectResultsExtractor(includeScore, includeType, includeId).extractResults(execution, flat);
+        return new ObjectResultsExtractor(includeScore, includeType, includeId, queryAction).extractResults(execution, flat);
     }
 
     @Override
