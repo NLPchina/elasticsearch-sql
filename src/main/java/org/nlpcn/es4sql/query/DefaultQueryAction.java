@@ -1,6 +1,7 @@
 package org.nlpcn.es4sql.query;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -8,9 +9,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -28,7 +27,9 @@ public class DefaultQueryAction extends QueryAction {
 	private final Select select;
 	private SearchRequestBuilder request;
 
-	public DefaultQueryAction(Client client, Select select) {
+    private List<String> fieldNames = new LinkedList<>();
+
+    public DefaultQueryAction(Client client, Select select) {
 		super(client, select);
 		this.select = select;
 	}
@@ -108,17 +109,21 @@ public class DefaultQueryAction extends QueryAction {
 					if (method.getName().toLowerCase().equals("script")) {
 						handleScriptField(method);
 					} else if (method.getName().equalsIgnoreCase("include")) {
+                        String f;
 						for (KVValue kvValue : method.getParams()) {
-							includeFields.add(kvValue.value.toString()) ;
+                            f = kvValue.value.toString();
+                            fieldNames.add(f);
+                            includeFields.add(f);
 						}
 					} else if (method.getName().equalsIgnoreCase("exclude")) {
 						for (KVValue kvValue : method.getParams()) {
 							excludeFields.add(kvValue.value.toString()) ;
 						}
 					}
-				} else if (field instanceof Field) {
-					includeFields.add(field.getName());
-				}
+				} else if (field != null) {
+                    fieldNames.add(field.getName());
+                    includeFields.add(field.getName());
+                }
 			}
 
 			request.setFetchSource(includeFields.toArray(new String[includeFields.size()]), excludeFields.toArray(new String[excludeFields.size()]));
@@ -128,9 +133,13 @@ public class DefaultQueryAction extends QueryAction {
 	private void handleScriptField(MethodField method) throws SqlParseException {
 		List<KVValue> params = method.getParams();
 		if (params.size() == 2) {
-			request.addScriptField(params.get(0).value.toString(), new Script(params.get(1).value.toString()));
+            String f = params.get(0).value.toString();
+            fieldNames.add(f);
+			request.addScriptField(f, new Script(params.get(1).value.toString()));
 		} else if (params.size() == 3) {
-			request.addScriptField(params.get(0).value.toString(), new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), Collections.emptyMap()));
+            String f = params.get(0).value.toString();
+            fieldNames.add(f);
+			request.addScriptField(f, new Script(ScriptType.INLINE, params.get(1).value.toString(), params.get(2).value.toString(), Collections.emptyMap()));
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
 		}
@@ -181,4 +190,8 @@ public class DefaultQueryAction extends QueryAction {
 	public SearchRequestBuilder getRequestBuilder() {
 		return request;
 	}
+
+    public List<String> getFieldNames() {
+        return fieldNames;
+    }
 }

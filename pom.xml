@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>5.6.14.0</version>
+	<version>5.6.14.1</version>
 	<packaging>jar</packaging>
 	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
@@ -49,6 +49,18 @@
 		<elasticsearch.plugin.classname>org.elasticsearch.plugin.nlpcn.SqlPlug</elasticsearch.plugin.classname>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>elasticsearch-releases</id>
+			<url>https://artifacts.elastic.co/maven</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -99,28 +111,8 @@
 
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
-            <artifactId>transport</artifactId>
+            <artifactId>x-pack-transport</artifactId>
             <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-			<scope>provided</scope>
-		</dependency>
-
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.7</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.7</version>
             <scope>provided</scope>
         </dependency>
 

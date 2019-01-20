@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static com.alibaba.druid.pool.DruidDataSourceFactory.PROP_CONNECTIONPROPERTIES;
+import static com.alibaba.druid.pool.DruidDataSourceFactory.PROP_URL;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 /**
  * Created by allwefantasy on 8/26/16.
  */
@@ -19,11 +24,18 @@ public class JDBCTests {
     @Test
     public void testJDBC() throws Exception {
         Properties properties = new Properties();
-        properties.put("url", "jdbc:elasticsearch://127.0.0.1:9300/" + TestsConstants.TEST_INDEX);
+        properties.put(PROP_URL, "jdbc:elasticsearch://127.0.0.1:9300/" + TestsConstants.TEST_INDEX);
+        properties.put(PROP_CONNECTIONPROPERTIES, "client.transport.ignore_cluster_name=true");
         DruidDataSource dds = (DruidDataSource) ElasticSearchDruidDataSourceFactory.createDataSource(properties);
         Connection connection = dds.getConnection();
         PreparedStatement ps = connection.prepareStatement("SELECT  gender,lastname,age from  " + TestsConstants.TEST_INDEX + " where lastname='Heath'");
         ResultSet resultSet = ps.executeQuery();
+
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        assertThat(metaData.getColumnName(1), equalTo("gender"));
+        assertThat(metaData.getColumnName(2), equalTo("lastname"));
+        assertThat(metaData.getColumnName(3), equalTo("age"));
+
         List<String> result = new ArrayList<String>();
         while (resultSet.next()) {
             result.add(resultSet.getString("lastname") + "," + resultSet.getInt("age") + "," + resultSet.getString("gender"));
