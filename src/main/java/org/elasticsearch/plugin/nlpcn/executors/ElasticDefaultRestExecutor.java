@@ -54,6 +54,16 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             executor.run();
             sendDefaultResponse(executor.getHits(), channel);
         } else if (request instanceof SearchRequest) {
+            //支持preference参数
+            String preference = params.get("preference");
+            if (preference!=null && preference.length()>0)
+            {
+                preference = preference.trim();
+                if (preference.length()>0)
+                {
+                    ((SearchRequest) request).preference(preference);
+                }
+            }
             //zhongshu-comment 对应的QueryAction实现子类：DefaultQueryAction、AggregationQueryAction
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticSearchRequestBuilder
             client.search((SearchRequest) request, new RestStatusToXContentListener<>(channel));

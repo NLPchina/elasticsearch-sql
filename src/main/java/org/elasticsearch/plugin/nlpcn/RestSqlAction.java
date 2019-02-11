@@ -71,6 +71,16 @@ public class RestSqlAction extends BaseRestHandler {
                         additionalParams.put(paramName, request.param(paramName));
                     }
                 }
+                //支持preference参数
+                String preference = request.param("preference");
+                if (preference!=null && preference.length()>0)
+                {
+                    preference = preference.trim();
+                    if (preference.length()>0)
+                    {
+                        additionalParams.put("preference", preference);
+                    }
+                }
                 //zhongshu-comment restExecutor.execute()方法里会调用es查询的相关rest api
                 //zhongshu-comment restExecutor.execute()方法的第1、4个参数是框架传进来的参数，第2、3个参数是可以自己生成的参数，所以要多注重一点
                 //zhongshu-comment 默认调用的是ElasticDefaultRestExecutor这个子类
