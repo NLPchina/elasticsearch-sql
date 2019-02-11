@@ -37,7 +37,7 @@ import org.nlpcn.es4sql.spatial.*;
 
 public abstract class Maker {
 
-	private static final Set<OPEAR> NOT_OPEAR_SET = ImmutableSet.of(OPEAR.N, OPEAR.NIN, OPEAR.ISN, OPEAR.NBETWEEN, OPEAR.NLIKE,OPEAR.NIN_TERMS,OPEAR.NTERM);
+	private static final Set<OPEAR> NOT_OPEAR_SET = ImmutableSet.of(OPEAR.N, OPEAR.NIN, OPEAR.ISN, OPEAR.NBETWEEN, OPEAR.NLIKE,OPEAR.NIN_TERMS,OPEAR.NTERM,OPEAR.NREGEXP);
 
 	protected Maker(Boolean isQuery) {
 
@@ -185,6 +185,7 @@ public abstract class Maker {
 			x = QueryBuilders.wildcardQuery(name, queryStr);
 			break;
         case REGEXP:
+        case NREGEXP:
             Object[] values = (Object[]) value;
             RegexpQueryBuilder regexpQuery = QueryBuilders.regexpQuery(name, values[0].toString());
             if (1 < values.length) {

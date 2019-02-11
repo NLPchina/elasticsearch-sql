@@ -11,7 +11,8 @@ public abstract class Query {
 
 	private Where where = null;
 	private List<From> from = new ArrayList<>();
-
+	private int offset;
+	private int rowCount = -1;
 
 	public Where getWhere() {
 		return this.where;
@@ -25,6 +26,21 @@ public abstract class Query {
 		return from;
 	}
 
+	public int getOffset() {
+		return offset;
+	}
+
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	public int getRowCount() {
+		return rowCount;
+	}
+
+	public void setRowCount(int rowCount) {
+		this.rowCount = rowCount;
+	}
 
 	/**
 	 * Get the indexes the query refer to.

@@ -30,6 +30,12 @@ public class DeleteQueryAction extends QueryAction {
 
 		setIndicesAndTypes();
 		setWhere(delete.getWhere());
+
+		// maximum number of processed documents
+		if (delete.getRowCount() > -1) {
+			request.size(delete.getRowCount());
+		}
+
         SqlElasticDeleteByQueryRequestBuilder deleteByQueryRequestBuilder = new SqlElasticDeleteByQueryRequestBuilder(request);
 		return deleteByQueryRequestBuilder;
 	}

@@ -4,7 +4,6 @@ import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,15 +15,14 @@ import java.util.List;
  */
 public class Select extends Query {
 
+    public static final int DEFAULT_ROWCOUNT = 1000;
+
 	// Using this functions, will cause query to execute as aggregation.
 	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS","EXTENDED_STATS","PERCENTILES","SCRIPTED_METRIC");
     private List<Hint> hints = new ArrayList<>();
 	private List<Field> fields = new ArrayList<>();
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
-	private int offset;
-	public static final int DEFAULT_ROWCOUNT = 1000;
-	private int rowCount = DEFAULT_ROWCOUNT;
     private boolean containsSubQueries;
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
@@ -32,19 +30,12 @@ public class Select extends Query {
 
 	public boolean isAgg = false;
 
-	public Select() {
-	}
+    public Select() {
+        setRowCount(DEFAULT_ROWCOUNT);
+    }
 
 	public List<Field> getFields() {
 		return fields;
-	}
-
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-
-	public void setRowCount(int rowCount) {
-		this.rowCount = rowCount;
 	}
 
 	public void addGroupBy(Field field) {
@@ -64,14 +55,6 @@ public class Select extends Query {
 
 	public List<Order> getOrderBys() {
 		return orderBys;
-	}
-
-	public int getOffset() {
-		return offset;
-	}
-
-	public int getRowCount() {
-		return rowCount;
 	}
 
 	public void addOrderBy(String nestedPath, String name, String type, ScriptSortBuilder.ScriptSortType scriptSortType) {

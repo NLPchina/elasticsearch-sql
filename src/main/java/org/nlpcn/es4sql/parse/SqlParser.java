@@ -6,6 +6,7 @@ import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 
@@ -92,6 +93,8 @@ public class SqlParser {
         delete.getFrom().addAll(findFrom(deleteStatement.getTableSource()));
 
         delete.setWhere(whereParser.findWhere());
+
+        findLimit(((MySqlDeleteStatement) deleteStatement).getLimit(), delete);
 
         return delete;
     }
@@ -231,16 +234,16 @@ public class SqlParser {
         return ScriptSortBuilder.ScriptSortType.NUMBER;
     }
 
-    private void findLimit(MySqlSelectQueryBlock.Limit limit, Select select) {
+    private void findLimit(MySqlSelectQueryBlock.Limit limit, Query query) {
 
         if (limit == null) {
             return;
         }
 
-        select.setRowCount(Integer.parseInt(limit.getRowCount().toString()));
+        query.setRowCount(Integer.parseInt(limit.getRowCount().toString()));
 
         if (limit.getOffset() != null)
-            select.setOffset(Integer.parseInt(limit.getOffset().toString()));
+            query.setOffset(Integer.parseInt(limit.getOffset().toString()));
     }
 
     /**
