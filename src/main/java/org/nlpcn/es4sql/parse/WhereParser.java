@@ -21,6 +21,7 @@ import org.nlpcn.es4sql.spatial.SpatialParamsFactory;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -173,7 +174,8 @@ public class WhereParser {
         }
         return leftSide instanceof SQLIdentifierExpr ||
                 leftSide instanceof SQLPropertyExpr ||
-                leftSide instanceof SQLVariantRefExpr;
+                leftSide instanceof SQLVariantRefExpr ||
+                leftSide instanceof SQLCastExpr;
     }
 
     private boolean isAllowedMethodOnConditionLeft(SQLMethodInvokeExpr method, SQLBinaryOperator operator) {
@@ -480,47 +482,62 @@ public class WhereParser {
         return methodField;
     }
 
+    private MethodField parseSQLCastExprInWhere(SQLCastExpr soExpr) throws SqlParseException {
+        MethodField methodField = FieldMaker.makeMethodField("cast",
+            Collections.singletonList(soExpr),
+            null,
+            null,
+            query != null ? query.getFrom().getAlias() : null,
+            true);
+        List<KVValue> params = methodField.getParams();
+        KVValue param = params.get(0);
+        params.clear();
+        params.add(new KVValue(param.key));
+        params.add(new KVValue(param.value));
+        return methodField;
+    }
+
     private SQLMethodInvokeExpr parseSQLBinaryOpExprWhoIsConditionInWhere(SQLBinaryOpExpr soExpr) throws SqlParseException {
 
-        if (!(soExpr.getLeft() instanceof SQLMethodInvokeExpr ||
+        if (!(soExpr.getLeft() instanceof SQLCastExpr || soExpr.getRight() instanceof SQLCastExpr)) {
+            if (!(soExpr.getLeft() instanceof SQLMethodInvokeExpr ||
                 soExpr.getRight() instanceof SQLMethodInvokeExpr)) {
-            return null;
-        }
-
-        if (soExpr.getLeft() instanceof SQLMethodInvokeExpr) {
-            if (!SQLFunctions.buildInFunctions.contains(((SQLMethodInvokeExpr) soExpr.getLeft()).getMethodName())) {
                 return null;
             }
-        }
 
-        if (soExpr.getRight() instanceof SQLMethodInvokeExpr) {
-            if (!SQLFunctions.buildInFunctions.contains(((SQLMethodInvokeExpr) soExpr.getRight()).getMethodName())) {
-                return null;
+            if (soExpr.getLeft() instanceof SQLMethodInvokeExpr) {
+                if (!SQLFunctions.buildInFunctions.contains(((SQLMethodInvokeExpr) soExpr.getLeft()).getMethodName())) {
+                    return null;
+                }
+            }
+
+            if (soExpr.getRight() instanceof SQLMethodInvokeExpr) {
+                if (!SQLFunctions.buildInFunctions.contains(((SQLMethodInvokeExpr) soExpr.getRight()).getMethodName())) {
+                    return null;
+                }
             }
         }
-
 
         MethodField leftMethod = new MethodField(null, Lists.newArrayList(new KVValue("", Util.expr2Object(soExpr.getLeft(), "'"))), null, null);
-        MethodField rightMethod = new MethodField(null, Lists.newArrayList(new KVValue("", Util.expr2Object(soExpr.getRight(), "'"))), null, null);
-
         if (soExpr.getLeft() instanceof SQLIdentifierExpr || soExpr.getLeft() instanceof SQLPropertyExpr) {
             leftMethod = new MethodField(null, Lists.newArrayList(new KVValue("", "doc['" + Util.expr2Object(soExpr.getLeft(), "'") + "'].value")), null, null);
+        } else if (soExpr.getLeft() instanceof SQLMethodInvokeExpr) {
+            leftMethod = parseSQLMethodInvokeExprWithFunctionInWhere((SQLMethodInvokeExpr) soExpr.getLeft());
+        } else if (soExpr.getLeft() instanceof SQLCastExpr) {
+            leftMethod = parseSQLCastExprInWhere((SQLCastExpr) soExpr.getLeft());
         }
 
+        MethodField rightMethod = new MethodField(null, Lists.newArrayList(new KVValue("", Util.expr2Object(soExpr.getRight(), "'"))), null, null);
         if (soExpr.getRight() instanceof SQLIdentifierExpr || soExpr.getRight() instanceof SQLPropertyExpr) {
             rightMethod = new MethodField(null, Lists.newArrayList(new KVValue("", "doc['" + Util.expr2Object(soExpr.getRight(), "'") + "'].value")), null, null);
-        }
-
-        if (soExpr.getLeft() instanceof SQLMethodInvokeExpr) {
-            leftMethod = parseSQLMethodInvokeExprWithFunctionInWhere((SQLMethodInvokeExpr) soExpr.getLeft());
-        }
-        if (soExpr.getRight() instanceof SQLMethodInvokeExpr) {
+        } else if (soExpr.getRight() instanceof SQLMethodInvokeExpr) {
             rightMethod = parseSQLMethodInvokeExprWithFunctionInWhere((SQLMethodInvokeExpr) soExpr.getRight());
+        } else if (soExpr.getRight() instanceof SQLCastExpr) {
+            rightMethod = parseSQLCastExprInWhere((SQLCastExpr) soExpr.getRight());
         }
 
         String v1 = leftMethod.getParams().get(0).value.toString();
         String v1Dec = leftMethod.getParams().size() == 2 ? leftMethod.getParams().get(1).value.toString() + ";" : "";
-
 
         String v2 = rightMethod.getParams().get(0).value.toString();
         String v2Dec = rightMethod.getParams().size() == 2 ? rightMethod.getParams().get(1).value.toString() + ";" : "";

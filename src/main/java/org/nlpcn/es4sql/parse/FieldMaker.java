@@ -236,8 +236,8 @@ public class FieldMaker {
 
                 if (SQLFunctions.buildInFunctions.contains(binaryOpExpr.getOperator().toString().toLowerCase())) {
                     SQLMethodInvokeExpr mExpr = makeBinaryMethodField(binaryOpExpr, alias, first);
-                    MethodField abc = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null, tableAlias, false);
-                    String key = abc.getParams().get(0).toString(), value = abc.getParams().get(1).toString();
+                    MethodField mf = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null, tableAlias, false);
+                    String key = mf.getParams().get(0).toString(), value = mf.getParams().get(1).toString();
                     paramers.add(new KVValue(key, new SQLCharExpr(first && !SQLFunctions.buildInFunctions.contains(finalMethodName) ? String.format("%s;return %s;", value, key) : value)));
                 } else {
                     if (!binaryOpExpr.getOperator().getName().equals("=")) {
@@ -273,8 +273,8 @@ public class FieldMaker {
                     paramers.add(new KVValue("children", childrenType));
                 } else if (SQLFunctions.buildInFunctions.contains(methodName)) {
                     //throw new SqlParseException("only support script/nested as inner functions");
-                    MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
-                    String key = abc.getParams().get(0).toString(), value = abc.getParams().get(1).toString();
+                    MethodField mf = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
+                    String key = mf.getParams().get(0).toString(), value = mf.getParams().get(1).toString();
                     paramers.add(new KVValue(key, new SQLCharExpr(first && !SQLFunctions.buildInFunctions.contains(finalMethodName) ? String.format("%s;return %s;", value, key) : value)));
                 } else throw new SqlParseException("only support script/nested/children as inner functions");
             } else if (object instanceof SQLCaseExpr) {
