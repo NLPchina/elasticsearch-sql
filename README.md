@@ -578,9 +578,7 @@ On elasticsearch 1.x / 2.x, visit the elasticsearch-sql web front-end:
 http://localhost:9200/_plugin/sql/
 ````
 
-On elasticsearch 5.x/6.x, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip).
-
-Then start the web front-end like this:
+On elasticsearch 5.x/6.x, use [elasticsearch sql site chrome extension](https://github.com/shi-yuan/elasticsearch-sql-site-chrome) (make sure to enable cors on elasticsearch.yml). Alternatively, [download and extract site](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip), then start the web front-end like this:
 
 ```shell
 cd site-server
@@ -590,12 +588,12 @@ node node-server.js
 
 * Simple query
 ````
-http://localhost:9200/_sql?sql=select * from indexName limit 10
+curl -X GET "localhost:9200/_sql" -H 'Content-Type: application/json' -d'select * from indexName limit 10'
 ````
 
 * Explain SQL to elasticsearch query DSL
 ````
-http://localhost:9200/_sql/_explain?sql=select * from indexName limit 10
+curl -X GET "localhost:9200/_sql/_explain" -H 'Content-Type: application/json' -d'select * from indexName limit 10'
 ```` 
 
 
