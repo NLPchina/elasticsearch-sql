@@ -6,7 +6,6 @@ import com.alibaba.druid.sql.ast.expr.*;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.ast.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlSelectGroupByExpr;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 
 
@@ -94,7 +93,9 @@ public class SqlParser {
 
         delete.setWhere(whereParser.findWhere());
 
-        findLimit(((MySqlDeleteStatement) deleteStatement).getLimit(), delete);
+        delete.getHints().addAll(parseHints(((ElasticSqlDeleteStatement) deleteStatement).getHints()));
+
+        findLimit(((ElasticSqlDeleteStatement) deleteStatement).getLimit(), delete);
 
         return delete;
     }

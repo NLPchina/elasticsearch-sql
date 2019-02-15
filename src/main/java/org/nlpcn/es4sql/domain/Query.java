@@ -3,6 +3,8 @@ package org.nlpcn.es4sql.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nlpcn.es4sql.domain.hints.Hint;
+
 /**
  * Represents abstract query. every query
  * has indexes, types, and where clause.
@@ -10,9 +12,10 @@ import java.util.List;
 public abstract class Query {
 
 	private Where where = null;
-	private List<From> from = new ArrayList<>();
+	private final List<From> from = new ArrayList<>();
 	private int offset;
 	private int rowCount = -1;
+	private final List<Hint> hints = new ArrayList<>();
 
 	public Where getWhere() {
 		return this.where;
@@ -40,6 +43,10 @@ public abstract class Query {
 
 	public void setRowCount(int rowCount) {
 		this.rowCount = rowCount;
+	}
+
+	public List<Hint> getHints() {
+		return hints;
 	}
 
 	/**

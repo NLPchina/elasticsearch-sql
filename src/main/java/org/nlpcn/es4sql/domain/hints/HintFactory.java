@@ -155,6 +155,10 @@ public class HintFactory {
             String[] statsGroups = getParamsFromHint(hintAsString, "! STATS");
             return new Hint(HintType.STATS, statsGroups);
         }
+        if (hintAsString.startsWith("! CONFLICTS")) {
+            String conflictsParam = getParamFromHint(hintAsString, "! CONFLICTS");
+            return new Hint(HintType.CONFLICTS, new String[] { conflictsParam });
+        }
 
         return null;
     }
