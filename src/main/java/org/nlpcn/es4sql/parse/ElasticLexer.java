@@ -66,6 +66,7 @@ public class ElasticLexer extends MySqlLexer {
             for (;;) {
                 ch = charAt(++pos);
 
+                //zhongshu-comment 就这行和父类MySqlLexer的scanIdentifier()方法不一样，用了自己的实现isElasticIdentifierChar()
                 if (!isElasticIdentifierChar(ch)) {
                     break;
                 }

@@ -5,16 +5,18 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
+import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.nested.NestedBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -44,34 +46,41 @@ public class AggregationQueryAction extends QueryAction {
 
     @Override
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
-        this.request = client.prepareSearch();
+//        this.request = client.prepareSearch();//zhongshu-comment elastic6.1.1的写法
+        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE); //zhongshu-comment master的写法
 
         setIndicesAndTypes();
 
-        setWhere(select.getWhere());
-        AggregationBuilder<?> lastAgg = null;
-
+        setWhere(select.getWhere()); //zhongshu-comment 和DefaultQueryAction的setWhere()一样
+        AggregationBuilder lastAgg = null;
+        //zhongshu-comment 因为es的aggs是可以多条线的，a线可能是group by 省,城市，b线可能是group by 性别、年龄，所以select的groupBys字段是双层List，第一层是a线、b线，第二层是每条线要group by哪些字段
         for (List<Field> groupBy : select.getGroupBys()) {
             if (!groupBy.isEmpty()) {
                 Field field = groupBy.get(0);
 
-
+                //zhongshu-comment 使得group by可以使用select子句中字段的别名
                 //make groupby can reference to field alias
                 lastAgg = getGroupAgg(field, select);
 
-                if (lastAgg != null && lastAgg instanceof TermsBuilder && !(field instanceof MethodField)) {
+                /*
+                zhongshu-comment 假如limit是比200小，那shard size就设为5000，
+                                 假如limit是比200大，那shard size等于size的为准？
+                 */
+                if (lastAgg != null && lastAgg instanceof TermsAggregationBuilder && !(field instanceof MethodField)) {
                     //if limit size is too small, increasing shard  size is required
                     if (select.getRowCount() < 200) {
-                        ((TermsBuilder) lastAgg).shardSize(2000);
+                        ((TermsAggregationBuilder) lastAgg).shardSize(5000);
                         for (Hint hint : select.getHints()) {
                             if (hint.getType() == HintType.SHARD_SIZE) {
                                 if (hint.getParams() != null && hint.getParams().length != 0 && hint.getParams()[0] != null) {
-                                    ((TermsBuilder) lastAgg).shardSize((Integer) hint.getParams()[0]);
+                                    ((TermsAggregationBuilder) lastAgg).shardSize((Integer) hint.getParams()[0]);
                                 }
                             }
                         }
                     }
-                    ((TermsBuilder) lastAgg).size(select.getRowCount());
+
+                    setSize(lastAgg, field);
+                    setShardSize(lastAgg);
                 }
 
                 if (field.isNested()) {
@@ -98,13 +107,17 @@ public class AggregationQueryAction extends QueryAction {
                     request.addAggregation(lastAgg);
                 }
 
+                //zhongshu-comment 下标从1开始
                 for (int i = 1; i < groupBy.size(); i++) {
                     field = groupBy.get(i);
-                    AggregationBuilder<?> subAgg = getGroupAgg(field, select);
-                    if (subAgg instanceof TermsBuilder && !(field instanceof MethodField)) {
-                        ((TermsBuilder) subAgg).size(0);
-                    }
+                    AggregationBuilder subAgg = getGroupAgg(field, select);
+                      //ES5.0 termsaggregation with size = 0 not supported anymore
+//                    if (subAgg instanceof TermsAggregationBuilder && !(field instanceof MethodField)) {
 
+//                        //((TermsAggregationBuilder) subAgg).size(0);
+//                    }
+                    setSize(subAgg, field);
+                    setShardSize(subAgg);
                     if (field.isNested()) {
                         AggregationBuilder nestedBuilder = createNestedAggregation(field);
 
@@ -131,16 +144,38 @@ public class AggregationQueryAction extends QueryAction {
                         lastAgg.subAggregation(subAgg);
                     }
 
+                    //zhongshu-comment 令lastAgg指向subAgg对象，然后继续下一个循环，就能达到这样的效果：a aggs下包着b aggs，b aggs下包着c aggs，c aggs下包着d aggs
                     lastAgg = subAgg;
-                }
+                }//zhongshu-comment 单条线的aggs循环结束
             }
+
+            // add aggregation function to each groupBy zhongshu-comment each groupBy即多条线的aggs
+            /*
+            zhongshu-comment 前面的解析都是针对group by子句中的那些字段，但group by子句中的那些字段并没有指明要统计什么指标啊，到底是count？sum？还是avg呢？
+                             到底要统计什么指标是在select子句中指明的。
+            例如：select c,d,sum(a),count(b) from tbl group by c,d;
+            上面的逻辑就是解析group by字段中的c和d，接下来的 explanFields() 就是解析sum(a)和count(b)了
+             */
+            explanFields(request, select.getFields(), lastAgg);
+
+        }//zhongshu-comment 多条线的aggs循环结束
+
+        if (select.getGroupBys().size() < 1) {
+            //add aggregation when having no groupBy script
+            /*
+            zhongshu-comment 假如sql中没有group by子句，但是别的情况有可能会触发aggs的，例如sql：
+            select sum(a),count(b) from tbl;
+            这种情况就是只有一个组，所有数据就是一个组，不分组做聚合，所以还是会用到aggs的
+             */
+            explanFields(request, select.getFields(), lastAgg);
+
         }
 
         Map<String, KVValue> groupMap = aggMaker.getGroupMap();
         // add field
         if (select.getFields().size() > 0) {
             setFields(select.getFields());
-            explanFields(request, select.getFields(), lastAgg);
+//            explanFields(request, select.getFields(), lastAgg);
         }
 
         // add order
@@ -148,18 +183,23 @@ public class AggregationQueryAction extends QueryAction {
             for (Order order : select.getOrderBys()) {
                 KVValue temp = groupMap.get(order.getName());
                 if (temp != null) {
-                    TermsBuilder termsBuilder = (TermsBuilder) temp.value;
+                    TermsAggregationBuilder termsBuilder = (TermsAggregationBuilder) temp.value;
                     switch (temp.key) {
                         case "COUNT":
-                            termsBuilder.order(Terms.Order.count(isASC(order)));
+                        	String orderName = order.getName();
+                            if (isAliasFiled(orderName)) {
+                                termsBuilder.order(BucketOrder.aggregation(orderName, isASC(order)));
+                            } else {
+                                termsBuilder.order(BucketOrder.count(isASC(order)));
+                            }
                             break;
                         case "KEY":
-                            termsBuilder.order(Terms.Order.term(isASC(order)));
+                            termsBuilder.order(BucketOrder.key(isASC(order)));
                             // add the sort to the request also so the results get sorted as well
                             request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
                             break;
                         case "FIELD":
-                            termsBuilder.order(Terms.Order.aggregation(order.getName(), isASC(order)));
+                            termsBuilder.order(BucketOrder.aggregation(order.getName(), isASC(order)));
                             break;
                         default:
                             throw new SqlParseException(order.getName() + " can not to order");
@@ -169,18 +209,51 @@ public class AggregationQueryAction extends QueryAction {
                 }
             }
         }
-
+        //zhongshu-comment 这个要看一下
         setLimitFromHint(this.select.getHints());
 
         request.setSearchType(SearchType.DEFAULT);
         updateRequestWithIndexAndRoutingOptions(select, request);
         updateRequestWithHighlight(select, request);
+        updateRequestWithCollapse(select, request);
+        updateRequestWithPostFilter(select, request);
+        updateRequestWithStats(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }
-	private AggregationBuilder<?> getGroupAgg(Field field, Select select2) throws SqlParseException {
-    	boolean refrence = false;
-    	AggregationBuilder<?> lastAgg = null;
+
+    private void setSize (AggregationBuilder agg, Field field) {
+        if (field instanceof MethodField) { //zhongshu-comment MethodField可以自定义聚合的size
+            MethodField mf = ((MethodField) field);
+            Object customSize = mf.getParamsAsMap().get("size");
+            if (customSize == null) { //zhongshu-comment 假如用户没有在MethodField指定agg的size，就将默认的rowCount设置为agg的size
+                if(select.getRowCount()>0) {
+                    if (agg instanceof TermsAggregationBuilder) {
+                        ((TermsAggregationBuilder) agg).size(select.getRowCount());
+                    }
+                }
+            } else {
+                //zhongshu-comment 不需要任何操作，因为之前步骤的代码已经将自定义的size设置到agg对象中了
+            }
+        } else {
+            if(select.getRowCount()>0) {
+                if (agg instanceof TermsAggregationBuilder) {
+                    ((TermsAggregationBuilder) agg).size(select.getRowCount());
+                }
+            }
+        }
+    }
+
+    private void setShardSize(AggregationBuilder agg) {
+        if (agg instanceof TermsAggregationBuilder) {
+            int defaultShardSize = 20 * select.getRowCount();
+            ((TermsAggregationBuilder) agg).shardSize(Math.max(defaultShardSize, 5000));
+        }
+    }
+
+    private AggregationBuilder getGroupAgg(Field field, Select select2) throws SqlParseException {
+        boolean refrence = false;
+        AggregationBuilder lastAgg = null;
         for (Field temp : select.getFields()) {
             if (temp instanceof MethodField && temp.getName().equals("script")) {
                 MethodField scriptField = (MethodField) temp;
@@ -194,14 +267,24 @@ public class AggregationQueryAction extends QueryAction {
             }
         }
 
-        if (!refrence) lastAgg = aggMaker.makeGroupAgg(field);
+        /*
+        zhongshu-comment reference的意思是引用，在该代码上下文的意思是group by中使用了select子句中字段的别名
+        refrence为false，就代表没有引用了别名，就是一般的Field、一般的group by而已，和我平常写的一样
+        "aggs":{
+            "city_agg":{
+                "field":"city"
+             }
+         }
+         */
+        if (!refrence)
+            lastAgg = aggMaker.makeGroupAgg(field);
         
         return lastAgg;
-	}
+    }
 
-    private AbstractAggregationBuilder wrapNestedIfNeeded(AggregationBuilder nestedBuilder, boolean reverseNested) {
+    private AggregationBuilder wrapNestedIfNeeded(AggregationBuilder nestedBuilder, boolean reverseNested) {
         if (!reverseNested) return nestedBuilder;
-        if (reverseNested && !(nestedBuilder instanceof NestedBuilder)) return nestedBuilder;
+        if (reverseNested && !(nestedBuilder instanceof NestedAggregationBuilder)) return nestedBuilder;
         //we need to jump back to root
         return AggregationBuilders.reverseNested(nestedBuilder.getName() + "_REVERSED").subAggregation(nestedBuilder);
     }
@@ -212,12 +295,17 @@ public class AggregationQueryAction extends QueryAction {
         String nestedPath = field.getNestedPath();
 
         if (field.isReverseNested()) {
-            if (nestedPath == null || !nestedPath.startsWith("~"))
-                return AggregationBuilders.reverseNested(getNestedAggName(field)).path(nestedPath);
+            if (nestedPath == null || !nestedPath.startsWith("~")) {
+                ReverseNestedAggregationBuilder reverseNestedAggregationBuilder = AggregationBuilders.reverseNested(getNestedAggName(field));
+                if(nestedPath!=null){
+                    reverseNestedAggregationBuilder.path(nestedPath);
+                }
+                return reverseNestedAggregationBuilder;
+            }
             nestedPath = nestedPath.substring(1);
         }
 
-        nestedBuilder = AggregationBuilders.nested(getNestedAggName(field)).path(nestedPath);
+        nestedBuilder = AggregationBuilders.nested(getNestedAggName(field),nestedPath);
 
         return nestedBuilder;
     }
@@ -227,7 +315,7 @@ public class AggregationQueryAction extends QueryAction {
 
         String childType = field.getChildType();
 
-        childrenBuilder = AggregationBuilders.children(getChildrenAggName(field)).childType(childType);
+        childrenBuilder = JoinAggregationBuilders.children(getChildrenAggName(field),childType);
 
         return childrenBuilder;
     }
@@ -266,7 +354,7 @@ public class AggregationQueryAction extends QueryAction {
         return prefix + "@CHILDREN";
     }
 
-    private boolean insertFilterIfExistsAfter(AggregationBuilder<?> agg, List<Field> groupBy, AggregationBuilder builder, int nextPosition) throws SqlParseException {
+    private boolean insertFilterIfExistsAfter(AggregationBuilder agg, List<Field> groupBy, AggregationBuilder builder, int nextPosition) throws SqlParseException {
         if (groupBy.size() <= nextPosition) return false;
         Field filterFieldCandidate = groupBy.get(nextPosition);
         if (!(filterFieldCandidate instanceof MethodField)) return false;
@@ -276,10 +364,9 @@ public class AggregationQueryAction extends QueryAction {
         return true;
     }
 
-    private AggregationBuilder<?> updateAggIfNested(AggregationBuilder<?> lastAgg, Field field) {
+    private AggregationBuilder updateAggIfNested(AggregationBuilder lastAgg, Field field) {
         if (field.isNested()) {
-            lastAgg = AggregationBuilders.nested(field.getName() + "Nested")
-                    .path(field.getNestedPath())
+            lastAgg = AggregationBuilders.nested(field.getName() + "Nested",field.getNestedPath())
                     .subAggregation(lastAgg);
         }
         return lastAgg;
@@ -303,27 +390,42 @@ public class AggregationQueryAction extends QueryAction {
         }
     }
 
-    private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder<?> groupByAgg) throws SqlParseException {
+    private void explanFields(SearchRequestBuilder request, List<Field> fields, AggregationBuilder groupByAgg) throws SqlParseException {
         for (Field field : fields) {
+
             if (field instanceof MethodField) {
 
                 if (field.getName().equals("script")) {
-                    request.addField(field.getAlias());
+                    //question addStoredField()是什么鬼？
+                    request.addStoredField(field.getAlias());
+
+                    /*
+                    zhongshu-comment 将request传进去defaultQueryAction对象是为了调用setFields()中的这一行代码：request.setFetchSource(),
+                                     给request设置include字段和exclude字段
+                     */
                     DefaultQueryAction defaultQueryAction = new DefaultQueryAction(client, select);
                     defaultQueryAction.intialize(request);
                     List<Field> tempFields = Lists.newArrayList(field);
                     defaultQueryAction.setFields(tempFields);
+
+                    /*
+                     zhongshu-comment 因为field.getName().equals("script")的那些字段一般都是作为维度而不是统计指标、度量metric，
+                                        所以就要continue，不能继续下边的创建agg
+                    */
                     continue;
                 }
 
-                AbstractAggregationBuilder makeAgg = aggMaker.makeFieldAgg((MethodField) field, groupByAgg);
+                AggregationBuilder makeAgg = aggMaker.makeFieldAgg((MethodField) field, groupByAgg);
                 if (groupByAgg != null) {
                     groupByAgg.subAggregation(makeAgg);
                 } else {
+                    //question 不懂为什么将一个null的agg加到request中，这应该是dsl语法问题，先不需要深究
                     request.addAggregation(makeAgg);
                 }
             } else if (field instanceof Field) {
-                request.addField(field.getName());
+
+                //question 为什么Filed类型的字段不需要像MethodField类型字段一样设置include、exclude字段：request.setFetchSource()
+                request.addStoredField(field.getName());
             } else {
                 throw new SqlParseException("it did not support this field method " + field);
             }
@@ -379,4 +481,19 @@ public class AggregationQueryAction extends QueryAction {
         request.setFrom(from);
         request.setSize(size);
     }
+
+    /**
+     * 判断某个字段名称是否是别名
+     */
+    private boolean isAliasFiled(String filedName) {
+        if (select.getFields().size() > 0) {
+            for (Field field : select.getFields()) {
+                if (null != field.getAlias() && field.getAlias().equals(filedName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

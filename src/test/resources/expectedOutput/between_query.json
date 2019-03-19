@@ -1,0 +1,19 @@
+{
+    "from" : 0,
+    "size" : 1000,
+    "_source" : {
+        "includes" : [
+            "cust_code"
+        ],
+        "excludes" : [ ]
+    },
+    "script_fields" : {
+        "test" : {
+            "script" : {
+                "source" : "if((doc['value'].value >= 100 && doc['value'].value <=200)){'aaa'} else {doc['value'].value}",
+                "lang" : "painless"
+            },
+            "ignore_failure" : false
+        }
+    }
+}

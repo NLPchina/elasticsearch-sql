@@ -1,48 +1,92 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.elasticsearch.client.node.NodeClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.*;
 import org.nlpcn.es4sql.SearchDao;
+import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
-import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 
-import java.util.Map;
+import java.io.IOException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.*;
 
 
 public class RestSqlAction extends BaseRestHandler {
 
-	@Inject
-	public RestSqlAction(Settings settings, Client client, RestController restController) {
-		super(settings, restController, client);
+    private static final Logger LOGGER = LogManager.getLogger();
+
+	public RestSqlAction(Settings settings, RestController restController) {
+        super(settings);
 		restController.registerHandler(RestRequest.Method.POST, "/_sql/_explain", this);
 		restController.registerHandler(RestRequest.Method.GET, "/_sql/_explain", this);
 		restController.registerHandler(RestRequest.Method.POST, "/_sql", this);
 		restController.registerHandler(RestRequest.Method.GET, "/_sql", this);
 	}
 
-	@Override
-	protected void handleRequest(RestRequest request, RestChannel channel, final Client client) throws Exception {
-		String sql = request.param("sql");
+    @Override
+    public String getName() {
+        return "sql_action";
+    }
 
-		if (sql == null) {
-			sql = request.content().toUtf8();
-		}
-		SearchDao searchDao = new SearchDao(client);
-        QueryAction queryAction= searchDao.explain(sql);
+    @Override
+    protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) {
+        try (XContentParser parser = request.contentOrSourceParamParser()) {
+            parser.mapStrings().forEach((k, v) -> request.params().putIfAbsent(k, v));
+        } catch (IOException e) {
+            LOGGER.warn("Please use json format params, like: {\"sql\":\"SELECT * FROM test\"}");
+        }
 
-		// TODO add unittests to explain. (rest level?)
-		if (request.path().endsWith("/_explain")) {
-			String jsonExplanation = queryAction.explain().explain();
-			BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, jsonExplanation);
-			channel.sendResponse(bytesRestResponse);
-		} else {
-            Map<String, String> params = request.params();
-            RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
-			restExecutor.execute(client,params,queryAction,channel);
-		}
-	}
+        String sql = request.param("sql");
+
+        if (sql == null) {
+            sql = request.content().utf8ToString();
+        }
+        try {
+            SearchDao searchDao = new SearchDao(client);
+            QueryAction queryAction = null;
+
+            queryAction = searchDao.explain(sql);//zhongshu-comment 语法解析，将sql字符串解析为一个Java查询对象
+
+            // TODO add unit tests to explain. (rest level?)
+            if (request.path().endsWith("/_explain")) {
+                final String jsonExplanation = queryAction.explain().explain();
+                return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.OK, XContentType.JSON.mediaType(), jsonExplanation));
+            } else {
+                Map<String, String> params = request.params();
+
+                //zhongshu-comment 生成一个负责用rest方式查询es的对象RestExecutor，返回的实现类是：ElasticDefaultRestExecutor
+                RestExecutor restExecutor = ActionRequestRestExecuterFactory.createExecutor(params.get("format"));
+                final QueryAction finalQueryAction = queryAction;
+                //doing this hack because elasticsearch throws exception for un-consumed props
+                Map<String, String> additionalParams = new HashMap<>();
+                for (String paramName : responseParams()) {
+                    if (request.hasParam(paramName)) {
+                        additionalParams.put(paramName, request.param(paramName));
+                    }
+                }
+                //zhongshu-comment restExecutor.execute()方法里会调用es查询的相关rest api
+                //zhongshu-comment restExecutor.execute()方法的第1、4个参数是框架传进来的参数，第2、3个参数是可以自己生成的参数，所以要多注重一点
+                //zhongshu-comment 默认调用的是ElasticDefaultRestExecutor这个子类
+                //todo 这是什么语法：搜索java8 -> lambda表达式：https://blog.csdn.net/ioriogami/article/details/12782141
+                return channel -> restExecutor.execute(client, additionalParams, finalQueryAction, channel);
+            }
+        } catch (SqlParseException | SQLFeatureNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    protected Set<String> responseParams() {
+        Set<String> responseParams = new HashSet<>(super.responseParams());
+        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "newLine", "format"));
+        return responseParams;
+    }
 }

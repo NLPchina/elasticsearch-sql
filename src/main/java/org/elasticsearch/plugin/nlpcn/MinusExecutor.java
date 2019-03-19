@@ -2,14 +2,11 @@ package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.internal.InternalSearchHit;
-import org.elasticsearch.search.internal.InternalSearchHitField;
-import org.elasticsearch.search.internal.InternalSearchHits;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Field;
@@ -104,37 +101,37 @@ public class MinusExecutor implements ElasticHitsExecutor {
     }
 
     private void fillMinusHitsFromOneField(String fieldName, Set<Object> fieldValues, SearchHit someHit) {
-        List<InternalSearchHit> minusHitsList = new ArrayList<>();
+        List<SearchHit> minusHitsList = new ArrayList<>();
         int currentId = 1;
         for(Object result : fieldValues){
-            Map<String,SearchHitField> fields = new HashMap<>();
+            Map<String,DocumentField> fields = new HashMap<>();
             ArrayList<Object> values = new ArrayList<Object>();
             values.add(result);
-            fields.put(fieldName,new InternalSearchHitField(fieldName, values));
-            InternalSearchHit searchHit = new InternalSearchHit(currentId,currentId+"", new Text(someHit.getType()), fields);
+            fields.put(fieldName,new DocumentField(fieldName, values));
+            SearchHit searchHit = new SearchHit(currentId,currentId+"", new Text(someHit.getType()), fields);
             searchHit.sourceRef(someHit.getSourceRef());
-            searchHit.sourceAsMap().clear();
+            searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = new HashMap<>();
             sourceAsMap.put(fieldName,result);
-            searchHit.sourceAsMap().putAll(sourceAsMap);
+            searchHit.getSourceAsMap().putAll(sourceAsMap);
             currentId++;
             minusHitsList.add(searchHit);
         }
         int totalSize = currentId - 1;
-        InternalSearchHit[] unionHitsArr = minusHitsList.toArray(new InternalSearchHit[totalSize]);
-        this.minusHits = new InternalSearchHits(unionHitsArr, totalSize,1.0f);
+        SearchHit[] unionHitsArr = minusHitsList.toArray(new SearchHit[totalSize]);
+        this.minusHits = new SearchHits(unionHitsArr, totalSize,1.0f);
     }
 
     private void fillMinusHitsFromResults(Set<ComperableHitResult> comperableHitResults) {
         int currentId = 1;
-        List<InternalSearchHit> minusHitsList = new ArrayList<>();
+        List<SearchHit> minusHitsList = new ArrayList<>();
         for(ComperableHitResult result : comperableHitResults){
             ArrayList<Object> values = new ArrayList<Object>();
             values.add(result);
             SearchHit originalHit = result.getOriginalHit();
-            InternalSearchHit searchHit = new InternalSearchHit(currentId,originalHit.id(), new Text(originalHit.getType()), originalHit.fields());
+            SearchHit searchHit = new SearchHit(currentId,originalHit.getId(), new Text(originalHit.getType()), originalHit.getFields());
             searchHit.sourceRef(originalHit.getSourceRef());
-            searchHit.sourceAsMap().clear();
+            searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = result.getFlattenMap();
             for(Map.Entry<String,String> entry : this.builder.getFirstTableFieldToAlias().entrySet()){
                 if(sourceAsMap.containsKey(entry.getKey())){
@@ -144,13 +141,13 @@ public class MinusExecutor implements ElasticHitsExecutor {
                 }
             }
 
-            searchHit.sourceAsMap().putAll(sourceAsMap);
+            searchHit.getSourceAsMap().putAll(sourceAsMap);
             currentId++;
             minusHitsList.add(searchHit);
         }
         int totalSize = currentId - 1;
-        InternalSearchHit[] unionHitsArr = minusHitsList.toArray(new InternalSearchHit[totalSize]);
-        this.minusHits = new InternalSearchHits(unionHitsArr, totalSize,1.0f);
+        SearchHit[] unionHitsArr = minusHitsList.toArray(new SearchHit[totalSize]);
+        this.minusHits = new SearchHits(unionHitsArr, totalSize,1.0f);
     }
 
     private Set<ComperableHitResult> runWithScrollings() {
@@ -159,7 +156,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
                 builder.getOriginalSelect(true), this.maxDocsToFetchOnEachScrollShard);
         Set<ComperableHitResult> results = new HashSet<>();
 
-        SearchHit[] hits = scrollResp.getHits().hits();
+        SearchHit[] hits = scrollResp.getHits().getHits();
         if(hits == null || hits.length == 0){
             return new HashSet<>();
         }
@@ -179,7 +176,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
                 builder.getOriginalSelect(false), this.maxDocsToFetchOnEachScrollShard);
 
 
-        hits = scrollResp.getHits().hits();
+        hits = scrollResp.getHits().getHits();
         if(hits == null || hits.length == 0){
             return results;
         }
@@ -254,7 +251,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
                 builder.getOriginalSelect(true), this.maxDocsToFetchOnEachScrollShard);
         Set<Object> results = new HashSet<>();
         int currentNumOfResults = 0;
-        SearchHit[] hits = scrollResp.getHits().hits();
+        SearchHit[] hits = scrollResp.getHits().getHits();
         SearchHit someHit = null;
         if(hits.length!=0){
             //we need some hit for creating InnerResults.
@@ -336,7 +333,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
     }
 
     private Object getFieldValue(SearchHit hit, String fieldName) {
-        Map<String,Object> sourceAsMap = hit.sourceAsMap();
+        Map<String,Object> sourceAsMap = hit.getSourceAsMap();
         if(fieldName.contains(".")){
             String[] split = fieldName.split("\\.");
             return Util.searchPathInMap(sourceAsMap, split);

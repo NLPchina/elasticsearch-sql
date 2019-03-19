@@ -2,7 +2,6 @@ package org.nlpcn.es4sql.spatial;
 
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.parser.SQLParseException;
 
 import java.util.HashSet;
 import java.util.LinkedList;

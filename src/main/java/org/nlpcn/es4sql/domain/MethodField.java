@@ -14,7 +14,7 @@ import org.nlpcn.es4sql.Util;
  */
 public class MethodField extends Field {
 	private List<KVValue> params = null;
-	private String option;
+	private String option; //zhongshu-comment 暂时只用于DISTINCT去重查询
 
 	public MethodField(String name, List<KVValue> params, String option, String alias) {
 		super(name, alias);
@@ -44,12 +44,13 @@ public class MethodField extends Field {
         return paramsAsMap;
     }
 
+    //zhongshu-comment 在这里拼上script(....)
 	@Override
 	public String toString() {
 		if (option != null) {
 			return this.name + "(" + option + " " + Util.joiner(params, ",") + ")";
 		}
-		return this.name + "(" + Util.joiner(params, ",") + ")";
+		return this.name + "(" + Util.joiner(params, ",") + ")";//zhongshu-comment 报错
 	}
 
 	public String getOption() {

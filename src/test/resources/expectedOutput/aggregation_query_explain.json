@@ -1,40 +1,75 @@
 {
-  "from" : 0,
-  "size" : 0,
-  "_source" : {
-    "includes" : [ ],
-    "excludes" : [ ]
-  },
-  "fields" : [ "a", "a2345" ],
-  "script_fields" : {
-    "a2345" : {
-      "script" : {
-        "inline" : "if( (doc['gender'].value=='0')){'aaa'} else {'bbb'}"
-      }
-    }
-  },
-  "aggregations" : {
-    "terms(field=a)" : {
-      "terms" : {
-        "field" : "a"
-      },
-      "aggregations" : {
+    "from" : 0,
+    "size" : 0,
+    "_source" : {
+        "includes" : [
+            "a",
+            "script",
+            "COUNT"
+        ],
+        "excludes" : [ ]
+    },
+    "stored_fields" : [
+        "a",
+        "a2345"
+    ],
+    "script_fields" : {
         "a2345" : {
-          "terms" : {
             "script" : {
-              "inline" : "if( (doc['gender'].value=='0')){'aaa'} else {'bbb'}"
+                "source" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}",
+                "lang" : "painless"
             },
-            "size" : 0
-          },
-          "aggregations" : {
-            "COUNT(c)" : {
-              "value_count" : {
-                "field" : "c"
-              }
-            }
-          }
+            "ignore_failure" : false
         }
-      }
+    },
+    "aggregations" : {
+        "terms(field=a,execution_hint=global_ordinals)" : {
+            "terms" : {
+                "field" : "a",
+                "size" : 10,
+                "min_doc_count" : 1,
+                "shard_min_doc_count" : 0,
+                "show_term_doc_count_error" : false,
+                "execution_hint": "global_ordinals",
+                "order" : [
+                    {
+                        "_count" : "desc"
+                    },
+                    {
+                        "_key" : "asc"
+                    }
+                ]
+            },
+            "aggregations" : {
+                "a2345" : {
+                    "terms" : {
+                        "script" : {
+                            "source" : "if((doc['gender'].value=='0')){'aaa'} else {'bbb'}",
+                            "lang" : "painless"
+                        },
+                        "size":1000,
+                        "shard_size":20000,
+                        "min_doc_count" : 1,
+                        "shard_min_doc_count" : 0,
+                        "show_term_doc_count_error" : false,
+                        "order" : [
+                            {
+                                "_count" : "desc"
+                            },
+                            {
+                                "_key" : "asc"
+                            }
+                        ]
+                    },
+                    "aggregations" : {
+                        "COUNT(c)" : {
+                            "value_count" : {
+                                "field" : "c"
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-  }
 }

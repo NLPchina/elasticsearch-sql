@@ -11,12 +11,10 @@ import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
-import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import com.alibaba.druid.sql.ast.*;
-
 
 public class Util {
     public static String joiner(List<KVValue> lists, String oper) {
@@ -75,6 +73,8 @@ public class Util {
             value = "*";
         } else if (expr instanceof SQLValuableExpr) {
             value = ((SQLValuableExpr) expr).getValue();
+        } else if (expr instanceof SQLBooleanExpr) {
+            value = ((SQLBooleanExpr) expr).getValue();
         } else {
             //throw new SqlParseException("can not support this type " + expr.getClass());
         }
@@ -99,8 +99,16 @@ public class Util {
             return ((SQLIntegerExpr) expr).getValue();
         } else if (expr instanceof SQLNumericLiteralExpr) {
             return ((SQLNumericLiteralExpr) expr).getNumber();
+        } else if (expr instanceof SQLNullExpr) {
+            return ((SQLNullExpr) expr).toString().toLowerCase();
+        } else if (expr instanceof  SQLBinaryOpExpr) {
+            //zhongshu-comment 该分支由忠树添加
+            String left = "doc['" + ((SQLBinaryOpExpr) expr).getLeft().toString() + "'].value";
+            String operator = ((SQLBinaryOpExpr) expr).getOperator().getName();
+            String right = "doc['" + ((SQLBinaryOpExpr) expr).getRight().toString() + "'].value";
+            return left + operator + right;
         }
-        throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got" + expr.getClass().toString() + " with value:" + expr.toString());
+        throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got " + expr.getClass().toString() + " with value:" + expr.toString());
     }
 
     public static boolean isFromJoinOrUnionTable(SQLExpr expr) {

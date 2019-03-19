@@ -222,12 +222,12 @@ var AggregationQueryResultHandler = function(data) {
             }
         }
 
-        else {
+        else { //zhongshu-comment 没有子bucket了，就是最里面的那一层了
             var obj = $.extend({}, additionalColumns)
             if(bucketName != undefined) {
                 if(bucketName != undefined) {
                     if("key_as_string" in bucket){
-                        obj[bucketName] = bucket["key_as_string"]
+                        obj[bucketName] = bucket["key_as_string"] //zhongshu-comment 给字段取别名
                     }
                     else {
                         obj[bucketName] = bucket.key
@@ -238,7 +238,7 @@ var AggregationQueryResultHandler = function(data) {
             for(var field in bucket) {
 
                 var bucketValue = bucket[field]
-                if(bucketValue.buckets != undefined ){
+                if(bucketValue.buckets != undefined ){ //zhongshu-comment 如果还有子bucket的话，那就继续递归
                     var newRows = getRows(subBucketName, bucketValue, newAdditionalColumns);
                     $.merge(rows, newRows);
                     continue;
@@ -272,7 +272,7 @@ var AggregationQueryResultHandler = function(data) {
         return rows
     }
 
-
+    //zhongshu-comment 递归
     function fillFieldsForSpecificAggregation(obj,value,field)
     {   
 
@@ -287,6 +287,7 @@ var AggregationQueryResultHandler = function(data) {
         return;
     }
 
+    //zhongshu-comment 递归
     function getSubBuckets(bucket) {
         var subBuckets = [];
         for(var field in bucket) {
@@ -297,7 +298,7 @@ var AggregationQueryResultHandler = function(data) {
                 }
             }
             else {
-                innerAgg = bucket[field];
+                innerAgg = bucket[field]; //zhongshu-comment innerAgg这个变量是哪来的，貌似没声明，到时问问松哥
                 for(var innerField in innerAgg){
                     if(typeof(innerAgg[innerField])=="object"){
                         innerBuckets = getSubBuckets(innerAgg[innerField]);
@@ -312,7 +313,7 @@ var AggregationQueryResultHandler = function(data) {
 
 
     this.data = data
-    this.flattenBuckets = getRows(undefined, data.aggregations, {})
+    this.flattenBuckets = getRows(undefined, data.aggregations, {}) //zhongshu-comment 入口
 };
 
 AggregationQueryResultHandler.prototype.getHead = function() {

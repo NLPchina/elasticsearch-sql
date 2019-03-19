@@ -1,9 +1,8 @@
 package org.nlpcn.es4sql.domain;
 
-import org.nlpcn.es4sql.domain.hints.Hint;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,14 +14,13 @@ import java.util.List;
  */
 public class Select extends Query {
 
+    public static final int DEFAULT_ROWCOUNT = 1000;
+
 	// Using this functions, will cause query to execute as aggregation.
 	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS","EXTENDED_STATS","PERCENTILES","SCRIPTED_METRIC");
-    private List<Hint> hints = new ArrayList<>();
 	private List<Field> fields = new ArrayList<>();
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
-	private int offset;
-	private int rowCount = 200;
     private boolean containsSubQueries;
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
@@ -30,19 +28,12 @@ public class Select extends Query {
 
 	public boolean isAgg = false;
 
-	public Select() {
-	}
+    public Select() {
+        setRowCount(DEFAULT_ROWCOUNT);
+    }
 
 	public List<Field> getFields() {
 		return fields;
-	}
-
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-
-	public void setRowCount(int rowCount) {
-		this.rowCount = rowCount;
 	}
 
 	public void addGroupBy(Field field) {
@@ -64,19 +55,14 @@ public class Select extends Query {
 		return orderBys;
 	}
 
-	public int getOffset() {
-		return offset;
-	}
-
-	public int getRowCount() {
-		return rowCount;
-	}
-
-	public void addOrderBy(String name, String type) {
-		if ("_score".equals(name)) {
+	public void addOrderBy(String nestedPath, String name, String type, ScriptSortBuilder.ScriptSortType scriptSortType) {
+		if ("_score".equals(name)) { //zhongshu-comment 可以直接在order by子句中写_score，根据该字段排序 select * from tbl order by _score asc
 			isQuery = true;
 		}
-		this.orderBys.add(new Order(name, type));
+		Order order = new Order(nestedPath, name, type);
+
+		order.setScriptSortType(scriptSortType);
+		this.orderBys.add(order);
 	}
 
 
@@ -94,11 +80,6 @@ public class Select extends Query {
 
 		fields.add(field);
 	}
-
-    public List<Hint> getHints() {
-        return hints;
-    }
-
 
     public void fillSubQueries() {
         subQueries = new ArrayList<>();

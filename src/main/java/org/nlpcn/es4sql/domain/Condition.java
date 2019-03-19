@@ -20,7 +20,7 @@ import org.nlpcn.es4sql.parse.NestedType;
 public class Condition extends Where {
 
     public enum OPEAR {
-        EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_DISTANCE_RANGE, GEO_POLYGON, GEO_CELL, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT;
+        EQ, GT, LT, GTE, LTE, N, LIKE, NLIKE, REGEXP, NREGEXP, IS, ISN, IN, NIN, BETWEEN, NBETWEEN, GEO_INTERSECTS, GEO_BOUNDING_BOX, GEO_DISTANCE, GEO_POLYGON, IN_TERMS, TERM, IDS_QUERY, NESTED_COMPLEX, CHILDREN_COMPLEX, SCRIPT,NIN_TERMS,NTERM;
 
         public static Map<String, OPEAR> methodNameToOpear;
 
@@ -35,17 +35,22 @@ public class Condition extends Where {
             methodNameToOpear.put("in_terms", IN_TERMS);
             methodNameToOpear.put("ids", IDS_QUERY);
             methodNameToOpear.put("ids_query", IDS_QUERY);
+            methodNameToOpear.put("regexp", REGEXP);
+            methodNameToOpear.put("regexp_query", REGEXP);
         }
 
         static {
             negatives = HashBiMap.create(7);
             negatives.put(EQ, N);
+            negatives.put(IN_TERMS, NIN_TERMS);
+			negatives.put(TERM, NTERM);
             negatives.put(GT, LTE);
             negatives.put(LT, GTE);
             negatives.put(LIKE, NLIKE);
             negatives.put(IS, ISN);
             negatives.put(IN, NIN);
             negatives.put(BETWEEN, NBETWEEN);
+            negatives.put(REGEXP, NREGEXP);
         }
 
         public OPEAR negative() throws SqlParseException {
@@ -80,9 +85,14 @@ public class Condition extends Where {
 
     private boolean isNested;
     private String nestedPath;
+    private String innerHits;
 
     private boolean isChildren;
     private String childType;
+
+    public Condition(CONN conn) {
+        super(conn);
+    }
 
     public Condition(CONN conn, String field, SQLExpr nameExpr, String condition, Object obj, SQLExpr valueExpr) throws SqlParseException {
         this(conn, field, nameExpr, condition, obj, valueExpr, null);
@@ -110,6 +120,7 @@ public class Condition extends Where {
 
                 this.isNested = true;
                 this.nestedPath = nestedType.path;
+                this.innerHits = nestedType.getInnerHits();
                 this.isChildren = false;
                 this.childType = "";
             } else if (relationshipType instanceof ChildrenType) {
@@ -183,14 +194,8 @@ public class Condition extends Where {
             case "GEO_DISTANCE":
                 this.opear = OPEAR.GEO_DISTANCE;
                 break;
-            case "GEO_DISTANCE_RANGE":
-                this.opear = OPEAR.GEO_DISTANCE_RANGE;
-                break;
             case "GEO_POLYGON":
                 this.opear = OPEAR.GEO_POLYGON;
-                break;
-            case "GEO_CELL":
-                this.opear = OPEAR.GEO_CELL;
                 break;
             case "NESTED":
                 this.opear = OPEAR.NESTED_COMPLEX;
@@ -231,6 +236,7 @@ public class Condition extends Where {
 
                 this.isNested = true;
                 this.nestedPath = nestedType.path;
+                this.innerHits = nestedType.getInnerHits();
                 this.isChildren = false;
                 this.childType = "";
             } else if (relationshipType instanceof ChildrenType) {
@@ -322,6 +328,14 @@ public class Condition extends Where {
         this.nestedPath = nestedPath;
     }
 
+    public String getInnerHits() {
+        return innerHits;
+    }
+
+    public void setInnerHits(String innerHits) {
+        this.innerHits = innerHits;
+    }
+
     public boolean isChildren() {
         return isChildren;
     }
@@ -346,6 +360,10 @@ public class Condition extends Where {
             result = "nested condition ";
             if (this.getNestedPath() != null) {
                 result += "on path:" + this.getNestedPath() + " ";
+            }
+
+            if (this.getInnerHits() != null) {
+                result += "inner_hits:" + this.getInnerHits() + " ";
             }
         } else if (this.isChildren()) {
             result = "children condition ";

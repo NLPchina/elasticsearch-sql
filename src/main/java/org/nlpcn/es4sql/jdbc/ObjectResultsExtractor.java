@@ -1,7 +1,7 @@
 package org.nlpcn.es4sql.jdbc;
 
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -14,6 +14,8 @@ import org.elasticsearch.search.aggregations.metrics.stats.Stats;
 import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
 import org.nlpcn.es4sql.Util;
+import org.nlpcn.es4sql.query.DefaultQueryAction;
+import org.nlpcn.es4sql.query.QueryAction;
 
 import java.util.*;
 
@@ -25,12 +27,14 @@ public class ObjectResultsExtractor {
     private final boolean includeScore;
     private final boolean includeId;
     private int currentLineIndex;
+    private QueryAction queryAction;
 
-    public ObjectResultsExtractor(boolean includeScore, boolean includeType, boolean includeId) {
+    public ObjectResultsExtractor(boolean includeScore, boolean includeType, boolean includeId, QueryAction queryAction) {
         this.includeScore = includeScore;
         this.includeType = includeType;
         this.includeId = includeId;
         this.currentLineIndex = 0;
+        this.queryAction = queryAction;
     }
 
     public ObjectResult extractResults(Object queryResult, boolean flat) throws ObjectResultsExtractException {
@@ -244,36 +248,29 @@ public class ObjectResultsExtractor {
     }
 
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
-        Set<String> csvHeaders = new HashSet<>();
+        Set<String> headers = new LinkedHashSet<>();
+        if (this.queryAction instanceof DefaultQueryAction) {
+            headers.addAll(((DefaultQueryAction) this.queryAction).getFieldNames());
+        }
         for (SearchHit hit : hits) {
-            Map<String, Object> doc = hit.sourceAsMap();
-            Map<String, SearchHitField> fields = hit.getFields();
-            for (SearchHitField searchHitField : fields.values()) {
-                doc.put(searchHitField.getName(), searchHitField.value());
+            Map<String, Object> doc = hit.getSourceAsMap();
+            Map<String, DocumentField> fields = hit.getFields();
+            for (DocumentField searchHitField : fields.values()) {
+                doc.put(searchHitField.getName(), searchHitField.getValue());
             }
-            mergeHeaders(csvHeaders, doc, flat);
             if (this.includeScore) {
-                doc.put("_score", hit.score());
+                doc.put("_score", hit.getScore());
             }
             if (this.includeType) {
-                doc.put("_type", hit.type());
+                doc.put("_type", hit.getType());
             }
             if (this.includeId) {
-                doc.put("_id", hit.id());
+                doc.put("_id", hit.getId());
             }
+            mergeHeaders(headers, doc, flat);
             docsAsMap.add(doc);
         }
-        ArrayList<String> headersList = new ArrayList<>(csvHeaders);
-        if (this.includeScore) {
-            headersList.add("_score");
-        }
-        if (this.includeType) {
-            headersList.add("_type");
-        }
-        if (this.includeId) {
-            headersList.add("_id");
-        }
-        return headersList;
+        return new ArrayList<>(headers);
     }
 
     private Object findFieldValue(String header, Map<String, Object> doc, boolean flat) {

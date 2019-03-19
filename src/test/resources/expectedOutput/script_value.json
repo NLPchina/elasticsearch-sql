@@ -1,0 +1,19 @@
+{
+    "from" : 0,
+    "size" : 1000,
+    "_source" : {
+        "includes" : [
+            "cust_code"
+        ],
+        "excludes" : [ ]
+    },
+    "script_fields" : {
+        "test" : {
+            "script" : {
+                "source" : "if((doc['gender'].empty)){'aaa'} else {doc['gender'].value}",
+                "lang" : "painless"
+            },
+            "ignore_failure" : false
+        }
+    }
+}

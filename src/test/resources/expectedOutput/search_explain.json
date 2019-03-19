@@ -1,39 +1,66 @@
 {
-  "from" : 0,
-  "size" : 0,
-  "query" : {
-    "bool" : {
-      "must" : {
+    "from" : 0,
+    "size" : 0,
+    "query" : {
         "bool" : {
-          "must" : [ {
-            "wildcard" : {
-              "firstname" : "A*"
-            }
-          }, {
-            "range" : {
-              "age" : {
-                "from" : 20,
-                "to" : null,
-                "include_lower" : false,
-                "include_upper" : true
-              }
-            }
-          } ]
+            "must" : [
+                {
+                    "bool" : {
+                        "must" : [
+                            {
+                                "wildcard" : {
+                                    "firstname" : {
+                                        "wildcard" : "A*",
+                                        "boost" : 1.0
+                                    }
+                                }
+                            },
+                            {
+                                "range" : {
+                                    "age" : {
+                                        "from" : 20,
+                                        "to" : null,
+                                        "include_lower" : false,
+                                        "include_upper" : true,
+                                        "boost" : 1.0
+                                    }
+                                }
+                            }
+                        ],
+                        "adjust_pure_negative" : true,
+                        "boost" : 1.0
+                    }
+                }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
         }
-      }
+    },
+    "sort" : [
+        {
+            "_score" : {
+                "order" : "asc"
+            }
+        }
+    ],
+    "aggregations" : {
+        "gender" : {
+            "terms" : {
+                "field" : "gender",
+                "size":1000,
+                "shard_size":20000,
+                "min_doc_count" : 1,
+                "shard_min_doc_count" : 0,
+                "show_term_doc_count_error" : false,
+                "order" : [
+                    {
+                        "_count" : "desc"
+                    },
+                    {
+                        "_key" : "asc"
+                    }
+                ]
+            }
+        }
     }
-  },
-  "sort" : [ {
-    "_score" : {
-      "order" : "asc"
-    }
-  } ],
-  "aggregations" : {
-    "gender" : {
-      "terms" : {
-        "field" : "gender",
-        "size" : 200
-      }
-    }
-  }
 }

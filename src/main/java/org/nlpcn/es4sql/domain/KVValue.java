@@ -4,6 +4,7 @@ public class KVValue implements Cloneable {
     public String key;
     public Object value;
 
+    //zhongshu-comment 看样子，应该存在只有value没有key的情况
     public KVValue(Object value) {
         this.value = value;
     }
@@ -17,6 +18,7 @@ public class KVValue implements Cloneable {
 
     @Override
     public String toString() {
+        //zhongshu-comment 看样子，应该存在只有value没有key的情况
         if (key == null) {
             return value.toString();
         } else {

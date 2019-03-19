@@ -6,7 +6,7 @@
 {"phrase": "brown fox"}
 {"index":{"_type": "phrase"}}
 {"phrase": "fox brown", "insert_time2":"2014-08-19T07:09:13.434Z"}
-{"index":{"_type": "phrase_2"}}
+{"index":{"_type": "phrase"}}
 {"phrase": "my test", "test field": 5}
-{"index":{"_type": "phrase_2"}}
+{"index":{"_type": "phrase"}}
 {"phrase": "my test 2", "test field": 7}

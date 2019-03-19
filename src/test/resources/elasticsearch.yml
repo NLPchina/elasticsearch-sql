@@ -1,2 +1,3 @@
-script.inline: true
-script.indexed: true
+script.max_compilations_rate: 100/1m
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch

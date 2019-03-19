@@ -3,12 +3,8 @@ package org.nlpcn.es4sql.parse;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.druid.sql.ast.expr.*;
-import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
-import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
-import com.alibaba.druid.sql.parser.SQLParseException;
 import com.google.common.collect.Lists;
 import org.elasticsearch.common.collect.Tuple;
 import org.nlpcn.es4sql.SQLFunctions;
@@ -19,7 +15,6 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import com.alibaba.druid.sql.ast.*;
-import org.nlpcn.es4sql.query.maker.AggMaker;
 
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
@@ -36,7 +31,7 @@ public class FieldMaker {
             //make a SCRIPT method field;
             return makeField(makeBinaryMethodField((SQLBinaryOpExpr) expr, alias, true), alias, tableAlias);
 
-        } else if (expr instanceof SQLAllColumnExpr) {
+        } else if (expr instanceof SQLAllColumnExpr) {//zhongshu-comment 对应select * 的情况
         } else if (expr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr mExpr = (SQLMethodInvokeExpr) expr;
 
@@ -61,7 +56,22 @@ public class FieldMaker {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
             return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);
         } else if (expr instanceof SQLCaseExpr) {
+            //zhongshu-comment case when走这个分支
             String scriptCode = new CaseWhenParser((SQLCaseExpr) expr, alias, tableAlias).parse();
+            List<KVValue> methodParameters = new ArrayList<>();
+            /*zhongshu-comment group by子句中case when是没有别名的，这时alias=null，调用KVValue的toString()会报空指针
+            methodParameters.add(new KVValue(alias)); //zhongshu-comment 这是原语句，被我注释掉了，改为下面带非空判断的语句*/
+            if (null != alias && alias.trim().length() != 0) {
+                methodParameters.add(new KVValue(alias));
+            }
+            methodParameters.add(new KVValue(scriptCode));
+            return new MethodField("script", methodParameters, null, alias);
+        }else if (expr instanceof SQLCastExpr) {
+            SQLCastExpr castExpr = (SQLCastExpr) expr;
+            if (alias == null) {
+                alias = "cast_" + castExpr.getExpr().toString();
+            }
+            String scriptCode = new CastParser(castExpr, alias, tableAlias).parse(true);
             List<KVValue> methodParameters = new ArrayList<>();
             methodParameters.add(new KVValue(alias));
             methodParameters.add(new KVValue(scriptCode));
@@ -193,9 +203,21 @@ public class FieldMaker {
             field = new Field(newFieldName, alias);
         }
 
-        if (alias != null && alias != name && !Util.isFromJoinOrUnionTable(expr)) {
+        //zhongshu-comment 字段的别名不为空 && 别名和字段名不一样
+        if (alias != null && !alias.equals(name) && !Util.isFromJoinOrUnionTable(expr)) {
+
+            /*
+            zhongshu-comment newFieldName是字段原来的名字，这句话应该是用于es dsl的
+            使用别名有很多种情况：
+                1、最简单的就是select field_1 as a from tbl
+                2、调用函数处理字段之后，select floor(field_1) as a from tbl
+                3、执行表达式，select field_1 + field_2 as a from tbl
+                4、case when field_1='a' then 'haha' else 'hehe' end as a
+                5、........
+            所以这个if分支就是为了处理以上这些情况的
+             */
             List<SQLExpr> paramers = Lists.newArrayList();
-            paramers.add(new SQLCharExpr(alias));
+            paramers.add(new SQLCharExpr(alias)); //zhongshu-comment 别名
             paramers.add(new SQLCharExpr("doc['" + newFieldName + "'].value"));
             field = makeMethodField("script", paramers, null, alias, tableAlias, true);
         }
@@ -214,8 +236,9 @@ public class FieldMaker {
 
                 if (SQLFunctions.buildInFunctions.contains(binaryOpExpr.getOperator().toString().toLowerCase())) {
                     SQLMethodInvokeExpr mExpr = makeBinaryMethodField(binaryOpExpr, alias, first);
-                    MethodField abc = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null, tableAlias, false);
-                    paramers.add(new KVValue(abc.getParams().get(0).toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
+                    MethodField mf = makeMethodField(mExpr.getMethodName(), mExpr.getParameters(), null, null, tableAlias, false);
+                    String key = mf.getParams().get(0).toString(), value = mf.getParams().get(1).toString();
+                    paramers.add(new KVValue(key, new SQLCharExpr(first && !SQLFunctions.buildInFunctions.contains(finalMethodName) ? String.format("%s;return %s;", value, key) : value)));
                 } else {
                     if (!binaryOpExpr.getOperator().getName().equals("=")) {
                         paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr, null, tableAlias)));
@@ -250,31 +273,42 @@ public class FieldMaker {
                     paramers.add(new KVValue("children", childrenType));
                 } else if (SQLFunctions.buildInFunctions.contains(methodName)) {
                     //throw new SqlParseException("only support script/nested as inner functions");
-                    MethodField abc = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
-                    paramers.add(new KVValue(abc.getParams().get(0).toString(), new SQLCharExpr(abc.getParams().get(1).toString())));
+                    MethodField mf = makeMethodField(methodName, mExpr.getParameters(), null, null, tableAlias, false);
+                    String key = mf.getParams().get(0).toString(), value = mf.getParams().get(1).toString();
+                    paramers.add(new KVValue(key, new SQLCharExpr(first && !SQLFunctions.buildInFunctions.contains(finalMethodName) ? String.format("%s;return %s;", value, key) : value)));
                 } else throw new SqlParseException("only support script/nested/children as inner functions");
             } else if (object instanceof SQLCaseExpr) {
                 String scriptCode = new CaseWhenParser((SQLCaseExpr) object, alias, tableAlias).parse();
                 paramers.add(new KVValue("script",new SQLCharExpr(scriptCode)));
+            } else if(object instanceof SQLCastExpr) {
+                CastParser castParser = new CastParser((SQLCastExpr) object, alias, tableAlias);
+                String scriptCode = castParser.parse(false);
+                paramers.add(new KVValue(castParser.getName(),new SQLCharExpr(scriptCode)));
             } else {
                 paramers.add(new KVValue(Util.removeTableAilasFromField(object, tableAlias)));
             }
 
         }
-
+        //zhongshu-comment script字段不会走这个分支
         //just check we can find the function
-        if (SQLFunctions.buildInFunctions.contains(finalMethodName)) {
+        if (SQLFunctions.buildInFunctions.contains(finalMethodName.toLowerCase())) {
             if (alias == null && first) {
                 alias = "field_" + SQLFunctions.random();//paramers.get(0).value.toString();
             }
+            //should check if field and first .
             Tuple<String, String> newFunctions = SQLFunctions.function(finalMethodName, paramers,
-                    paramers.get(0).key);
+                    paramers.get(0).key,first);
             paramers.clear();
             if (!first) {
                 //variance
                 paramers.add(new KVValue(newFunctions.v1()));
             } else {
-                paramers.add(new KVValue(alias));
+                
+                if(newFunctions.v1().toLowerCase().contains("if")){
+                    paramers.add(new KVValue(newFunctions.v1()));
+                }else {
+                    paramers.add(new KVValue(alias));
+                }
             }
 
             paramers.add(new KVValue(newFunctions.v2()));

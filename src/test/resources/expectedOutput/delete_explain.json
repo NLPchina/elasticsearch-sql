@@ -1,24 +1,39 @@
 {
-  "query" : {
-    "bool" : {
-      "must" : {
+    "size" : 1000,
+    "query" : {
         "bool" : {
-          "must" : [ {
-            "wildcard" : {
-              "firstname" : "A*"
-            }
-          }, {
-            "range" : {
-              "age" : {
-                "from" : 20,
-                "to" : null,
-                "include_lower" : false,
-                "include_upper" : true
-              }
-            }
-          } ]
+            "must" : [
+                {
+                    "bool" : {
+                        "must" : [
+                            {
+                                "wildcard" : {
+                                    "firstname" : {
+                                        "wildcard" : "A*",
+                                        "boost" : 1.0
+                                    }
+                                }
+                            },
+                            {
+                                "range" : {
+                                    "age" : {
+                                        "from" : 20,
+                                        "to" : null,
+                                        "include_lower" : false,
+                                        "include_upper" : true,
+                                        "boost" : 1.0
+                                    }
+                                }
+                            }
+                        ],
+                        "adjust_pure_negative" : true,
+                        "boost" : 1.0
+                    }
+                }
+            ],
+            "adjust_pure_negative" : true,
+            "boost" : 1.0
         }
-      }
-    }
-  }
+    },
+    "_source" : false
 }
