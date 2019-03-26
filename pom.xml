@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>5.6.14.1</version>
+	<version>5.6.15.0</version>
 	<packaging>jar</packaging>
 	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
@@ -45,7 +45,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<runSuite>**/MainTestSuite.class</runSuite>
 		<elasticsearch.plugin.name>sql</elasticsearch.plugin.name>
-		<elasticsearch.version>5.6.14</elasticsearch.version>
+		<elasticsearch.version>5.6.15</elasticsearch.version>
 		<elasticsearch.plugin.classname>org.elasticsearch.plugin.nlpcn.SqlPlug</elasticsearch.plugin.classname>
 	</properties>
 
