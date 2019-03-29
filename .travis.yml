@@ -11,6 +11,7 @@ before_install:
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
   - sudo java -version
+  - sudo chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
   - sudo service elasticsearch start
   - sleep 30
 
