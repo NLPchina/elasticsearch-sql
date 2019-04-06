@@ -1,28 +1,42 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.geogrid.GeoHashGrid;
-import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.*;
 import org.nlpcn.es4sql.query.join.ESJoinQueryAction;
-import org.nlpcn.es4sql.query.join.JoinRequestBuilder;
 import org.nlpcn.es4sql.query.multi.MultiQueryAction;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Created by Eliran on 3/10/2015.
  */
 public class QueryActionElasticExecutor {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public static SearchHits executeSearchAction(DefaultQueryAction searchQueryAction) throws SqlParseException {
         SqlElasticSearchRequestBuilder builder  =  searchQueryAction.explain();
-        return ((SearchResponse) builder.get()).getHits();
+        SearchResponse resp = (SearchResponse) builder.get();
+
+        //
+        if (resp.getFailedShards() > 0) {
+            if (resp.getSuccessfulShards() < 1) {
+                throw new IllegalStateException("fail to search[" + builder + "], " + Arrays.toString(resp.getShardFailures()));
+            }
+
+            LOGGER.warn("The failures that occurred during the search[{}]: {}", builder, Arrays.toString(resp.getShardFailures()));
+        }
+
+        return resp.getHits();
     }
 
     public static SearchHits executeJoinSearchAction(Client client , ESJoinQueryAction joinQueryAction) throws IOException, SqlParseException {
@@ -34,7 +48,18 @@ public class QueryActionElasticExecutor {
 
     public static Aggregations executeAggregationAction(AggregationQueryAction aggregationQueryAction) throws SqlParseException {
         SqlElasticSearchRequestBuilder select =  aggregationQueryAction.explain();
-        return ((SearchResponse)select.get()).getAggregations();
+        SearchResponse resp = (SearchResponse) select.get();
+
+        //
+        if (resp.getFailedShards() > 0) {
+            if (resp.getSuccessfulShards() < 1) {
+                throw new IllegalStateException("fail to aggregation[" + select + "], " + Arrays.toString(resp.getShardFailures()));
+            }
+
+            LOGGER.warn("The failures that occurred during the aggregation[{}]: {}", select, Arrays.toString(resp.getShardFailures()));
+        }
+
+        return resp.getAggregations();
     }
 
     public static ActionResponse executeDeleteAction(DeleteQueryAction deleteQueryAction) throws SqlParseException {
