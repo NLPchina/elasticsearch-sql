@@ -1,6 +1,8 @@
 package org.nlpcn.es4sql.parse;
 
+import com.alibaba.druid.sql.ast.SQLExprImpl;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 
 
 /*
@@ -24,16 +26,30 @@ import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
  * This is for tracking in group bys the difference between "group by state, age" and "group by (state), (age)".
  * For non group by identifiers, it acts as a normal SQLIdentifierExpr.
  */
-public class SQLParensIdentifierExpr extends SQLIdentifierExpr {
+public class SQLParensIdentifierExpr extends SQLExprImpl {
 
-    public SQLParensIdentifierExpr() {
-    }
-
-    public SQLParensIdentifierExpr(String name) {
-        super(name);
-    }
+    private SQLIdentifierExpr expr;
 
     public SQLParensIdentifierExpr(SQLIdentifierExpr expr) {
-        super(expr.getName());
+        this.expr = new SQLIdentifierExpr(expr.getName());
+    }
+
+    public SQLIdentifierExpr getExpr() {
+        return expr;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int hashCode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void accept0(SQLASTVisitor visitor) {
+        throw new UnsupportedOperationException();
     }
 }

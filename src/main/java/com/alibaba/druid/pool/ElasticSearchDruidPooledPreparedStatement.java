@@ -30,7 +30,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
     public ResultSet executeQuery() throws SQLException {
         checkOpen();
 
-        incrementExecuteCount();
+        incrementExecuteQueryCount();
         transactionRecord(getSql());
 
         oracleSetRowPrefetch();
@@ -48,6 +48,8 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
             return poolableResultSet;
         } catch (Throwable t) {
+            errorCheck(t);
+
             throw checkException(t);
         } finally {
             conn.afterExecute();
@@ -74,6 +76,8 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
             return true;
         } catch (Throwable t) {
+            errorCheck(t);
+
             throw checkException(t);
         } finally {
             conn.afterExecute();

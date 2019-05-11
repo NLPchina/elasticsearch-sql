@@ -29,7 +29,7 @@ public class ElasticSearchDruidPooledConnection extends DruidPooledConnection {
                 stmtHolder = new PreparedStatementHolder(key, conn.prepareStatement(sql));
                 holder.getDataSource().incrementPreparedStatementCount();
             } catch (SQLException ex) {
-                handleException(ex);
+                handleException(ex, sql);
             }
         }
 
@@ -64,7 +64,7 @@ public class ElasticSearchDruidPooledConnection extends DruidPooledConnection {
                         resultSetConcurrency));
                 holder.getDataSource().incrementPreparedStatementCount();
             } catch (SQLException ex) {
-                handleException(ex);
+                handleException(ex, sql);
             }
         }
 
@@ -79,7 +79,7 @@ public class ElasticSearchDruidPooledConnection extends DruidPooledConnection {
 
     private void initStatement(PreparedStatementHolder stmtHolder) throws SQLException {
         stmtHolder.incrementInUseCount();
-        holder.getDataSource().initStatement(this, stmtHolder.getStatement());
+        holder.getDataSource().initStatement(this, stmtHolder.statement);
     }
 
 }
