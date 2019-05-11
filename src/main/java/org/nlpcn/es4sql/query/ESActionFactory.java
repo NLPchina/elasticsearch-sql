@@ -1,13 +1,16 @@
 package org.nlpcn.es4sql.query;
 
-
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import com.alibaba.druid.sql.parser.*;
+import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
+import com.alibaba.druid.sql.parser.ParserException;
+import com.alibaba.druid.sql.parser.SQLExprParser;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
+import com.alibaba.druid.sql.parser.Token;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.plugin.nlpcn.ElasticResultHandler;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
@@ -19,7 +22,6 @@ import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticLexer;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
-import org.nlpcn.es4sql.parse.ElasticSqlStatementParser;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.query.join.ESJoinQueryActionFactory;
@@ -123,7 +125,7 @@ public class ESActionFactory {
     private static SQLStatementParser createSqlStatementParser(String sql) {
         ElasticLexer lexer = new ElasticLexer(sql);
         lexer.nextToken();
-        return new ElasticSqlStatementParser(lexer);
+        return new MySqlStatementParser(lexer);
     }
 
     private static boolean isJoin(SQLQueryExpr sqlExpr,String sql) {
