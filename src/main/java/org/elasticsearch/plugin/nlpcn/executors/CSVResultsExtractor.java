@@ -1,6 +1,7 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
 import com.google.common.base.Joiner;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -25,12 +26,14 @@ import java.util.*;
 public class CSVResultsExtractor {
     private final boolean includeType;
     private final boolean includeScore;
-    private final boolean indcludeId;
+    private final boolean includeId;
+    private final boolean includeScrollId;
     private int currentLineIndex;
-    public CSVResultsExtractor(boolean includeScore, boolean includeType, boolean includeId) {
+    public CSVResultsExtractor(boolean includeScore, boolean includeType, boolean includeId, boolean includeScrollId) {
         this.includeScore = includeScore;
         this.includeType = includeType;
-        this.indcludeId = includeId;
+        this.includeId = includeId;
+        this.includeScrollId = includeScrollId;
         this.currentLineIndex = 0;
     }
 
@@ -38,7 +41,7 @@ public class CSVResultsExtractor {
         if(queryResult instanceof SearchHits){
             SearchHit[] hits = ((SearchHits) queryResult).getHits();
             List<Map<String,Object>> docsAsMap = new ArrayList<>();
-            List<String> headers = createHeadersAndFillDocsMap(flat, hits, docsAsMap);
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap);
             List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
             return new CSVResult(headers,csvLines);
         }
@@ -59,6 +62,13 @@ public class CSVResultsExtractor {
 
             return new CSVResult(headers,csvLines);
 
+        }
+        if (queryResult instanceof SearchResponse) {
+            SearchHit[] hits = ((SearchResponse) queryResult).getHits().getHits();
+            List<Map<String, Object>> docsAsMap = new ArrayList<>();
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
+            List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
+            return new CSVResult(headers, csvLines);
         }
         return null;
     }
@@ -247,7 +257,7 @@ public class CSVResultsExtractor {
         return csvLines;
     }
 
-    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
+    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new HashSet<>();
         for(SearchHit hit : hits){
             Map<String, Object> doc = hit.getSourceAsMap();
@@ -256,7 +266,7 @@ public class CSVResultsExtractor {
                 doc.put(searchHitField.getName(),searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);
-            if(this.indcludeId){
+            if(this.includeId){
                 doc.put("_id", hit.getId());
             }
             if(this.includeScore){
@@ -265,10 +275,13 @@ public class CSVResultsExtractor {
             if(this.includeType){
                 doc.put("_type",hit.getType());
             }
+            if (this.includeScrollId) {
+                doc.put("_scroll_id", scrollId);
+            }
             docsAsMap.add(doc);
         }
         ArrayList<String> headersList = new ArrayList<>(csvHeaders);
-        if (this.indcludeId){
+        if (this.includeId){
             headersList.add("_id");
         }
         if (this.includeScore){
@@ -276,6 +289,9 @@ public class CSVResultsExtractor {
         }
         if (this.includeType){
             headersList.add("_type");
+        }
+        if (this.includeScrollId) {
+            headersList.add("_scroll_id");
         }
         return headersList;
     }

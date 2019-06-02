@@ -91,7 +91,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         QueryAction queryAction = searchDao.explain(query);
         Object execution = QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new ObjectResultsExtractor(includeScore, includeType, includeId, queryAction).extractResults(execution, flat);
+        return new ObjectResultsExtractor(includeScore, includeType, includeId, false, queryAction).extractResults(execution, flat);
     }
 
     @Override

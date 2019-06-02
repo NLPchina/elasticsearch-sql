@@ -11,6 +11,7 @@ import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLExprParser;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.alibaba.druid.sql.parser.Token;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.plugin.nlpcn.ElasticResultHandler;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
@@ -107,8 +108,12 @@ public class ESActionFactory {
             for (SearchHit hit : hits) {
                 values.add(ElasticResultHandler.getFieldValue(hit,returnField));
             }
-        }
-        else {
+        } else if (queryResult instanceof SearchResponse) {
+            SearchHits hits = ((SearchResponse) queryResult).getHits();
+            for (SearchHit hit : hits) {
+                values.add(ElasticResultHandler.getFieldValue(hit, returnField));
+            }
+        } else {
             throw new SqlParseException("on sub queries only support queries that return Hits and not aggregations");
         }
         subQueryExpression.setValues(values.toArray());

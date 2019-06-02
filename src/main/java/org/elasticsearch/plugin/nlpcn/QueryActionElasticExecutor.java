@@ -23,7 +23,7 @@ public class QueryActionElasticExecutor {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public static SearchHits executeSearchAction(DefaultQueryAction searchQueryAction) throws SqlParseException {
+    public static SearchResponse executeSearchAction(DefaultQueryAction searchQueryAction) throws SqlParseException {
         SqlElasticSearchRequestBuilder builder  =  searchQueryAction.explain();
         SearchResponse resp = (SearchResponse) builder.get();
 
@@ -36,7 +36,7 @@ public class QueryActionElasticExecutor {
             LOGGER.warn("The failures that occurred during the search[{}]: {}", builder, Arrays.toString(resp.getShardFailures()));
         }
 
-        return resp.getHits();
+        return resp;
     }
 
     public static SearchHits executeJoinSearchAction(Client client , ESJoinQueryAction joinQueryAction) throws IOException, SqlParseException {

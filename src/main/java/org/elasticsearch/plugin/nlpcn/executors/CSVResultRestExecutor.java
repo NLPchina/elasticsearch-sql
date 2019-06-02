@@ -27,7 +27,8 @@ public class CSVResultRestExecutor implements RestExecutor {
         boolean includeScore = getBooleanOrDefault(params,"_score",false);
         boolean includeType = getBooleanOrDefault(params,"_type",false);
         boolean includeId = getBooleanOrDefault(params,"_id",false);
-        CSVResult result  = new CSVResultsExtractor(includeScore,includeType,includeId).extractResults(queryResult,flat,separator);
+        boolean includeScrollId = getBooleanOrDefault(params,"_scroll_id",false);
+        CSVResult result  = new CSVResultsExtractor(includeScore,includeType,includeId,includeScrollId).extractResults(queryResult,flat,separator);
         String newLine = "\n";
         if(params.containsKey("newLine")){
          newLine = params.get("newLine");
@@ -49,7 +50,8 @@ public class CSVResultRestExecutor implements RestExecutor {
         boolean includeScore = getBooleanOrDefault(params,"_score",false);
         boolean includeType = getBooleanOrDefault(params,"_type",false);
         boolean includeId = getBooleanOrDefault(params,"_id",false);
-        CSVResult result  = new CSVResultsExtractor(includeScore,includeType,includeId).extractResults(queryResult,flat,separator);
+        boolean includeScrollId = getBooleanOrDefault(params,"_scroll_id",false);
+        CSVResult result  = new CSVResultsExtractor(includeScore,includeType,includeId,includeScrollId).extractResults(queryResult,flat,separator);
         String newLine = "\n";
         if(params.containsKey("newLine")){
             newLine = params.get("newLine");

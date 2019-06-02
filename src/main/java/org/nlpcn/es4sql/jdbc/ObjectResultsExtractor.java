@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.jdbc;
 
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -26,13 +27,15 @@ public class ObjectResultsExtractor {
     private final boolean includeType;
     private final boolean includeScore;
     private final boolean includeId;
+    private final boolean includeScrollId;
     private int currentLineIndex;
     private QueryAction queryAction;
 
-    public ObjectResultsExtractor(boolean includeScore, boolean includeType, boolean includeId, QueryAction queryAction) {
+    public ObjectResultsExtractor(boolean includeScore, boolean includeType, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
         this.includeScore = includeScore;
         this.includeType = includeType;
         this.includeId = includeId;
+        this.includeScrollId = includeScrollId;
         this.currentLineIndex = 0;
         this.queryAction = queryAction;
     }
@@ -41,7 +44,7 @@ public class ObjectResultsExtractor {
         if (queryResult instanceof SearchHits) {
             SearchHit[] hits = ((SearchHits) queryResult).getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
-            List<String> headers = createHeadersAndFillDocsMap(flat, hits, docsAsMap);
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap);
             List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers);
             return new ObjectResult(headers, lines);
         }
@@ -61,6 +64,13 @@ public class ObjectResultsExtractor {
 
             return new ObjectResult(headers, lines);
 
+        }
+        if (queryResult instanceof SearchResponse) {
+            SearchHit[] hits = ((SearchResponse) queryResult).getHits().getHits();
+            List<Map<String, Object>> docsAsMap = new ArrayList<>();
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
+            List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers);
+            return new ObjectResult(headers, lines);
         }
         return null;
     }
@@ -247,11 +257,12 @@ public class ObjectResultsExtractor {
         return objectLines;
     }
 
-    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, List<Map<String, Object>> docsAsMap) {
+    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
         Set<String> headers = new LinkedHashSet<>();
         if (this.queryAction instanceof DefaultQueryAction) {
             headers.addAll(((DefaultQueryAction) this.queryAction).getFieldNames());
         }
+        boolean hasScrollId = this.includeScrollId || headers.contains("_scroll_id");
         for (SearchHit hit : hits) {
             Map<String, Object> doc = hit.getSourceAsMap();
             Map<String, DocumentField> fields = hit.getFields();
@@ -266,6 +277,9 @@ public class ObjectResultsExtractor {
             }
             if (this.includeId) {
                 doc.put("_id", hit.getId());
+            }
+            if (hasScrollId) {
+                doc.put("_scroll_id", scrollId);
             }
             mergeHeaders(headers, doc, flat);
             docsAsMap.add(doc);
