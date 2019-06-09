@@ -159,6 +159,10 @@ public class HintFactory {
             String conflictsParam = getParamFromHint(hintAsString, "! CONFLICTS");
             return new Hint(HintType.CONFLICTS, new String[] { conflictsParam });
         }
+        if (hintAsString.startsWith("! PREFERENCE")) {
+            String preferenceParam = getParamFromHint(hintAsString, "! PREFERENCE");
+            return new Hint(HintType.PREFERENCE, new String[]{preferenceParam});
+        }
 
         return null;
     }

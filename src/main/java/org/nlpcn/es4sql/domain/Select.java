@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Select extends Query {
 
-    public static final int DEFAULT_ROWCOUNT = 1000;
+    public static int DEFAULT_ROWCOUNT = 1000;
 
 	// Using this functions, will cause query to execute as aggregation.
 	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS","EXTENDED_STATS","PERCENTILES","SCRIPTED_METRIC");

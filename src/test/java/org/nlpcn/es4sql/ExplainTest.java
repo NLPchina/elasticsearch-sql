@@ -114,6 +114,11 @@ public class ExplainTest {
         System.out.println(explain("select * from file1 where cast(offset as int) > 20"));
     }
 
+    @Test
+    public void testPreferenceExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("select /*! PREFERENCE(_shards:2,3|_local) */ * from myindex"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();

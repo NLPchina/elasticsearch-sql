@@ -20,5 +20,6 @@ public enum HintType
     COLLAPSE,
     POST_FILTER,
     STATS,
-    CONFLICTS
+    CONFLICTS,
+    PREFERENCE
 }
