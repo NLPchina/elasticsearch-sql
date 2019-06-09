@@ -188,7 +188,8 @@ public class WhereParser {
 
 
     private void routeCond(SQLBinaryOpExpr bExpr, SQLExpr sub, Where where) throws SqlParseException {
-        if (sub instanceof SQLBinaryOpExpr && !isCond((SQLBinaryOpExpr) sub)) {
+        if (sub instanceof SQLBinaryOpExpr && (!isCond((SQLBinaryOpExpr) sub) ||
+                (((SQLBinaryOpExpr) sub).getLeft() instanceof SQLIdentifierExpr && ((SQLBinaryOpExpr) sub).getRight() instanceof SQLIdentifierExpr))) {
             SQLBinaryOpExpr binarySub = (SQLBinaryOpExpr) sub;
             if (binarySub.getOperator().priority != bExpr.getOperator().priority) {
                 Where subWhere = new Where(bExpr.getOperator().name);
