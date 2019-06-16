@@ -1,11 +1,15 @@
 package org.nlpcn.es4sql.query.maker;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.json.JsonXContentParser;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.InnerHitBuilder;
+import org.elasticsearch.index.query.NestedQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Where;
@@ -95,7 +99,7 @@ public class QueryMaker extends Maker {
 				boolean isNestedQuery = subQuery instanceof NestedQueryBuilder;
 				InnerHitBuilder ihb = null;
 				if (condition.getInnerHits() != null) {
-                    try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(condition.getInnerHits()))) {
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, condition.getInnerHits())) {
                         ihb = InnerHitBuilder.fromXContent(parser);
                     } catch (IOException e) {
                         throw new IllegalArgumentException("couldn't parse inner_hits: " + e.getMessage(), e);
@@ -109,6 +113,15 @@ public class QueryMaker extends Maker {
 						q.innerHit(ihb);
                     }
                     boolQuery.mustNot(q);
+                    return;
+                }
+
+                // support not nested
+                if (condition.getOpear() == Condition.OPEAR.NNESTED_COMPLEX) {
+                    if (ihb != null) {
+                        NestedQueryBuilder.class.cast(subQuery).innerHit(ihb);
+                    }
+                    boolQuery.mustNot(subQuery);
                     return;
                 }
 

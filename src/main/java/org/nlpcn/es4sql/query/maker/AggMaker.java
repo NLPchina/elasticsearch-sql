@@ -1,18 +1,10 @@
 package org.nlpcn.es4sql.query.maker;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.core.JsonFactory;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.common.xcontent.json.JsonXContentParser;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
@@ -22,11 +14,13 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.InternalOrder;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
-
-import org.elasticsearch.search.aggregations.bucket.histogram.*;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.ExtendedBounds;
+import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.geobounds.GeoBoundsAggregationBuilder;
@@ -44,6 +38,17 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ChildrenType;
 import org.nlpcn.es4sql.parse.NestedType;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 public class AggMaker {
 
@@ -330,7 +335,7 @@ public class AggMaker {
                             terms.order(BucketOrder.key(false));
                         } else {
                             List<BucketOrder> orderElements = new ArrayList<>();
-                            try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(value))) {
+                            try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
                                 XContentParser.Token currentToken = parser.nextToken();
                                 if (currentToken == XContentParser.Token.START_OBJECT) {
                                     orderElements.add(InternalOrder.Parser.parseOrderParam(parser));
@@ -552,7 +557,7 @@ public class AggMaker {
                         break;
                     case "extended_bounds":
                         ExtendedBounds extendedBounds = null;
-                        try (JsonXContentParser parser = new JsonXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(value))) {
+                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
                             extendedBounds = ExtendedBounds.PARSER.parse(parser, null);
                         } catch (IOException ex) {
                             List<Integer> indexList = new LinkedList<>();

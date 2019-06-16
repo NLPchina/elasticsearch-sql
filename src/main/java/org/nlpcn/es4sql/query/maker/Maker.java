@@ -1,12 +1,10 @@
 package org.nlpcn.es4sql.query.maker;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.*;
-
-import com.alibaba.druid.sql.ast.expr.*;
-import com.fasterxml.jackson.core.JsonFactory;
+import com.alibaba.druid.sql.ast.expr.SQLBooleanExpr;
+import com.alibaba.druid.sql.ast.expr.SQLCaseExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
 import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.ParsingException;
@@ -19,8 +17,19 @@ import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.common.xcontent.json.JsonXContentParser;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
+import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.RegexpFlag;
+import org.elasticsearch.index.query.RegexpQueryBuilder;
+import org.elasticsearch.index.query.SpanNearQueryBuilder;
+import org.elasticsearch.index.query.SpanQueryBuilder;
+import org.elasticsearch.index.query.WildcardQueryBuilder;
 import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchModule;
@@ -29,11 +38,25 @@ import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
 import org.nlpcn.es4sql.parse.CaseWhenParser;
 import org.nlpcn.es4sql.parse.ScriptFilter;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
-import org.nlpcn.es4sql.spatial.*;
+import org.nlpcn.es4sql.spatial.BoundingBoxFilterParams;
+import org.nlpcn.es4sql.spatial.DistanceFilterParams;
+import org.nlpcn.es4sql.spatial.Point;
+import org.nlpcn.es4sql.spatial.PolygonFilterParams;
+import org.nlpcn.es4sql.spatial.WktToGeoJsonConverter;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public abstract class Maker {
 
@@ -124,7 +147,7 @@ public abstract class Maker {
 
             // parse clauses
             List<SpanQueryBuilder> clauses = new ArrayList<>();
-            try (JsonXContentParser parser = new JsonXContentParser(new NamedXContentRegistry(new SearchModule(Settings.EMPTY, true, Collections.emptyList()).getNamedXContents()), LoggingDeprecationHandler.INSTANCE, new JsonFactory().createParser(paramer.clauses))) {
+            try (XContentParser parser = JsonXContent.jsonXContent.createParser(new NamedXContentRegistry(new SearchModule(Settings.EMPTY, true, Collections.emptyList()).getNamedXContents()), LoggingDeprecationHandler.INSTANCE, paramer.clauses)) {
                 while (parser.nextToken() != XContentParser.Token.END_ARRAY) {
                     QueryBuilder query = SpanNearQueryBuilder.parseInnerQueryBuilder(parser);
                     if (!(query instanceof SpanQueryBuilder)) {
@@ -316,6 +339,7 @@ public abstract class Maker {
             }
             x = QueryBuilders.idsQuery(type).addIds(ids);
         break;
+        case NNESTED_COMPLEX:
         case NESTED_COMPLEX:
             if(value == null || ! (value instanceof Where) )
                 throw new SqlParseException("unsupported nested condition");
@@ -381,10 +405,10 @@ public abstract class Maker {
     }
 
     private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {
-        XContentParser parser = null;
-        parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, json);
-        parser.nextToken();
-        return ShapeParser.parse(parser);
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, json)) {
+            parser.nextToken();
+            return ShapeParser.parse(parser);
+        }
     }
 
     private String trimApostrophes(String str) {
