@@ -19,6 +19,7 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
+import org.elasticsearch.index.query.MatchPhrasePrefixQueryBuilder;
 import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
@@ -113,7 +114,7 @@ public abstract class Maker {
 		case "score":
 		case "scorequery":
 		case "score_query":
-			Float boost = Float.parseFloat(value.getParameters().get(1).toString());
+			float boost = Float.parseFloat(value.getParameters().get(1).toString());
 			Condition subCond = new Condition(cond.getConn(), cond.getName(),null, cond.getOpear(), value.getParameters().get(0),null);
             bqb = QueryBuilders.constantScoreQuery((QueryBuilder) make(subCond)).boost(boost);
 			break;
@@ -166,6 +167,14 @@ public abstract class Maker {
             }
 
             bqb = Paramer.fullParamer(spanNearQuery, paramer);
+            break;
+
+        case "matchphraseprefix":
+        case "matchphraseprefixquery":
+        case "match_phrase_prefix":
+            paramer = Paramer.parseParamer(value);
+            MatchPhrasePrefixQueryBuilder phrasePrefixQuery = QueryBuilders.matchPhrasePrefixQuery(name, paramer.value);
+            bqb = Paramer.fullParamer(phrasePrefixQuery, paramer);
             break;
 
 		default:

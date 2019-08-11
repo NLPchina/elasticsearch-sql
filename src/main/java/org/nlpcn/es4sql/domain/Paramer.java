@@ -232,4 +232,20 @@ public class Paramer {
 
         return query;
     }
+
+    public static ToXContent fullParamer(MatchPhrasePrefixQueryBuilder query, Paramer paramer) {
+        if (paramer.analysis != null) {
+            query.analyzer(paramer.analysis);
+        }
+
+        if (paramer.boost != null) {
+            query.boost(paramer.boost);
+        }
+
+        if (paramer.slop != null) {
+            query.slop(paramer.slop);
+        }
+
+        return query;
+    }
 }

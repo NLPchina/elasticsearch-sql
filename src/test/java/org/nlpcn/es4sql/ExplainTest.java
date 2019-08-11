@@ -129,6 +129,11 @@ public class ExplainTest {
         System.out.println(explain("select * from test where not nested(\"tags\",tags.name=TERM(\"test\"))"));
     }
 
+    @Test
+    public void testMatchPhrasePrefixQueryExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("SELECT * FROM index WHERE q=match_phrase_prefix(query='this is a test',boost=10.0,slop=12)"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
