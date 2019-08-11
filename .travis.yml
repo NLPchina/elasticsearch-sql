@@ -1,12 +1,9 @@
 language: java
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 before_install:
-  # update to java 8
-  - sudo update-java-alternatives -s java-8-oracle
-  - export JAVA_HOME=/usr/lib/jvm/java-8-oracle
   - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.1.deb && sudo dpkg -i --force-confnew elasticsearch-6.8.1.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
