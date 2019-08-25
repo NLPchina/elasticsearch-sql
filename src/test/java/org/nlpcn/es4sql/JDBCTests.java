@@ -49,11 +49,35 @@ public class JDBCTests {
         connection.close();
         dds.close();
 
-        Assert.assertTrue(result.size()==1);
-        Assert.assertTrue(result.get(0).equals("Heath,39,F"));
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("Heath,39,F", result.get(0));
         Assert.assertFalse(Matchers.isEmptyOrNullString().matches(scrollId));
     }
 
+    @Test
+    public void testJDBCWithParameter() throws Exception {
+        Properties properties = new Properties();
+        properties.put(PROP_URL, "jdbc:elasticsearch://127.0.0.1:9300/" + TestsConstants.TEST_INDEX_ACCOUNT);
+        properties.put(PROP_CONNECTIONPROPERTIES, "client.transport.ignore_cluster_name=true");
+        try (DruidDataSource dds = (DruidDataSource) ElasticSearchDruidDataSourceFactory.createDataSource(properties);
+             Connection connection = dds.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT gender,lastname,age from " + TestsConstants.TEST_INDEX_ACCOUNT + " where lastname=?")) {
+            // set parameter
+            ps.setString(1, "Heath");
+            ResultSet resultSet = ps.executeQuery();
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            assertThat(metaData.getColumnName(1), equalTo("gender"));
+            assertThat(metaData.getColumnName(2), equalTo("lastname"));
+            assertThat(metaData.getColumnName(3), equalTo("age"));
+
+            List<String> result = new ArrayList<>();
+            while (resultSet.next()) {
+                result.add(resultSet.getString("lastname") + "," + resultSet.getInt("age") + "," + resultSet.getString("gender"));
+            }
+
+            Assert.assertEquals(1, result.size());
+            Assert.assertEquals("Heath,39,F", result.get(0));
+        }
+    }
 }
-
-

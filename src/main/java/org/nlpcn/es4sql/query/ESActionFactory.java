@@ -127,7 +127,7 @@ public class ESActionFactory {
         }
     }
 
-    private static SQLStatementParser createSqlStatementParser(String sql) {
+    public static SQLStatementParser createSqlStatementParser(String sql) {
         ElasticLexer lexer = new ElasticLexer(sql);
         lexer.nextToken();
         return new MySqlStatementParser(lexer);

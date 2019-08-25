@@ -37,7 +37,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         conn.beforeExecute();
         try {
-            ObjectResult extractor = getObjectResult(true, getSql(), false, false, true);
+            ObjectResult extractor = getObjectResult(true, false, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
 
@@ -67,7 +67,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         conn.beforeExecute();
         try {
-            ObjectResult extractor = getObjectResult(true, getSql(), false, false, true);
+            ObjectResult extractor = getObjectResult(true, false, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
 
@@ -84,11 +84,10 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
         }
     }
 
-    private ObjectResult getObjectResult(boolean flat, String query, boolean includeScore, boolean includeType, boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+    private ObjectResult getObjectResult(boolean flat, boolean includeScore, boolean includeType, boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         SearchDao searchDao = new org.nlpcn.es4sql.SearchDao(client);
 
-        //String rewriteSQL = searchDao.explain(getSql()).explain().explain();
-
+        String query = ((ElasticSearchPreparedStatement) getRawPreparedStatement()).getExecutableSql();
         QueryAction queryAction = searchDao.explain(query);
         Object execution = QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
         return new ObjectResultsExtractor(includeScore, includeType, includeId, false, queryAction).extractResults(execution, flat);
