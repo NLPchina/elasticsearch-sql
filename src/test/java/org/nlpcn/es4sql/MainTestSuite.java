@@ -322,7 +322,7 @@ public class MainTestSuite {
 
 		BulkRequestBuilder bulkBuilder = client.prepareBulk();
 		byte[] buffer = ByteStreams.toByteArray(new FileInputStream(jsonPath));
-		bulkBuilder.add(buffer, 0, buffer.length, defaultIndex, null, XContentType.JSON);
+		bulkBuilder.add(buffer, 0, buffer.length, defaultIndex, XContentType.JSON);
 		BulkResponse response = bulkBuilder.get();
 
 		if(response.hasFailures()) {
@@ -358,7 +358,7 @@ public class MainTestSuite {
                 "\t\t\"properties\":{\n" +
                 "\t\t\t\"odbc_time\":{\n" +
                 "\t\t\t\t\"type\":\"date\",\n" +
-                "\t\t\t\t\"format\": \"{'ts' ''yyyy-MM-dd HH:mm:ss.SSS''}\"\n" +
+                "\t\t\t\t\"format\": \"'{ts '''yyyy-MM-dd HH:mm:ss.SSS'''}'\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"docCount\":{\n" +
                 "\t\t\t\t\"type\":\"text\"\n" +

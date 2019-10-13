@@ -1,5 +1,6 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.document.DocumentField;
@@ -19,7 +20,14 @@ import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by Eliran on 26/8/2016.
@@ -119,7 +127,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
         }
         int totalSize = currentId - 1;
         SearchHit[] unionHitsArr = minusHitsList.toArray(new SearchHit[totalSize]);
-        this.minusHits = new SearchHits(unionHitsArr, totalSize,1.0f);
+        this.minusHits = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private void fillMinusHitsFromResults(Set<ComperableHitResult> comperableHitResults) {
@@ -147,7 +155,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
         }
         int totalSize = currentId - 1;
         SearchHit[] unionHitsArr = minusHitsList.toArray(new SearchHit[totalSize]);
-        this.minusHits = new SearchHits(unionHitsArr, totalSize,1.0f);
+        this.minusHits = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private Set<ComperableHitResult> runWithScrollings() {

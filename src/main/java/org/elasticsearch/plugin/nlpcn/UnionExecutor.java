@@ -1,5 +1,6 @@
 package org.elasticsearch.plugin.nlpcn;
 
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
@@ -10,7 +11,10 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Eliran on 21/8/2016.
@@ -24,7 +28,7 @@ public class UnionExecutor implements ElasticHitsExecutor {
 
     public UnionExecutor(Client client,MultiQueryRequestBuilder builder) {
         multiQueryBuilder = builder;
-        client = client;
+        this.client = client;
         currentId = 0;
     }
 
@@ -38,7 +42,7 @@ public class UnionExecutor implements ElasticHitsExecutor {
         fillInternalSearchHits(unionHits,secondResponse.getHits().getHits(),this.multiQueryBuilder.getSecondTableFieldToAlias());
         int totalSize = unionHits.size();
         SearchHit[] unionHitsArr = unionHits.toArray(new SearchHit[totalSize]);
-        this.results = new SearchHits(unionHitsArr, totalSize,1.0f);
+        this.results = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private void fillInternalSearchHits(List<SearchHit> unionHits, SearchHit[] hits, Map<String, String> fieldNameToAlias) {

@@ -260,7 +260,7 @@ public class SQLFunctionsTest {
     @Test
     public void functionPow() throws Exception {
         String query = "SELECT pow(account_number, 2) as key,"+
-                "abs(age - 60) as new_age from " + TEST_INDEX_ACCOUNT + "/account limit 1";
+                "abs(age - 60) as new_age from " + TEST_INDEX_ACCOUNT + "/account where _id=25";
         CSVResult csvResult = getCsvResult(false, query);
         List<String> content = csvResult.getLines();
         Assert.assertTrue(content.toString().contains("625"));

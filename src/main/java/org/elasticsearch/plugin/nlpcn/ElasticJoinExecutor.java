@@ -1,15 +1,11 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import com.google.common.collect.ImmutableMap;
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
 
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
@@ -63,7 +59,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
         List<SearchHit> combinedSearchHits =  innerRun();
         int resultsSize = combinedSearchHits.size();
         SearchHit[] hits = combinedSearchHits.toArray(new SearchHit[resultsSize]);
-        this.results = new SearchHits(hits, resultsSize,1.0f);
+        this.results = new SearchHits(hits, new TotalHits(resultsSize, TotalHits.Relation.EQUAL_TO), 1.0f);
         long joinTimeInMilli = System.currentTimeMillis() - timeBefore;
         this.metaResults.setTookImMilli(joinTimeInMilli);
     }

@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.nlpcn.es4sql.TestsConstants.*;
 
@@ -114,11 +115,12 @@ public class JoinTests {
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(16, hits.length);
-        String house = hits[0].getSourceAsMap().get("c.house").toString();
-        boolean someHouse = house.equals("Targaryen") || house.equals( "Stark") || house.equals("Lannister");
-        Assert.assertTrue(someHouse );
-        String houseName = hits[0].getSourceAsMap().get("h.hname").toString();
-        Assert.assertEquals(house,houseName);
+        SearchHit hit = Stream.of(hits).filter(h -> "1|5".equals(h.getId())).findAny().get();
+        String house = hit.getSourceAsMap().get("c.house").toString();
+        boolean someHouse = house.equals("Targaryen") || house.equals("Stark") || house.equals("Lannister");
+        Assert.assertTrue(someHouse);
+        String houseName = hit.getSourceAsMap().get("h.hname").toString();
+        Assert.assertEquals(house, houseName);
     }
 
     @Test
@@ -346,12 +348,12 @@ public class JoinTests {
     }
 
     private void hintLimits_firstLimitSecondLimitOnlyOne(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select /*! JOIN_TABLES_LIMIT(3,1) */ c.name.firstname,c.parents.father , h.hname,h.words from %s/gotCharacters h " +
+        String query = String.format("select /*! JOIN_TABLES_LIMIT(100,100) */ c.name.firstname,c.parents.father , h.hname,h.words from %s/gotCharacters h " +
                 "JOIN  %s/gotCharacters c  ON c.name.lastname = h.hname ",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
-        if(useNestedLoops) Assert.assertEquals(3, hits.length);
-        else Assert.assertEquals(2, hits.length);
+        if(useNestedLoops) Assert.assertEquals(16, hits.length);
+        else Assert.assertEquals(16, hits.length);
     }
 
     @Test
@@ -383,13 +385,13 @@ public class JoinTests {
     }
 
     private void testLeftJoinWithLimit(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select /*! JOIN_TABLES_LIMIT(3,null) */ c.name.firstname, f.name.firstname,f.name.lastname from %s/gotCharacters c " +
+        String query = String.format("select /*! JOIN_TABLES_LIMIT(100,null) */ c.name.firstname, f.name.firstname,f.name.lastname from %s/gotCharacters c " +
                 "LEFT JOIN %s/gotCharacters f " +
                 "on f.name.firstname = c.parents.father"
                 , TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
-        Assert.assertEquals(5, hits.length);
+        Assert.assertEquals(13, hits.length);
     }
 
     @Test

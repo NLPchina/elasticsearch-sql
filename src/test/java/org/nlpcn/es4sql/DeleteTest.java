@@ -36,7 +36,7 @@ public class DeleteTest {
 		SearchRequestBuilder request = MainTestSuite.getClient().prepareSearch(TEST_INDEX_ACCOUNT_TEMP);
 		request.setTypes("temp_account");
 		SearchResponse response = request.setQuery(QueryBuilders.matchAllQuery()).get();
-		assertThat(response.getHits().getTotalHits(), equalTo(0L));
+		assertThat(response.getHits().getTotalHits().value, equalTo(0L));
 	}
 
 
@@ -47,7 +47,7 @@ public class DeleteTest {
 		SearchRequestBuilder request = MainTestSuite.getClient().prepareSearch(TEST_INDEX_PHRASE);
 		request.setTypes("phrase");
 		SearchResponse response = request.setQuery(QueryBuilders.matchAllQuery()).get();
-		assertThat(response.getHits().getTotalHits(), equalTo(5L));
+		assertThat(response.getHits().getTotalHits().value, equalTo(5L));
 	}
 
 

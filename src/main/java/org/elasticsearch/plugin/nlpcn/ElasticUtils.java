@@ -43,7 +43,7 @@ public class ElasticUtils {
     public static String hitsAsStringResult(SearchHits results, MetaSearchResult metaResults) throws IOException {
         if(results == null) return null;
         Object[] searchHits;
-        searchHits = new Object[(int) results.getTotalHits()];
+        searchHits = new Object[(int) results.getTotalHits().value];
         int i = 0;
         for(SearchHit hit : results) {
             HashMap<String,Object> value = new HashMap<>();
