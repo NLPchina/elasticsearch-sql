@@ -12,7 +12,6 @@
                                     "place" : {
                                         "shape" : {
                                             "type" : "polygon",
-                                            "orientation" : "right",
                                             "coordinates" : [
                                                 [
                                                     [

@@ -4,7 +4,7 @@ jdk:
   - openjdk8
 
 before_install:
-  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.3.2-amd64.deb && sudo dpkg -i --force-confnew elasticsearch-7.3.2-amd64.deb
+  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.4.0-amd64.deb && sudo dpkg -i --force-confnew elasticsearch-7.4.0-amd64.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
   - sudo java -version
