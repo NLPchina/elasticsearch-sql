@@ -17,21 +17,21 @@ import java.util.function.Supplier;
 
 public class SqlPlug extends Plugin implements ActionPlugin {
 
-	public SqlPlug() {
-	}
+    public SqlPlug() {
+    }
 
 
-	public String name() {
-		return "sql";
-	}
+    public String name() {
+        return "sql";
+    }
 
-	public String description() {
-		return "Use sql to query elasticsearch.";
-	}
+    public String description() {
+        return "Use sql to query elasticsearch.";
+    }
 
 
-	@Override
-	public List<RestHandler> getRestHandlers(Settings settings, RestController restController, ClusterSettings clusterSettings, IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter, IndexNameExpressionResolver indexNameExpressionResolver, Supplier<DiscoveryNodes> nodesInCluster) {
-		return Collections.singletonList(new RestSqlAction(settings, restController));
-	}
+    @Override
+    public List<RestHandler> getRestHandlers(Settings settings, RestController restController, ClusterSettings clusterSettings, IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter, IndexNameExpressionResolver indexNameExpressionResolver, Supplier<DiscoveryNodes> nodesInCluster) {
+        return Collections.singletonList(new RestSqlAction(restController));
+    }
 }
