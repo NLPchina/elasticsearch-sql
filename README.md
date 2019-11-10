@@ -1,6 +1,6 @@
 ## DEPRECATED
 
-### Please note, this project is deprecated and no longer being maintained, please use official version [x-pack-sql](https://github.com/elastic/elasticsearch/tree/master/x-pack/plugin/sql).
+### Please note, this project is no longer in active development, and is deprecated, please use official version [x-pack-sql](https://github.com/elastic/elasticsearch/tree/master/x-pack/plugin/sql).
 
 ----------
 
