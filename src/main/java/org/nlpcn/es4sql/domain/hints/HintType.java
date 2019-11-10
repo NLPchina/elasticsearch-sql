@@ -21,5 +21,6 @@ public enum HintType
     POST_FILTER,
     STATS,
     CONFLICTS,
-    PREFERENCE
+    PREFERENCE,
+    TRACK_TOTAL_HITS
 }

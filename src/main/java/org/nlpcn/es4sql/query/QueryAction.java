@@ -88,6 +88,19 @@ public abstract class QueryAction {
         }
     }
 
+    protected void updateRequestWithTrackTotalHits(Select select, SearchRequestBuilder request) {
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.TRACK_TOTAL_HITS && hint.getParams() != null && 0 < hint.getParams().length) {
+                String param = hint.getParams()[0].toString();
+                try {
+                    request.setTrackTotalHitsUpTo(Integer.parseInt(param));
+                } catch (NumberFormatException ex) {
+                    request.setTrackTotalHits(Boolean.parseBoolean(param));
+                }
+            }
+        }
+    }
+
     protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
         boolean foundAnyHighlights = false;
         HighlightBuilder highlightBuilder = new HighlightBuilder();

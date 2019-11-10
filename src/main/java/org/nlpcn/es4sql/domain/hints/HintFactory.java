@@ -163,6 +163,10 @@ public class HintFactory {
             String preferenceParam = getParamFromHint(hintAsString, "! PREFERENCE");
             return new Hint(HintType.PREFERENCE, new String[]{preferenceParam});
         }
+        if (hintAsString.startsWith("! TRACK_TOTAL_HITS")) {
+            String trackTotalTitsParam = getParamFromHint(hintAsString, "! TRACK_TOTAL_HITS");
+            return new Hint(HintType.TRACK_TOTAL_HITS, new String[]{trackTotalTitsParam});
+        }
 
         return null;
     }

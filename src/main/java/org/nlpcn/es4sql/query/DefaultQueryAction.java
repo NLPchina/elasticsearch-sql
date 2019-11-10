@@ -92,6 +92,7 @@ public class DefaultQueryAction extends QueryAction {
 		updateRequestWithPostFilter(select, request);
 		updateRequestWithStats(select, request);
 		updateRequestWithPreference(select, request);
+		updateRequestWithTrackTotalHits(select, request);
 		SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
 		return sqlElasticRequestBuilder;
