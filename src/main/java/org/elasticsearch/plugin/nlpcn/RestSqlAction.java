@@ -8,27 +8,35 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
-import org.elasticsearch.rest.*;
+import org.elasticsearch.rest.BaseRestHandler;
+import org.elasticsearch.rest.BytesRestResponse;
+import org.elasticsearch.rest.RestController;
+import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.rest.RestStatus;
 import org.nlpcn.es4sql.SearchDao;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 public class RestSqlAction extends BaseRestHandler {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-	public RestSqlAction(Settings settings, RestController restController) {
+    public RestSqlAction(Settings settings, RestController restController) {
         super(settings);
-		restController.registerHandler(RestRequest.Method.POST, "/_sql/_explain", this);
-		restController.registerHandler(RestRequest.Method.GET, "/_sql/_explain", this);
-		restController.registerHandler(RestRequest.Method.POST, "/_sql", this);
-		restController.registerHandler(RestRequest.Method.GET, "/_sql", this);
-	}
+        restController.registerHandler(RestRequest.Method.POST, "/_sql/_explain", this);
+        restController.registerHandler(RestRequest.Method.GET, "/_sql/_explain", this);
+        restController.registerHandler(RestRequest.Method.POST, "/_sql", this);
+        restController.registerHandler(RestRequest.Method.GET, "/_sql", this);
+    }
 
     @Override
     public String getName() {
@@ -86,7 +94,7 @@ public class RestSqlAction extends BaseRestHandler {
     @Override
     protected Set<String> responseParams() {
         Set<String> responseParams = new HashSet<>(super.responseParams());
-        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "newLine", "format"));
+        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "_scroll_id", "newLine", "format", "showHeader"));
         return responseParams;
     }
 }
