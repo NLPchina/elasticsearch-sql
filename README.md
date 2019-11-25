@@ -1,6 +1,6 @@
 ## DEPRECATED
 
-### Please note, this project is no longer in active development, and is deprecated, please use official version [x-pack-sql](https://github.com/elastic/elasticsearch/tree/master/x-pack/plugin/sql) and [OpenDistro For Elasticsearch SQL](https://github.com/opendistro-for-elasticsearch/sql) supported by AWS and licensed under Apache 2.
+### Please note, this project is no longer in active development, and is deprecated, please use official version [x-pack-sql](https://github.com/elastic/elasticsearch/tree/master/x-pack/plugin/sql) and [OpenDistro for Elasticsearch SQL](https://github.com/opendistro-for-elasticsearch/sql) supported by AWS and licensed under Apache 2.
 
 ----------
 
