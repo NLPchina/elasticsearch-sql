@@ -40,7 +40,7 @@ public class ElasticUtils {
 
 
     //use our deserializer instead of results toXcontent because the source field is differnet from sourceAsMap.
-    public static String hitsAsStringResult(SearchHits results, MetaSearchResult metaResults) throws IOException {
+    public static XContentBuilder hitsAsXContentBuilder(SearchHits results, MetaSearchResult metaResults) throws IOException {
         if(results == null) return null;
         Object[] searchHits;
         searchHits = new Object[(int) results.getTotalHits()];
@@ -67,6 +67,6 @@ public class ElasticUtils {
                 , "failed", metaResults.getFailedShards()));
         builder.field("hits",hits) ;
         builder.endObject();
-        return BytesReference.bytes(builder).utf8ToString();
+        return builder;
     }
 }

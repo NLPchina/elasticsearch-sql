@@ -8,9 +8,16 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponseContentListener;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-import org.elasticsearch.plugin.nlpcn.*;
+import org.elasticsearch.plugin.nlpcn.ElasticHitsExecutor;
+import org.elasticsearch.plugin.nlpcn.ElasticJoinExecutor;
+import org.elasticsearch.plugin.nlpcn.ElasticUtils;
+import org.elasticsearch.plugin.nlpcn.GetIndexRequestRestListener;
+import org.elasticsearch.plugin.nlpcn.MetaSearchResult;
+import org.elasticsearch.plugin.nlpcn.MultiRequestExecutorFactory;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
@@ -81,11 +88,11 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         if (requestBuilder instanceof JoinRequestBuilder) {
             ElasticJoinExecutor executor = ElasticJoinExecutor.createJoinExecutor(client, requestBuilder);
             executor.run();
-            return ElasticUtils.hitsAsStringResult(executor.getHits(), new MetaSearchResult());
+            return BytesReference.bytes(ElasticUtils.hitsAsXContentBuilder(executor.getHits(), new MetaSearchResult())).utf8ToString();
         } else if (requestBuilder instanceof MultiQueryRequestBuilder) {
             ElasticHitsExecutor executor = MultiRequestExecutorFactory.createExecutor(client, (MultiQueryRequestBuilder) requestBuilder);
             executor.run();
-            return ElasticUtils.hitsAsStringResult(executor.getHits(), new MetaSearchResult());
+            return BytesReference.bytes(ElasticUtils.hitsAsXContentBuilder(executor.getHits(), new MetaSearchResult())).utf8ToString();
         } else if (request instanceof SearchRequest) {
             ActionFuture<SearchResponse> future = client.search((SearchRequest) request);
             SearchResponse response = future.actionGet();
@@ -97,13 +104,12 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         } else {
             throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }
-
     }
 
     private void sendDefaultResponse(SearchHits hits, RestChannel channel) {
         try {
-            String json = ElasticUtils.hitsAsStringResult(hits, new MetaSearchResult());
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
+            XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(hits, new MetaSearchResult());
+            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
             e.printStackTrace();

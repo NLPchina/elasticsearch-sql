@@ -1,16 +1,12 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
 
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
@@ -50,8 +46,8 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
 
     public void  sendResponse(RestChannel channel){
         try {
-            String json = ElasticUtils.hitsAsStringResult(results,metaResults);
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
+            XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(results,metaResults);
+            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
             e.printStackTrace();
