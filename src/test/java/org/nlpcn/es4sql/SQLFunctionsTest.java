@@ -72,7 +72,7 @@ public class SQLFunctionsTest {
         List<String> headers = csvResult.getHeaders();
         List<String> content = csvResult.getLines();
         Assert.assertTrue(headers.contains("key"));
-        Assert.assertTrue(content.contains("863 Wythe Place,863"));
+        Assert.assertTrue(content.contains("863,863 Wythe Place"));
     }
 
     @Test
@@ -304,7 +304,7 @@ public class SQLFunctionsTest {
         SearchDao searchDao = MainTestSuite.getSearchDao() != null ? MainTestSuite.getSearchDao() : getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution = QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new CSVResultsExtractor(includeScore, includeType, includeId, false).extractResults(execution, flat, ",");
+        return new CSVResultsExtractor(includeScore, includeType, includeId, false, queryAction).extractResults(execution, flat, ",");
     }
 
 

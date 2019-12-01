@@ -6,7 +6,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
-
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
@@ -23,7 +23,12 @@ import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Eliran on 15/9/2015.
@@ -46,8 +51,8 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
 
     public void  sendResponse(RestChannel channel){
         try {
-            String json = ElasticUtils.hitsAsStringResult(results,metaResults);
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, json);
+            XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(results,metaResults);
+            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
             e.printStackTrace();
