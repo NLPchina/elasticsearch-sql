@@ -18,7 +18,12 @@ import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.QueryAction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by allwefantasy on 8/30/16.
@@ -259,10 +264,11 @@ public class ObjectResultsExtractor {
 
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
         Set<String> headers = new LinkedHashSet<>();
+        List<String> fieldNames = new ArrayList<>();
         if (this.queryAction instanceof DefaultQueryAction) {
-            headers.addAll(((DefaultQueryAction) this.queryAction).getFieldNames());
+            fieldNames.addAll(((DefaultQueryAction) this.queryAction).getFieldNames());
         }
-        boolean hasScrollId = this.includeScrollId || headers.contains("_scroll_id");
+        boolean hasScrollId = this.includeScrollId || fieldNames.contains("_scroll_id");
         for (SearchHit hit : hits) {
             Map<String, Object> doc = hit.getSourceAsMap();
             Map<String, DocumentField> fields = hit.getFields();
@@ -284,7 +290,16 @@ public class ObjectResultsExtractor {
             mergeHeaders(headers, doc, flat);
             docsAsMap.add(doc);
         }
-        return new ArrayList<>(headers);
+
+        List<String> list = new ArrayList<>(headers);
+        if (!fieldNames.isEmpty()) {
+            list.sort((o1, o2) -> {
+                int i1 = fieldNames.indexOf(o1);
+                int i2 = fieldNames.indexOf(o2);
+                return Integer.compare(i1 < 0 ? Integer.MAX_VALUE : i1, i2 < 0 ? Integer.MAX_VALUE : i2);
+            });
+        }
+        return list;
     }
 
     private Object findFieldValue(String header, Map<String, Object> doc, boolean flat) {

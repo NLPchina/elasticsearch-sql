@@ -72,7 +72,7 @@ public class SQLFunctionsTest {
         List<String> headers = csvResult.getHeaders();
         List<String> content = csvResult.getLines();
         Assert.assertTrue(headers.contains("key"));
-        Assert.assertTrue(content.contains("863 Wythe Place,863"));
+        Assert.assertTrue(content.contains("863,863 Wythe Place"));
     }
 
     @Test

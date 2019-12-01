@@ -269,9 +269,6 @@ public class CSVResultsExtractor {
 
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new LinkedHashSet<>();
-        if (this.queryAction instanceof DefaultQueryAction) {
-            csvHeaders.addAll(((DefaultQueryAction) this.queryAction).getFieldNames());
-        }
         for (SearchHit hit : hits) {
             Map<String, Object> doc = hit.getSourceAsMap();
             Map<String, DocumentField> fields = hit.getFields();
@@ -305,7 +302,18 @@ public class CSVResultsExtractor {
         if (this.includeScrollId) {
             csvHeaders.add("_scroll_id");
         }
-        return new ArrayList<>(csvHeaders);
+
+        List<String> headers = new ArrayList<>(csvHeaders);
+        if (this.queryAction instanceof DefaultQueryAction) {
+            List<String> fieldNames = ((DefaultQueryAction) this.queryAction).getFieldNames();
+            headers.sort((o1, o2) -> {
+                int i1 = fieldNames.indexOf(o1);
+                int i2 = fieldNames.indexOf(o2);
+                return Integer.compare(i1 < 0 ? Integer.MAX_VALUE : i1, i2 < 0 ? Integer.MAX_VALUE : i2);
+            });
+        }
+
+        return headers;
     }
 
     private String findFieldValue(String header, Map<String, Object> doc, boolean flat, String separator) {
