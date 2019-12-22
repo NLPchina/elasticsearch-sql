@@ -21,6 +21,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregati
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.significant.SignificantTextAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.GeoBoundsAggregationBuilder;
@@ -268,6 +269,8 @@ public class AggMaker {
                 return geoBounds(field);
             case "terms":
                 return termsAgg(field);
+            case "significant_text":
+                return significantTextAgg(field);
             default:
                 throw new SqlParseException("can define this method " + field);
         }
@@ -383,6 +386,55 @@ public class AggMaker {
         }
         terms.includeExclude(IncludeExclude.merge(include, exclude));
         return terms;
+    }
+
+    private AggregationBuilder significantTextAgg(MethodField field) throws SqlParseException {
+        String aggName = gettAggNameFromParamsOrAlias(field);
+        SignificantTextAggregationBuilder significantText = AggregationBuilders.significantText(aggName, null);
+        String value;
+        IncludeExclude include = null, exclude = null;
+        for (KVValue kv : field.getParams()) {
+            value = kv.value.toString();
+            switch (kv.key.toLowerCase()) {
+                case "field":
+                    significantText.fieldName(value);
+                    break;
+                case "size":
+                    significantText.size(Integer.parseInt(value));
+                    break;
+                case "shard_size":
+                    significantText.shardSize(Integer.parseInt(value));
+                    break;
+                case "min_doc_count":
+                    significantText.minDocCount(Integer.parseInt(value));
+                    break;
+                case "include":
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                        parser.nextToken();
+                        include = IncludeExclude.parseInclude(parser);
+                    } catch (IOException e) {
+                        throw new SqlParseException("parse include[" + value + "] error: " + e.getMessage());
+                    }
+                    break;
+                case "exclude":
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                        parser.nextToken();
+                        exclude = IncludeExclude.parseExclude(parser);
+                    } catch (IOException e) {
+                        throw new SqlParseException("parse exclude[" + value + "] error: " + e.getMessage());
+                    }
+                    break;
+                case "alias":
+                case "nested":
+                case "reverse_nested":
+                case "children":
+                    break;
+                default:
+                    throw new SqlParseException("significant_text aggregation err or not define field " + kv.toString());
+            }
+        }
+        significantText.includeExclude(IncludeExclude.merge(include, exclude));
+        return significantText;
     }
 
     private AbstractAggregationBuilder scriptedMetric(MethodField field) throws SqlParseException {
