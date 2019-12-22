@@ -1,22 +1,35 @@
 package org.nlpcn.es4sql.query;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.elasticsearch.action.search.*;
+import org.elasticsearch.action.search.SearchAction;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchScrollAction;
+import org.elasticsearch.action.search.SearchScrollRequestBuilder;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
-import org.elasticsearch.search.sort.*;
-import org.nlpcn.es4sql.domain.*;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.NestedSortBuilder;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
+import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.KVValue;
+import org.nlpcn.es4sql.domain.MethodField;
+import org.nlpcn.es4sql.domain.Order;
+import org.nlpcn.es4sql.domain.Select;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Transform SQL query to standard Elasticsearch search query
@@ -146,6 +159,8 @@ public class DefaultQueryAction extends QueryAction {
 						for (KVValue kvValue : method.getParams()) {
 							excludeFields.add(kvValue.value.toString()) ;
 						}
+					} else if (method.getName().equalsIgnoreCase("docvalue")) {
+						handleDocvalueField(method);
 					}
 				} else if (field != null) {
                     fieldNames.add(field.getName());
@@ -184,6 +199,21 @@ public class DefaultQueryAction extends QueryAction {
 			);
 		} else {
 			throw new SqlParseException("scripted_field only allows script(name,script) or script(name,lang,script)");
+		}
+	}
+
+	private void handleDocvalueField(MethodField method) throws SqlParseException {
+		List<KVValue> params = method.getParams();
+		if (params.size() == 1) {
+			String f = params.get(0).value.toString();
+			fieldNames.add(f);
+			request.addDocValueField(f);
+		} else if (params.size() == 2) {
+			String f = params.get(0).value.toString();
+			fieldNames.add(f);
+			request.addDocValueField(f, params.get(1).value.toString());
+		} else {
+			throw new SqlParseException("docvalue_fields only allows docvalue(field) or docvalue(field,format)");
 		}
 	}
 

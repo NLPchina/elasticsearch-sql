@@ -134,6 +134,12 @@ public class ExplainTest {
         System.out.println(explain("SELECT * FROM index WHERE q=match_phrase_prefix(query='this is a test',boost=10.0,slop=12)"));
     }
 
+    @Test
+    public void testDocvalueFieldQueryExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("SELECT docvalue('my_keyword_field') FROM index"));
+        System.out.println(explain("SELECT docvalue('my_date_field','epoch_millis') FROM index"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
