@@ -30,10 +30,10 @@ public class RestSqlAction extends BaseRestHandler {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public RestSqlAction(RestController restController) {
-        restController.registerHandler(RestRequest.Method.POST, "/_sql/_explain", this);
-        restController.registerHandler(RestRequest.Method.GET, "/_sql/_explain", this);
-        restController.registerHandler(RestRequest.Method.POST, "/_sql", this);
-        restController.registerHandler(RestRequest.Method.GET, "/_sql", this);
+        restController.registerHandler(RestRequest.Method.POST, "/_nlpcn/sql/explain", this);
+        restController.registerHandler(RestRequest.Method.GET, "/_nlpcn/sql/explain", this);
+        restController.registerHandler(RestRequest.Method.POST, "/_nlpcn/sql", this);
+        restController.registerHandler(RestRequest.Method.GET, "/_nlpcn/sql", this);
     }
 
     @Override

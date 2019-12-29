@@ -774,12 +774,12 @@ node node-server.js
 
 * Simple query
 ````
-curl -X GET "localhost:9200/_sql" -H 'Content-Type: application/json' -d'select * from indexName limit 10'
+curl -X GET "localhost:9200/_nlpcn/sql" -H 'Content-Type: application/json' -d'select * from indexName limit 10'
 ````
 
 * Explain SQL to elasticsearch query DSL
 ````
-curl -X GET "localhost:9200/_sql/_explain" -H 'Content-Type: application/json' -d'select * from indexName limit 10'
+curl -X GET "localhost:9200/_nlpcn/sql/explain" -H 'Content-Type: application/json' -d'select * from indexName limit 10'
 ```` 
 
 
