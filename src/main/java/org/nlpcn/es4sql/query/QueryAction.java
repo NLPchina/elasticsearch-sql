@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query;
 
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.Client;
@@ -108,6 +109,19 @@ public abstract class QueryAction {
             if (hint.getType() == HintType.TIMEOUT && hint.getParams() != null && 0 < hint.getParams().length) {
                 String param = hint.getParams()[0].toString();
                 request.setTimeout(TimeValue.parseTimeValue(param, SearchSourceBuilder.TIMEOUT_FIELD.getPreferredName()));
+            }
+        }
+    }
+
+    protected void updateRequestWithIndicesOptions(Select select, SearchRequestBuilder request) throws SqlParseException {
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.INDICES_OPTIONS && hint.getParams() != null && 0 < hint.getParams().length) {
+                String param = hint.getParams()[0].toString();
+                try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, param)) {
+                    request.setIndicesOptions(IndicesOptions.fromMap(parser.map(), SearchRequest.DEFAULT_INDICES_OPTIONS));
+                } catch (IOException e) {
+                    throw new SqlParseException("could not parse indices_options hint: " + e.getMessage());
+                }
             }
         }
     }

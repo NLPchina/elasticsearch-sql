@@ -107,6 +107,7 @@ public class DefaultQueryAction extends QueryAction {
 		updateRequestWithPreference(select, request);
 		updateRequestWithTrackTotalHits(select, request);
 		updateRequestWithTimeout(select, request);
+		updateRequestWithIndicesOptions(select, request);
 		SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
 		return sqlElasticRequestBuilder;

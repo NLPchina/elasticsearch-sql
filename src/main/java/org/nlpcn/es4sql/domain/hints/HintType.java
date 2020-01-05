@@ -23,5 +23,6 @@ public enum HintType
     CONFLICTS,
     PREFERENCE,
     TRACK_TOTAL_HITS,
-    TIMEOUT
+    TIMEOUT,
+    INDICES_OPTIONS
 }
