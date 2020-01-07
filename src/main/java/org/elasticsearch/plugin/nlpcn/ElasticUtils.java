@@ -1,6 +1,7 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -54,7 +55,9 @@ public class ElasticUtils {
             i++;
         }
         HashMap<String,Object> hits = new HashMap<>();
-        hits.put("total",results.getTotalHits());
+        TotalHits totalHits = results.getTotalHits();
+        hits.put("total", ImmutableMap.of("value", totalHits.value,
+                "relation", totalHits.relation == TotalHits.Relation.EQUAL_TO ? "eq" : "gte"));
         hits.put("max_score",results.getMaxScore());
         hits.put("hits",searchHits);
         XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON).prettyPrint();
