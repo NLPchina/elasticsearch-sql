@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query;
 
+import com.alibaba.druid.support.json.JSONUtils;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchScrollAction;
@@ -106,8 +107,6 @@ public class DefaultQueryAction extends QueryAction {
 		updateRequestWithStats(select, request);
 		updateRequestWithPreference(select, request);
 		updateRequestWithTrackTotalHits(select, request);
-		updateRequestWithTimeout(select, request);
-		updateRequestWithIndicesOptions(select, request);
 		SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
 		return sqlElasticRequestBuilder;

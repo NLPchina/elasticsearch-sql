@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import org.elasticsearch.action.search.SearchAction;
@@ -11,12 +12,13 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.search.aggregations.*;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.pipeline.*;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
@@ -48,6 +50,32 @@ public class AggregationQueryAction extends QueryAction {
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 //        this.request = client.prepareSearch();//zhongshu-comment elastic6.1.1的写法
         this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE); //zhongshu-comment master的写法
+
+        //在生成 AggregationBuilder之前进行拦截，处理PipelineAggregation中的 "max_bucket", "min_bucket"
+        List<Field> bucketFields = Lists.newArrayList();
+        List<Field> _fields =  select.getFields().stream().filter(field -> {
+            if (field.getName().startsWith("max_bucket") || field.getName().startsWith("min_bucket")) {
+                bucketFields.add(field);
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        select.setFields(_fields);
+        if (bucketFields.size() > 0) {
+            bucketFields.stream().forEach(field -> {
+                String bucketPath = ((MethodField)field).getParams().get(0).toString().replace("=", ">");
+                PipelineAggregationBuilder pipAgg = null;
+                if (field.getName().equals("max_bucket")) {
+                      pipAgg = PipelineAggregatorBuilders.maxBucket(field.getAlias(), bucketPath);
+                } else  if (field.getName().equals("min_bucket")) {
+                      pipAgg = PipelineAggregatorBuilders.minBucket(field.getAlias(), bucketPath);
+                }
+                if (null != pipAgg) {
+                    request.addAggregation(pipAgg);
+                }
+            });
+        }
 
         setIndicesAndTypes();
 
@@ -183,26 +211,52 @@ public class AggregationQueryAction extends QueryAction {
             for (Order order : select.getOrderBys()) {
                 KVValue temp = groupMap.get(order.getName());
                 if (temp != null) {
-                    TermsAggregationBuilder termsBuilder = (TermsAggregationBuilder) temp.value;
-                    switch (temp.key) {
-                        case "COUNT":
-                        	String orderName = order.getName();
-                            if (isAliasFiled(orderName)) {
-                                termsBuilder.order(BucketOrder.aggregation(orderName, isASC(order)));
-                            } else {
-                                termsBuilder.order(BucketOrder.count(isASC(order)));
-                            }
-                            break;
-                        case "KEY":
-                            termsBuilder.order(BucketOrder.key(isASC(order)));
-                            // add the sort to the request also so the results get sorted as well
-                            request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
-                            break;
-                        case "FIELD":
-                            termsBuilder.order(BucketOrder.aggregation(order.getName(), isASC(order)));
-                            break;
-                        default:
-                            throw new SqlParseException(order.getName() + " can not to order");
+                    //TermsAggregationBuilder termsBuilder = (TermsAggregationBuilder) temp.value;
+                    //modified by xzb 增加 DateHistogramAggregationBuilder 类型的排序，此处可以进行优化代码冗余
+                    if (temp.value instanceof TermsAggregationBuilder) {
+                        TermsAggregationBuilder  aggsBuilder = (TermsAggregationBuilder) temp.value;
+                        switch (temp.key) {
+                            case "COUNT":
+                                String orderName = order.getName();
+                                if (isAliasFiled(orderName)) {
+                                    aggsBuilder.order(BucketOrder.aggregation(orderName, isASC(order)));
+                                } else {
+                                    aggsBuilder.order(BucketOrder.count(isASC(order)));
+                                }
+                                break;
+                            case "KEY":
+                                aggsBuilder.order(BucketOrder.key(isASC(order)));
+                                // add the sort to the request also so the results get sorted as well
+                                request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+                                break;
+                            case "FIELD":
+                                aggsBuilder.order(BucketOrder.aggregation(order.getName(), isASC(order)));
+                                break;
+                            default:
+                                throw new SqlParseException(order.getName() + " can not to order");
+                        }
+                    } else if (temp.value instanceof DateHistogramAggregationBuilder) {
+                        DateHistogramAggregationBuilder aggsBuilder = (DateHistogramAggregationBuilder) temp.value;
+                        switch (temp.key) {
+                            case "COUNT":
+                                String orderName = order.getName();
+                                if (isAliasFiled(orderName)) {
+                                    aggsBuilder.order(BucketOrder.aggregation(orderName, isASC(order)));
+                                } else {
+                                    aggsBuilder.order(BucketOrder.count(isASC(order)));
+                                }
+                                break;
+                            case "KEY":
+                                aggsBuilder.order(BucketOrder.key(isASC(order)));
+                                // add the sort to the request also so the results get sorted as well
+                                request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
+                                break;
+                            case "FIELD":
+                                aggsBuilder.order(BucketOrder.aggregation(order.getName(), isASC(order)));
+                                break;
+                            default:
+                                throw new SqlParseException(order.getName() + " can not to order");
+                        }
                     }
                 } else {
                     request.addSort(order.getName(), SortOrder.valueOf(order.getType()));
@@ -263,7 +317,7 @@ public class AggregationQueryAction extends QueryAction {
                 MethodField scriptField = (MethodField) temp;
                 for (KVValue kv : scriptField.getParams()) {
                     if (kv.value.equals(field.getName())) {
-                        lastAgg = aggMaker.makeGroupAgg(scriptField);
+                        lastAgg = aggMaker.makeGroupAgg(scriptField, select);
                         refrence = true;
                         break;
                     }
@@ -281,7 +335,7 @@ public class AggregationQueryAction extends QueryAction {
          }
          */
         if (!refrence)
-            lastAgg = aggMaker.makeGroupAgg(field);
+            lastAgg = aggMaker.makeGroupAgg(field, select);
         
         return lastAgg;
     }
@@ -364,7 +418,7 @@ public class AggregationQueryAction extends QueryAction {
         if (!(filterFieldCandidate instanceof MethodField)) return false;
         MethodField methodField = (MethodField) filterFieldCandidate;
         if (!methodField.getName().toLowerCase().equals("filter")) return false;
-        builder.subAggregation(aggMaker.makeGroupAgg(filterFieldCandidate).subAggregation(agg));
+        builder.subAggregation(aggMaker.makeGroupAgg(filterFieldCandidate, select).subAggregation(agg));
         return true;
     }
 
@@ -419,12 +473,16 @@ public class AggregationQueryAction extends QueryAction {
                     continue;
                 }
 
-                AggregationBuilder makeAgg = aggMaker.makeFieldAgg((MethodField) field, groupByAgg);
+                //modify by xzb 类型无法转换，只能新增一个 makeMovingFieldAgg方法
                 if (groupByAgg != null) {
-                    groupByAgg.subAggregation(makeAgg);
+                    if (field.getName().startsWith("rollingstd") || field.getName().startsWith("movingavg")) {
+                        groupByAgg.subAggregation(aggMaker.makeMovingFieldAgg((MethodField) field, groupByAgg));
+                    } else {
+                        groupByAgg.subAggregation(aggMaker.makeFieldAgg((MethodField) field, groupByAgg));
+                    }
                 } else {
                     //question 不懂为什么将一个null的agg加到request中，这应该是dsl语法问题，先不需要深究
-                    request.addAggregation(makeAgg);
+                    request.addAggregation(aggMaker.makeFieldAgg((MethodField) field, groupByAgg));
                 }
             } else if (field instanceof Field) {
 
