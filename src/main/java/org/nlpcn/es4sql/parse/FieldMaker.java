@@ -101,10 +101,10 @@ public class FieldMaker {
         Object right = getScriptValue(binaryExpr.getRight());
 
         //added by xzb 修复 if 条件的 value 被去除单引号问题
-        String tmp = binaryExpr.getRight().toString().trim();
+      /*  String tmp = binaryExpr.getRight().toString().trim();
         if (tmp.startsWith("'") && tmp.endsWith("'")) {
             right = "'" + right + "'";
-        }
+        }*/
 
         String script = String.format("%s %s %s", left, binaryExpr.getOperator().getName(), right);
 
@@ -255,13 +255,17 @@ public class FieldMaker {
                     if (SQLFunctions.binaryOperators.contains(binaryOperatorName)) {
                         binaryOperatorNames.add(binaryOperatorName);
                         SQLExpr right = binaryOpExpr.getRight();
-                        //added by xzb 如果right中本身就包含了 单引号，则必须要保留单引号
-                        String charWithQuote = "";
-                        String tmp = right.toString().trim();
-                        if (tmp.startsWith("'") && tmp.endsWith("'")) {
-                            charWithQuote = "'";
+
+                        Object value = Util.expr2Object(right);
+
+                        //added by xzb if 语法的二元操作符的值如果有引号，不能去掉
+                        //select  name, if(gender='m','男','女') as myGender from bank  LIMIT 0, 10
+                        if (binaryOpExpr.getParent() instanceof SQLMethodInvokeExpr) {
+                            String  methodName  = ((SQLMethodInvokeExpr)binaryOpExpr.getParent()).getMethodName();
+                            if ("if".equals(methodName) || "case".equals(methodName) || "case_new".equals(methodName)) {
+                                value = Util.expr2Object(right, "'");
+                            }
                         }
-                        Object value = Util.expr2Object(right, charWithQuote);
                         paramers.add(new KVValue(binaryOpExpr.getLeft().toString(), value));
                     } else {
                         paramers.add(new KVValue("script", makeScriptMethodField(binaryOpExpr, null, tableAlias)));
