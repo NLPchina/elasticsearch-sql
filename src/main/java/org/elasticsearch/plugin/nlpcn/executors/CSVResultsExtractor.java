@@ -14,7 +14,6 @@ import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.metrics.*;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.nlpcn.es4sql.Util;
-import org.nlpcn.es4sql.domain.QueryResult;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.QueryAction;
 
