@@ -1,6 +1,11 @@
 package org.nlpcn.es4sql;
 
-import com.google.common.io.ByteStreams;
+import static org.nlpcn.es4sql.TestsConstants.*;
+
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -17,11 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import java.io.FileInputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import static org.nlpcn.es4sql.TestsConstants.*;
+import com.google.common.io.ByteStreams;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -45,32 +46,6 @@ public class MainTestSuite {
 
 	private static TransportClient client;
 	private static SearchDao searchDao;
-
-    static {
-        try {
-            //setUp();
-            setUpNew();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public static void setUpNew() throws Exception {
-        Settings settings = Settings.builder().put("client.transport.ignore_cluster_name",true).build();
-        client = new PreBuiltXPackTransportClient(settings).addTransportAddress(getTransportAddress());
-
-        NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
-        String clusterName = nodeInfos.getClusterName().value();
-        System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
-
-        searchDao = new SearchDao(client);
-
-        //refresh to make sure all the docs will return on queries
-        client.admin().indices().prepareRefresh(TEST_INDEX + "*").get();
-
-        System.out.println("Finished the setup process...");
-    }
 
 	@BeforeClass
 	public static void setUp() throws Exception {
