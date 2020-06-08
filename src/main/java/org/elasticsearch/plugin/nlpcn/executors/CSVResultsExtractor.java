@@ -1,8 +1,13 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
+import com.alibaba.druid.util.StringUtils;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -84,7 +89,67 @@ public class CSVResultsExtractor {
             List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
             return new CSVResult(headers, csvLines);
         }
+        if (queryResult instanceof GetIndexResponse){
+            ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = ((GetIndexResponse) queryResult).getMappings();
+            List<String> headers = Lists.newArrayList("field", "type");
+            List<String> csvLines  = new ArrayList<>();
+            List<List<String>> lines = new ArrayList<>();
+            Iterator<String> iter = mappings.keysIt();
+            while (iter.hasNext()) {
+                String index = iter.next();
+                MappingMetaData mappingJson = (MappingMetaData)mappings.get(index).values().toArray()[0];
+                 LinkedHashMap properties = (LinkedHashMap) mappingJson.sourceAsMap().get("properties");
+                Map<Object, Object> mapping = Maps.newLinkedHashMap();
+                parseMapping(Lists.newArrayList(), properties, mapping, 0);
+                for (Object key : mapping.keySet()) {
+                    lines.add(Lists.newArrayList(key.toString(), mapping.get(key).toString()));
+                }
+            }
+
+            for(List<String> simpleLine : lines){
+                csvLines.add(Joiner.on(separator).join(simpleLine));
+            }
+
+              return new CSVResult(headers, csvLines);
+        }
+
+
         return null;
+    }
+
+    private static void parseMapping(ArrayList path, LinkedHashMap properties, Map<Object, Object> mapping, int children) {
+        int passed = 1;
+        for (Object key : properties.keySet()) {
+            if (properties.get(key) instanceof LinkedHashMap) {
+                LinkedHashMap value = (LinkedHashMap) properties.get(key);
+                if (!key.equals("properties")) {
+                    path.add(key.toString());
+                }
+                if (value.containsKey("type")) {
+                    String realPath = parsePath(path.toString());
+                    mapping.put(realPath , value.get("type"));
+                    if (value.containsKey("fields")) {
+                        mapping.put(realPath + ".keyword", "keyword");
+                    }
+                    if (passed == children) {
+                        if (path.size() - 2 >= 0) {//还要清理当前key的上层
+                            path.remove(path.size() - 2);
+                        }
+                    }
+                    path.remove(path.size() - 1);//移除当前元素
+                } else {
+                    if (value.containsKey("properties")) {
+                        children = ((LinkedHashMap) value.get("properties")).size();
+                    }
+                    parseMapping(path, value, mapping, children);
+                }
+            }
+            passed++;
+        }
+    }
+
+    private  static String parsePath(String path) {
+        return path.replaceAll("\\s+", "").replace("[", "").replace("]", "").replace(",", ".");
     }
 
     private  void handleAggregations(Aggregations aggregations, List<String> headers, List<List<String>> lines) throws CsvExtractorException {

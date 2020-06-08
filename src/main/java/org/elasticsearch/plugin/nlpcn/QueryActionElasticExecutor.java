@@ -84,6 +84,8 @@ public class QueryActionElasticExecutor {
             return executeMultiQueryAction(client, (MultiQueryAction) queryAction);
         if(queryAction instanceof DeleteQueryAction )
             return executeDeleteAction((DeleteQueryAction) queryAction);
+        if (queryAction instanceof  ShowQueryAction)
+            return ((ShowQueryAction)queryAction).explain().get();
         return null;
     }
 

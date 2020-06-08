@@ -114,7 +114,6 @@
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>x-pack-transport</artifactId>
             <version>${elasticsearch.version}</version>
-            <scope>provided</scope>
         </dependency>
 
 		<dependency>
@@ -302,7 +301,7 @@
 					</includes>
 				</configuration>
 			</plugin>
-			<plugin>
+			<!--<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.4</version>
@@ -315,12 +314,12 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 		</plugins>
 
 	</build>
 
-	<distributionManagement>
+	<!--<distributionManagement>
 		<snapshotRepository>
 			<id>sonatype-nexus-snapshots</id>
 			<name>Sonatype Nexus snapshot repository</name>
@@ -332,6 +331,19 @@
 			<name>Sonatype Nexus release repository</name>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
+	</distributionManagement>-->
+
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>cloud private releases</name>
+			<url>http://192.168.180.115:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>cloud private snapshots</name>
+			<url>http://192.168.180.115:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 </project>
