@@ -87,7 +87,8 @@ public class CSVResultsExtractor {
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
             List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
             List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
-            return new CSVResult(headers, csvLines);
+            //return new CSVResult(headers, csvLines);
+            return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
         }
         if (queryResult instanceof GetIndexResponse){
             ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = ((GetIndexResponse) queryResult).getMappings();
@@ -110,7 +111,7 @@ public class CSVResultsExtractor {
                 csvLines.add(Joiner.on(separator).join(simpleLine));
             }
 
-              return new CSVResult(headers, csvLines);
+              return new CSVResult(headers, csvLines, csvLines.size());
         }
 
 
