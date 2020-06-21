@@ -16,7 +16,6 @@ import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlOrderingExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
-import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Delete;

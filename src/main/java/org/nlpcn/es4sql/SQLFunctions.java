@@ -116,7 +116,7 @@ public class SQLFunctions {
                         functionStr = mathBetweenTemplate("Math.min", methodName, paramers, name);
                         break;
                     } else if (methodName.equals("coalesce")) {
-                        functionStr = mathCoalesceTemplate(methodName, paramers);
+                        functionStr = coalesceTemplate(methodName, paramers);
                         break;
                     }else if (methodName.equals("case_new")) {
                         functionStr = caseNewTemplate(methodName, paramers, binaryOperatorNames);
@@ -427,7 +427,7 @@ public class SQLFunctions {
     }
 
    //实现coalesce(field1, field2, ...)功能，只要任意一个不为空即可
-    private static Tuple<String, String> mathCoalesceTemplate(String fieldName, List<KVValue> paramer) {
+    private static Tuple<String, String> coalesceTemplate(String fieldName, List<KVValue> paramer) {
         //if((doc['age2'].value != null)){doc['age2'].value} else if((doc['age1'].value != null)){doc['age1'].value}
         String name = fieldName + "_" + random();
         StringBuffer sb = new StringBuffer();
@@ -445,9 +445,9 @@ public class SQLFunctions {
     }
 
     //实现   case_new(gender='m', '男', gender='f', '女',  default, '无') as myGender  功能
-    private static Tuple<String, String> caseNewTemplate(String fieldName, List<KVValue> paramer, List<String> binaryOperatorNames) {
+    private static Tuple<String, String> caseNewTemplate(String fieldName, List<KVValue> paramer, List<String> binaryOperatorNames) throws IllegalArgumentException{
         if (paramer.size() % 2 != 0) {//如果参数不是偶数个，则抛异常
-            new Exception("请检查参数数量，必须是偶数个！");
+            throw new IllegalArgumentException("请检查参数数量，必须是偶数个！");
         }
         //1.找出所有字段及其对应的值存入到Map中，如果有default，则将其移除
         String defaultVal = null;

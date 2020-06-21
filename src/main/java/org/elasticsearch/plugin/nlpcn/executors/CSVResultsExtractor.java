@@ -356,15 +356,12 @@ public class CSVResultsExtractor {
             });
 
             Map<String, Object> doc = hit.getSourceAsMap();
-            Map<String, Object> _doc = doc;
             //替换掉将原始结果中字段的值替换为高亮后的内容
             for (Map.Entry<String, Object> entry : doc.entrySet()) {
                 if(highlightMap.containsKey(entry.getKey())) {
-                    _doc.put(entry.getKey(), highlightMap.get(entry.getKey()));
+                    doc.put(entry.getKey(), highlightMap.get(entry.getKey()));
                 }
             }
-            //经过转换后，原始的value被替换为高亮后的value
-            //doc = _doc;
 
             Map<String, DocumentField> fields = hit.getFields();
             for (DocumentField searchHitField : fields.values()) {

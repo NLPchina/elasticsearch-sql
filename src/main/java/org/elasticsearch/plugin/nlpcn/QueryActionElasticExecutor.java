@@ -46,7 +46,7 @@ public class QueryActionElasticExecutor {
         return executor.getHits();
     }
 
-    public static Aggregations executeAggregationAction(AggregationQueryAction aggregationQueryAction) throws Exception {
+    public static Aggregations executeAggregationAction(AggregationQueryAction aggregationQueryAction) throws SqlParseException {
         SqlElasticSearchRequestBuilder select =  aggregationQueryAction.explain();
         SearchResponse resp = (SearchResponse) select.get();
 
@@ -56,7 +56,7 @@ public class QueryActionElasticExecutor {
                 throw new IllegalStateException("fail to aggregation[" + select + "], " + Arrays.toString(resp.getShardFailures()));
             }
 
-            throw new Exception("The failures that occurred during the aggregation[" + select + "] : " +  Arrays.toString(resp.getShardFailures()));
+            LOGGER.warn("The failures that occurred during the aggregation[{}]: {}", select, Arrays.toString(resp.getShardFailures()));
         }
 
         return resp.getAggregations();
@@ -73,7 +73,7 @@ public class QueryActionElasticExecutor {
         return executor.getHits();
     }
 
-    public static Object executeAnyAction(Client client , QueryAction queryAction) throws Exception {
+    public static Object executeAnyAction(Client client , QueryAction queryAction) throws SqlParseException, IOException {
         if(queryAction instanceof DefaultQueryAction)
             return executeSearchAction((DefaultQueryAction) queryAction);
         if(queryAction instanceof AggregationQueryAction)

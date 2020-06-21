@@ -1,6 +1,6 @@
 package org.nlpcn.es4sql.query.maker;
 
-import org.apache.commons.lang.StringUtils;
+import com.alibaba.druid.util.StringUtils;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
@@ -47,11 +47,6 @@ public class AggMaker {
 
     //question 这个groupMap用来干嘛？？
     private Map<String, KVValue> groupMap = new HashMap<>();
-    /**
-     * insert_time_dhg : {"date_histogram":{"field":"insert_time","format":"yyyy-MM-dd HH:mm:ss","interval":"1d","offset":0,"order":{"_key":"asc"},"keyed":false,"min_doc_count":0},"aggregations":{"avg_age":{"avg":{"field":"age"}}}}
-     */
-
-    private InsertTimeDhgBean insert_time_dhg;
 
     /**
      * 分组查的聚合函数
@@ -308,7 +303,6 @@ public class AggMaker {
             case "range":
                 return rangeBuilder(field);
             case "date_histogram":
-                return dateHistogram(field);
             case "dhg":
                 return dateHistogram(field);
             case "date_range":
@@ -316,7 +310,6 @@ public class AggMaker {
             case "month":
                 return dateRange(field);
             case "histogram":
-                return histogram(field);
             case "hg":
                 return histogram(field);
             case "geohash_grid":
@@ -899,177 +892,5 @@ public class AggMaker {
         return this.groupMap;
     }
 
-    public InsertTimeDhgBean getInsert_time_dhg() {
-        return insert_time_dhg;
-    }
 
-    public void setInsert_time_dhg(InsertTimeDhgBean insert_time_dhg) {
-        this.insert_time_dhg = insert_time_dhg;
-    }
-
-    public static class InsertTimeDhgBean {
-        /**
-         * date_histogram : {"field":"insert_time","format":"yyyy-MM-dd HH:mm:ss","interval":"1d","offset":0,"order":{"_key":"asc"},"keyed":false,"min_doc_count":0}
-         * aggregations : {"avg_age":{"avg":{"field":"age"}}}
-         */
-
-        private DateHistogramBean date_histogram;
-        private AggregationsBean aggregations;
-
-        public DateHistogramBean getDate_histogram() {
-            return date_histogram;
-        }
-
-        public void setDate_histogram(DateHistogramBean date_histogram) {
-            this.date_histogram = date_histogram;
-        }
-
-        public AggregationsBean getAggregations() {
-            return aggregations;
-        }
-
-        public void setAggregations(AggregationsBean aggregations) {
-            this.aggregations = aggregations;
-        }
-
-        public static class DateHistogramBean {
-            /**
-             * field : insert_time
-             * format : yyyy-MM-dd HH:mm:ss
-             * interval : 1d
-             * offset : 0
-             * order : {"_key":"asc"}
-             * keyed : false
-             * min_doc_count : 0
-             */
-
-            private String field;
-            private String format;
-            private String interval;
-            private int offset;
-            private OrderBean order;
-            private boolean keyed;
-            private int min_doc_count;
-
-            public String getField() {
-                return field;
-            }
-
-            public void setField(String field) {
-                this.field = field;
-            }
-
-            public String getFormat() {
-                return format;
-            }
-
-            public void setFormat(String format) {
-                this.format = format;
-            }
-
-            public String getInterval() {
-                return interval;
-            }
-
-            public void setInterval(String interval) {
-                this.interval = interval;
-            }
-
-            public int getOffset() {
-                return offset;
-            }
-
-            public void setOffset(int offset) {
-                this.offset = offset;
-            }
-
-            public OrderBean getOrder() {
-                return order;
-            }
-
-            public void setOrder(OrderBean order) {
-                this.order = order;
-            }
-
-            public boolean isKeyed() {
-                return keyed;
-            }
-
-            public void setKeyed(boolean keyed) {
-                this.keyed = keyed;
-            }
-
-            public int getMin_doc_count() {
-                return min_doc_count;
-            }
-
-            public void setMin_doc_count(int min_doc_count) {
-                this.min_doc_count = min_doc_count;
-            }
-
-            public static class OrderBean {
-                /**
-                 * _key : asc
-                 */
-
-                private String _key;
-
-                public String get_key() {
-                    return _key;
-                }
-
-                public void set_key(String _key) {
-                    this._key = _key;
-                }
-            }
-        }
-
-        public static class AggregationsBean {
-            /**
-             * avg_age : {"avg":{"field":"age"}}
-             */
-
-            private AvgAgeBean avg_age;
-
-            public AvgAgeBean getAvg_age() {
-                return avg_age;
-            }
-
-            public void setAvg_age(AvgAgeBean avg_age) {
-                this.avg_age = avg_age;
-            }
-
-            public static class AvgAgeBean {
-                /**
-                 * avg : {"field":"age"}
-                 */
-
-                private AvgBean avg;
-
-                public AvgBean getAvg() {
-                    return avg;
-                }
-
-                public void setAvg(AvgBean avg) {
-                    this.avg = avg;
-                }
-
-                public static class AvgBean {
-                    /**
-                     * field : age
-                     */
-
-                    private String field;
-
-                    public String getField() {
-                        return field;
-                    }
-
-                    public void setField(String field) {
-                        this.field = field;
-                    }
-                }
-            }
-        }
-    }
 }
