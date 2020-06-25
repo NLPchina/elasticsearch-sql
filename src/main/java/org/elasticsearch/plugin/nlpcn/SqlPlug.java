@@ -32,6 +32,6 @@ public class SqlPlug extends Plugin implements ActionPlugin {
 
     @Override
     public List<RestHandler> getRestHandlers(Settings settings, RestController restController, ClusterSettings clusterSettings, IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter, IndexNameExpressionResolver indexNameExpressionResolver, Supplier<DiscoveryNodes> nodesInCluster) {
-        return Collections.singletonList(new RestSqlAction(restController));
+        return Collections.singletonList(new RestSqlAction());
     }
 }

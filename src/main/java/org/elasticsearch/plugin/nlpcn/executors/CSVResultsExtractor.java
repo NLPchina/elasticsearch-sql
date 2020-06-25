@@ -1,23 +1,20 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
-import com.alibaba.druid.util.StringUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.cluster.metadata.MappingMetadata;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.metrics.*;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.QueryAction;
@@ -91,14 +88,14 @@ public class CSVResultsExtractor {
             return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
         }
         if (queryResult instanceof GetIndexResponse){
-            ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = ((GetIndexResponse) queryResult).getMappings();
+            ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetadata>> mappings = ((GetIndexResponse) queryResult).getMappings();
             List<String> headers = Lists.newArrayList("field", "type");
             List<String> csvLines  = new ArrayList<>();
             List<List<String>> lines = new ArrayList<>();
             Iterator<String> iter = mappings.keysIt();
             while (iter.hasNext()) {
                 String index = iter.next();
-                MappingMetaData mappingJson = (MappingMetaData)mappings.get(index).values().toArray()[0];
+                MappingMetadata mappingJson = (MappingMetadata)mappings.get(index).values().toArray()[0];
                  LinkedHashMap properties = (LinkedHashMap) mappingJson.sourceAsMap().get("properties");
                 Map<Object, Object> mapping = Maps.newLinkedHashMap();
                 parseMapping(Lists.newArrayList(), properties, mapping, 0);
