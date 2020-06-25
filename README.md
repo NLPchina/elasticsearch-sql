@@ -143,6 +143,14 @@ Elasticsearch-SQL
 <br/>
 **7.5.0** [![7.5.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.5.1** [![7.5.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.5.2** [![7.5.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.6.0** [![7.6.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.6.1** [![7.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.6.2** [![7.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
+**7.7.0** [![7.7.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.7.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.7.1** [![7.7.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.7.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.8.0** [![7.8.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.8.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -276,6 +284,13 @@ Versions
 | 7.4.2                 | 7.4.2.0        |                                | elastic7.4.2 |
 | 7.5.0                 | 7.5.0.0        |                                | elastic7.5.0 |
 | 7.5.1                 | 7.5.1.0        |                                | elastic7.5.1 |
+| 7.5.2                 | 7.5.2.0        |                                | elastic7.5.2 |
+| 7.6.0                 | 7.6.0.0        |                                | elastic7.6.0 |
+| 7.6.1                 | 7.6.1.0        |                                | elastic7.6.1 |
+| 7.6.2                 | 7.6.2.0        |                                | elastic7.6.2 |
+| 7.7.0                 | 7.7.0.0        |                                | elastic7.7.0 |
+| 7.7.1                 | 7.7.1.0        |                                | elastic7.7.1 |
+| 7.8.0                 | 7.8.0.0        |                                | elastic7.8.0 |
 
 ### Elasticsearch 1.x
 ````
@@ -808,6 +823,41 @@ Versions
 ### Elasticsearch 7.5.1
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.5.1.0/elasticsearch-sql-7.5.1.0.zip
+````
+
+### Elasticsearch 7.5.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.5.2.0/elasticsearch-sql-7.5.2.0.zip
+````
+
+### Elasticsearch 7.6.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.6.0.0/elasticsearch-sql-7.6.0.0.zip
+````
+
+### Elasticsearch 7.6.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.6.1.0/elasticsearch-sql-7.6.1.0.zip
+````
+
+### Elasticsearch 7.6.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.6.2.0/elasticsearch-sql-7.6.2.0.zip
+````
+
+### Elasticsearch 7.7.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.7.0.0/elasticsearch-sql-7.7.0.0.zip
+````
+
+### Elasticsearch 7.7.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.7.1.0/elasticsearch-sql-7.7.1.0.zip
+````
+
+### Elasticsearch 7.8.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.8.0.0/elasticsearch-sql-7.8.0.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
