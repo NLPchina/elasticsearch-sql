@@ -41,8 +41,8 @@ public class ESActionFactory {
 	 * @param sql The SQL query.
 	 * @return Query object.
 	 */
-	public static QueryAction create(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
-		sql = sql.replaceAll("\n"," ");
+    public static QueryAction create(Client client, String sql) throws SqlParseException, SQLFeatureNotSupportedException {
+        sql = sql.replaceAll("\n", " ").trim();
         String firstWord = sql.substring(0, sql.indexOf(' '));
         switch (firstWord.toUpperCase()) {
 			case "SELECT":

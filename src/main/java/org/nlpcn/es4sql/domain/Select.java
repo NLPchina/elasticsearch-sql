@@ -17,7 +17,7 @@ public class Select extends Query {
     public static int DEFAULT_ROWCOUNT = 1000;
 
 	// Using this functions, will cause query to execute as aggregation.
-	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS","EXTENDED_STATS","PERCENTILES","SCRIPTED_METRIC");
+	private final List<String> aggsFunctions = Arrays.asList("SUM", "MAX", "MIN", "AVG", "TOPHITS", "COUNT", "STATS","EXTENDED_STATS","PERCENTILES","SCRIPTED_METRIC", "PERCENTILE_RANKS", "MOVINGAVG", "ROLLINGSTD");//增加对移动平均值和滚动标准差的支持
 	private List<Field> fields = new ArrayList<>();
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
@@ -25,6 +25,9 @@ public class Select extends Query {
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
     private boolean selectAll = false;
+    //added by xzb 增加 SQL中的 having 语法，实现对聚合结果进行过滤
+    //select count(age) as ageCnt, avg(age) as ageAvg from bank group by gender having ageAvg > 4.5 and ageCnt > 5 order by ageCnt asc
+    private String having;
 
 	public boolean isAgg = false;
 
@@ -42,7 +45,15 @@ public class Select extends Query {
 		addGroupBy(wrapper);
 	}
 
-	public void addGroupBy(List<Field> fields) {
+    public String getHaving() {
+        return having;
+    }
+
+    public void setHaving(String having) {
+        this.having = having;
+    }
+
+    public void addGroupBy(List<Field> fields) {
 		isAgg = true;
 		this.groupBys.add(fields);
 	}
@@ -125,6 +136,10 @@ public class Select extends Query {
 
     public boolean isSelectAll() {
         return selectAll;
+    }
+
+    public void setFields(List<Field> fields) {
+        this.fields = fields;
     }
 }
 

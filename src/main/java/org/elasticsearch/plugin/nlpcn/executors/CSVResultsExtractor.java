@@ -1,31 +1,28 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
+import com.alibaba.druid.util.StringUtils;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
-import org.elasticsearch.search.aggregations.metrics.ExtendedStats;
-import org.elasticsearch.search.aggregations.metrics.GeoBounds;
-import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
-import org.elasticsearch.search.aggregations.metrics.Percentile;
-import org.elasticsearch.search.aggregations.metrics.Percentiles;
-import org.elasticsearch.search.aggregations.metrics.Stats;
-import org.elasticsearch.search.aggregations.metrics.TopHits;
+import org.elasticsearch.search.aggregations.metrics.*;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.QueryAction;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Eliran on 27/12/2015.
@@ -35,6 +32,7 @@ public class CSVResultsExtractor {
     private final boolean includeScore;
     private final boolean includeId;
     private final boolean includeScrollId;
+    private boolean includeIndex;
     private int currentLineIndex;
     private QueryAction queryAction;
 
@@ -46,6 +44,17 @@ public class CSVResultsExtractor {
         this.currentLineIndex = 0;
         this.queryAction = queryAction;
     }
+
+    public CSVResultsExtractor(boolean includeIndex, boolean includeScore, boolean includeType, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
+        this.includeIndex = includeIndex;
+        this.includeScore = includeScore;
+        this.includeType = includeType;
+        this.includeId = includeId;
+        this.includeScrollId = includeScrollId;
+        this.currentLineIndex = 0;
+        this.queryAction = queryAction;
+    }
+
 
     public CSVResult extractResults(Object queryResult, boolean flat, String separator) throws CsvExtractorException {
         if(queryResult instanceof SearchHits){
@@ -78,9 +87,70 @@ public class CSVResultsExtractor {
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
             List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
             List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
-            return new CSVResult(headers, csvLines);
+            //return new CSVResult(headers, csvLines);
+            return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
         }
+        if (queryResult instanceof GetIndexResponse){
+            ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = ((GetIndexResponse) queryResult).getMappings();
+            List<String> headers = Lists.newArrayList("field", "type");
+            List<String> csvLines  = new ArrayList<>();
+            List<List<String>> lines = new ArrayList<>();
+            Iterator<String> iter = mappings.keysIt();
+            while (iter.hasNext()) {
+                String index = iter.next();
+                MappingMetaData mappingJson = (MappingMetaData)mappings.get(index).values().toArray()[0];
+                 LinkedHashMap properties = (LinkedHashMap) mappingJson.sourceAsMap().get("properties");
+                Map<Object, Object> mapping = Maps.newLinkedHashMap();
+                parseMapping(Lists.newArrayList(), properties, mapping, 0);
+                for (Object key : mapping.keySet()) {
+                    lines.add(Lists.newArrayList(key.toString(), mapping.get(key).toString()));
+                }
+            }
+
+            for(List<String> simpleLine : lines){
+                csvLines.add(Joiner.on(separator).join(simpleLine));
+            }
+
+              return new CSVResult(headers, csvLines, csvLines.size());
+        }
+
+
         return null;
+    }
+
+    private static void parseMapping(ArrayList path, LinkedHashMap properties, Map<Object, Object> mapping, int children) {
+        int passed = 1;
+        for (Object key : properties.keySet()) {
+            if (properties.get(key) instanceof LinkedHashMap) {
+                LinkedHashMap value = (LinkedHashMap) properties.get(key);
+                if (!key.equals("properties")) {
+                    path.add(key.toString());
+                }
+                if (value.containsKey("type")) {
+                    String realPath = parsePath(path.toString());
+                    mapping.put(realPath , value.get("type"));
+                    if (value.containsKey("fields")) {
+                        mapping.put(realPath + ".keyword", "keyword");
+                    }
+                    if (passed == children) {
+                        if (path.size() - 2 >= 0) {//还要清理当前key的上层
+                            path.remove(path.size() - 2);
+                        }
+                    }
+                    path.remove(path.size() - 1);//移除当前元素
+                } else {
+                    if (value.containsKey("properties")) {
+                        children = ((LinkedHashMap) value.get("properties")).size();
+                    }
+                    parseMapping(path, value, mapping, children);
+                }
+            }
+            passed++;
+        }
+    }
+
+    private  static String parsePath(String path) {
+        return path.replaceAll("\\s+", "").replace("[", "").replace("]", "").replace(",", ".");
     }
 
     private  void handleAggregations(Aggregations aggregations, List<String> headers, List<List<String>> lines) throws CsvExtractorException {
@@ -211,8 +281,15 @@ public class CSVResultsExtractor {
                     line.add(percentiles.percentileAsString(p.getPercent()));
                 }
                 mergeHeadersWithPrefix(header, name, percentileHeaders.toArray(new String[0]));
-            }
-            else {
+            } else if (aggregation instanceof InternalTDigestPercentileRanks) {//added by xzb 增加PercentileRanks函数支持
+                InternalTDigestPercentileRanks percentileRanks = (InternalTDigestPercentileRanks) aggregation;
+                List<String> percentileHeaders = new ArrayList<>(7);
+                for (Percentile rank : percentileRanks) {
+                    percentileHeaders.add(String.valueOf(rank.getValue()));
+                    line.add(String.valueOf(rank.getPercent()));
+                }
+                mergeHeadersWithPrefix(header, name, percentileHeaders.toArray(new String[0]));
+            } else {
                 throw new CsvExtractorException("unknown NumericMetricsAggregation.MultiValue:" + aggregation.getClass());
             }
 
@@ -269,13 +346,31 @@ public class CSVResultsExtractor {
 
     private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
         Set<String> csvHeaders = new LinkedHashSet<>();
+        Map<String, String> highlightMap = Maps.newHashMap();
         for (SearchHit hit : hits) {
+            //获取高亮内容
+            hit.getHighlightFields().entrySet().stream().forEach(entry -> {
+                String key = entry.getKey();
+                String frag = entry.getValue().getFragments()[0].toString();
+                highlightMap.put(key, frag);
+            });
+
             Map<String, Object> doc = hit.getSourceAsMap();
+            //替换掉将原始结果中字段的值替换为高亮后的内容
+            for (Map.Entry<String, Object> entry : doc.entrySet()) {
+                if(highlightMap.containsKey(entry.getKey())) {
+                    doc.put(entry.getKey(), highlightMap.get(entry.getKey()));
+                }
+            }
+
             Map<String, DocumentField> fields = hit.getFields();
             for (DocumentField searchHitField : fields.values()) {
                 doc.put(searchHitField.getName(), searchHitField.getValue());
             }
             mergeHeaders(csvHeaders, doc, flat);
+            if (this.includeIndex) {
+                doc.put("_index", hit.getIndex());
+            }
             if (this.includeId) {
                 doc.put("_id", hit.getId());
             }
@@ -289,6 +384,9 @@ public class CSVResultsExtractor {
                 doc.put("_scroll_id", scrollId);
             }
             docsAsMap.add(doc);
+        }
+        if (this.includeIndex) {
+            csvHeaders.add("_index");
         }
         if (this.includeId) {
             csvHeaders.add("_id");

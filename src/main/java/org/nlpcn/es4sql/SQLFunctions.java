@@ -3,16 +3,14 @@ package org.nlpcn.es4sql;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.util.StringUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.nlpcn.es4sql.domain.KVValue;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by allwefantasy on 8/19/16.
@@ -25,11 +23,21 @@ public class SQLFunctions {
             "random", "abs", //nummber operator
             "split", "concat_ws", "substring", "trim",//string operator
             "add", "multiply", "divide", "subtract", "modulus",//binary operator
-            "field", "date_format", "if"
+            "field", "date_format", "if",//if判断目前支持多个二元操作符
+            "max_bw", "min_bw", //added by xzb 取两个数的最大/小值
+            "coalesce", //added by xzb  取两个值中间有值的那个
+            "case_new"//added by xzb 支持多个判断条件
     );
+    //added by xzb 增加二元操作运算符
+        public static Set<String> binaryOperators = Sets.newHashSet("=" ,"!=", ">", ">=", "<", "<=");
 
+    //modified by xzb 增加 binaryOperatorName，即 if、case条件中的判断
+    public static Tuple<String, String> function(String methodName, List<KVValue> paramers, String name, boolean returnValue , String  binaryOperatorName, List<String> binaryOperatorNames) throws Exception {
+        //added by xzb ,默认二元操作符为 ==
+        if (binaryOperatorName == null || binaryOperatorName.equals("=")) {
+            binaryOperatorName = " == ";
+        }
 
-    public static Tuple<String, String> function(String methodName, List<KVValue> paramers, String name,boolean returnValue) {
         Tuple<String, String> functionStr = null;
         switch (methodName.toLowerCase()) {
             case "if":
@@ -46,9 +54,12 @@ public class SQLFunctions {
                     caseString = caseString.substring(0,caseString.length()-2);
                     nameIF = nameIF.substring(0,nameIF.length()-1)+"),";
                 }else{
-                    String left = "doc['"+paramers.get(0).key+"'].value";
-                    caseString += left + " == '" + paramers.get(0).value+"'";
-                    nameIF = methodName+"("+paramers.get(0).toString()+",";
+                    String key  =paramers.get(0).key;
+                    String left = "doc['"+key+"'].value";
+                    String value = paramers.get(0).value.toString();
+                   //xzb  支持更多的表达式，如 > 、<、>=、<=、!= 等
+                    caseString += left + binaryOperatorName + value;
+                    nameIF = methodName+"("+ key + binaryOperatorName + value +",";
                 }
                 nameIF += paramers.get(1).value+","+paramers.get(2).value+")";
                 functionStr = new Tuple<>(nameIF,"if(("+caseString+")){"+paramers.get(1).value+"} else {"+paramers.get(2).value+"}");
@@ -86,12 +97,31 @@ public class SQLFunctions {
 
             case "abs":
             case "round":
+            case "max_bw":
+            case "min_bw":
+            case "coalesce":
+            case "case_new":
             case "floor":
-                if (paramers.size() == 2) {
-                    //zhongshu-comment es的round()默认是保留到个位，这里给round()函数加上精确到小数点后第几位的功能
-                    int decimalPrecision = Integer.parseInt(paramers.get(1).value.toString());
-                    functionStr = mathRoundTemplate("Math."+methodName,methodName,Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name, decimalPrecision);
-                    break;
+                //zhongshu-comment es的round()默认是保留到个位，这里给round()函数加上精确到小数点后第几位的功能
+                //modify by xzb 增加两个函数 min_bw 和 max_bw
+                if (paramers.size() >= 2) {//coalesce函数的参数可以是2个以上
+                    if (methodName.equals("round")){
+                        int decimalPrecision = Integer.parseInt(paramers.get(1).value.toString());
+                        functionStr = mathRoundTemplate("Math."+methodName,methodName,Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name, decimalPrecision);
+                        break;
+                    } else if (methodName.equals("max_bw")) {
+                        functionStr = mathBetweenTemplate("Math.max", methodName, paramers, name);
+                        break;
+                    }  else if (methodName.equals("min_bw")) {
+                        functionStr = mathBetweenTemplate("Math.min", methodName, paramers, name);
+                        break;
+                    } else if (methodName.equals("coalesce")) {
+                        functionStr = coalesceTemplate(methodName, paramers);
+                        break;
+                    }else if (methodName.equals("case_new")) {
+                        functionStr = caseNewTemplate(methodName, paramers, binaryOperatorNames);
+                        break;
+                    }
                 }
             case "ceil":
             case "cbrt":
@@ -158,7 +188,12 @@ public class SQLFunctions {
             default:
 
         }
-        if(returnValue && !methodName.equalsIgnoreCase("if")){
+
+        //added by xzb 以下几种情况的脚本，script中均不需要return语句
+        if(returnValue && !methodName.equalsIgnoreCase("if") &&
+                !methodName.equalsIgnoreCase("coalesce") &&
+                !methodName.equalsIgnoreCase("case_new") &&
+                buildInFunctions.contains(methodName)){
             String generatedFieldName = functionStr.v1();
             String returnCommand = ";return " + generatedFieldName +";" ;
             String newScript = functionStr.v2() + returnCommand;
@@ -370,6 +405,89 @@ public class SQLFunctions {
             return new Tuple<>(name, strColumn + ";def " + name + " = " + methodName + "((" + valueName + ") * " + num + ")/" + num);
         }
 
+    }
+
+    //求两个值中最大值，如 def abs_775880898 = Math.max(doc['age1'].value, doc['age2'].value);return abs_775880898;
+    private static Tuple<String, String> mathBetweenTemplate(String methodName, String fieldName, List<KVValue> paramer, String valueName) {
+        //获取 max_bw/min_bw 函数的两个字段
+        String name = fieldName + "_" + random();
+        StringBuffer sb = new StringBuffer();
+        sb.append("def " + name + " = " + methodName + "(");
+        int i = 0;
+        for (KVValue kv : paramer) {
+            String field = kv.value.toString();
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append("doc['" + field + "'].value");
+            i++;
+        }
+        sb.append(")");
+        return new Tuple<>(name, sb.toString());
+    }
+
+   //实现coalesce(field1, field2, ...)功能，只要任意一个不为空即可
+    private static Tuple<String, String> coalesceTemplate(String fieldName, List<KVValue> paramer) {
+        //if((doc['age2'].value != null)){doc['age2'].value} else if((doc['age1'].value != null)){doc['age1'].value}
+        String name = fieldName + "_" + random();
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        //sb.append("def " + name + " = ");
+        for (KVValue kv : paramer) {
+            String field = kv.value.toString();
+            if (i > 0) {
+                sb.append(" else ");
+            }
+            sb.append("if(doc['" + field + "'].value != null){doc['" + field + "'].value}");
+            i++;
+        }
+        return new Tuple<>(name, sb.toString());
+    }
+
+    //实现   case_new(gender='m', '男', gender='f', '女',  default, '无') as myGender  功能
+    private static Tuple<String, String> caseNewTemplate(String fieldName, List<KVValue> paramer, List<String> binaryOperatorNames) throws IllegalArgumentException{
+        if (paramer.size() % 2 != 0) {//如果参数不是偶数个，则抛异常
+            throw new IllegalArgumentException("请检查参数数量，必须是偶数个！");
+        }
+        //1.找出所有字段及其对应的值存入到Map中，如果有default，则将其移除
+        String defaultVal = null;
+        List<String> fieldList = new ArrayList<>();
+        List<Object> valueList = new ArrayList<>();
+        List<Object> defaultList = new ArrayList<>();
+        for (int i = 0; i < paramer.size(); i = i + 2) {
+            String _default = paramer.get(i + 1).value.toString();
+            //记录默认值
+            if (paramer.get(i).value.toString().equalsIgnoreCase("default")) {
+                 defaultVal = _default;
+            } else {
+                fieldList.add(paramer.get(i).key);
+                valueList.add(paramer.get(i).value.toString());
+                defaultList.add(_default);
+            }
+        }
+        //  if((doc['gender'].value == 'm')) '男' else if((doc['gender'].value == 'f')) '女' else ''无
+        String name = fieldName + "_" + random();
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        //sb.append("def " + name + " = ");
+        for (int j = 0; j < fieldList.size(); j++) {
+            String field = fieldList.get(j);
+            if (i > 0) {
+                sb.append(" else ");
+            }
+            //added by xzb 此处有问题，还需要支持除 == 外的其他二元操作符
+           // sb.append("if(doc['" + field + "'].value == " + valueList.get(i) + ") { " + defaultList.get(i) + " }");
+            String binaryOperatorName = binaryOperatorNames.get(j);
+            if ("=".equals(binaryOperatorName)) {// SQL中只有 = 符号，但script中必须使用 ==
+                binaryOperatorName = "==";
+            }
+            sb.append("if(doc['" + field + "'].value " + binaryOperatorName + " " + valueList.get(i) + ") { " + defaultList.get(i) + " }");
+            i++;
+        }
+        if (!StringUtils.isEmpty(defaultVal)) {
+            sb.append(" else " + defaultVal);
+        }
+        return new Tuple<>(name, sb.toString());
     }
 
     public static Tuple<String, String> strSingleValueTemplate(String methodName, String strColumn, String valueName) {

@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.query;
 
+import com.alibaba.druid.support.json.JSONUtils;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchScrollAction;
