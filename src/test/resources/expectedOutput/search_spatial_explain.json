@@ -11,7 +11,7 @@
                                 "geo_shape" : {
                                     "place" : {
                                         "shape" : {
-                                            "type" : "polygon",
+                                            "type" : "Polygon",
                                             "coordinates" : [
                                                 [
                                                     [
