@@ -3,28 +3,30 @@ package org.elasticsearch.plugin.nlpcn;
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
-
 import org.elasticsearch.index.query.BoolQueryBuilder;
-
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
-
 import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Eliran on 22/8/2015.

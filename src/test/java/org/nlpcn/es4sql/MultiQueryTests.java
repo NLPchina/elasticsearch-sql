@@ -14,7 +14,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_SYSTEM;
 
 /**
  * Created by Eliran on 21/8/2016.

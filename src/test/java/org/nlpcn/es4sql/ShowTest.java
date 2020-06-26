@@ -11,7 +11,8 @@ import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
 
 /**
  * Created by Eliran on 16/10/2015.

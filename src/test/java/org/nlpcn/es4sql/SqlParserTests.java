@@ -7,7 +7,14 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.nlpcn.es4sql.domain.*;
+import org.nlpcn.es4sql.domain.Condition;
+import org.nlpcn.es4sql.domain.Field;
+import org.nlpcn.es4sql.domain.From;
+import org.nlpcn.es4sql.domain.JoinSelect;
+import org.nlpcn.es4sql.domain.MethodField;
+import org.nlpcn.es4sql.domain.Order;
+import org.nlpcn.es4sql.domain.Select;
+import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -26,7 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ODBC;
 
 /**
  * Created by Eliran on 21/8/2015.

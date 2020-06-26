@@ -1,10 +1,5 @@
 package org.nlpcn.es4sql.domain;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
@@ -13,9 +8,21 @@ import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.MatchPhrasePrefixQueryBuilder;
+import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.SpanNearQueryBuilder;
+import org.elasticsearch.index.query.WildcardQueryBuilder;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class Paramer {
 	private String analysis;

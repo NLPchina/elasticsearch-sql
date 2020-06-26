@@ -1,11 +1,6 @@
 package org.nlpcn.es4sql;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
-
-import java.io.FileInputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
+import com.google.common.io.ByteStreams;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -22,7 +17,23 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import com.google.common.io.ByteStreams;
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_JOIN_TYPE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_LOCATION;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_LOCATION2;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_NESTED_TYPE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ODBC;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ONLINE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_PEOPLE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_PHRASE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_SYSTEM;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

@@ -2,15 +2,14 @@ package org.nlpcn.es4sql;
 
 
 import com.google.common.collect.ImmutableMap;
-
 import org.elasticsearch.plugin.nlpcn.ElasticJoinExecutor;
 import org.elasticsearch.plugin.nlpcn.HashJoinElasticExecutor;
 import org.elasticsearch.search.SearchHit;
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+import org.nlpcn.es4sql.query.join.HashJoinElasticRequestBuilder;
 
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -20,7 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_LOCATION;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_LOCATION2;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_PEOPLE;
 
 /**
  * Created by Eliran on 22/8/2015.

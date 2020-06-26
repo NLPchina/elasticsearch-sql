@@ -3,16 +3,16 @@ package org.nlpcn.es4sql;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResult;
 import org.elasticsearch.plugin.nlpcn.executors.CSVResultsExtractor;
-import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.QueryAction;
 
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ONLINE;
 
 /**
  * Created by Eliran on 27/12/2015.

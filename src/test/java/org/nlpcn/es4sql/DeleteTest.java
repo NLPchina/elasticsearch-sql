@@ -7,11 +7,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
 import java.sql.SQLFeatureNotSupportedException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT_TEMP;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_PHRASE;
 
 public class DeleteTest {
 

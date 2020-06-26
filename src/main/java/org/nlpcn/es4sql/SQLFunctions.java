@@ -2,7 +2,11 @@ package org.nlpcn.es4sql;
 
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLInListExpr;
+import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
+import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
+import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.alibaba.druid.util.StringUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -10,7 +14,10 @@ import com.google.common.collect.Sets;
 import org.elasticsearch.common.collect.Tuple;
 import org.nlpcn.es4sql.domain.KVValue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by allwefantasy on 8/19/16.

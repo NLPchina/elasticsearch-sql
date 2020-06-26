@@ -1,11 +1,5 @@
 package org.nlpcn.es4sql;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
-
-import java.io.IOException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.util.Set;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -13,6 +7,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
+
+import java.io.IOException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.Set;
+
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
 
 public class SourceFieldTest {
 

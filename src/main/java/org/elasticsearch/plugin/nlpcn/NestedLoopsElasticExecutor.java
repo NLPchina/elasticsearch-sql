@@ -1,7 +1,10 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
-import org.elasticsearch.action.search.*;
+import org.elasticsearch.action.search.MultiSearchRequest;
+import org.elasticsearch.action.search.MultiSearchResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;

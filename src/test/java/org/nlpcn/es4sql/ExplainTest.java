@@ -5,6 +5,7 @@ import com.google.common.io.Files;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -13,8 +14,10 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_LOCATION;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_NESTED_TYPE;
 
 public class ExplainTest {
 
