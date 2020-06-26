@@ -653,6 +653,12 @@ public class AggMaker {
                     case "interval":
                         dateHistogram.dateHistogramInterval(new DateHistogramInterval(kv.value.toString()));
                         break;
+                    case "calendar_interval":
+                        dateHistogram.calendarInterval(new DateHistogramInterval(kv.value.toString()));
+                        break;
+                    case "fixed_interval":
+                        dateHistogram.fixedInterval(new DateHistogramInterval(kv.value.toString()));
+                        break;
                     case "field":
                         dateHistogram.field(value);
                         break;
@@ -737,7 +743,7 @@ public class AggMaker {
                     case "extended_bounds":
                         String[] bounds = value.split(":");
                         if (bounds.length == 2)
-                            histogram.extendedBounds(Long.valueOf(bounds[0]), Long.valueOf(bounds[1]));
+                            histogram.extendedBounds(Long.parseLong(bounds[0]), Long.parseLong(bounds[1]));
                         break;
                     case "alias":
                     case "nested":
