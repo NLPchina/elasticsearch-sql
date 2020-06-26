@@ -256,6 +256,16 @@ public class MultiQueryTests {
         Assert.assertEquals("not hits should be returned", 0, searchHits.length);
     }
 
+    @Test
+    public void intersectWithComplexAlias() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("SELECT firstname FROM %s/account " +
+                "intersect " +
+                "SELECT name.firstname as firstname FROM %s/gotCharacters", TEST_INDEX_ACCOUNT, TEST_INDEX_GAME_OF_THRONES);
+        SearchHit[] searchHits = executeAndGetHits(query);
+        Assert.assertEquals(1, searchHits.length);
+        Assert.assertTrue(searchHits[0].getSourceAsMap().get("firstname").toString().contains("Jaime"));
+    }
+
     private SearchHit[] executeAndGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder explain = searchDao.explain(query).explain();
