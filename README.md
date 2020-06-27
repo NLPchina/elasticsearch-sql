@@ -157,10 +157,6 @@ You can also use ES functions in SQL.
 
 **Check out our [wiki!](https://github.com/NLPchina/elasticsearch-sql/wiki)**
 
-## explain example 
-
-you can visite : [http://essql.nlpcn.org/](http://essql.nlpcn.org/) , it is a sample example for explain
-
 ## Web frontend overview
 
 ![Web frontend overview](https://cloud.githubusercontent.com/assets/9518816/5555009/ebe4b53c-8c93-11e4-88ad-96d805cc698f.png)
