@@ -159,7 +159,7 @@ You can also use ES functions in SQL.
 
 ## explain example 
 
-you can visite : [http://essql.nlpcn.org/](http://essql.nlpcn.org/) , it is a sample example for explain
+
 
 ## Web frontend overview
 
