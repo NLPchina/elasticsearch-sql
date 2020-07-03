@@ -9,7 +9,6 @@ import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.BaseRestHandler;
 import org.elasticsearch.rest.BytesRestResponse;
-import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestStatus;
 import org.nlpcn.es4sql.SearchDao;
@@ -19,26 +18,33 @@ import org.nlpcn.es4sql.query.QueryAction;
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.elasticsearch.rest.RestRequest.Method.GET;
+import static org.elasticsearch.rest.RestRequest.Method.POST;
 
 
 public class RestSqlAction extends BaseRestHandler {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public RestSqlAction(RestController restController) {
-        restController.registerHandler(RestRequest.Method.POST, "/_nlpcn/sql/explain", this);
-        restController.registerHandler(RestRequest.Method.GET, "/_nlpcn/sql/explain", this);
-        restController.registerHandler(RestRequest.Method.POST, "/_nlpcn/sql", this);
-        restController.registerHandler(RestRequest.Method.GET, "/_nlpcn/sql", this);
-    }
-
     @Override
     public String getName() {
         return "sql_action";
+    }
+
+    @Override
+    public List<Route> routes() {
+        return Collections.unmodifiableList(Arrays.asList(
+                new Route(POST, "/_nlpcn/sql/explain"),
+                new Route(GET, "/_nlpcn/sql/explain"),
+                new Route(POST, "/_nlpcn/sql"),
+                new Route(GET, "/_nlpcn/sql")));
     }
 
     @Override
@@ -93,6 +99,6 @@ public class RestSqlAction extends BaseRestHandler {
     protected Set<String> responseParams() {
         Set<String> responseParams = new HashSet<>(super.responseParams());
         responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "_scroll_id", "newLine", "format", "showHeader"));
-        return responseParams;
+        return Collections.unmodifiableSet(responseParams);
     }
 }

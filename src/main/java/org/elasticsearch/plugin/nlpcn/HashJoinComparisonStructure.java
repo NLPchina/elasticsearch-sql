@@ -3,7 +3,11 @@ package org.elasticsearch.plugin.nlpcn;
 import org.elasticsearch.search.SearchHit;
 import org.nlpcn.es4sql.domain.Field;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by Eliran on 2/11/2015.

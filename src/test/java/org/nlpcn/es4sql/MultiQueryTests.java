@@ -14,7 +14,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_SYSTEM;
 
 /**
  * Created by Eliran on 21/8/2016.
@@ -251,6 +254,16 @@ public class MultiQueryTests {
                 "SELECT letter  FROM %s/systems WHERE system_name = 'C' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not hits should be returned", 0, searchHits.length);
+    }
+
+    @Test
+    public void intersectWithComplexAlias() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
+        String query = String.format("SELECT firstname FROM %s/account " +
+                "intersect " +
+                "SELECT name.firstname as firstname FROM %s/gotCharacters", TEST_INDEX_ACCOUNT, TEST_INDEX_GAME_OF_THRONES);
+        SearchHit[] searchHits = executeAndGetHits(query);
+        Assert.assertEquals(1, searchHits.length);
+        Assert.assertTrue(searchHits[0].getSourceAsMap().get("firstname").toString().contains("Jaime"));
     }
 
     private SearchHit[] executeAndGetHits(String query) throws SqlParseException, SQLFeatureNotSupportedException, IOException {

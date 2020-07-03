@@ -47,7 +47,7 @@ public class UnionExecutor implements ElasticHitsExecutor {
 
     private void fillInternalSearchHits(List<SearchHit> unionHits, SearchHit[] hits, Map<String, String> fieldNameToAlias) {
         for(SearchHit hit : hits){
-            SearchHit searchHit = new SearchHit(currentId, hit.getId(), new Text(hit.getType()), hit.getFields());
+            SearchHit searchHit = new SearchHit(currentId, hit.getId(), new Text(hit.getType()), hit.getFields(), null);
             searchHit.sourceRef(hit.getSourceRef());
             searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();

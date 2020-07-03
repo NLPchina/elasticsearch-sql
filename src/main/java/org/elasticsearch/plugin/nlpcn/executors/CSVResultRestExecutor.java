@@ -8,7 +8,7 @@ import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
 import org.nlpcn.es4sql.query.QueryAction;
 
-import java.util.*;
+import java.util.Map;
 
 /**
  * Created by Eliran on 26/12/2015.

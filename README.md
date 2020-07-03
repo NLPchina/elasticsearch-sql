@@ -122,22 +122,35 @@ Elasticsearch-SQL
 <br/>
 **6.8.5** [![6.8.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **6.8.6** [![6.8.6 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.6)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.8.7** [![6.8.7 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.7)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.8.8** [![6.8.8 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.8)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.8.9** [![6.8.9 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.9)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.8.10** [![6.8.10 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.10)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
 **7.0.0** [![7.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.0.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.0.1** [![7.0.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.0.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.1.0** [![7.1.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.1.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.1.1** [![7.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
 **7.2.0** [![7.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.2.1** [![7.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
 **7.3.0** [![7.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.3.1** [![7.3.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.3.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.3.2** [![7.3.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.3.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.4.0** [![7.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
 **7.4.1** [![7.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.4.2** [![7.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
 **7.5.0** [![7.5.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 **7.5.1** [![7.5.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.5.2** [![7.5.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.6.0** [![7.6.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.6.1** [![7.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.6.2** [![7.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+<br/>
+**7.7.0** [![7.7.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.7.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.7.1** [![7.7.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.7.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**7.8.0** [![7.8.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.8.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -146,7 +159,7 @@ You can also use ES functions in SQL.
 
 ## explain example 
 
-you can visite : [http://essql.nlpcn.org/](http://essql.nlpcn.org/) , it is a sample example for explain
+
 
 ## Web frontend overview
 
@@ -253,6 +266,10 @@ Versions
 | 6.8.4                 | 6.8.4.0        |                                | elastic6.8.4 |
 | 6.8.5                 | 6.8.5.0        |                                | elastic6.8.5 |
 | 6.8.6                 | 6.8.6.0        |                                | elastic6.8.6 |
+| 6.8.7                 | 6.8.7.0        |                                | elastic6.8.7 |
+| 6.8.8                 | 6.8.8.0        |                                | elastic6.8.8 |
+| 6.8.9                 | 6.8.9.0        |                                | elastic6.8.9 |
+| 6.8.10                | 6.8.10.0       |                                | elastic6.8.10|
 | 7.0.0                 | 7.0.0.0        |                                | elastic7.0.0 |
 | 7.0.1                 | 7.0.1.0        |                                | elastic7.0.1 |
 | 7.1.0                 | 7.1.0.0        |                                | elastic7.1.0 |
@@ -267,6 +284,13 @@ Versions
 | 7.4.2                 | 7.4.2.0        |                                | elastic7.4.2 |
 | 7.5.0                 | 7.5.0.0        |                                | elastic7.5.0 |
 | 7.5.1                 | 7.5.1.0        |                                | elastic7.5.1 |
+| 7.5.2                 | 7.5.2.0        |                                | elastic7.5.2 |
+| 7.6.0                 | 7.6.0.0        |                                | elastic7.6.0 |
+| 7.6.1                 | 7.6.1.0        |                                | elastic7.6.1 |
+| 7.6.2                 | 7.6.2.0        |                                | elastic7.6.2 |
+| 7.7.0                 | 7.7.0.0        |                                | elastic7.7.0 |
+| 7.7.1                 | 7.7.1.0        |                                | elastic7.7.1 |
+| 7.8.0                 | 7.8.0.0        |                                | elastic7.8.0 |
 
 ### Elasticsearch 1.x
 ````
@@ -711,6 +735,26 @@ Versions
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.6.0/elasticsearch-sql-6.8.6.0.zip
 ````
 
+### Elasticsearch 6.8.7
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.7.0/elasticsearch-sql-6.8.7.0.zip
+````
+
+### Elasticsearch 6.8.8
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.8.0/elasticsearch-sql-6.8.8.0.zip
+````
+
+### Elasticsearch 6.8.9
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.9.0/elasticsearch-sql-6.8.9.0.zip
+````
+
+### Elasticsearch 6.8.10
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.10.0/elasticsearch-sql-6.8.10.0.zip
+````
+
 ### Elasticsearch 7.0.0
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.0.0.0/elasticsearch-sql-7.0.0.0.zip
@@ -779,6 +823,41 @@ Versions
 ### Elasticsearch 7.5.1
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.5.1.0/elasticsearch-sql-7.5.1.0.zip
+````
+
+### Elasticsearch 7.5.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.5.2.0/elasticsearch-sql-7.5.2.0.zip
+````
+
+### Elasticsearch 7.6.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.6.0.0/elasticsearch-sql-7.6.0.0.zip
+````
+
+### Elasticsearch 7.6.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.6.1.0/elasticsearch-sql-7.6.1.0.zip
+````
+
+### Elasticsearch 7.6.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.6.2.0/elasticsearch-sql-7.6.2.0.zip
+````
+
+### Elasticsearch 7.7.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.7.0.0/elasticsearch-sql-7.7.0.0.zip
+````
+
+### Elasticsearch 7.7.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.7.1.0/elasticsearch-sql-7.7.1.0.zip
+````
+
+### Elasticsearch 7.8.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.8.0.0/elasticsearch-sql-7.8.0.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.

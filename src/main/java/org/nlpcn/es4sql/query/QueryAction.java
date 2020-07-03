@@ -126,6 +126,15 @@ public abstract class QueryAction {
         }
     }
 
+    protected void updateRequestWithMinScore(Select select, SearchRequestBuilder request) {
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.MIN_SCORE && hint.getParams() != null && 0 < hint.getParams().length) {
+                String param = hint.getParams()[0].toString();
+                request.setMinScore(Float.parseFloat(param));
+            }
+        }
+    }
+
     protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
         boolean foundAnyHighlights = false;
         HighlightBuilder highlightBuilder = new HighlightBuilder();

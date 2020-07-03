@@ -5,13 +5,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -20,11 +17,35 @@ import org.nlpcn.es4sql.query.SqlElasticSearchRequestBuilder;
 import java.io.IOException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.nlpcn.es4sql.TestsConstants.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
+import static org.nlpcn.es4sql.TestsConstants.DATE_FORMAT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_JOIN_TYPE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_LOCATION;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_NESTED_TYPE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ODBC;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ONLINE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_PEOPLE;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_PHRASE;
+import static org.nlpcn.es4sql.TestsConstants.TS_DATE_FORMAT;
 
 
 public class QueryTest {

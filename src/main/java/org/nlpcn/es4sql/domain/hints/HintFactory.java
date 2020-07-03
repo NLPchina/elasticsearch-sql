@@ -181,6 +181,10 @@ public class HintFactory {
             }
             return new Hint(HintType.INDICES_OPTIONS, new Object[]{indicesOptions});
         }
+        if (hintAsString.startsWith("! MIN_SCORE")) {
+            String minScoreParam = getParamFromHint(hintAsString, "! MIN_SCORE");
+            return new Hint(HintType.MIN_SCORE, new String[]{minScoreParam});
+        }
 
         return null;
     }

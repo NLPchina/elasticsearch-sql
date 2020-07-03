@@ -24,5 +24,6 @@ public enum HintType
     PREFERENCE,
     TRACK_TOTAL_HITS,
     TIMEOUT,
-    INDICES_OPTIONS
+    INDICES_OPTIONS,
+    MIN_SCORE
 }

@@ -1,10 +1,7 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import org.elasticsearch.action.search.MultiSearchRequest;
-import org.elasticsearch.action.search.MultiSearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.multi.MultiQueryAction;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
 /**
@@ -18,8 +15,10 @@ public class MultiRequestExecutorFactory {
                  return new UnionExecutor(client,builder);
              case MINUS:
                  return new MinusExecutor(client,builder);
+             case INTERSECT:
+                 return new IntersectExecutor(builder);
              default:
-                 throw new SqlParseException("only supports union, and minus operations");
+                 throw new SqlParseException("only supports union, minus and intersect operations");
          }
      }
 }
