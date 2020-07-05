@@ -465,7 +465,7 @@ public class SQLFunctions {
         String name = fieldName + "_" + random();
         StringBuffer sb = new StringBuffer();
         if (null == params || params.size()!= 3) {
-            throw new IllegalArgumentException("======================parse 函数必须包含三个参数，第一个是原字段，第二个是带有group的正则表达式, 第三个值会抽取不成功的默认值");
+            throw new IllegalArgumentException("parse 函数必须包含三个参数，第一个是原字段，第二个是带有group的正则表达式, 第三个是抽取不成功的默认值");
         }
         String srcField = params.get(0).value.toString();
         String regexStr = params.get(1).value.toString();
@@ -478,7 +478,7 @@ public class SQLFunctions {
     }
 
     //实现   case_new(gender='m', '男', gender='f', '女',  default, '无') as myGender  功能
-    private static Tuple<String, String> caseNewTemplate(String fieldName, List<KVValue> paramer, List<String> binaryOperatorNames) throws IllegalArgumentException{
+    private static Tuple<String, String> caseNewTemplate(String fieldName, List<KVValue> paramer, List<String> binaryOperatorNames) {
         if (paramer.size() % 2 != 0) {//如果参数不是偶数个，则抛异常
             throw new IllegalArgumentException("请检查参数数量，必须是偶数个！");
         }
