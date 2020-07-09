@@ -3,6 +3,7 @@ package org.nlpcn.es4sql;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,6 +12,7 @@ import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
+import org.elasticsearch.common.Strings;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
@@ -215,4 +217,7 @@ public class Util {
         return false;
     }
 
+    public static String quoteString(String str) {
+        return Objects.nonNull(str) ? String.format("\"%s\"", Strings.replace(str, "\"", "\"\"")) : str;
+    }
 }
