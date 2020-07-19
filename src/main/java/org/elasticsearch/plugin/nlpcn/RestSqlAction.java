@@ -98,7 +98,7 @@ public class RestSqlAction extends BaseRestHandler {
     @Override
     protected Set<String> responseParams() {
         Set<String> responseParams = new HashSet<>(super.responseParams());
-        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "_scroll_id", "newLine", "format", "showHeader"));
+        responseParams.addAll(Arrays.asList("sql", "flat", "separator", "_score", "_type", "_id", "_scroll_id", "newLine", "format", "showHeader", "quote"));
         return Collections.unmodifiableSet(responseParams);
     }
 }

@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Eliran on 27/12/2015.
@@ -67,12 +68,12 @@ public class CSVResultsExtractor {
     }
 
 
-    public CSVResult extractResults(Object queryResult, boolean flat, String separator) throws CsvExtractorException {
+    public CSVResult extractResults(Object queryResult, boolean flat, String separator, boolean quote) throws CsvExtractorException {
         if(queryResult instanceof SearchHits){
             SearchHit[] hits = ((SearchHits) queryResult).getHits();
             List<Map<String,Object>> docsAsMap = new ArrayList<>();
             List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap);
-            List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
+            List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers);
             return new CSVResult(headers,csvLines);
         }
         if(queryResult instanceof Aggregations){
@@ -83,7 +84,7 @@ public class CSVResultsExtractor {
 
             List<String> csvLines  = new ArrayList<>();
             for(List<String> simpleLine : lines){
-                csvLines.add(Joiner.on(separator).join(simpleLine));
+                csvLines.add(Joiner.on(separator).join(quote ? simpleLine.stream().map(Util::quoteString).collect(Collectors.toList()) : simpleLine));
             }
 
             //todo: need to handle more options for aggregations:
@@ -97,7 +98,7 @@ public class CSVResultsExtractor {
             SearchHit[] hits = ((SearchResponse) queryResult).getHits().getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
             List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
-            List<String> csvLines = createCSVLinesFromDocs(flat, separator, docsAsMap, headers);
+            List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers);
             //return new CSVResult(headers, csvLines);
             return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
         }
@@ -343,12 +344,12 @@ public class CSVResultsExtractor {
         return aggregations.asList().get(0);
     }
 
-    private List<String> createCSVLinesFromDocs(boolean flat, String separator, List<Map<String, Object>> docsAsMap, List<String> headers) {
+    private List<String> createCSVLinesFromDocs(boolean flat, String separator, boolean quote, List<Map<String, Object>> docsAsMap, List<String> headers) {
         List<String> csvLines = new ArrayList<>();
         for(Map<String,Object> doc : docsAsMap){
             String line = "";
             for(String header : headers){
-                line += findFieldValue(header, doc, flat, separator);
+                line += findFieldValue(header, doc, flat, separator, quote);
             }
             csvLines.add(line.substring(0, line.lastIndexOf(separator)));
         }
@@ -423,7 +424,7 @@ public class CSVResultsExtractor {
         return headers;
     }
 
-    private String findFieldValue(String header, Map<String, Object> doc, boolean flat, String separator) {
+    private String findFieldValue(String header, Map<String, Object> doc, boolean flat, String separator, boolean quote) {
         if(flat && header.contains(".")){
             String[] split = header.split("\\.");
             Object innerDoc = doc;
@@ -431,17 +432,17 @@ public class CSVResultsExtractor {
                 if(!(innerDoc instanceof Map)){
                     return separator;
                 }
-                innerDoc = ((Map<String,Object>)innerDoc).get(innerField);
+                innerDoc = ((Map<?, ?>) innerDoc).get(innerField);
                 if(innerDoc == null){
                     return separator;
                 }
 
             }
-            return innerDoc.toString() + separator;
+            return (quote ? Util.quoteString(innerDoc.toString()) : innerDoc.toString()) + separator;
         }
         else {
             if(doc.containsKey(header)){
-                return String.valueOf(doc.get(header)) + separator;
+                return (quote ? Util.quoteString(String.valueOf(doc.get(header))) : doc.get(header)) + separator;
             }
         }
         return separator;

@@ -467,7 +467,7 @@ public class CSVResultsExtractorTests {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution =  QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new CSVResultsExtractor(includeScore,includeType, includeId,false, queryAction).extractResults(execution, flat, seperator);
+        return new CSVResultsExtractor(includeScore,includeType, includeId,false, queryAction).extractResults(execution, flat, seperator, false);
     }
 
 }
