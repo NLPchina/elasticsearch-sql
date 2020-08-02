@@ -15,6 +15,8 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.InternalOrder;
 import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
+import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
@@ -52,6 +54,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -89,6 +92,23 @@ public class AggMaker {
                 Where where = (Where) paramsAsMap.get("where");
                 return AggregationBuilders.filter(paramsAsMap.get("alias").toString(),
                         QueryMaker.explan(where));
+            } else if ("filters".equals(methodField.getName())) {
+                Map<String, Object> paramsAsMap = methodField.getParamsAsMap();
+                List<FiltersAggregator.KeyedFilter> filters = new ArrayList<>();
+                @SuppressWarnings("unchecked")
+                List<Field> filterFields = (List<Field>) paramsAsMap.get("filters");
+                for (Field f : filterFields) {
+                    Map<String, Object> params = ((MethodField) f).getParamsAsMap();
+                    filters.add(new FiltersAggregator.KeyedFilter(params.get("alias").toString(),
+                            QueryMaker.explan((Where) params.get("where"))));
+                }
+                FiltersAggregationBuilder filtersAggBuilder = AggregationBuilders.filters(paramsAsMap.get("alias").toString(),
+                        filters.toArray(new FiltersAggregator.KeyedFilter[0]));
+                Object otherBucketKey = paramsAsMap.get("otherBucketKey");
+                if (Objects.nonNull(otherBucketKey)) {
+                    filtersAggBuilder.otherBucketKey(otherBucketKey.toString());
+                }
+                return filtersAggBuilder;
             }
             aggsBuilder =  makeRangeGroup(methodField);
         } else {

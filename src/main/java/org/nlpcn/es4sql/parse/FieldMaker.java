@@ -61,6 +61,8 @@ public class FieldMaker {
                 }
             } else if (methodName.equalsIgnoreCase("filter")) {
                 return makeFilterMethodField(mExpr, alias);
+            } else if ("filters".equalsIgnoreCase(methodName)) {
+                return makeFiltersMethodField(mExpr, alias);
             }
 
             return makeMethodField(methodName, mExpr.getParameters(), null, alias, tableAlias, true);
@@ -151,6 +153,38 @@ public class FieldMaker {
         return new MethodField("filter", methodParameters, null, alias);
     }
 
+    private static Field makeFiltersMethodField(SQLMethodInvokeExpr filtersMethod, String alias) throws SqlParseException {
+        List<SQLExpr> parameters = filtersMethod.getParameters();
+        int firstFilterMethod = -1;
+        int parametersSize = parameters.size();
+        for (int i = 0; i < parametersSize; ++i) {
+            if (parameters.get(i) instanceof SQLMethodInvokeExpr) {
+                firstFilterMethod = i;
+                break;
+            }
+        }
+        if (firstFilterMethod < 0) {
+            throw new SqlParseException("filters group by field should have one more filter methods");
+        }
+
+        String filtersAlias = filtersMethod.getMethodName();
+        String otherBucketKey = null;
+        if (0 < firstFilterMethod) {
+            filtersAlias = Util.extendedToString(parameters.get(0));
+            if (1 < firstFilterMethod) {
+                otherBucketKey = Util.extendedToString(parameters.get(1));
+            }
+        }
+        List<Field> filterFields = new ArrayList<>();
+        for (SQLExpr expr : parameters.subList(firstFilterMethod, parametersSize)) {
+            filterFields.add(makeFilterMethodField((SQLMethodInvokeExpr) expr, null));
+        }
+        List<KVValue> methodParameters = new ArrayList<>();
+        methodParameters.add(new KVValue("alias", filtersAlias + "@FILTERS"));
+        methodParameters.add(new KVValue("otherBucketKey", otherBucketKey));
+        methodParameters.add(new KVValue("filters", filterFields));
+        return new MethodField("filters", methodParameters, null, alias);
+    }
 
     private static Field handleIdentifier(NestedType nestedType, String alias, String tableAlias) throws SqlParseException {
         Field field = handleIdentifier(new SQLIdentifierExpr(nestedType.field), alias, tableAlias);

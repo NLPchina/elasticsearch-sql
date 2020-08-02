@@ -10,6 +10,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
+import org.elasticsearch.search.aggregations.bucket.filter.InternalFilters;
 import org.elasticsearch.search.aggregations.bucket.geogrid.InternalGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
@@ -877,5 +878,22 @@ public class AggregationTest {
 	    System.out.println(result);
 	    Assert.assertTrue(result.contains("Math.pow(doc['field'].value, 1)"));
         Assert.assertTrue(result.contains("\"script\":{\"source\""));
+    }
+
+    @Test
+    public void groupByTestWithFilters() throws Exception {
+        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY filters(gender,other,filter(male,gender='m'),filter(female,gender='f'))", TEST_INDEX_ACCOUNT));
+        InternalFilters filters = result.get("gender@FILTERS");
+        for (InternalFilters.InternalBucket bucket : filters.getBuckets()) {
+            String key = bucket.getKey();
+            long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
+            if (key.equalsIgnoreCase("male@FILTER")) {
+                Assert.assertEquals(507, count);
+            } else if (key.equalsIgnoreCase("female@FILTER")) {
+                Assert.assertEquals(493, count);
+            } else {
+                throw new Exception(String.format("Unexpected key: %s", key));
+            }
+        }
     }
 }
