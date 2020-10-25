@@ -25,7 +25,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregati
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.significant.SignificantTextAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.SignificantTextAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.GeoBoundsAggregationBuilder;
