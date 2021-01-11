@@ -808,7 +808,13 @@ public class AggMaker {
         // ignore alias param
         LinkedList<KVValue> params = field.getParams().stream().filter(kv -> !"alias".equals(kv.key)).collect(Collectors.toCollection(LinkedList::new));
 
-        String fieldName = params.poll().toString();
+        KVValue param = Objects.requireNonNull(params.poll());
+        String fieldName;
+        if (param.value instanceof NestedType) {
+            fieldName = ((NestedType) param.value).field;
+        } else {
+            fieldName = param.toString();
+        }
 
         double[] ds = Util.KV2DoubleArr(params);
 

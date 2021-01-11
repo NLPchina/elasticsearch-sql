@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.nlpcn.es4sql.Util;
+import org.nlpcn.es4sql.parse.NestedType;
 
 /**
  * 搜索域
@@ -76,11 +77,14 @@ public class MethodField extends Field {
     @Override
     public String getNestedPath() {
         if(!this.isNested()) return null;
-        if(this.isReverseNested()){
-            String reverseNestedPath = this.getParamsAsMap().get("reverse_nested").toString();
+        Map<String, Object> paramsMap = this.getParamsAsMap();
+        if (this.isReverseNested()) {
+            Object nested = paramsMap.get("reverse_nested");
+            String reverseNestedPath = nested instanceof NestedType ? ((NestedType) nested).path : nested.toString();
             return reverseNestedPath.isEmpty() ? null : reverseNestedPath;
         }
-        return this.getParamsAsMap().get("nested").toString();
+        Object nested = paramsMap.get("nested");
+        return nested instanceof NestedType ? ((NestedType) nested).path : nested.toString();
     }
 
     @Override
