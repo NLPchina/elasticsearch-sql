@@ -19,7 +19,7 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.ast.expr.SQLTextLiteralExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.nlpcn.es4sql.SQLFunctions;
@@ -43,12 +43,12 @@ import java.util.List;
  */
 public class WhereParser {
 
-    private MySqlSelectQueryBlock query;
+    private SQLSelectQueryBlock query;
     private SQLDeleteStatement delete;
     private SQLExpr where;
     private SqlParser sqlParser;
 
-    public WhereParser(SqlParser sqlParser, MySqlSelectQueryBlock query) {
+    public WhereParser(SqlParser sqlParser, SQLSelectQueryBlock query) {
         this.sqlParser = sqlParser;
         this.query = query;
         this.where = query.getWhere();
@@ -455,7 +455,7 @@ public class WhereParser {
         } else if (expr instanceof SQLInSubQueryExpr) {
             SQLInSubQueryExpr sqlIn = (SQLInSubQueryExpr) expr;
 
-            Select innerSelect = sqlParser.parseSelect((MySqlSelectQueryBlock) sqlIn.getSubQuery().getQuery());
+            Select innerSelect = sqlParser.parseSelect((SQLSelectQueryBlock) sqlIn.getSubQuery().getQuery());
 
             if (innerSelect.getFields() == null || innerSelect.getFields().size() != 1)
                 throw new SqlParseException("should only have one return field in subQuery");
@@ -585,7 +585,7 @@ public class WhereParser {
         List<Object> values = new ArrayList<>();
         for (SQLExpr innerExpr : method.getParameters()) {
             if (innerExpr instanceof SQLQueryExpr) {
-                Select select = sqlParser.parseSelect((MySqlSelectQueryBlock) ((SQLQueryExpr) innerExpr).getSubQuery().getQuery());
+                Select select = sqlParser.parseSelect((SQLSelectQueryBlock) ((SQLQueryExpr) innerExpr).getSubQuery().getQuery());
                 values.add(new SubQueryExpression(select));
             } else if (innerExpr instanceof SQLTextLiteralExpr) {
                 values.add(((SQLTextLiteralExpr) innerExpr).getText());

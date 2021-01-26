@@ -18,11 +18,11 @@ import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectGroupByClause;
 import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlOrderingExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlDeleteStatement;
-import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Delete;
@@ -58,7 +58,7 @@ public class SqlParser {
 
     public Select parseSelect(SQLQueryExpr mySqlExpr) throws SqlParseException {
 
-        MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) mySqlExpr.getSubQuery().getQuery();
+        SQLSelectQueryBlock query = (SQLSelectQueryBlock) mySqlExpr.getSubQuery().getQuery();
 
         Select select = parseSelect(query);
 
@@ -71,7 +71,7 @@ public class SqlParser {
      * @return
      * @throws SqlParseException
      */
-    public Select parseSelect(MySqlSelectQueryBlock query) throws SqlParseException {
+    public Select parseSelect(SQLSelectQueryBlock query) throws SqlParseException {
 
         Select select = new Select();
         /*zhongshu-comment SqlParser类没有成员变量，里面全是方法，所以将this传到WhereParser对象时是无状态的，
@@ -128,12 +128,12 @@ public class SqlParser {
     }
 
     public MultiQuerySelect parseMultiSelect(SQLUnionQuery query) throws SqlParseException {
-        Select firstTableSelect = this.parseSelect((MySqlSelectQueryBlock) query.getLeft());
-        Select secondTableSelect = this.parseSelect((MySqlSelectQueryBlock) query.getRight());
+        Select firstTableSelect = this.parseSelect((SQLSelectQueryBlock) query.getLeft());
+        Select secondTableSelect = this.parseSelect((SQLSelectQueryBlock) query.getRight());
         return new MultiQuerySelect(query.getOperator(),firstTableSelect,secondTableSelect);
     }
 
-    private void findSelect(MySqlSelectQueryBlock query, Select select, String tableAlias) throws SqlParseException {
+    private void findSelect(SQLSelectQueryBlock query, Select select, String tableAlias) throws SqlParseException {
         List<SQLSelectItem> selectList = query.getSelectList();
         for (SQLSelectItem sqlSelectItem : selectList) {
             Field field = FieldMaker.makeField(sqlSelectItem.getExpr(), sqlSelectItem.getAlias(), tableAlias);
@@ -141,7 +141,7 @@ public class SqlParser {
         }
     }
 
-    private void findGroupBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
+    private void findGroupBy(SQLSelectQueryBlock query, Select select) throws SqlParseException {
         SQLSelectGroupByClause groupBy = query.getGroupBy();
 
         //modified by xzb group by 增加Having语法
@@ -225,7 +225,7 @@ public class SqlParser {
         return firstAlias;
     }
 
-    private void findOrderBy(MySqlSelectQueryBlock query, Select select) throws SqlParseException {
+    private void findOrderBy(SQLSelectQueryBlock query, Select select) throws SqlParseException {
         SQLOrderBy orderBy = query.getOrderBy();
 
         if (orderBy == null) {
@@ -311,7 +311,7 @@ public class SqlParser {
 
     public JoinSelect parseJoinSelect(SQLQueryExpr sqlExpr) throws SqlParseException {
 
-        MySqlSelectQueryBlock query = (MySqlSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
+        SQLSelectQueryBlock query = (SQLSelectQueryBlock) sqlExpr.getSubQuery().getQuery();
 
         List<From> joinedFrom = findJoinedFrom(query.getFrom());
         if (joinedFrom.size() != 2)
@@ -388,7 +388,7 @@ public class SqlParser {
         return splitWheres(where, firstTableAlias, secondTableAlias);
     }
 
-    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin, MySqlSelectQueryBlock query, From tableFrom, Where where, List<SQLSelectOrderByItem> orderBys, List<Condition> conditions) throws SqlParseException {
+    private void fillTableSelectedJoin(TableOnJoinSelect tableOnJoin, SQLSelectQueryBlock query, From tableFrom, Where where, List<SQLSelectOrderByItem> orderBys, List<Condition> conditions) throws SqlParseException {
         String alias = tableFrom.getAlias();
         fillBasicTableSelectJoin(tableOnJoin, tableFrom, where, orderBys, query);
         tableOnJoin.setConnectedFields(getConnectedFields(conditions, alias));
@@ -417,7 +417,7 @@ public class SqlParser {
         return fields;
     }
 
-    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from, Where where, List<SQLSelectOrderByItem> orderBys, MySqlSelectQueryBlock query) throws SqlParseException {
+    private void fillBasicTableSelectJoin(TableOnJoinSelect select, From from, Where where, List<SQLSelectOrderByItem> orderBys, SQLSelectQueryBlock query) throws SqlParseException {
         select.getFrom().add(from);
         findSelect(query, select, from.getAlias());
         select.setWhere(where);
