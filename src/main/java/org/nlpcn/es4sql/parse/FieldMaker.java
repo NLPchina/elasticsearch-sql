@@ -27,6 +27,7 @@ import org.nlpcn.es4sql.exception.SqlParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * 一些具有参数的一般在 select 函数.或者group by 函数
@@ -370,6 +371,17 @@ public class FieldMaker {
             if (alias == null && first) {
                 alias = "field_" + SQLFunctions.random();//paramers.get(0).value.toString();
             }
+
+            List<KVValue> nestedTypes = new ArrayList<>();
+            for (ListIterator<KVValue> it = paramers.listIterator(); it.hasNext(); ) {
+                KVValue param = it.next();
+                if ("nested".equals(param.key)) {
+                    NestedType nestedType = (NestedType) param.value;
+                    it.set(new KVValue(new SQLCharExpr(nestedType.field)));
+                    nestedTypes.add(param);
+                }
+            }
+
             //should check if field and first .
             Tuple<String, String> newFunctions = null;
             try {
@@ -397,6 +409,7 @@ public class FieldMaker {
             }
 
             paramers.add(new KVValue(newFunctions.v2()));
+            paramers.addAll(nestedTypes);
             finalMethodName = "script";
         }
         if (first) {

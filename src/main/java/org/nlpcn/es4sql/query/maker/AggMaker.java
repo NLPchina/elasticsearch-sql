@@ -842,7 +842,7 @@ public class AggMaker {
                 String fieldValue = field.getParams().get(0).value.toString();
                 //modified by xzb 去除 cardinality 下面的 fields字段，否则会导致计算结果为 0
                 //防止 SELECT  count(distinct age%2) as distCnt FROM bank group by gender 出现计算错误问题
-                if (fieldValue.contains("def") && fieldValue.contains("return")) {
+                if (fieldValue.contains("def") && fieldValue.contains("return") || fieldValue.contains("doc[")) {
                     return  AggregationBuilders.cardinality(field.getAlias());
                 } else {
                     return AggregationBuilders.cardinality(field.getAlias()).field(field.getParams().get(0).value.toString());
@@ -882,7 +882,7 @@ public class AggMaker {
             String fieldValue = field.getParams().get(0).value.toString();
             //modified by xzb 去除 cardinality 下面的 fields字段，否则会导致计算结果为 0
             //防止 SELECT  count(distinct age%2) as distCnt FROM bank group by gender 出现计算错误问题
-            if (fieldValue.contains("def") && fieldValue.contains("return")) {
+            if (fieldValue.contains("def") && fieldValue.contains("return") || fieldValue.contains("doc[")) {
                 return AggregationBuilders.count(field.getAlias());
             } else {
                 return AggregationBuilders.count(field.getAlias()).field(fieldName);

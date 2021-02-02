@@ -562,10 +562,10 @@ public class WhereParser {
         }
 
         String v1 = leftMethod.getParams().get(0).value.toString();
-        String v1Dec = leftMethod.getParams().size() == 2 ? leftMethod.getParams().get(1).value.toString() + ";" : "";
+        String v1Dec = leftMethod.getParams().size() > 1 ? leftMethod.getParams().get(1).value.toString() + ";" : "";
 
         String v2 = rightMethod.getParams().get(0).value.toString();
-        String v2Dec = rightMethod.getParams().size() == 2 ? rightMethod.getParams().get(1).value.toString() + ";" : "";
+        String v2Dec = rightMethod.getParams().size() > 1 ? rightMethod.getParams().get(1).value.toString() + ";" : "";
 
         String operator = soExpr.getOperator().getName();
 
