@@ -178,7 +178,13 @@ public class MainTestSuite {
                 " \"properties\": {\n" +
                 "          \"gender\": {\n" +
                 "            \"type\": \"text\",\n" +
-                "            \"fielddata\": true\n" +
+                "            \"fielddata\": true,\n" +
+                "            \"fields\": {\n" +
+                "              \"keyword\": {\n" +
+                "                \"ignore_above\": 256,\n" +
+                "                \"type\": \"keyword\"\n" +
+                "              }\n" +
+                "            }" +
                 "          }," +
                 "          \"address\": {\n" +
                 "            \"type\": \"text\",\n" +

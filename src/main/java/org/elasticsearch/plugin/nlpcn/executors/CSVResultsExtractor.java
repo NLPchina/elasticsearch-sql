@@ -28,11 +28,14 @@ import org.nlpcn.es4sql.query.QueryAction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -72,8 +75,9 @@ public class CSVResultsExtractor {
         if(queryResult instanceof SearchHits){
             SearchHit[] hits = ((SearchHits) queryResult).getHits();
             List<Map<String,Object>> docsAsMap = new ArrayList<>();
-            List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap);
-            List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers);
+            Set<String> hitFieldNames = new HashSet<>();
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap, hitFieldNames);
+            List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers, hitFieldNames);
             return new CSVResult(headers,csvLines);
         }
         if(queryResult instanceof Aggregations){
@@ -97,8 +101,9 @@ public class CSVResultsExtractor {
         if (queryResult instanceof SearchResponse) {
             SearchHit[] hits = ((SearchResponse) queryResult).getHits().getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
-            List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
-            List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers);
+            Set<String> hitFieldNames = new HashSet<>();
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap, hitFieldNames);
+            List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers, hitFieldNames);
             //return new CSVResult(headers, csvLines);
             return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
         }
@@ -344,30 +349,29 @@ public class CSVResultsExtractor {
         return aggregations.asList().get(0);
     }
 
-    private List<String> createCSVLinesFromDocs(boolean flat, String separator, boolean quote, List<Map<String, Object>> docsAsMap, List<String> headers) {
+    private List<String> createCSVLinesFromDocs(boolean flat, String separator, boolean quote, List<Map<String, Object>> docsAsMap, List<String> headers, Set<String> hitFieldNames) {
         List<String> csvLines = new ArrayList<>();
         for(Map<String,Object> doc : docsAsMap){
             String line = "";
             for(String header : headers){
-                line += findFieldValue(header, doc, flat, separator, quote);
+                line += findFieldValue(header, doc, flat, separator, quote, hitFieldNames);
             }
             csvLines.add(line.substring(0, line.lastIndexOf(separator)));
         }
         return csvLines;
     }
 
-    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
+    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap, Set<String> hitFieldNames) {
         Set<String> csvHeaders = new LinkedHashSet<>();
         Map<String, String> highlightMap = Maps.newHashMap();
         for (SearchHit hit : hits) {
             //获取高亮内容
-            hit.getHighlightFields().entrySet().stream().forEach(entry -> {
-                String key = entry.getKey();
-                String frag = entry.getValue().getFragments()[0].toString();
+            hit.getHighlightFields().forEach((key, value) -> {
+                String frag = value.getFragments()[0].toString();
                 highlightMap.put(key, frag);
             });
 
-            Map<String, Object> doc = hit.getSourceAsMap();
+            Map<String, Object> doc = Optional.ofNullable(hit.getSourceAsMap()).orElse(Maps.newHashMap());
             //替换掉将原始结果中字段的值替换为高亮后的内容
             for (Map.Entry<String, Object> entry : doc.entrySet()) {
                 if(highlightMap.containsKey(entry.getKey())) {
@@ -375,11 +379,16 @@ public class CSVResultsExtractor {
                 }
             }
 
+            mergeHeaders(csvHeaders, doc, flat);
+            // hit fields
             Map<String, DocumentField> fields = hit.getFields();
             for (DocumentField searchHitField : fields.values()) {
-                doc.put(searchHitField.getName(), searchHitField.getValue());
+                List<Object> values = Optional.ofNullable(searchHitField.getValues()).orElse(Collections.emptyList());
+                int size = values.size();
+                doc.put(searchHitField.getName(), size == 1 ? values.get(0) : size > 1 ? values : null);
+                hitFieldNames.add(searchHitField.getName());
+                csvHeaders.add(searchHitField.getName());
             }
-            mergeHeaders(csvHeaders, doc, flat);
             if (this.includeIndex) {
                 doc.put("_index", hit.getIndex());
             }
@@ -424,8 +433,8 @@ public class CSVResultsExtractor {
         return headers;
     }
 
-    private String findFieldValue(String header, Map<String, Object> doc, boolean flat, String separator, boolean quote) {
-        if(flat && header.contains(".")){
+    private String findFieldValue(String header, Map<String, Object> doc, boolean flat, String separator, boolean quote, Set<String> hitFieldNames) {
+        if(flat && header.contains(".") && !hitFieldNames.contains(header)) {
             String[] split = header.split("\\.");
             Object innerDoc = doc;
             for(String innerField : split){

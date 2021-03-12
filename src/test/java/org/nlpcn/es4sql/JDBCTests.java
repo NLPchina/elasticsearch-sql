@@ -30,19 +30,20 @@ public class JDBCTests {
         properties.put(PROP_CONNECTIONPROPERTIES, "client.transport.ignore_cluster_name=true");
         DruidDataSource dds = (DruidDataSource) ElasticSearchDruidDataSourceFactory.createDataSource(properties);
         Connection connection = dds.getConnection();
-        PreparedStatement ps = connection.prepareStatement("SELECT /*! USE_SCROLL*/ gender,lastname,age,_scroll_id from  " + TestsConstants.TEST_INDEX_ACCOUNT + " where lastname='Heath'");
+        PreparedStatement ps = connection.prepareStatement("SELECT /*! USE_SCROLL*/ gender,docvalue(gender.keyword),lastname,age,_scroll_id from  " + TestsConstants.TEST_INDEX_ACCOUNT + " where lastname='Heath'");
         ResultSet resultSet = ps.executeQuery();
 
         ResultSetMetaData metaData = resultSet.getMetaData();
         assertThat(metaData.getColumnName(1), equalTo("gender"));
-        assertThat(metaData.getColumnName(2), equalTo("lastname"));
-        assertThat(metaData.getColumnName(3), equalTo("age"));
+        assertThat(metaData.getColumnName(2), equalTo("gender.keyword"));
+        assertThat(metaData.getColumnName(3), equalTo("lastname"));
+        assertThat(metaData.getColumnName(4), equalTo("age"));
 
         List<String> result = new ArrayList<String>();
         String scrollId = null;
         while (resultSet.next()) {
             scrollId = resultSet.getString("_scroll_id");
-            result.add(resultSet.getString("lastname") + "," + resultSet.getInt("age") + "," + resultSet.getString("gender"));
+            result.add(resultSet.getString("lastname") + "," + resultSet.getInt("age") + "," + resultSet.getString("gender") + "," + resultSet.getString("gender.keyword"));
         }
 
         ps.close();
@@ -50,7 +51,7 @@ public class JDBCTests {
         dds.close();
 
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals("Heath,39,F", result.get(0));
+        Assert.assertEquals("Heath,39,F,F", result.get(0));
         Assert.assertFalse(Matchers.isEmptyOrNullString().matches(scrollId));
     }
 

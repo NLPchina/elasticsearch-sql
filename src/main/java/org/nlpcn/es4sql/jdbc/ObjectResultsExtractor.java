@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.jdbc;
 
+import com.google.common.collect.Maps;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
@@ -20,9 +21,12 @@ import org.nlpcn.es4sql.query.QueryAction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -49,8 +53,9 @@ public class ObjectResultsExtractor {
         if (queryResult instanceof SearchHits) {
             SearchHit[] hits = ((SearchHits) queryResult).getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
-            List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap);
-            List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers);
+            Set<String> hitFieldNames = new HashSet<>();
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, null, docsAsMap, hitFieldNames);
+            List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers, hitFieldNames);
             return new ObjectResult(headers, lines);
         }
         if (queryResult instanceof Aggregations) {
@@ -73,8 +78,9 @@ public class ObjectResultsExtractor {
         if (queryResult instanceof SearchResponse) {
             SearchHit[] hits = ((SearchResponse) queryResult).getHits().getHits();
             List<Map<String, Object>> docsAsMap = new ArrayList<>();
-            List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap);
-            List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers);
+            Set<String> hitFieldNames = new HashSet<>();
+            List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap, hitFieldNames);
+            List<List<Object>> lines = createLinesFromDocs(flat, docsAsMap, headers, hitFieldNames);
             return new ObjectResult(headers, lines);
         }
         return null;
@@ -250,19 +256,19 @@ public class ObjectResultsExtractor {
         return aggregations.asList().get(0);
     }
 
-    private List<List<Object>> createLinesFromDocs(boolean flat, List<Map<String, Object>> docsAsMap, List<String> headers) {
+    private List<List<Object>> createLinesFromDocs(boolean flat, List<Map<String, Object>> docsAsMap, List<String> headers, Set<String> hitFieldNames) {
         List<List<Object>> objectLines = new ArrayList<>();
         for (Map<String, Object> doc : docsAsMap) {
             List<Object> lines = new ArrayList<>();
             for (String header : headers) {
-                lines.add(findFieldValue(header, doc, flat));
+                lines.add(findFieldValue(header, doc, flat, hitFieldNames));
             }
             objectLines.add(lines);
         }
         return objectLines;
     }
 
-    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap) {
+    private List<String> createHeadersAndFillDocsMap(boolean flat, SearchHit[] hits, String scrollId, List<Map<String, Object>> docsAsMap, Set<String> hitFieldNames) {
         Set<String> headers = new LinkedHashSet<>();
         List<String> fieldNames = new ArrayList<>();
         if (this.queryAction instanceof DefaultQueryAction) {
@@ -270,11 +276,7 @@ public class ObjectResultsExtractor {
         }
         boolean hasScrollId = this.includeScrollId || fieldNames.contains("_scroll_id");
         for (SearchHit hit : hits) {
-            Map<String, Object> doc = hit.getSourceAsMap();
-            Map<String, DocumentField> fields = hit.getFields();
-            for (DocumentField searchHitField : fields.values()) {
-                doc.put(searchHitField.getName(), searchHitField.getValue());
-            }
+            Map<String, Object> doc = Optional.ofNullable(hit.getSourceAsMap()).orElse(Maps.newHashMap());
             if (this.includeScore) {
                 doc.put("_score", hit.getScore());
             }
@@ -288,6 +290,17 @@ public class ObjectResultsExtractor {
                 doc.put("_scroll_id", scrollId);
             }
             mergeHeaders(headers, doc, flat);
+
+            // hit fields
+            Map<String, DocumentField> fields = hit.getFields();
+            for (DocumentField searchHitField : fields.values()) {
+                List<Object> values = Optional.ofNullable(searchHitField.getValues()).orElse(Collections.emptyList());
+                int size = values.size();
+                doc.put(searchHitField.getName(), size == 1 ? values.get(0) : size > 1 ? values : null);
+                hitFieldNames.add(searchHitField.getName());
+                headers.add(searchHitField.getName());
+            }
+
             docsAsMap.add(doc);
         }
         List<String> list = new ArrayList<>(headers);
@@ -301,8 +314,8 @@ public class ObjectResultsExtractor {
         return list;
     }
 
-    private Object findFieldValue(String header, Map<String, Object> doc, boolean flat) {
-        if (flat && header.contains(".")) {
+    private Object findFieldValue(String header, Map<String, Object> doc, boolean flat, Set<String> hitFieldNames) {
+        if (flat && header.contains(".") && !hitFieldNames.contains(header)) {
             String[] split = header.split("\\.");
             Object innerDoc = doc;
             for (String innerField : split) {
