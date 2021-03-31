@@ -20,8 +20,8 @@ import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
-import org.elasticsearch.search.aggregations.bucket.histogram.ExtendedBounds;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.LongBounds;
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
@@ -695,9 +695,9 @@ public class AggMaker {
                         dateHistogram.order("desc".equalsIgnoreCase(value) ? BucketOrder.key(false) : BucketOrder.key(true));
                         break;
                     case "extended_bounds":
-                        ExtendedBounds extendedBounds = null;
+                        LongBounds extendedBounds = null;
                         try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
-                            extendedBounds = ExtendedBounds.PARSER.parse(parser, null);
+                            extendedBounds = LongBounds.PARSER.parse(parser, null);
                         } catch (IOException ex) {
                             List<Integer> indexList = new LinkedList<>();
                             int index = -1;
@@ -706,7 +706,7 @@ public class AggMaker {
                             }
                             if (!indexList.isEmpty()) {
                                 index = indexList.get(indexList.size() / 2);
-                                extendedBounds = new ExtendedBounds(value.substring(0, index), value.substring(index + 1));
+                                extendedBounds = new LongBounds(value.substring(0, index), value.substring(index + 1));
                             }
                         }
                         if (extendedBounds != null) {
@@ -763,7 +763,7 @@ public class AggMaker {
                     case "extended_bounds":
                         String[] bounds = value.split(":");
                         if (bounds.length == 2)
-                            histogram.extendedBounds(Long.parseLong(bounds[0]), Long.parseLong(bounds[1]));
+                            histogram.extendedBounds(Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]));
                         break;
                     case "alias":
                     case "nested":
