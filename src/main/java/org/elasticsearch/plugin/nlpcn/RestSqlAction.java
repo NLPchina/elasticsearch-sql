@@ -52,7 +52,7 @@ public class RestSqlAction extends BaseRestHandler {
         try (XContentParser parser = request.contentOrSourceParamParser()) {
             parser.mapStrings().forEach((k, v) -> request.params().putIfAbsent(k, v));
         } catch (IOException e) {
-            LOGGER.warn("Please use json format params, like: {\"sql\":\"SELECT * FROM test\"}");
+            // LOGGER.warn("Please use json format params, like: {\"sql\":\"SELECT * FROM test\"}");
         }
 
         String sql = request.param("sql");
