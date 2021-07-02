@@ -185,6 +185,10 @@ public class HintFactory {
             String minScoreParam = getParamFromHint(hintAsString, "! MIN_SCORE");
             return new Hint(HintType.MIN_SCORE, new String[]{minScoreParam});
         }
+        if (hintAsString.startsWith("! SEARCH_AFTER")) {
+            String[] searchAfterParams = getParamsFromHint(hintAsString, "! SEARCH_AFTER");
+            return new Hint(HintType.SEARCH_AFTER, searchAfterParams);
+        }
 
         return null;
     }

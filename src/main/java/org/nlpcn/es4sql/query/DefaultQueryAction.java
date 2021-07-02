@@ -1,6 +1,5 @@
 package org.nlpcn.es4sql.query;
 
-import com.alibaba.druid.support.json.JSONUtils;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchScrollAction;
@@ -13,6 +12,7 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.NestedSortBuilder;
+import org.elasticsearch.search.sort.ScoreSortBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -110,6 +110,7 @@ public class DefaultQueryAction extends QueryAction {
 		updateRequestWithTimeout(select, request);
 		updateRequestWithIndicesOptions(select, request);
 		updateRequestWithMinScore(select, request);
+		updateRequestWithSearchAfter(select, request);
 		SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
 
 		return sqlElasticRequestBuilder;
@@ -243,8 +244,8 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setSorts(List<Order> orderBys) {
 		for (Order order : orderBys) {
-            if (order.getNestedPath() != null) {
-                request.addSort(SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType())).setNestedSort(new NestedSortBuilder(order.getNestedPath())));
+			if (order.getName().equals(ScoreSortBuilder.NAME)) {
+				request.addSort(SortBuilders.scoreSort().order(SortOrder.valueOf(order.getType())));
             } else if (order.getName().contains("script(")) { //zhongshu-comment 该分支是我后来加的，用于兼容order by case when那种情况
 
 				String scriptStr = order.getName().substring("script(".length(), order.getName().length() - 1);
@@ -254,9 +255,23 @@ public class DefaultQueryAction extends QueryAction {
 				scriptSortBuilder = scriptSortBuilder.order(SortOrder.valueOf(order.getType()));
 				request.addSort(scriptSortBuilder);
 			} else {
-                request.addSort(
-                		order.getName(),
-						SortOrder.valueOf(order.getType()));
+				FieldSortBuilder fieldSortBuilder = SortBuilders.fieldSort(order.getName()).order(SortOrder.valueOf(order.getType()));
+				if (order.getNestedPath() != null) {
+					fieldSortBuilder.setNestedSort(new NestedSortBuilder(order.getNestedPath()));
+				}
+				if (order.getMissing() != null) {
+					fieldSortBuilder.missing(order.getMissing());
+				}
+				if (order.getUnmappedType() != null) {
+					fieldSortBuilder.unmappedType(order.getUnmappedType());
+				}
+				if (order.getNumericType() != null) {
+					fieldSortBuilder.setNumericType(order.getNumericType());
+				}
+				if (order.getFormat() != null) {
+					fieldSortBuilder.setFormat(order.getFormat());
+				}
+				request.addSort(fieldSortBuilder);
             }
 		}
 	}

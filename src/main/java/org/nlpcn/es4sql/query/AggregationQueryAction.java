@@ -279,6 +279,7 @@ public class AggregationQueryAction extends QueryAction {
         updateRequestWithTimeout(select, request);
         updateRequestWithIndicesOptions(select, request);
         updateRequestWithMinScore(select, request);
+        updateRequestWithSearchAfter(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }

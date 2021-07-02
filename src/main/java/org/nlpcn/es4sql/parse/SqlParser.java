@@ -29,6 +29,7 @@ import org.nlpcn.es4sql.domain.Delete;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.From;
 import org.nlpcn.es4sql.domain.JoinSelect;
+import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Query;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.TableOnJoinSelect;
@@ -242,6 +243,22 @@ public class SqlParser {
             SQLExpr expr = sqlSelectOrderByItem.getExpr();
             Field f = FieldMaker.makeField(expr, null, null);
             String orderByName = f.toString();
+            Object missing = null;
+            String unmappedType = null;
+            String numericType = null;
+            String format = null;
+            if ("field_sort".equals(f.getName())) {
+                Map<String, Object> params = ((MethodField) f).getParamsAsMap();
+                for (Map.Entry<String, Object> entry : params.entrySet()) {
+                    switch (entry.getKey()) {
+                        case "field": orderByName = entry.getValue().toString(); break;
+                        case "missing": missing = entry.getValue(); break;
+                        case "unmapped_type": unmappedType = entry.getValue().toString(); break;
+                        case "numeric_type": numericType = entry.getValue().toString(); break;
+                        case "format": format = entry.getValue().toString(); break;
+                    }
+                }
+            }
 
             if (sqlSelectOrderByItem.getType() == null) {
                 sqlSelectOrderByItem.setType(SQLOrderingSpecification.ASC); //zhongshu-comment 默认是升序排序
@@ -252,7 +269,7 @@ public class SqlParser {
             if (alias != null) orderByName = orderByName.replaceFirst(alias + "\\.", "");
 
             ScriptSortBuilder.ScriptSortType scriptSortType = judgeIsStringSort(expr);
-            select.addOrderBy(f.getNestedPath(), orderByName, type, scriptSortType);
+            select.addOrderBy(f.getNestedPath(), orderByName, type, scriptSortType, missing, unmappedType, numericType, format);
         }
     }
 

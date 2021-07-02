@@ -148,6 +148,11 @@ public class ExplainTest {
         System.out.println(explain("SELECT * FROM index GROUP BY significant_text(field='my_field',alias='keywords',size=100,shard_size=100,min_doc_count=1)"));
     }
 
+    @Test
+    public void testSearchAfterHintQueryExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("select /*! SEARCH_AFTER(2021-05-20T05:30:04.832Z, 4294967298) */ * from index order by field_sort(['@timestamp'], missing='missing value', numeric_type='date_nanos', unmapped_type='long', format='strict_date_optional_time_nanos') desc, _shard_doc asc"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();

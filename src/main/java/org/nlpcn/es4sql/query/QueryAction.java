@@ -135,6 +135,14 @@ public abstract class QueryAction {
         }
     }
 
+    protected void updateRequestWithSearchAfter(Select select, SearchRequestBuilder request) {
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.SEARCH_AFTER) {
+                request.searchAfter(hint.getParams());
+            }
+        }
+    }
+
     protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
         boolean foundAnyHighlights = false;
         HighlightBuilder highlightBuilder = new HighlightBuilder();

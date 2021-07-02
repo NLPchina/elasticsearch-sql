@@ -25,5 +25,6 @@ public enum HintType
     TRACK_TOTAL_HITS,
     TIMEOUT,
     INDICES_OPTIONS,
-    MIN_SCORE
+    MIN_SCORE,
+    SEARCH_AFTER
 }

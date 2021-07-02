@@ -12,6 +12,10 @@ public class Order {
 	private String name;
 	private String type;
 	private ScriptSortBuilder.ScriptSortType scriptSortType;
+	private Object missing;
+	private String unmappedType;
+	private String numericType;
+	private String format;
 
 	public Order(String nestedPath, String name, String type) {
         this.nestedPath = nestedPath;
@@ -49,5 +53,37 @@ public class Order {
 
 	public void setScriptSortType(ScriptSortBuilder.ScriptSortType scriptSortType) {
 		this.scriptSortType = scriptSortType;
+	}
+
+	public Object getMissing() {
+		return missing;
+	}
+
+	public void setMissing(Object missing) {
+		this.missing = missing;
+	}
+
+	public String getUnmappedType() {
+		return unmappedType;
+	}
+
+	public void setUnmappedType(String unmappedType) {
+		this.unmappedType = unmappedType;
+	}
+
+	public String getNumericType() {
+		return numericType;
+	}
+
+	public void setNumericType(String numericType) {
+		this.numericType = numericType;
+	}
+
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
 	}
 }
