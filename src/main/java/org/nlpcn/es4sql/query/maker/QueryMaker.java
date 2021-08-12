@@ -11,6 +11,7 @@ import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.join.query.JoinQueryBuilders;
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.Where.CONN;
@@ -132,7 +133,7 @@ public class QueryMaker extends Maker {
                     ((NestedQueryBuilder) subQuery).innerHit(ihb);
                 }
             } else if(condition.isChildren()) {
-            	subQuery = JoinQueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None);
+            	subQuery = Util.parseQueryBuilder(JoinQueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None));
             }
         }
 

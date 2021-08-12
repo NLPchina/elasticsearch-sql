@@ -323,7 +323,7 @@ public class AggMaker {
 
             String childrenAggName = childrenType.field + "@CHILDREN";
 
-            childrenBuilder = JoinAggregationBuilders.children(childrenAggName,childrenType.childType);
+            childrenBuilder = Util.parseAggregationBuilder(JoinAggregationBuilders.children(childrenAggName, childrenType.childType));
 
             return childrenBuilder;
         }

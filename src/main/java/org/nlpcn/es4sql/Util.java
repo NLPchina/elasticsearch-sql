@@ -19,9 +19,19 @@ import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
 import org.elasticsearch.common.Strings;
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.index.query.AbstractQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.plugin.nlpcn.NamedXContentRegistryHolder;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregatorFactories;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -230,5 +240,35 @@ public class Util {
 
     public static String quoteString(String str) {
         return Objects.nonNull(str) ? String.format("\"%s\"", Strings.replace(str, "\"", "\"\"")) : str;
+    }
+
+    public static QueryBuilder parseQueryBuilder(QueryBuilder queryBuilder) {
+        NamedXContentRegistry xContentRegistry = NamedXContentRegistryHolder.get();
+        if (Objects.isNull(xContentRegistry)) {
+            return queryBuilder;
+        }
+
+        String json = Strings.toString(queryBuilder);
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(xContentRegistry, LoggingDeprecationHandler.INSTANCE, json)) {
+            return AbstractQueryBuilder.parseInnerQueryBuilder(parser);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("failed to parse query", e);
+        }
+    }
+
+    public static AggregationBuilder parseAggregationBuilder(AggregationBuilder aggregationBuilder) {
+        NamedXContentRegistry xContentRegistry = NamedXContentRegistryHolder.get();
+        if (Objects.isNull(xContentRegistry)) {
+            return aggregationBuilder;
+        }
+
+        String json = Strings.toString(aggregationBuilder);
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(xContentRegistry, LoggingDeprecationHandler.INSTANCE, json)) {
+            parser.nextToken();
+            AggregatorFactories.Builder builder = AggregatorFactories.parseAggregators(parser);
+            return builder.getAggregatorFactories().iterator().next();
+        } catch (IOException e) {
+            throw new IllegalArgumentException("failed to parse aggregation", e);
+        }
     }
 }

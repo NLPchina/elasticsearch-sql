@@ -34,6 +34,7 @@ import org.elasticsearch.index.query.WildcardQueryBuilder;
 import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchModule;
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Condition.OPEAR;
 import org.nlpcn.es4sql.domain.Paramer;
@@ -365,7 +366,7 @@ public abstract class Maker {
             Where whereChildren = (Where) value;
             BoolQueryBuilder childrenFilter = QueryMaker.explan(whereChildren);
             //todo: pass score mode
-            x = JoinQueryBuilders.hasChildQuery(name, childrenFilter,ScoreMode.None);
+            x = Util.parseQueryBuilder(JoinQueryBuilders.hasChildQuery(name, childrenFilter, ScoreMode.None));
 
         break;
         case SCRIPT:

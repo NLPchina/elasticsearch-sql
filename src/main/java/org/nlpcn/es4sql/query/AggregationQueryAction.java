@@ -17,6 +17,7 @@ import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuil
 import org.elasticsearch.search.aggregations.bucket.nested.ReverseNestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.KVValue;
 import org.nlpcn.es4sql.domain.MethodField;
@@ -377,7 +378,7 @@ public class AggregationQueryAction extends QueryAction {
 
         String childType = field.getChildType();
 
-        childrenBuilder = JoinAggregationBuilders.children(getChildrenAggName(field),childType);
+        childrenBuilder = Util.parseAggregationBuilder(JoinAggregationBuilders.children(getChildrenAggName(field), childType));
 
         return childrenBuilder;
     }
