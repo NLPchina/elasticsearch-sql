@@ -121,7 +121,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.58</version>
+            <version>1.67</version>
             <scope>provided</scope>
         </dependency>
 
