@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLInListExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIntervalExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNumericLiteralExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
@@ -35,7 +36,8 @@ public class SQLFunctions {
             "coalesce", //added by xzb  取两个值中间有值的那个
             "case_new",//added by xzb 支持多个判断条件
             //支持正则表达式抽取原字段后赋给新字段,注意必须指定一个group。如 parse(hobby,(?<type>\S+)球, defaultValue)
-            "parse"//此函数需要在elasticsearch.yml中设置 script.painless.regex.enabled : true
+            "parse",//此函数需要在elasticsearch.yml中设置 script.painless.regex.enabled : true
+            "now", "date", "date_add"
     );
     //added by xzb 增加二元操作运算符
         public static Set<String> binaryOperators = Sets.newHashSet("=" ,"!=", ">", ">=", "<", "<=");
@@ -198,6 +200,18 @@ public class SQLFunctions {
                 }
                 break;
 
+            case "now":
+                functionStr = now();
+                break;
+            case "date":
+                functionStr = date(Util.expr2Object((SQLExpr) paramers.get(0).value).toString(), name);
+                break;
+            case "date_add":
+                functionStr = date_add(
+                        Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
+                        (SQLIntervalExpr) paramers.get(1).value,
+                        name);
+                break;
             default:
 
         }
@@ -562,5 +576,57 @@ public class SQLFunctions {
 
     }
 
+    private static Tuple<String, String> now() {
+        String name = "now_" + random();
+        return new Tuple<>(name, "def " + name + " = " + "Instant.ofEpochMilli(System.currentTimeMillis()).atZone(ZoneId.systemDefault())");
+    }
 
+    private static Tuple<String, String> date(String strColumn, String valueName) {
+        String name = "date_" + random();
+        if (valueName == null) {
+            return new Tuple<>(name, "def " + name + " = doc['" + strColumn + "'].value.truncatedTo(ChronoUnit.DAYS)");
+        } else {
+            return new Tuple<>(name, strColumn + "; def " + name + " = " + valueName + ".truncatedTo(ChronoUnit.DAYS)");
+        }
+    }
+
+    private static Tuple<String, String> date_add(String strColumn, SQLIntervalExpr intervalExpr, String valueName) {
+        String unit;
+        switch (intervalExpr.getUnit()) {
+            case MICROSECOND:
+                unit = "ChronoUnit.MICROS";
+                break;
+            case SECOND:
+                unit = "ChronoUnit.SECONDS";
+                break;
+            case MINUTE:
+                unit = "ChronoUnit.MINUTES";
+                break;
+            case HOUR:
+                unit = "ChronoUnit.HOURS";
+                break;
+            case DAY:
+                unit = "ChronoUnit.DAYS";
+                break;
+            case WEEK:
+                unit = "ChronoUnit.WEEKS";
+                break;
+            case MONTH:
+                unit = "ChronoUnit.MONTHS";
+                break;
+            case YEAR:
+                unit = "ChronoUnit.YEARS";
+                break;
+            default:
+                throw new IllegalArgumentException("not supported unit: " + intervalExpr.getUnit());
+        }
+        Object amountToAdd = Util.expr2Object(intervalExpr.getValue());
+
+        String name = "date_add_" + random();
+        if (valueName == null) {
+            return new Tuple<>(name, "def " + name + " = doc['" + strColumn + "'].value.plus(" + amountToAdd + "," + unit + ")");
+        } else {
+            return new Tuple<>(name, strColumn + "; def " + name + " = " + valueName + ".plus(" + amountToAdd + "," + unit + ")");
+        }
+    }
 }

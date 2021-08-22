@@ -153,6 +153,11 @@ public class ExplainTest {
         System.out.println(explain("select /*! SEARCH_AFTER(2021-05-20T05:30:04.832Z, 4294967298) */ * from index order by field_sort(['@timestamp'], missing='missing value', numeric_type='date_nanos', unmapped_type='long', format='strict_date_optional_time_nanos') desc, _shard_doc asc"));
     }
 
+    @Test
+    public void testDateFunctionQueryExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("select * from index where time >= date(date_add(date(now()), interval -0 day)) and time <= date_add(now(), interval -0 day)"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();

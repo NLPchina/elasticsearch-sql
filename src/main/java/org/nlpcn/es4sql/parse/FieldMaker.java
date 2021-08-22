@@ -416,7 +416,7 @@ public class FieldMaker {
             Tuple<String, String> newFunctions = null;
             try {
                 //added by xzb 构造script时，二元操作符可能是多样的 case_new 语法，需要 binaryOperatorNames 参数
-                newFunctions = SQLFunctions.function(finalMethodName, paramers, paramers.get(0).key,first, binaryOperatorName, binaryOperatorNames);
+                newFunctions = SQLFunctions.function(finalMethodName, paramers, !paramers.isEmpty() ? paramers.get(0).key : null,first, binaryOperatorName, binaryOperatorNames);
             } catch (Exception e) {
                 e.printStackTrace();
             }
