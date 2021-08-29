@@ -17,8 +17,9 @@ import org.nlpcn.es4sql.domain.KVValue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by allwefantasy on 8/19/16.
@@ -37,7 +38,7 @@ public class SQLFunctions {
             "case_new",//added by xzb 支持多个判断条件
             //支持正则表达式抽取原字段后赋给新字段,注意必须指定一个group。如 parse(hobby,(?<type>\S+)球, defaultValue)
             "parse",//此函数需要在elasticsearch.yml中设置 script.painless.regex.enabled : true
-            "now", "date", "date_add"
+            "now", "date", "date_add", "from_unixtime"
     );
     //added by xzb 增加二元操作运算符
         public static Set<String> binaryOperators = Sets.newHashSet("=" ,"!=", ">", ">=", "<", "<=");
@@ -102,6 +103,13 @@ public class SQLFunctions {
                 functionStr = date_format(
                         Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
                         Util.expr2Object((SQLExpr) paramers.get(1).value).toString(),
+                        2 < paramers.size() ? Util.expr2Object((SQLExpr) paramers.get(2).value).toString() : null,
+                        name);
+                break;
+            case "from_unixtime":
+                functionStr = from_unixtime(
+                        Util.expr2Object((SQLExpr) paramers.get(0).value).toString(),
+                        1 < paramers.size() ? Util.expr2Object((SQLExpr) paramers.get(1).value).toString() : null,
                         2 < paramers.size() ? Util.expr2Object((SQLExpr) paramers.get(2).value).toString() : null,
                         name);
                 break;
@@ -231,7 +239,7 @@ public class SQLFunctions {
     }
 
     public static String random() {
-        return Math.abs(new Random().nextInt()) + "";
+        return Math.abs(ThreadLocalRandom.current().nextInt()) + "";
     }
 
     private static Tuple<String, String> concat_ws(String split, List<SQLExpr> columns, String valueName) {
@@ -279,6 +287,25 @@ public class SQLFunctions {
 
     }
 
+    private static Tuple<String, String> from_unixtime(String strColumn, String pattern, String zoneId, String valueName) {
+        String name = "from_unixtime_" + random();
+
+        if (Objects.isNull(pattern)) {
+            pattern = "yyyy-MM-dd HH:mm:ss";
+        }
+
+        zoneId = Objects.isNull(zoneId) ? "ZoneId.systemDefault()" : "ZoneId.of('" + zoneId + "')";
+
+        if (valueName == null) {
+            return new Tuple<>(name, "def " + name + " = DateTimeFormatter.ofPattern('" + pattern + "').withZone(" +
+                    zoneId +
+                    ").format(Instant.ofEpochSecond(doc['" + strColumn + "'].value))");
+        } else {
+            return new Tuple<>(name, strColumn + "; def " + name + " = DateTimeFormatter.ofPattern('" + pattern + "').withZone(" +
+                    zoneId +
+                    ").format(Instant.ofEpochSecond(" + valueName + "))");
+        }
+    }
 
     public static Tuple<String, String> add(SQLExpr a, SQLExpr b) {
         return binaryOpertator("add", "+", a, b);

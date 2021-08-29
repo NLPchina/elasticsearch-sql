@@ -158,6 +158,11 @@ public class ExplainTest {
         System.out.println(explain("select * from index where time >= date(date_add(date(now()), interval -0 day)) and time <= date_add(now(), interval -0 day)"));
     }
 
+    @Test
+    public void testFromUnixtimeFunctionQueryExplain() throws SqlParseException, SQLFeatureNotSupportedException {
+        System.out.println(explain("select from_unixtime(unix_timestamp,'yyyy-MM-dd HH:mm:ss','+08:00') from index"));
+    }
+
     private String explain(String sql) throws SQLFeatureNotSupportedException, SqlParseException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticRequestBuilder requestBuilder = searchDao.explain(sql).explain();
