@@ -5,7 +5,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -50,6 +50,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
         this.alreadyMatched = new HashSet<>();
     }
 
+    @Override
     public List<SearchHit> innerRun() throws IOException, SqlParseException {
 
         Map<String, Map<String, List<Object>>> optimizationTermsFilterStructure =

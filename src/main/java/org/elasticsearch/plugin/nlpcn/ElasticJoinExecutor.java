@@ -5,8 +5,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
@@ -59,6 +59,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
         }
     }
 
+    @Override
     public void run() throws IOException, SqlParseException {
         long timeBefore = System.currentTimeMillis();
         List<SearchHit> combinedSearchHits =  innerRun();
@@ -72,6 +73,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
 
     protected abstract List<SearchHit> innerRun() throws IOException, SqlParseException ;
 
+    @Override
     public SearchHits getHits(){
         return results;
     }

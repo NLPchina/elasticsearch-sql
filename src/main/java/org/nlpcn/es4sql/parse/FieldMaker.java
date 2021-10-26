@@ -15,7 +15,7 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.alibaba.druid.util.StringUtils;
 import com.google.common.collect.Lists;
-import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.core.Tuple;
 import org.nlpcn.es4sql.SQLFunctions;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Field;
