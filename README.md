@@ -15,163 +15,9 @@ Elasticsearch-SQL
 
 ### build status
 
-**1.7.6** [![1.7.6 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic1.x)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.0.0** [![2.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.1.0** [![2.1.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.1.1** [![2.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.1.2** [![2.1.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.1.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.2.0** [![2.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**2.2.1** [![2.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.3.0** [![2.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.3.1** [![2.3.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.3.2** [![2.3.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.3.3** [![2.3.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.3.4** [![2.3.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**2.3.5** [![2.3.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.3.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.4.0** [![2.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.4.1** [![2.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.4.2** [![2.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.4.3** [![2.4.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.4.4** [![2.4.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**2.4.5** [![2.4.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**2.4.6** [![2.4.6 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic2.4.6)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.0.1** [![5.0.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.0.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.1.1** [![5.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.1.2** [![5.1.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.1.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.2.0** [![5.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**5.2.1** [![5.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.2.2** [![5.2.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.2.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.3.0** [![5.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.3.1** [![5.3.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.3.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.3.2** [![5.3.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.3.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.3.3** [![5.3.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.3.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**5.4.0** [![5.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.4.1** [![5.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.4.2** [![5.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.4.3** [![5.4.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.4.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.5.0** [![5.5.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.5.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.5.1** [![5.5.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.5.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**5.5.2** [![5.5.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.5.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.5.3** [![5.5.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.5.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.0** [![5.6.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.1** [![5.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.2** [![5.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.3** [![5.6.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**5.6.4** [![5.6.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.5** [![5.6.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.6** [![5.6.6 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.6)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.7** [![5.6.7 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.7)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.8** [![5.6.8 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.8)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.9** [![5.6.9 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.9)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**5.6.10** [![5.6.10 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.10)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.11** [![5.6.11 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.11)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.12** [![5.6.12 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.12)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.13** [![5.6.13 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.13)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.14** [![5.6.14 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.14)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**5.6.15** [![5.6.15 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.15)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**5.6.16** [![5.6.16 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic5.6.16)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.0.0** [![6.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.0.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.0.1** [![6.0.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.0.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.1.0** [![6.1.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.1.1** [![6.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.1.2** [![6.1.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.1.3** [![6.1.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.1.4** [![6.1.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.1.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.2.0** [![6.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.2.1** [![6.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.2.2** [![6.2.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.2.3** [![6.2.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.2.4** [![6.2.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.2.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.3.0** [![6.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.3.1** [![6.3.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.3.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.3.2** [![6.3.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.3.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.4.0** [![6.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.4.1** [![6.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.4.2** [![6.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.4.3** [![6.4.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.4.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.5.0** [![6.5.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.5.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.5.1** [![6.5.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.5.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.5.2** [![6.5.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.5.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.5.3** [![6.5.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.5.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.5.4** [![6.5.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.5.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.6.0** [![6.6.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.6.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.6.1** [![6.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.6.2** [![6.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.7.0** [![6.7.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.7.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.7.1** [![6.7.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.7.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.7.2** [![6.7.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.7.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.0** [![6.8.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.1** [![6.8.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.2** [![6.8.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.3** [![6.8.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.4** [![6.8.4 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.4)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.8.5** [![6.8.5 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.5)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.6** [![6.8.6 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.6)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.7** [![6.8.7 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.7)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.8** [![6.8.8 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.8)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.9** [![6.8.9 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.9)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.10** [![6.8.10 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.10)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**6.8.11** [![6.8.11 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.11)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.12** [![6.8.12 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.12)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.13** [![6.8.13 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.13)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.14** [![6.8.14 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.14)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**6.8.15** [![6.8.15 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.15)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.0.0** [![7.0.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.0.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**7.0.1** [![7.0.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.0.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.1.0** [![7.1.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.1.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.1.1** [![7.1.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.1.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.2.0** [![7.2.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.2.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.2.1** [![7.2.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.2.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.3.0** [![7.3.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.3.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**7.3.1** [![7.3.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.3.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.3.2** [![7.3.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.3.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.4.0** [![7.4.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.4.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.4.1** [![7.4.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.4.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.4.2** [![7.4.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.4.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.5.0** [![7.5.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**7.5.1** [![7.5.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.5.2** [![7.5.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.5.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.6.0** [![7.6.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.6.1** [![7.6.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.6.2** [![7.6.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.6.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.7.0** [![7.7.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.7.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**7.7.1** [![7.7.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.7.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.8.0** [![7.8.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.8.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.8.1** [![7.8.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.8.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.9.0** [![7.9.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.9.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.9.1** [![7.9.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.9.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.9.2** [![7.9.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.9.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**7.9.3** [![7.9.3 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.9.3)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.10.0** [![7.10.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.10.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.10.1** [![7.10.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.10.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.10.2** [![7.10.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.10.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.11.0** [![7.11.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.11.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.11.1** [![7.11.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.11.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-<br/>
-**7.11.2** [![7.11.2 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.11.2)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.12.0** [![7.12.0 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.12.0)](https://travis-ci.org/NLPchina/elasticsearch-sql)
-**7.12.1** [![7.12.1 Build Status](https://travis-ci.org/NLPchina/elasticsearch-sql.svg?branch=elastic7.12.1)](https://travis-ci.org/NLPchina/elasticsearch-sql)
+**6.8.20** [![6.8.20 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.20)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
+**7.15.1** [![7.15.1 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.15.1)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
+**master** [![master Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
 You can also use ES functions in SQL.
@@ -296,6 +142,11 @@ Versions
 | 6.8.13                | 6.8.13.0       |                                | elastic6.8.13|
 | 6.8.14                | 6.8.14.0       |                                | elastic6.8.14|
 | 6.8.15                | 6.8.15.0       |                                | elastic6.8.15|
+| 6.8.16                | 6.8.16.0       |                                | elastic6.8.16|
+| 6.8.17                | 6.8.17.0       |                                | elastic6.8.17|
+| 6.8.18                | 6.8.18.0       |                                | elastic6.8.18|
+| 6.8.19                | 6.8.19.0       |                                | elastic6.8.19|
+| 6.8.20                | 6.8.20.0       |                                | elastic6.8.20|
 | 7.0.0                 | 7.0.0.0        |                                | elastic7.0.0 |
 | 7.0.1                 | 7.0.1.0        |                                | elastic7.0.1 |
 | 7.1.0                 | 7.1.0.0        |                                | elastic7.1.0 |
@@ -330,6 +181,16 @@ Versions
 | 7.11.2                | 7.11.2.0       |                                | elastic7.11.2|
 | 7.12.0                | 7.12.0.0       |                                | elastic7.12.0|
 | 7.12.1                | 7.12.1.0       |                                | elastic7.12.1|
+| 7.13.0                | 7.13.0.0       |                                | elastic7.13.0|
+| 7.13.1                | 7.13.1.0       |                                | elastic7.13.1|
+| 7.13.2                | 7.13.2.0       |                                | elastic7.13.2|
+| 7.13.3                | 7.13.3.0       |                                | elastic7.13.3|
+| 7.13.4                | 7.13.4.0       |                                | elastic7.13.4|
+| 7.14.0                | 7.14.0.0       |                                | elastic7.14.0|
+| 7.14.1                | 7.14.1.0       |                                | elastic7.14.1|
+| 7.14.2                | 7.14.2.0       |                                | elastic7.14.2|
+| 7.15.0                | 7.15.0.0       |                                | elastic7.15.0|
+| 7.15.1                | 7.15.1.0       |                                | elastic7.15.1|
 
 ### Elasticsearch 1.x
 ````
@@ -819,6 +680,31 @@ Versions
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.15.0/elasticsearch-sql-6.8.15.0.zip
 ````
 
+### Elasticsearch 6.8.16
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.16.0/elasticsearch-sql-6.8.16.0.zip
+````
+
+### Elasticsearch 6.8.17
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.17.0/elasticsearch-sql-6.8.17.0.zip
+````
+
+### Elasticsearch 6.8.18
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.18.0/elasticsearch-sql-6.8.18.0.zip
+````
+
+### Elasticsearch 6.8.19
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.19.0/elasticsearch-sql-6.8.19.0.zip
+````
+
+### Elasticsearch 6.8.20
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.8.20.0/elasticsearch-sql-6.8.20.0.zip
+````
+
 ### Elasticsearch 7.0.0
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.0.0.0/elasticsearch-sql-7.0.0.0.zip
@@ -987,6 +873,56 @@ Versions
 ### Elasticsearch 7.12.1
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.12.1.0/elasticsearch-sql-7.12.1.0.zip
+````
+
+### Elasticsearch 7.13.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.13.0.0/elasticsearch-sql-7.13.0.0.zip
+````
+
+### Elasticsearch 7.13.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.13.1.0/elasticsearch-sql-7.13.1.0.zip
+````
+
+### Elasticsearch 7.13.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.13.2.0/elasticsearch-sql-7.13.2.0.zip
+````
+
+### Elasticsearch 7.13.3
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.13.3.0/elasticsearch-sql-7.13.3.0.zip
+````
+
+### Elasticsearch 7.13.4
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.13.4.0/elasticsearch-sql-7.13.4.0.zip
+````
+
+### Elasticsearch 7.14.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.14.0.0/elasticsearch-sql-7.14.0.0.zip
+````
+
+### Elasticsearch 7.14.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.14.1.0/elasticsearch-sql-7.14.1.0.zip
+````
+
+### Elasticsearch 7.14.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.14.2.0/elasticsearch-sql-7.14.2.0.zip
+````
+
+### Elasticsearch 7.15.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.15.0.0/elasticsearch-sql-7.15.0.0.zip
+````
+
+### Elasticsearch 7.15.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/7.15.1.0/elasticsearch-sql-7.15.1.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
