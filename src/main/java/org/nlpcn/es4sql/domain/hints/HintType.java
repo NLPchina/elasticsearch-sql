@@ -26,5 +26,6 @@ public enum HintType
     TIMEOUT,
     INDICES_OPTIONS,
     MIN_SCORE,
-    SEARCH_AFTER
+    SEARCH_AFTER,
+    RUNTIME_MAPPINGS
 }

@@ -189,13 +189,17 @@ public class HintFactory {
             String[] searchAfterParams = getParamsFromHint(hintAsString, "! SEARCH_AFTER");
             return new Hint(HintType.SEARCH_AFTER, searchAfterParams);
         }
+        if (hintAsString.startsWith("! RUNTIME_MAPPINGS")) {
+            String runtimeMappings = getParamFromHint(hintAsString, "! RUNTIME_MAPPINGS");
+            return new Hint(HintType.RUNTIME_MAPPINGS, new String[]{runtimeMappings});
+        }
 
         return null;
     }
 
     private static String getParamFromHint(String hint, String prefix) {
         if (!hint.contains("(")) return null;
-        return hint.replace(prefix, "").replaceAll("\\s*\\(\\s*", "").replaceAll("\\s*\\,\\s*", ",").replaceAll("\\s*\\)\\s*", "");
+        return hint.replace(prefix, "").replaceAll("^\\s*\\(\\s*", "").replaceAll("\\s*\\,\\s*", ",").replaceAll("\\s*\\)\\s*$", "");
     }
     private static String[] getParamsFromHint(String hint, String prefix) {
         String param = getParamFromHint(hint, prefix);

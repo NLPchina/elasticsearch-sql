@@ -281,6 +281,7 @@ public class AggregationQueryAction extends QueryAction {
         updateRequestWithIndicesOptions(select, request);
         updateRequestWithMinScore(select, request);
         updateRequestWithSearchAfter(select, request);
+        updateRequestWithRuntimeMappings(select, request);
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }

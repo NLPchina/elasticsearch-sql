@@ -143,6 +143,18 @@ public abstract class QueryAction {
         }
     }
 
+    protected void updateRequestWithRuntimeMappings(Select select, SearchRequestBuilder request) throws SqlParseException {
+        for (Hint hint : select.getHints()) {
+            if (hint.getType() == HintType.RUNTIME_MAPPINGS && hint.getParams() != null && 0 < hint.getParams().length) {
+                try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, hint.getParams()[0].toString())) {
+                    request.setRuntimeMappings(parser.map());
+                } catch (IOException e) {
+                    throw new SqlParseException("could not parse runtime_mappings hint: " + e.getMessage());
+                }
+            }
+        }
+    }
+
     protected void updateRequestWithHighlight(Select select, SearchRequestBuilder request) {
         boolean foundAnyHighlights = false;
         HighlightBuilder highlightBuilder = new HighlightBuilder();

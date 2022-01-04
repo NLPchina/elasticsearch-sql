@@ -944,6 +944,13 @@ public class QueryTest {
         Assert.assertEquals(21, hits.getHits().length);
     }
 
+	@Test
+	public void runtimeMappingsTest() throws SqlParseException, SQLFeatureNotSupportedException {
+		String query = String.format("select /*! RUNTIME_MAPPINGS({\"email_suffix\":{\"type\":\"keyword\",\"script\":{\"source\":\"def email=params['_source']['email'];emit(email.substring(email.indexOf('@')))\"}}})*/* from %s/account where email_suffix='@xurban.com'", TEST_INDEX_ACCOUNT);
+		SearchHits hits = query(query);
+		Assert.assertEquals(2, hits.getHits().length);
+	}
+
     private SearchHits query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         SqlElasticSearchRequestBuilder select = (SqlElasticSearchRequestBuilder) searchDao.explain(query).explain();
