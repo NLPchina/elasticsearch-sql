@@ -121,7 +121,8 @@ DefaultQueryResultHandler.prototype.getBody = function() {
 };
 
 DefaultQueryResultHandler.prototype.getTotal = function() {
-    return this.data.hits.total;
+    let total = this.data.hits.total;
+    return angular.isObject(total) ? total.value : total;
 };
 
 DefaultQueryResultHandler.prototype.getCurrentHitsSize = function() {
