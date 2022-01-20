@@ -2,7 +2,7 @@ package org.elasticsearch.plugin.nlpcn;
 
 import org.apache.lucene.util.SetOnce;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.xcontent.NamedXContentRegistry;
 
 import java.util.Objects;
 

@@ -9,14 +9,15 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.geo.GeoPoint;
-import org.elasticsearch.common.geo.builders.ShapeBuilder;
-import org.elasticsearch.common.geo.parsers.ShapeParser;
+import org.elasticsearch.common.geo.GeometryParserFormat;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.geometry.Geometry;
+import org.elasticsearch.geometry.utils.StandardValidator;
+import org.elasticsearch.xcontent.NamedXContentRegistry;
+import org.elasticsearch.xcontent.ToXContent;
+import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
 import org.elasticsearch.index.query.MatchPhrasePrefixQueryBuilder;
@@ -52,6 +53,7 @@ import org.nlpcn.es4sql.spatial.WktToGeoJsonConverter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -293,9 +295,9 @@ public abstract class Maker {
         case GEO_INTERSECTS:
             String wkt = cond.getValue().toString();
             try {
-                ShapeBuilder shapeBuilder = getShapeBuilderFromString(wkt);
-                x = QueryBuilders.geoShapeQuery(cond.getName(), shapeBuilder);
-            } catch (IOException e) {
+                Geometry geometry = getGeometryFromString(wkt);
+                x = QueryBuilders.geoIntersectionQuery(cond.getName(), geometry);
+            } catch (IOException | ParseException e) {
                 e.printStackTrace();
                 throw new SqlParseException("couldn't create shapeBuilder from wkt: " + wkt);
             }
@@ -395,12 +397,12 @@ public abstract class Maker {
         return strings;
     }
 
-    private ShapeBuilder getShapeBuilderFromString(String str) throws IOException {
+    private Geometry getGeometryFromString(String str) throws IOException, ParseException {
         String json;
         if(str.contains("{")) json  = fixJsonFromElastic(str);
         else json = WktToGeoJsonConverter.toGeoJson(trimApostrophes(str));
 
-        return getShapeBuilderFromJson(json);
+        return getGeometryFromJson(json);
     }
 
     /*
@@ -414,10 +416,10 @@ public abstract class Maker {
         return properJson;
     }
 
-    private ShapeBuilder getShapeBuilderFromJson(String json) throws IOException {
+    private Geometry getGeometryFromJson(String json) throws IOException, ParseException {
         try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, json)) {
             parser.nextToken();
-            return ShapeParser.parse(parser);
+            return GeometryParserFormat.GEOJSON.fromXContent(StandardValidator.instance(true), true, true, parser);
         }
     }
 
