@@ -1207,6 +1207,19 @@ public class SqlParserTests {
         Assert.assertEquals(1000, params[2]);
     }
 
+    @Test
+    public void testExplanCond() throws SqlParseException {
+        try {
+            String query = "select * from x where y  TERM(\'a\')";
+            Select select = parser.parseSelect(((SQLQueryExpr) (queryToExpr(query))));
+            Condition condition = ((Condition) (select.getWhere().getWheres().get(0)));
+            Object[] values = ((Object[]) (condition.getValue()));
+            Assert.fail("testExplanCond should have thrown SqlParseException");
+        } catch (SqlParseException expected) {
+            Assert.assertEquals("err find condition class com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr", expected.getMessage());
+        }
+    }
+
 
 
     private SQLExpr queryToExpr(String query) {
