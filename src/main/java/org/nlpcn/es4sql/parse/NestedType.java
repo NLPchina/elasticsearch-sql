@@ -1,10 +1,13 @@
 package org.nlpcn.es4sql.parse;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLTextLiteralExpr;
+import org.apache.lucene.search.join.ScoreMode;
+import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -22,6 +25,7 @@ public class NestedType {
     private boolean simple;
 
     private String innerHits;
+    private ScoreMode scoreMode = ScoreMode.None;
 
     public boolean tryFillFromExpr(SQLExpr expr) throws SqlParseException {
         if (!(expr instanceof SQLMethodInvokeExpr)) return false;
@@ -32,6 +36,16 @@ public class NestedType {
         reverse = methodNameLower.equals("reverse_nested");
 
         List<SQLExpr> parameters = method.getParameters();
+
+        //
+        parameters.removeIf(e -> {
+            if (e instanceof SQLBinaryOpExpr && "score_mode".equals(((SQLBinaryOpExpr) e).getLeft().toString())) {
+                scoreMode = NestedQueryBuilder.parseScoreMode(Util.expr2Object(((SQLBinaryOpExpr) e).getRight()).toString());
+                return true;
+            }
+            return false;
+        });
+
         int size = parameters.size();
         if (size != 3 && size != 2 && size != 1)
             throw new SqlParseException("on nested object only allowed 3 parameters (path,conditions..,inner_hits) or 2 parameters (field,path)/(path,conditions..) or 1 parameter (field) ");
@@ -98,5 +112,9 @@ public class NestedType {
 
     public void setInnerHits(String innerHits) {
         this.innerHits = innerHits;
+    }
+
+    public ScoreMode getScoreMode() {
+        return scoreMode;
     }
 }

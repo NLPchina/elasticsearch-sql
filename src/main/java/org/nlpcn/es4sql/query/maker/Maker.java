@@ -359,7 +359,7 @@ public abstract class Maker {
             Where whereNested = (Where) value;
             BoolQueryBuilder nestedFilter = QueryMaker.explan(whereNested);
 
-            x = QueryBuilders.nestedQuery(name, nestedFilter, ScoreMode.None);
+            x = QueryBuilders.nestedQuery(name, nestedFilter, cond.getScoreMode());
         break;
         case CHILDREN_COMPLEX:
             if(value == null || ! (value instanceof Where) )

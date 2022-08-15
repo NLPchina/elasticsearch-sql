@@ -824,11 +824,11 @@ public class SqlParserTests {
 
     @Test
     public void complexNestedAndOtherQuery() throws SqlParseException {
-        String query = "select * from x where nested('path',path.x=3,'{\"from\":0}') and y=3";
+        String query = "select * from x where nested('path',path.x=3,'{\"from\":0}',score_mode=max) and y=3";
         Select select = parser.parseSelect((SQLQueryExpr) queryToExpr(query));
         LinkedList<Where> wheres = select.getWhere().getWheres();
         Assert.assertEquals(2, wheres.size());
-        Assert.assertEquals("nested condition on path:path inner_hits:{\"from\":0} AND path NESTED_COMPLEX AND ( AND path.x EQ 3 ) ", wheres.get(0).toString());
+        Assert.assertEquals("nested condition on path:path inner_hits:{\"from\":0} score_mode:Max AND path NESTED_COMPLEX AND ( AND path.x EQ 3 ) ", wheres.get(0).toString());
         Assert.assertEquals("AND y EQ 3", wheres.get(1).toString());
     }
 

@@ -8,6 +8,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import org.apache.lucene.search.join.ScoreMode;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ChildrenType;
 import org.nlpcn.es4sql.parse.NestedType;
@@ -87,6 +88,7 @@ public class Condition extends Where {
     private boolean isNested;
     private String nestedPath;
     private String innerHits;
+    private ScoreMode scoreMode;
 
     private boolean isChildren;
     private String childType;
@@ -122,6 +124,7 @@ public class Condition extends Where {
                 this.isNested = true;
                 this.nestedPath = nestedType.path;
                 this.innerHits = nestedType.getInnerHits();
+                this.scoreMode = nestedType.getScoreMode();
                 this.isChildren = false;
                 this.childType = "";
             } else if (relationshipType instanceof ChildrenType) {
@@ -241,6 +244,7 @@ public class Condition extends Where {
                 this.isNested = true;
                 this.nestedPath = nestedType.path;
                 this.innerHits = nestedType.getInnerHits();
+                this.scoreMode = nestedType.getScoreMode();
                 this.isChildren = false;
                 this.childType = "";
             } else if (relationshipType instanceof ChildrenType) {
@@ -340,6 +344,10 @@ public class Condition extends Where {
         this.innerHits = innerHits;
     }
 
+    public ScoreMode getScoreMode() {
+        return scoreMode;
+    }
+
     public boolean isChildren() {
         return isChildren;
     }
@@ -368,6 +376,9 @@ public class Condition extends Where {
 
             if (this.getInnerHits() != null) {
                 result += "inner_hits:" + this.getInnerHits() + " ";
+            }
+            if (this.getScoreMode() != null) {
+                result += "score_mode:" + this.getScoreMode() + " ";
             }
         } else if (this.isChildren()) {
             result = "children condition ";

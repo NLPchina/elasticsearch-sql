@@ -109,7 +109,7 @@ public class QueryMaker extends Maker {
 
                 // bugfix #628
                 if ("missing".equalsIgnoreCase(String.valueOf(condition.getValue())) && (condition.getOpear() == Condition.OPEAR.IS || condition.getOpear() == Condition.OPEAR.EQ)) {
-                    NestedQueryBuilder q = isNestedQuery ? (NestedQueryBuilder) subQuery : QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), ScoreMode.None);
+                    NestedQueryBuilder q = isNestedQuery ? (NestedQueryBuilder) subQuery : QueryBuilders.nestedQuery(condition.getNestedPath(), QueryBuilders.boolQuery().mustNot(subQuery), condition.getScoreMode());
 					if (ihb != null) {
 						q.innerHit(ihb);
                     }
@@ -127,7 +127,7 @@ public class QueryMaker extends Maker {
                 }
 
                 if (!isNestedQuery) {
-					subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, ScoreMode.None);
+					subQuery = QueryBuilders.nestedQuery(condition.getNestedPath(), subQuery, condition.getScoreMode());
 				}
                 if (ihb != null) {
                     ((NestedQueryBuilder) subQuery).innerHit(ihb);
