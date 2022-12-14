@@ -383,7 +383,7 @@ public class SqlParserTests {
         List<Field> fields = select.getFields();
         Assert.assertEquals(1, fields.size());
         Field field = fields.get(0);
-        Assert.assertEquals("MAX(@field)", field.toString());
+        Assert.assertEquals("max(@field)", field.toString());
     }
 
     @Test
@@ -583,8 +583,8 @@ public class SqlParserTests {
         Select select = parser.parseSelect((SQLQueryExpr) sqlExpr);
         List<Field> fields = select.getFields();
         Assert.assertTrue(fields.size() == 2);
-        Assert.assertEquals("COUNT(*)", fields.get(0).toString());
-        Assert.assertEquals("SUM(size)", fields.get(1).toString());
+        Assert.assertEquals("count(*)", fields.get(0).toString());
+        Assert.assertEquals("sum(size)", fields.get(1).toString());
         List<List<Field>> groups = select.getGroupBys();
         Assert.assertTrue(groups.size() == 1);
         Assert.assertTrue(groups.get(0).size() == 1);

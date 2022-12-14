@@ -154,7 +154,7 @@ public class CSVResultsExtractorTests {
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(1, headers.size());
-        Assert.assertEquals("COUNT(*)", headers.get(0));
+        Assert.assertEquals("count(*)", headers.get(0));
 
 
         List<String> lines = csvResult.getLines();
@@ -242,8 +242,8 @@ public class CSVResultsExtractorTests {
         Assert.assertEquals(4, headers.size());
         Assert.assertEquals("gender", headers.get(0));
         Assert.assertEquals("age", headers.get(1));
-        Assert.assertTrue(headers.get(2).equals("COUNT(*)") || headers.get(2).equals("SUM(balance)"));
-        Assert.assertTrue(headers.get(3).equals("COUNT(*)") || headers.get(3).equals("SUM(balance)"));
+        Assert.assertTrue(headers.get(2).equals("COUNT(*)") || headers.get(2).equals("sum(balance)"));
+        Assert.assertTrue(headers.get(3).equals("COUNT(*)") || headers.get(3).equals("sum(balance)"));
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(4, lines.size());
@@ -262,7 +262,7 @@ public class CSVResultsExtractorTests {
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(2, headers.size());
         Assert.assertEquals("days", headers.get(0));
-        Assert.assertEquals("COUNT(*)", headers.get(1));
+        Assert.assertEquals("count(*)", headers.get(1));
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(3, lines.size());

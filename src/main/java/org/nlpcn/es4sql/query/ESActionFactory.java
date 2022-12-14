@@ -6,7 +6,6 @@ import com.alibaba.druid.sql.ast.statement.SQLDeleteStatement;
 import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
-import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLExprParser;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
@@ -23,6 +22,7 @@ import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.parse.ElasticLexer;
 import org.nlpcn.es4sql.parse.ElasticSqlExprParser;
+import org.nlpcn.es4sql.parse.ElasticSqlStatementParser;
 import org.nlpcn.es4sql.parse.SqlParser;
 import org.nlpcn.es4sql.parse.SubQueryExpression;
 import org.nlpcn.es4sql.query.join.ESJoinQueryActionFactory;
@@ -130,7 +130,7 @@ public class ESActionFactory {
     public static SQLStatementParser createSqlStatementParser(String sql) {
         ElasticLexer lexer = new ElasticLexer(sql);
         lexer.nextToken();
-        return new MySqlStatementParser(lexer);
+        return new ElasticSqlStatementParser(lexer);
     }
 
     private static boolean isJoin(SQLQueryExpr sqlExpr,String sql) {

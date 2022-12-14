@@ -1,6 +1,7 @@
 package com.alibaba.druid.pool;
 
 import com.alibaba.druid.Constants;
+import com.alibaba.druid.DbType;
 import com.alibaba.druid.TransactionTimeoutException;
 import com.alibaba.druid.VERSION;
 import com.alibaba.druid.filter.AutoLoad;
@@ -795,13 +796,12 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
                 filter.init(this);
             }
 
-            if (this.dbType == null || this.dbType.length() == 0) {
-                this.dbType = JdbcUtils.getDbType(jdbcUrl, null);
+            if (this.dbTypeName == null || this.dbTypeName.length() == 0) {
+                this.dbTypeName = JdbcUtils.getDbType(jdbcUrl, null);
             }
 
-            if (JdbcConstants.MYSQL.equals(this.dbType)
-                    || JdbcConstants.MARIADB.equals(this.dbType)
-                    || JdbcConstants.ALIYUN_ADS.equals(this.dbType)) {
+            DbType dbType = DbType.of(this.dbTypeName);
+            if (JdbcUtils.isMysqlDbType(dbType)) {
                 boolean cacheServerConfigurationSet = false;
                 if (this.connectProperties.containsKey("cacheServerConfiguration")) {
                     cacheServerConfigurationSet = true;
@@ -848,14 +848,14 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
             if (isUseGlobalDataSourceStat()) {
                 dataSourceStat = JdbcDataSourceStat.getGlobal();
                 if (dataSourceStat == null) {
-                    dataSourceStat = new JdbcDataSourceStat("Global", "Global", this.dbType);
+                    dataSourceStat = new JdbcDataSourceStat("Global", "Global", this.dbTypeName);
                     JdbcDataSourceStat.setGlobal(dataSourceStat);
                 }
                 if (dataSourceStat.getDbType() == null) {
-                    dataSourceStat.setDbType(this.dbType);
+                    dataSourceStat.setDbType(this.dbTypeName);
                 }
             } else {
-                dataSourceStat = new JdbcDataSourceStat(this.name, this.jdbcUrl, this.dbType, this.connectProperties);
+                dataSourceStat = new JdbcDataSourceStat(this.name, this.jdbcUrl, this.dbTypeName, this.connectProperties);
             }
             dataSourceStat.setResetStatEnable(this.resetStatEnable);
 
@@ -1187,7 +1187,9 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
     }
 
     protected void initCheck() throws SQLException {
-        if (JdbcUtils.ORACLE.equals(this.dbType)) {
+        DbType dbType = DbType.of(this.dbTypeName);
+
+        if (dbType == DbType.oracle) {
             isOracle = true;
 
             if (driver.getMajorVersion() < 10) {
@@ -1200,15 +1202,17 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
             }
 
             oracleValidationQueryCheck();
-        } else if (JdbcUtils.DB2.equals(dbType)) {
+        } else if (dbType == DbType.db2) {
             db2ValidationQueryCheck();
-        } else if (JdbcUtils.MYSQL.equals(this.dbType)
-                || JdbcUtils.MYSQL_DRIVER_6.equals(this.dbType)) {
+        } else if (dbType == DbType.mysql
+                || JdbcUtils.MYSQL_DRIVER.equals(this.driverClass)
+                || JdbcUtils.MYSQL_DRIVER_6.equals(this.driverClass)
+        ) {
             isMySql = true;
         }
 
         if (removeAbandoned) {
-            LOG.warn("removeAbandoned is true, not use in productiion.");
+            LOG.warn("removeAbandoned is true, not use in production.");
         }
     }
 
@@ -1220,7 +1224,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
             return;
         }
 
-        SQLStatementParser sqlStmtParser = SQLParserUtils.createSQLStatementParser(validationQuery, this.dbType);
+        SQLStatementParser sqlStmtParser = SQLParserUtils.createSQLStatementParser(validationQuery, DbType.of(this.dbTypeName));
         List<SQLStatement> stmtList = sqlStmtParser.parseStatementList();
 
         if (stmtList.size() != 1) {
@@ -1249,7 +1253,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
             return;
         }
 
-        SQLStatementParser sqlStmtParser = SQLParserUtils.createSQLStatementParser(validationQuery, this.dbType);
+        SQLStatementParser sqlStmtParser = SQLParserUtils.createSQLStatementParser(validationQuery, DbType.of(this.dbTypeName));
         List<SQLStatement> stmtList = sqlStmtParser.parseStatementList();
 
         if (stmtList.size() != 1) {
@@ -2127,7 +2131,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
         }
 
         value.setName(this.getName());
-        value.setDbType(this.dbType);
+        value.setDbType(this.dbTypeName);
         value.setDriverClassName(this.getDriverClassName());
 
         value.setUrl(this.getUrl());
@@ -3103,7 +3107,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
         return dataSourceStat;
     }
 
-    public Object clone() throws CloneNotSupportedException {
+    public Object clone() {
         return cloneDruidDataSource();
     }
 
@@ -3145,7 +3149,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
             map.put("MinEvictableIdleTimeMillis", this.minEvictableIdleTimeMillis);
             map.put("ConnectErrorCount", this.getConnectErrorCount());
             map.put("CreateTimespanMillis", this.getCreateTimespanMillis());
-            map.put("DbType", this.dbType);
+            map.put("DbType", this.dbTypeName);
 
             // 20 - 24
             map.put("ValidationQuery", this.getValidationQuery());
@@ -3221,7 +3225,7 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
 
         dataMap.put("Identity", System.identityHashCode(this));
         dataMap.put("Name", this.getName());
-        dataMap.put("DbType", this.dbType);
+        dataMap.put("DbType", this.dbTypeName);
         dataMap.put("DriverClassName", this.getDriverClassName());
 
         dataMap.put("URL", this.getUrl());

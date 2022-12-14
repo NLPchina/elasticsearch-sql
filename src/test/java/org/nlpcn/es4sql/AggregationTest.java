@@ -689,7 +689,7 @@ public class AggregationTest {
         InternalNested nested  = result.get("message@NESTED");
         Histogram histogram = nested.getAggregations().get("someAlias");
         for(Histogram.Bucket bucket : histogram.getBuckets()){
-            long count = ((ValueCount) bucket.getAggregations().get("COUNT(*)")).getValue();
+            long count = ((ValueCount) bucket.getAggregations().get("count(*)")).getValue();
             String key = ((Double)bucket.getKey()).intValue()+"";
             if(key.equals("0") || key.equals("4")){
                 Assert.assertEquals(2,count);

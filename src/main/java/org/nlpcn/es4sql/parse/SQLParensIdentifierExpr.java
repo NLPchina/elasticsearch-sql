@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.parse;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLExprImpl;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
@@ -45,6 +46,11 @@ public class SQLParensIdentifierExpr extends SQLExprImpl {
 
     @Override
     public int hashCode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public SQLExpr clone() {
         throw new UnsupportedOperationException();
     }
 

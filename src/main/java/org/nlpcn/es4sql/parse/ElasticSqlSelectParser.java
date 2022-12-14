@@ -1,5 +1,6 @@
 package org.nlpcn.es4sql.parse;
 
+import com.alibaba.druid.sql.ast.SQLCommentHint;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLName;
 import com.alibaba.druid.sql.ast.SQLObject;
@@ -84,7 +85,7 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
             lexer.nextToken();
 
             SQLSelectQuery select = query();
-            select.setBracket(true);
+            select.setParenthesized(true);
             accept(Token.RPAREN);
 
             return queryRest(select, acceptUnion);
@@ -238,7 +239,7 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
 
                 SQLSelectQuery query = queryRest(select.getQuery());
                 if (query instanceof SQLUnionQuery && select.getWithSubQuery() == null) {
-                    select.getQuery().setBracket(true);
+                    select.getQuery().setParenthesized(true);
                     tableSource = new SQLUnionQueryTableSource((SQLUnionQuery) query);
                 } else {
                     tableSource = new SQLSubqueryTableSource(select);
@@ -274,6 +275,37 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
         }
 
         return tableSrc;
+    }
+
+    @Override
+    protected void parseTableSourceQueryTableExpr(SQLExprTableSource tableReference) {
+        if (lexer.token() == Token.LITERAL_ALIAS || lexer.identifierEquals(FnvHash.Constants.IDENTIFIED)
+                || lexer.token() == Token.LITERAL_CHARS) {
+            tableReference.setExpr(this.exprParser.name());
+            return;
+        }
+
+        if (lexer.token() == Token.HINT) {
+            SQLCommentHint hint = this.exprParser.parseHint();
+            tableReference.setHint(hint);
+        }
+
+        SQLExpr expr;
+        switch (lexer.token()) {
+            case ALL:
+            case SET:
+                expr = this.exprParser.name();
+                break;
+            default:
+                expr = expr();
+                break;
+        }
+
+        /*if (expr instanceof SQLBinaryOpExpr) {
+            throw new ParserException("Invalid from clause : " + expr.toString().replace("\n", " "));
+        }*/
+
+        tableReference.setExpr(expr);
     }
 
     protected MySqlUpdateStatement parseUpdateStatment() {
@@ -449,7 +481,7 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
     }
 
     @Override
-    protected SQLTableSource parseTableSourceRest(SQLTableSource tableSource) {
+    public SQLTableSource parseTableSourceRest(SQLTableSource tableSource) {
         if (lexer.identifierEquals(FnvHash.Constants.USING)) {
             return tableSource;
         }

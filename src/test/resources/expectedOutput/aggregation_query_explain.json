@@ -5,7 +5,7 @@
         "includes" : [
             "a",
             "script",
-            "COUNT"
+            "count"
         ],
         "excludes" : [ ]
     },
@@ -62,7 +62,7 @@
                         ]
                     },
                     "aggregations" : {
-                        "COUNT(c)" : {
+                        "count(c)" : {
                             "value_count" : {
                                 "field" : "c"
                             }

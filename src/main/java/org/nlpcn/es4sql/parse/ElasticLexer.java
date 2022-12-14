@@ -23,7 +23,7 @@ public class ElasticLexer extends MySqlLexer {
     }
 
     public void scanIdentifier() {
-        hash_lower = 0;
+        hashLCase = 0;
         hash = 0;
 
         final char first = ch;
@@ -62,14 +62,14 @@ public class ElasticLexer extends MySqlLexer {
                 throw new ParserException("illegal identifier. " + info());
             }
 
-            hash_lower = 0xcbf29ce484222325L;
+            hashLCase = 0xcbf29ce484222325L;
             hash = 0xcbf29ce484222325L;
 
             for (int i = startPos; i < quoteIndex; ++i) {
                 ch = text.charAt(i);
 
-                hash_lower ^= ((ch >= 'A' && ch <= 'Z') ? (ch + 32) : ch);
-                hash_lower *= 0x100000001b3L;
+                hashLCase ^= ((ch >= 'A' && ch <= 'Z') ? (ch + 32) : ch);
+                hashLCase *= 0x100000001b3L;
 
                 hash ^= ch;
                 hash *= 0x100000001b3L;
@@ -86,11 +86,11 @@ public class ElasticLexer extends MySqlLexer {
                 throw new ParserException("illegal identifier. " + info());
             }
 
-            hash_lower = 0xcbf29ce484222325L;
+            hashLCase = 0xcbf29ce484222325L;
             hash = 0xcbf29ce484222325L;
 
-            hash_lower ^= ((ch >= 'A' && ch <= 'Z') ? (ch + 32) : ch);
-            hash_lower *= 0x100000001b3L;
+            hashLCase ^= ((ch >= 'A' && ch <= 'Z') ? (ch + 32) : ch);
+            hashLCase *= 0x100000001b3L;
 
             hash ^= ch;
             hash *= 0x100000001b3L;
@@ -107,8 +107,8 @@ public class ElasticLexer extends MySqlLexer {
 
                 bufPos++;
 
-                hash_lower ^= ((ch >= 'A' && ch <= 'Z') ? (ch + 32) : ch);
-                hash_lower *= 0x100000001b3L;
+                hashLCase ^= ((ch >= 'A' && ch <= 'Z') ? (ch + 32) : ch);
+                hashLCase *= 0x100000001b3L;
 
                 hash ^= ch;
                 hash *= 0x100000001b3L;
@@ -127,7 +127,7 @@ public class ElasticLexer extends MySqlLexer {
                 return;
             }
 
-            Token tok = keywods.getKeyword(hash_lower);
+            Token tok = keywords.getKeyword(hashLCase);
             if (tok != null) {
                 token = tok;
                 if (token == Token.IDENTIFIER) {

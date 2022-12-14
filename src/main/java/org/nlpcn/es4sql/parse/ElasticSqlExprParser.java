@@ -15,11 +15,13 @@ import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOperator;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLExistsExpr;
+import com.alibaba.druid.sql.ast.expr.SQLExtractExpr;
 import com.alibaba.druid.sql.ast.expr.SQLHexExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntervalExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntervalUnit;
+import com.alibaba.druid.sql.ast.expr.SQLMatchAgainstExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLNotExpr;
 import com.alibaba.druid.sql.ast.expr.SQLUnaryExpr;
@@ -32,8 +34,6 @@ import com.alibaba.druid.sql.dialect.mysql.ast.MySqlPrimaryKey;
 import com.alibaba.druid.sql.dialect.mysql.ast.MySqlUnique;
 import com.alibaba.druid.sql.dialect.mysql.ast.MysqlForeignKey;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlCharExpr;
-import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlExtractExpr;
-import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlMatchAgainstExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlOrderingExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlOutFileExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlUserName;
@@ -369,7 +369,7 @@ public class ElasticSqlExprParser extends SQLExprParser {
 
         if (expr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) expr;
-            methodInvokeExpr.getParameters().add(new SQLIntegerExpr(index));
+            methodInvokeExpr.getArguments().add(new SQLIntegerExpr(index));
         }
         lexer.nextToken();
         expr = primaryRest(expr);
@@ -443,8 +443,8 @@ public class ElasticSqlExprParser extends SQLExprParser {
         accept(Token.RPAREN);
 
         SQLMethodInvokeExpr locate = new SQLMethodInvokeExpr("LOCATE");
-        locate.addParameter(subStr);
-        locate.addParameter(str);
+        locate.addArgument(subStr);
+        locate.addArgument(str);
 
         return primaryRest(locate);
     }
@@ -463,7 +463,7 @@ public class ElasticSqlExprParser extends SQLExprParser {
 
         SQLExpr value = expr();
 
-        MySqlExtractExpr extract = new MySqlExtractExpr();
+        SQLExtractExpr extract = new SQLExtractExpr();
         extract.setValue(value);
         extract.setUnit(unit);
         accept(Token.RPAREN);
@@ -475,7 +475,7 @@ public class ElasticSqlExprParser extends SQLExprParser {
 
     protected SQLExpr parseMatch() {
 
-        MySqlMatchAgainstExpr matchAgainstExpr = new MySqlMatchAgainstExpr();
+        SQLMatchAgainstExpr matchAgainstExpr = new SQLMatchAgainstExpr();
 
         if (lexer.token() == Token.RPAREN) {
             lexer.nextToken();
@@ -500,14 +500,14 @@ public class ElasticSqlExprParser extends SQLExprParser {
                     lexer.nextToken();
                     acceptIdentifier("QUERY");
                     acceptIdentifier("EXPANSION");
-                    matchAgainstExpr.setSearchModifier(MySqlMatchAgainstExpr.SearchModifier.IN_NATURAL_LANGUAGE_MODE_WITH_QUERY_EXPANSION);
+                    matchAgainstExpr.setSearchModifier(SQLMatchAgainstExpr.SearchModifier.IN_NATURAL_LANGUAGE_MODE_WITH_QUERY_EXPANSION);
                 } else {
-                    matchAgainstExpr.setSearchModifier(MySqlMatchAgainstExpr.SearchModifier.IN_NATURAL_LANGUAGE_MODE);
+                    matchAgainstExpr.setSearchModifier(SQLMatchAgainstExpr.SearchModifier.IN_NATURAL_LANGUAGE_MODE);
                 }
             } else if (lexer.identifierEquals(FnvHash.Constants.BOOLEAN)) {
                 lexer.nextToken();
                 acceptIdentifier("MODE");
-                matchAgainstExpr.setSearchModifier(MySqlMatchAgainstExpr.SearchModifier.IN_BOOLEAN_MODE);
+                matchAgainstExpr.setSearchModifier(SQLMatchAgainstExpr.SearchModifier.IN_BOOLEAN_MODE);
             } else {
                 throw new ParserException("syntax error. " + lexer.info());
             }
