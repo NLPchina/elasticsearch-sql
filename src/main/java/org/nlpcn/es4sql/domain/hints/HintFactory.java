@@ -1,11 +1,8 @@
 package org.nlpcn.es4sql.domain.hints;
 
-
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
-import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
-import org.elasticsearch.xcontent.NamedXContentRegistry;
-import org.elasticsearch.xcontent.yaml.YamlXContentParser;
+import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentParserConfiguration;
+import org.elasticsearch.xcontent.yaml.YamlXContent;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.io.IOException;
@@ -97,13 +94,9 @@ public class HintFactory {
                     builder.append(heighlights[i]);
                 }
                 String heighlightParam = builder.toString();
-                YAMLFactory yamlFactory = new YAMLFactory();
-                YAMLParser yamlParser = null;
-                try {
-                yamlParser = yamlFactory.createParser(heighlightParam.toCharArray());
-                YamlXContentParser yamlXContentParser = new YamlXContentParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, yamlParser);
-                Map<String, Object> map = yamlXContentParser.map();
-                hintParams.add(map);
+                try (XContentParser parser = YamlXContent.yamlXContent.createParser(XContentParserConfiguration.EMPTY, heighlightParam)) {
+                    Map<String, Object> map = parser.map();
+                    hintParams.add(map);
                 } catch (IOException e) {
                     throw new SqlParseException("could not parse heighlight hint: " + e.getMessage());
                 }

@@ -7,8 +7,9 @@ import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.reindex.BulkIndexByScrollResponseContentListener;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -18,7 +19,6 @@ import org.elasticsearch.plugin.nlpcn.ElasticUtils;
 import org.elasticsearch.plugin.nlpcn.GetIndexRequestRestListener;
 import org.elasticsearch.plugin.nlpcn.MetaSearchResult;
 import org.elasticsearch.plugin.nlpcn.MultiRequestExecutorFactory;
-import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.action.RestStatusToXContentListener;
@@ -110,7 +110,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
     private void sendDefaultResponse(SearchHits hits, RestChannel channel) {
         try {
             XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(hits, new MetaSearchResult());
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
+            RestResponse bytesRestResponse = new RestResponse(RestStatus.OK, builder);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
             e.printStackTrace();

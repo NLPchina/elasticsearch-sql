@@ -2,8 +2,8 @@ package org.nlpcn.es4sql.query.maker;
 
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
-import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.InnerHitBuilder;
@@ -100,7 +100,7 @@ public class QueryMaker extends Maker {
 				boolean isNestedQuery = subQuery instanceof NestedQueryBuilder;
 				InnerHitBuilder ihb = null;
 				if (condition.getInnerHits() != null) {
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, condition.getInnerHits())) {
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), condition.getInnerHits())) {
                         ihb = InnerHitBuilder.fromXContent(parser);
                     } catch (IOException e) {
                         throw new IllegalArgumentException("couldn't parse inner_hits: " + e.getMessage(), e);

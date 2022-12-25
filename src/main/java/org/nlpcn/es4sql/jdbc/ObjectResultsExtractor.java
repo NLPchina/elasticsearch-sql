@@ -33,16 +33,14 @@ import java.util.Set;
  * Created by allwefantasy on 8/30/16.
  */
 public class ObjectResultsExtractor {
-    private final boolean includeType;
     private final boolean includeScore;
     private final boolean includeId;
     private final boolean includeScrollId;
     private int currentLineIndex;
     private QueryAction queryAction;
 
-    public ObjectResultsExtractor(boolean includeScore, boolean includeType, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
+    public ObjectResultsExtractor(boolean includeScore, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
         this.includeScore = includeScore;
-        this.includeType = includeType;
         this.includeId = includeId;
         this.includeScrollId = includeScrollId;
         this.currentLineIndex = 0;
@@ -279,9 +277,6 @@ public class ObjectResultsExtractor {
             Map<String, Object> doc = Optional.ofNullable(hit.getSourceAsMap()).orElse(Maps.newHashMap());
             if (this.includeScore) {
                 doc.put("_score", hit.getScore());
-            }
-            if (this.includeType) {
-                doc.put("_type", hit.getType());
             }
             if (this.includeId) {
                 doc.put("_id", hit.getId());

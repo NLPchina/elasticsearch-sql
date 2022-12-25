@@ -1,10 +1,10 @@
 package org.elasticsearch.plugin.nlpcn.executors;
 
 import com.google.common.base.Joiner;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
-import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.query.QueryAction;
@@ -38,7 +38,7 @@ public class CSVResultRestExecutor implements RestExecutor {
         }
         boolean showHeader = getBooleanOrDefault(params, "showHeader", true);
         String csvString = buildString(separator, result, newLine, showHeader, quote);
-        BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, csvString);
+        RestResponse bytesRestResponse = new RestResponse(RestStatus.OK, csvString);
         channel.sendResponse(bytesRestResponse);
     }
 

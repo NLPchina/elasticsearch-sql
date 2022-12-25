@@ -1,6 +1,6 @@
 package com.alibaba.druid.pool;
 
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.plugin.nlpcn.QueryActionElasticExecutor;
 import org.elasticsearch.plugin.nlpcn.executors.CsvExtractorException;
 import org.nlpcn.es4sql.SearchDao;
@@ -37,7 +37,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         conn.beforeExecute();
         try {
-            ObjectResult extractor = getObjectResult(true, false, false, true);
+            ObjectResult extractor = getObjectResult(true, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
 
@@ -67,7 +67,7 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
 
         conn.beforeExecute();
         try {
-            ObjectResult extractor = getObjectResult(true, false, false, true);
+            ObjectResult extractor = getObjectResult(true, false, true);
             List<String> headers = extractor.getHeaders();
             List<List<Object>> lines = extractor.getLines();
 
@@ -84,13 +84,13 @@ public class ElasticSearchDruidPooledPreparedStatement extends DruidPooledPrepar
         }
     }
 
-    private ObjectResult getObjectResult(boolean flat, boolean includeScore, boolean includeType, boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
+    private ObjectResult getObjectResult(boolean flat, boolean includeScore, boolean includeId) throws SqlParseException, SQLFeatureNotSupportedException, Exception, CsvExtractorException {
         SearchDao searchDao = new org.nlpcn.es4sql.SearchDao(client);
 
         String query = ((ElasticSearchPreparedStatement) getRawPreparedStatement()).getExecutableSql();
         QueryAction queryAction = searchDao.explain(query);
         Object execution = QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new ObjectResultsExtractor(includeScore, includeType, includeId, false, queryAction).extractResults(execution, flat);
+        return new ObjectResultsExtractor(includeScore, includeId, false, queryAction).extractResults(execution, flat);
     }
 
     @Override

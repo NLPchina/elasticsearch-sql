@@ -5,7 +5,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchScrollAction;
 import org.elasticsearch.action.search.SearchScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.script.Script;
@@ -122,11 +122,6 @@ public class DefaultQueryAction extends QueryAction {
 	 */
 	private void setIndicesAndTypes() {
 		request.setIndices(query.getIndexArr());
-
-		String[] typeArr = query.getTypeArr();
-		if (typeArr != null) {
-			request.setTypes(typeArr);
-		}
 	}
 
 	/**

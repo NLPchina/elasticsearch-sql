@@ -2,9 +2,8 @@ package org.elasticsearch.plugin.nlpcn;
 
 import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.document.DocumentField;
-import org.elasticsearch.common.text.Text;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -116,7 +115,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
             ArrayList<Object> values = new ArrayList<Object>();
             values.add(result);
             fields.put(fieldName,new DocumentField(fieldName, values));
-            SearchHit searchHit = new SearchHit(currentId,currentId+"", new Text(someHit.getType()), fields, null);
+            SearchHit searchHit = new SearchHit(currentId,currentId+"", fields, null);
             searchHit.sourceRef(someHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = new HashMap<>();
@@ -137,7 +136,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
             ArrayList<Object> values = new ArrayList<Object>();
             values.add(result);
             SearchHit originalHit = result.getOriginalHit();
-            SearchHit searchHit = new SearchHit(currentId,originalHit.getId(), new Text(originalHit.getType()), originalHit.getFields(), null);
+            SearchHit searchHit = new SearchHit(currentId,originalHit.getId(), originalHit.getFields(), null);
             searchHit.sourceRef(originalHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = result.getFlattenMap();

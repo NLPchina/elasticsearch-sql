@@ -1,6 +1,6 @@
 package com.alibaba.druid.pool;
 
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 
 import java.sql.Array;
 import java.sql.Blob;

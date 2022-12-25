@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
  * Created by Eliran on 27/12/2015.
  */
 public class CSVResultsExtractor {
-    private final boolean includeType;
     private final boolean includeScore;
     private final boolean includeId;
     private final boolean includeScrollId;
@@ -51,19 +50,17 @@ public class CSVResultsExtractor {
     private int currentLineIndex;
     private QueryAction queryAction;
 
-    public CSVResultsExtractor(boolean includeScore, boolean includeType, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
+    public CSVResultsExtractor(boolean includeScore, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
         this.includeScore = includeScore;
-        this.includeType = includeType;
         this.includeId = includeId;
         this.includeScrollId = includeScrollId;
         this.currentLineIndex = 0;
         this.queryAction = queryAction;
     }
 
-    public CSVResultsExtractor(boolean includeIndex, boolean includeScore, boolean includeType, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
+    public CSVResultsExtractor(boolean includeIndex, boolean includeScore, boolean includeId, boolean includeScrollId, QueryAction queryAction) {
         this.includeIndex = includeIndex;
         this.includeScore = includeScore;
-        this.includeType = includeType;
         this.includeId = includeId;
         this.includeScrollId = includeScrollId;
         this.currentLineIndex = 0;
@@ -108,15 +105,13 @@ public class CSVResultsExtractor {
             return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
         }
         if (queryResult instanceof GetIndexResponse){
-            ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetadata>> mappings = ((GetIndexResponse) queryResult).getMappings();
+            Map<String, MappingMetadata> mappings = ((GetIndexResponse) queryResult).getMappings();
             List<String> headers = Lists.newArrayList("field", "type");
             List<String> csvLines  = new ArrayList<>();
             List<List<String>> lines = new ArrayList<>();
-            Iterator<String> iter = mappings.keysIt();
-            while (iter.hasNext()) {
-                String index = iter.next();
-                MappingMetadata mappingJson = (MappingMetadata)mappings.get(index).values().toArray()[0];
-                 LinkedHashMap properties = (LinkedHashMap) mappingJson.sourceAsMap().get("properties");
+            for (Map.Entry<String, MappingMetadata> entry : mappings.entrySet()) {
+                MappingMetadata mappingJson = entry.getValue();
+                LinkedHashMap properties = (LinkedHashMap) mappingJson.sourceAsMap().get("properties");
                 Map<Object, Object> mapping = Maps.newLinkedHashMap();
                 parseMapping(Lists.newArrayList(), properties, mapping, 0);
                 for (Object key : mapping.keySet()) {
@@ -398,9 +393,6 @@ public class CSVResultsExtractor {
             if (this.includeScore) {
                 doc.put("_score", hit.getScore());
             }
-            if (this.includeType) {
-                doc.put("_type", hit.getType());
-            }
             if (this.includeScrollId) {
                 doc.put("_scroll_id", scrollId);
             }
@@ -414,9 +406,6 @@ public class CSVResultsExtractor {
         }
         if (this.includeScore) {
             csvHeaders.add("_score");
-        }
-        if (this.includeType) {
-            csvHeaders.add("_type");
         }
         if (this.includeScrollId) {
             csvHeaders.add("_scroll_id");

@@ -1,10 +1,15 @@
 language: java
 
 jdk:
-  - openjdk8
+  - openjdk10
 
 before_install:
-  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.7-amd64.deb && sudo dpkg -i --force-confnew elasticsearch-7.17.7-amd64.deb
+  - jdk_switcher use openjdk10
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+  - chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
+  - export JAVA_HOME=$HOME/openjdk17
+  - $TRAVIS_BUILD_DIR/install-jdk.sh -F 17 --target $JAVA_HOME
+  - wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.5.3-amd64.deb && sudo dpkg -i --force-confnew elasticsearch-8.5.3-amd64.deb
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
   - sudo java -version

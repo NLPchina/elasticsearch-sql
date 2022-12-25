@@ -43,10 +43,10 @@ public class JoinTests {
     private void joinParseCheckSelectedFieldsSplit(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         String query = "SELECT a.firstname ,a.lastname , a.gender ,d.dog_name  FROM " +
                 TEST_INDEX_PEOPLE +
-                "/people a " +
+                " a " +
                 " JOIN " +
                 TEST_INDEX_DOG +
-                "/dog d on d.holdersName = a.firstname " +
+                " d on d.holdersName = a.firstname " +
                 " WHERE " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
@@ -67,10 +67,10 @@ public class JoinTests {
     public void joinParseWithHintsCheckSelectedFieldsSplitHASH() throws SqlParseException, SQLFeatureNotSupportedException, IOException {
         String query = "SELECT /*! HASH_WITH_TERMS_FILTER*/ a.firstname ,a.lastname , a.gender ,d.dog_name  FROM " +
                 TEST_INDEX_PEOPLE +
-                "/people a " +
+                " a " +
                 " JOIN " +
                 TEST_INDEX_DOG +
-                "/dog d on d.holdersName = a.firstname " +
+                " d on d.holdersName = a.firstname " +
                 " WHERE " +
                 " (a.age > 10 OR a.balance > 2000)" +
                 " AND d.age > 1";
@@ -95,8 +95,8 @@ public class JoinTests {
     }
 
     private void joinWithNoWhereButWithCondition(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select c.gender , h.hname,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotCharacters h " +
+        String query = String.format("select c.gender , h.hname,h.words from %s c " +
+                "JOIN %s h " +
                 "on h.hname = c.house ",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
@@ -112,8 +112,8 @@ public class JoinTests {
     }
 
     private void joinWithStar(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select * from %s/gotCharacters c " +
-                "JOIN %s/gotCharacters h " +
+        String query = String.format("select * from %s c " +
+                "JOIN %s h " +
                 "on h.hname = c.house ",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
@@ -136,8 +136,8 @@ public class JoinTests {
     }
 
     private void joinNoConditionButWithWhere(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select c.gender , h.hname,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotCharacters h " +
+        String query = String.format("select c.gender , h.hname,h.words from %s c " +
+                "JOIN %s h " +
                 "where c.name.firstname='Daenerys'",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
@@ -155,8 +155,8 @@ public class JoinTests {
     }
 
     private void joinNoConditionAndNoWhere(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select c.name.firstname,c.parents.father , h.hname,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotCharacters h ",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
+        String query = String.format("select c.name.firstname,c.parents.father , h.hname,h.words from %s c " +
+                "JOIN %s h ",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(49, hits.length);
@@ -175,8 +175,8 @@ public class JoinTests {
     }
 
     private void joinNoConditionAndNoWhereWithTotalLimit(boolean useNestedLoops) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("select c.name.firstname,c.parents.father , h.hname,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotCharacters h LIMIT 10",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
+        String query = String.format("select c.name.firstname,c.parents.father , h.hname,h.words from %s c " +
+                "JOIN %s h LIMIT 10",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         if(useNestedLoops) query = query.replace("select","select /*! USE_NL*/ ");
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(10, hits.length);

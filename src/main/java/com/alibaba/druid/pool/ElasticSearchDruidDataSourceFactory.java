@@ -1,7 +1,8 @@
 package com.alibaba.druid.pool;
 
+import org.elasticsearch.client.internal.Client;
+
 import javax.sql.DataSource;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -11,20 +12,10 @@ public class ElasticSearchDruidDataSourceFactory extends DruidDataSourceFactory 
 
     @Override
     protected DataSource createDataSourceInternal(Properties properties) throws Exception {
-        DruidDataSource dataSource = new ElasticSearchDruidDataSource();
-        config(dataSource, properties);
-        return dataSource;
+        throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings("rawtypes")
-    public static DataSource createDataSource(Properties properties) throws Exception {
-        return createDataSource((Map) properties);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static DataSource createDataSource(Map properties) throws Exception {
-        DruidDataSource dataSource = new ElasticSearchDruidDataSource();
-        config(dataSource, properties);
-        return dataSource;
+    public static DataSource createDataSource(Client client) {
+        return new ElasticSearchDruidDataSource(client);
     }
 }

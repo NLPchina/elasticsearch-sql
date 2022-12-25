@@ -1,16 +1,12 @@
 package org.elasticsearch.plugin.nlpcn;
 
-import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.cluster.metadata.AliasMetadata;
-import org.elasticsearch.cluster.metadata.MappingMetadata;
-import org.elasticsearch.common.collect.ImmutableOpenMap;
 
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.XContentBuilder;
-import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
@@ -18,6 +14,7 @@ import org.elasticsearch.rest.action.RestBuilderListener;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Eliran on 6/10/2015.
@@ -45,7 +42,7 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
                         writeAliases(getIndexResponse.aliases().get(index), builder, channel.request());
                         break;
                     case MAPPINGS:
-                        writeMappings(getIndexResponse.mappings().get(index), builder, channel.request());
+                        writeMappings((Map) getIndexResponse.mappings().get(index).rawSourceAsMap(), builder, channel.request());
                         break;
                     case SETTINGS:
                         writeSettings(getIndexResponse.settings().get(index), builder, channel.request());
@@ -59,7 +56,7 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
         }
         builder.endObject();
 
-        return new BytesRestResponse(RestStatus.OK, builder);
+        return new RestResponse(RestStatus.OK, builder);
     }
     private void writeAliases(List<AliasMetadata> aliases, XContentBuilder builder, ToXContent.Params params) throws IOException {
         builder.startObject(Fields.ALIASES);
@@ -71,12 +68,12 @@ public class GetIndexRequestRestListener extends RestBuilderListener<GetIndexRes
         builder.endObject();
     }
 
-    private void writeMappings(ImmutableOpenMap<String, MappingMetadata> mappings, XContentBuilder builder, ToXContent.Params params) throws IOException {
+    private void writeMappings(Map<String, Map<String, Object>> mappings, XContentBuilder builder, ToXContent.Params params) throws IOException {
         builder.startObject(Fields.MAPPINGS);
         if (mappings != null) {
-            for (ObjectObjectCursor<String, MappingMetadata> typeEntry : mappings) {
-                builder.field(typeEntry.key);
-                builder.map(typeEntry.value.sourceAsMap());
+            for (Map.Entry<String, Map<String, Object>> typeEntry : mappings.entrySet()) {
+                builder.field(typeEntry.getKey());
+                builder.map(typeEntry.getValue());
             }
         }
         builder.endObject();

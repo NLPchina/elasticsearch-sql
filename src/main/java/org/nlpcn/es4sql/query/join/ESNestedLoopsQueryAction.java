@@ -1,16 +1,11 @@
 package org.nlpcn.es4sql.query.join;
 
-import org.elasticsearch.client.Client;
-import org.nlpcn.es4sql.domain.Condition;
+import org.elasticsearch.client.internal.Client;
 import org.nlpcn.es4sql.domain.JoinSelect;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
-import org.nlpcn.es4sql.query.QueryAction;
-import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
-
-import java.util.List;
 
 /**
  * Created by Eliran on 15/9/2015.

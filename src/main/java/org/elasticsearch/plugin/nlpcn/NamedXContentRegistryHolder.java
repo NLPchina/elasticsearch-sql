@@ -1,7 +1,6 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import org.apache.lucene.util.SetOnce;
-import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 
 import java.util.Objects;
@@ -17,7 +16,6 @@ public class NamedXContentRegistryHolder {
 
     private static final SetOnce<NamedXContentRegistry> xContentRegistry = new SetOnce<>();
 
-    @Inject
     public NamedXContentRegistryHolder(NamedXContentRegistry xContentRegistry) {
         Objects.requireNonNull(xContentRegistry);
         NamedXContentRegistryHolder.xContentRegistry.set(xContentRegistry);

@@ -2,13 +2,13 @@ package org.elasticsearch.plugin.nlpcn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.client.node.NodeClient;
+import org.elasticsearch.client.internal.node.NodeClient;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentType;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
 import org.elasticsearch.plugin.nlpcn.executors.RestExecutor;
 import org.elasticsearch.rest.BaseRestHandler;
-import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestStatus;
 import org.nlpcn.es4sql.SearchDao;
@@ -48,7 +48,7 @@ public class RestSqlAction extends BaseRestHandler {
     }
 
     @Override
-    protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) {
+    protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
         try (XContentParser parser = request.contentOrSourceParamParser()) {
             parser.mapStrings().forEach((k, v) -> request.params().putIfAbsent(k, v));
         } catch (IOException e) {
@@ -69,7 +69,7 @@ public class RestSqlAction extends BaseRestHandler {
             // TODO add unit tests to explain. (rest level?)
             if (request.path().endsWith("/explain")) {
                 final String jsonExplanation = queryAction.explain().explain();
-                return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.OK, XContentType.JSON.mediaType(), jsonExplanation));
+                return channel -> channel.sendResponse(new RestResponse(RestStatus.OK, XContentType.JSON.mediaType(), jsonExplanation));
             } else {
                 Map<String, String> params = request.params();
 

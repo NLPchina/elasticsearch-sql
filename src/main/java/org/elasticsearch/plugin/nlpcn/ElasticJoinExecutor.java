@@ -3,11 +3,10 @@ package org.elasticsearch.plugin.nlpcn;
 import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.text.Text;
+import org.elasticsearch.client.internal.Client;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.core.TimeValue;
-import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
@@ -52,7 +51,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
     public void  sendResponse(RestChannel channel){
         try {
             XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(results,metaResults);
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
+            RestResponse bytesRestResponse = new RestResponse(RestStatus.OK, builder);
             channel.sendResponse(bytesRestResponse);
         } catch (IOException e) {
             e.printStackTrace();
@@ -169,9 +168,8 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
 
     protected SearchHit createUnmachedResult( List<Field> secondTableReturnedFields, int docId, String t1Alias, String t2Alias, SearchHit hit) {
         String unmatchedId = hit.getId() + "|0";
-        Text unamatchedType = new Text(hit.getType() + "|null");
 
-        SearchHit searchHit = new SearchHit(docId, unmatchedId, unamatchedType, hit.getFields(), null);
+        SearchHit searchHit = new SearchHit(docId, unmatchedId, hit.getFields(), null);
 
         searchHit.sourceRef(hit.getSourceRef());
         searchHit.getSourceAsMap().clear();

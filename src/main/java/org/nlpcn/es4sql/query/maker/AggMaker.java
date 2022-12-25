@@ -3,8 +3,8 @@ package org.nlpcn.es4sql.query.maker;
 import com.alibaba.druid.util.StringUtils;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
-import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
@@ -418,7 +418,7 @@ public class AggMaker {
                             terms.order(BucketOrder.key(false));
                         } else {
                             List<BucketOrder> orderElements = new ArrayList<>();
-                            try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                            try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), value)) {
                                 XContentParser.Token currentToken = parser.nextToken();
                                 if (currentToken == XContentParser.Token.START_OBJECT) {
                                     orderElements.add(InternalOrder.Parser.parseOrderParam(parser));
@@ -446,7 +446,7 @@ public class AggMaker {
                         terms.executionHint(value);
                         break;
                     case "include":
-                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), value)) {
                             parser.nextToken();
                             include = IncludeExclude.parseInclude(parser);
                         } catch (IOException e) {
@@ -454,7 +454,7 @@ public class AggMaker {
                         }
                         break;
                     case "exclude":
-                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), value)) {
                             parser.nextToken();
                             exclude = IncludeExclude.parseExclude(parser);
                         } catch (IOException e) {
@@ -491,7 +491,7 @@ public class AggMaker {
                     significantText.minDocCount(Integer.parseInt(value));
                     break;
                 case "include":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), value)) {
                         parser.nextToken();
                         include = IncludeExclude.parseInclude(parser);
                     } catch (IOException e) {
@@ -499,7 +499,7 @@ public class AggMaker {
                     }
                     break;
                 case "exclude":
-                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                    try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), value)) {
                         parser.nextToken();
                         exclude = IncludeExclude.parseExclude(parser);
                     } catch (IOException e) {
@@ -671,7 +671,12 @@ public class AggMaker {
                 value = kv.value.toString();
                 switch (kv.key.toLowerCase()) {
                     case "interval":
-                        dateHistogram.dateHistogramInterval(new DateHistogramInterval(kv.value.toString()));
+                        String interval = kv.value.toString();
+                        if (DateHistogramAggregationBuilder.DATE_FIELD_UNITS.containsKey(interval)) {
+                            dateHistogram.calendarInterval(new DateHistogramInterval(interval));
+                        } else {
+                            dateHistogram.fixedInterval(new DateHistogramInterval(interval));
+                        }
                         break;
                     case "calendar_interval":
                         dateHistogram.calendarInterval(new DateHistogramInterval(kv.value.toString()));
@@ -696,7 +701,7 @@ public class AggMaker {
                         break;
                     case "extended_bounds":
                         LongBounds extendedBounds = null;
-                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, value)) {
+                        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), value)) {
                             extendedBounds = LongBounds.PARSER.parse(parser, null);
                         } catch (IOException ex) {
                             List<Integer> indexList = new LinkedList<>();

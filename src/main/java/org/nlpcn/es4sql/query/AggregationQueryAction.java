@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -520,11 +520,6 @@ public class AggregationQueryAction extends QueryAction {
      */
     private void setIndicesAndTypes() {
         request.setIndices(query.getIndexArr());
-
-        String[] typeArr = query.getTypeArr();
-        if (typeArr != null) {
-            request.setTypes(typeArr);
-        }
     }
 
     private void setLimitFromHint(List<Hint> hints) {

@@ -5,7 +5,7 @@ import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequestBuilder;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 /**
@@ -24,28 +24,19 @@ public class ShowQueryAction extends QueryAction {
         //todo: support indices with space?
         String indexName = sql.split(" ")[1];
         final GetIndexRequestBuilder  indexRequestBuilder ;
-        String type = null;
         if (indexName.startsWith("<")) {
             if (!indexName.endsWith(">")) {
                 int index = indexName.lastIndexOf('/');
                 if (-1 < index) {
-                    type = indexName.substring(index + 1);
                     indexName = indexName.substring(0, index);
                 }
             }
         } else if (indexName.contains("/")) {
             String[] indexAndType = indexName.split("\\/");
             indexName = indexAndType[0];
-            type = indexAndType[1];
         }
         indexRequestBuilder = client.admin().indices().prepareGetIndex();
-
-        if(!indexName.equals("*")){
-            indexRequestBuilder.addIndices(indexName);
-            if(type!=null && !type.equals("")){
-                indexRequestBuilder.setTypes(type);
-            }
-        }
+        indexRequestBuilder.addIndices(indexName);
         indexRequestBuilder.addFeatures(GetIndexRequest.Feature.MAPPINGS);
 
         return new SqlElasticRequestBuilder() {

@@ -1,6 +1,6 @@
 package org.nlpcn.es4sql.query.join;
 
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.JoinSelect;

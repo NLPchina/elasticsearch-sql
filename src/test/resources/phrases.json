@@ -1,12 +1,12 @@
-{"index":{"_type": "phrase"}}
+{"index":{}}
 {"phrase": "quick fox"}
-{"index":{"_type": "phrase"}}
+{"index":{}}
 {"phrase": "quick fox here", "insert_time2":"2014-08-19T07:09:13.434Z" }
-{"index":{"_type": "phrase"}}
+{"index":{}}
 {"phrase": "brown fox"}
-{"index":{"_type": "phrase"}}
+{"index":{}}
 {"phrase": "fox brown", "insert_time2":"2014-08-19T07:09:13.434Z"}
-{"index":{"_type": "phrase"}}
+{"index":{}}
 {"phrase": "my test", "test field": 5}
-{"index":{"_type": "phrase"}}
+{"index":{}}
 {"phrase": "my test 2", "test field": 7}

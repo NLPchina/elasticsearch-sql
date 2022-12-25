@@ -17,6 +17,7 @@ import org.elasticsearch.geometry.utils.StandardValidator;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.GeoPolygonQueryBuilder;
@@ -151,7 +152,7 @@ public abstract class Maker {
 
             // parse clauses
             List<SpanQueryBuilder> clauses = new ArrayList<>();
-            try (XContentParser parser = JsonXContent.jsonXContent.createParser(new NamedXContentRegistry(new SearchModule(Settings.EMPTY, true, Collections.emptyList()).getNamedXContents()), LoggingDeprecationHandler.INSTANCE, paramer.clauses)) {
+            try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withRegistry(new NamedXContentRegistry(new SearchModule(Settings.EMPTY, Collections.emptyList()).getNamedXContents())).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), paramer.clauses)) {
                 while (parser.nextToken() != XContentParser.Token.END_ARRAY) {
                     QueryBuilder query = SpanNearQueryBuilder.parseInnerQueryBuilder(parser);
                     if (!(query instanceof SpanQueryBuilder)) {
@@ -341,15 +342,14 @@ public abstract class Maker {
         case IDS_QUERY:
             Object[] idsParameters = (Object[]) value;
             String[] ids;
-            String type = idsParameters[0].toString();
-            if(idsParameters.length ==2 && idsParameters[1] instanceof SubQueryExpression){
-                Object[] idsFromSubQuery = ((SubQueryExpression) idsParameters[1]).getValues();
+            if(idsParameters.length ==1 && idsParameters[0] instanceof SubQueryExpression){
+                Object[] idsFromSubQuery = ((SubQueryExpression) idsParameters[0]).getValues();
                 ids = arrayOfObjectsToStringArray(idsFromSubQuery,0,idsFromSubQuery.length-1);
             }
             else {
-                ids =arrayOfObjectsToStringArray(idsParameters,1,idsParameters.length-1);
+                ids =arrayOfObjectsToStringArray(idsParameters,0,idsParameters.length-1);
             }
-            x = QueryBuilders.idsQuery(type).addIds(ids);
+            x = QueryBuilders.idsQuery().addIds(ids);
         break;
         case NNESTED_COMPLEX:
         case NESTED_COMPLEX:
@@ -417,7 +417,7 @@ public abstract class Maker {
     }
 
     private Geometry getGeometryFromJson(String json) throws IOException, ParseException {
-        try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, json)) {
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), json)) {
             parser.nextToken();
             return GeometryParserFormat.GEOJSON.fromXContent(StandardValidator.instance(true), true, true, parser);
         }

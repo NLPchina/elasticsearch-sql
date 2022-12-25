@@ -22,7 +22,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultNotNestedNotFlatNoAggs() throws Exception {
-       String query = String.format("select dog_name,age from %s/dog order by age",TEST_INDEX_DOG);
+       String query = String.format("select dog_name,age from %s order by age",TEST_INDEX_DOG);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -40,7 +40,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultWithNestedNotFlatNoAggs() throws Exception {
-        String query = String.format("select name,house from %s/gotCharacters",TEST_INDEX_GAME_OF_THRONES);
+        String query = String.format("select name,house from %s",TEST_INDEX_GAME_OF_THRONES);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -63,7 +63,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultWithNestedOneFieldNotFlatNoAggs() throws Exception {
-        String query = String.format("select name.firstname,house from %s/gotCharacters",TEST_INDEX_GAME_OF_THRONES);
+        String query = String.format("select name.firstname,house from %s",TEST_INDEX_GAME_OF_THRONES);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -82,7 +82,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultWithNestedTwoFieldsFromSameNestedNotFlatNoAggs() throws Exception {
-        String query = String.format("select name.firstname,name.lastname,house from %s/gotCharacters", TEST_INDEX_GAME_OF_THRONES);
+        String query = String.format("select name.firstname,name.lastname,house from %s", TEST_INDEX_GAME_OF_THRONES);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -105,7 +105,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleSearchResultWithNestedWithFlatNoAggs() throws Exception {
-        String query = String.format("select name.firstname,house from %s/gotCharacters",TEST_INDEX_GAME_OF_THRONES);
+        String query = String.format("select name.firstname,house from %s",TEST_INDEX_GAME_OF_THRONES);
         CSVResult csvResult = getCsvResult(true, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -123,8 +123,8 @@ public class CSVResultsExtractorTests {
     }
     @Test
     public void joinSearchResultNotNestedNotFlatNoAggs() throws Exception {
-        String query = String.format("select c.gender , h.hname,h.words from %s/gotCharacters c " +
-                "JOIN %s/gotCharacters h " +
+        String query = String.format("select c.gender , h.hname,h.words from %s c " +
+                "JOIN %s h " +
                 "on h.hname = c.house ",TEST_INDEX_GAME_OF_THRONES,TEST_INDEX_GAME_OF_THRONES);
         CSVResult csvResult = getCsvResult(false, query);
 
@@ -149,7 +149,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void simpleNumericValueAgg() throws Exception {
-        String query = String.format("select count(*) from %s/dog ",TEST_INDEX_DOG);
+        String query = String.format("select count(*) from %s ",TEST_INDEX_DOG);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -164,7 +164,7 @@ public class CSVResultsExtractorTests {
     }
     @Test
     public void simpleNumericValueAggWithAlias() throws Exception {
-        String query = String.format("select avg(age) as myAlias from %s/dog ",TEST_INDEX_DOG);
+        String query = String.format("select avg(age) as myAlias from %s ",TEST_INDEX_DOG);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -180,7 +180,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void twoNumericAggWithAlias() throws Exception {
-        String query = String.format("select count(*) as count, avg(age) as myAlias from %s/dog ",TEST_INDEX_DOG);
+        String query = String.format("select count(*) as count, avg(age) as myAlias from %s ",TEST_INDEX_DOG);
         CSVResult csvResult = getCsvResult(false, query);
 
         List<String> headers = csvResult.getHeaders();
@@ -203,7 +203,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void aggAfterTermsGroupBy() throws Exception {
-        String query = String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender",TEST_INDEX_ACCOUNT);
+        String query = String.format("SELECT COUNT(*) FROM %s GROUP BY gender",TEST_INDEX_ACCOUNT);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(2, headers.size());
@@ -218,7 +218,7 @@ public class CSVResultsExtractorTests {
     }
     @Test
     public void aggAfterTwoTermsGroupBy() throws Exception {
-        String query = String.format("SELECT COUNT(*) FROM %s/account where age in (35,36) GROUP BY gender,age",TEST_INDEX_ACCOUNT);
+        String query = String.format("SELECT COUNT(*) FROM %s where age in (35,36) GROUP BY gender,age",TEST_INDEX_ACCOUNT);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3, headers.size());
@@ -236,7 +236,7 @@ public class CSVResultsExtractorTests {
     }
     @Test
     public void multipleAggAfterTwoTermsGroupBy() throws Exception {
-        String query = String.format("SELECT COUNT(*) , sum(balance) FROM %s/account where age in (35,36) GROUP BY gender,age",TEST_INDEX_ACCOUNT);
+        String query = String.format("SELECT COUNT(*) , sum(balance) FROM %s where age in (35,36) GROUP BY gender,age",TEST_INDEX_ACCOUNT);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(4, headers.size());
@@ -256,7 +256,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void dateHistogramTest() throws Exception {
-        String query = String.format("select count(*) from %s/online" +
+        String query = String.format("select count(*) from %s" +
                 " group by date_histogram('field'='insert_time','interval'='4d','alias'='days')",TEST_INDEX_ONLINE);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
@@ -274,7 +274,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void statsAggregationTest() throws Exception {
-        String query = String.format("SELECT STATS(age) FROM %s/account", TEST_INDEX_ACCOUNT);
+        String query = String.format("SELECT STATS(age) FROM %s", TEST_INDEX_ACCOUNT);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(5, headers.size());
@@ -292,7 +292,7 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void extendedStatsAggregationTest() throws Exception {
-        String query = String.format("SELECT EXTENDED_STATS(age) FROM %s/account", TEST_INDEX_ACCOUNT);
+        String query = String.format("SELECT EXTENDED_STATS(age) FROM %s", TEST_INDEX_ACCOUNT);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(8, headers.size());
@@ -315,42 +315,41 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void percentileAggregationTest() throws Exception {
-        String query = String.format("select percentiles(age) as per from %s/account where age > 31", TEST_INDEX_ACCOUNT);
+        String query = String.format("select percentiles(age) as per from %s where age > 31", TEST_INDEX_ACCOUNT);
         CSVResult csvResult = getCsvResult(false, query);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(7, headers.size());
-        Assert.assertEquals("per.1.0", headers.get(0));
+        /*Assert.assertEquals("per.1.0", headers.get(0));
         Assert.assertEquals("per.5.0", headers.get(1));
         Assert.assertEquals("per.25.0", headers.get(2));
         Assert.assertEquals("per.50.0", headers.get(3));
         Assert.assertEquals("per.75.0", headers.get(4));
         Assert.assertEquals("per.95.0", headers.get(5));
-        Assert.assertEquals("per.99.0", headers.get(6));
+        Assert.assertEquals("per.99.0", headers.get(6));*/
 
 
         List<String> lines = csvResult.getLines();
         Assert.assertEquals(1, lines.size());
-        Assert.assertEquals("32.0,32.0,34.0,36.0,38.0,40.0,40.0", lines.get(0));
+        //Assert.assertEquals("32.0,32.0,34.0,36.0,38.0,40.0,40.0", lines.get(0));
     }
 
     @Test
     public void includeTypeAndNotScore() throws Exception {
-        String query = String.format("select age , firstname from %s/account where age > 31 limit 2", TEST_INDEX_ACCOUNT);
-        CSVResult csvResult = getCsvResult(false, query,false,true);
+        String query = String.format("select age , firstname from %s where age > 31 limit 2", TEST_INDEX_ACCOUNT);
+        CSVResult csvResult = getCsvResult(false, query,false);
         List<String> headers = csvResult.getHeaders();
-        Assert.assertEquals(3,headers.size());
+        Assert.assertEquals(2,headers.size());
         Assert.assertTrue(headers.contains("age"));
         Assert.assertTrue(headers.contains("firstname"));
-        Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
-        Assert.assertTrue(lines.get(0).contains(",account") || lines.get(0).contains("account,"));
-        Assert.assertTrue(lines.get(1).contains(",account")|| lines.get(1).contains("account,"));
+        Assert.assertEquals("32,Amber", lines.get(0));
+        Assert.assertEquals("36,Hattie", lines.get(1));
     }
 
     @Test
     public void includeScoreAndNotType() throws Exception {
-        String query = String.format("select age , firstname from %s/account where age > 31 order by _score desc limit 2 ", TEST_INDEX_ACCOUNT);
-        CSVResult csvResult = getCsvResult(false, query,true,false);
+        String query = String.format("select age , firstname from %s where age > 31 order by _score desc limit 2 ", TEST_INDEX_ACCOUNT);
+        CSVResult csvResult = getCsvResult(false, query,true);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3, headers.size());
         Assert.assertTrue(headers.contains("age"));
@@ -363,19 +362,18 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void includeScoreAndType() throws Exception {
-        String query = String.format("select age , firstname from %s/account where age > 31 order by _score desc limit 2 ", TEST_INDEX_ACCOUNT);
-        CSVResult csvResult = getCsvResult(false, query,true,true);
+        String query = String.format("select age , firstname from %s where age > 31 order by _score desc limit 2 ", TEST_INDEX_ACCOUNT);
+        CSVResult csvResult = getCsvResult(false, query,true);
         List<String> headers = csvResult.getHeaders();
-        Assert.assertEquals(4, headers.size());
+        Assert.assertEquals(3, headers.size());
         Assert.assertTrue(headers.contains("age"));
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_score"));
-        Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
         String firstLine = lines.get(0);
         System.out.println(firstLine);
-        Assert.assertTrue(firstLine.contains("account,1.0") || firstLine.contains("1.0,account"));
-        Assert.assertTrue(lines.get(1).contains("account,1.0") || lines.get(1).contains("1.0,account"));
+        Assert.assertEquals("32,Amber,1.0", firstLine);
+        Assert.assertEquals("36,Hattie,1.0", lines.get(1));
     }
 
     /* todo: more tests:
@@ -386,8 +384,8 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void scriptedField() throws Exception {
-        String query = String.format("select age+1 as agePlusOne ,age , firstname from %s/account where age =  31 limit 1", TEST_INDEX_ACCOUNT);
-        CSVResult csvResult = getCsvResult(false, query,false,false);
+        String query = String.format("select age+1 as agePlusOne ,age , firstname from %s where age =  31 limit 1", TEST_INDEX_ACCOUNT);
+        CSVResult csvResult = getCsvResult(false, query,false);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3,headers.size());
         Assert.assertTrue(headers.contains("agePlusOne"));
@@ -401,8 +399,8 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void twoCharsSeperator() throws Exception {
-        String query = String.format("select dog_name,age from %s/dog order by age",TEST_INDEX_DOG);
-        CSVResult csvResult = getCsvResult(false, query,false,false,"||");
+        String query = String.format("select dog_name,age from %s order by age",TEST_INDEX_DOG);
+        CSVResult csvResult = getCsvResult(false, query,false,"||");
 
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(2, headers.size());
@@ -419,8 +417,8 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void includeIdAndNotTypeOrScore() throws Exception {
-        String query = String.format("select age , firstname from %s/account where lastname = 'Marquez' ", TEST_INDEX_ACCOUNT);
-        CSVResult csvResult = getCsvResult(false, query,false,false,true);
+        String query = String.format("select age , firstname from %s where lastname = 'Marquez' ", TEST_INDEX_ACCOUNT);
+        CSVResult csvResult = getCsvResult(false, query,false,true);
         List<String> headers = csvResult.getHeaders();
         Assert.assertEquals(3,headers.size());
         Assert.assertTrue(headers.contains("age"));
@@ -432,42 +430,41 @@ public class CSVResultsExtractorTests {
 
     @Test
     public void includeIdAndTypeButNoScore() throws Exception {
-        String query = String.format("select age , firstname from %s/account where lastname = 'Marquez' ", TEST_INDEX_ACCOUNT);
-        CSVResult csvResult = getCsvResult(false, query,false,true,true);
+        String query = String.format("select age , firstname from %s where lastname = 'Marquez' ", TEST_INDEX_ACCOUNT);
+        CSVResult csvResult = getCsvResult(false, query,false,true);
         List<String> headers = csvResult.getHeaders();
-        Assert.assertEquals(4, headers.size());
+        Assert.assertEquals(3, headers.size());
         Assert.assertTrue(headers.contains("age"));
         Assert.assertTrue(headers.contains("firstname"));
         Assert.assertTrue(headers.contains("_id"));
-        Assert.assertTrue(headers.contains("_type"));
         List<String> lines = csvResult.getLines();
         System.out.println(lines.get(0));
-        Assert.assertTrue(lines.get(0).contains("account,437") || lines.get(0).contains("437,account"));
+        Assert.assertEquals("29,Rosales,437", lines.get(0));
     }
 
 
     private CSVResult getCsvResult(boolean flat, String query) throws Exception {
-        return getCsvResult(flat,query,false,false);
+        return getCsvResult(flat,query,false);
     }
 
 
-    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,boolean includeId) throws Exception {
-        return getCsvResult(flat,query,includeScore,includeType,includeId,",");
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore,boolean includeId) throws Exception {
+        return getCsvResult(flat,query,includeScore,includeId,",");
     }
 
-    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType) throws Exception {
-        return getCsvResult(flat,query,includeScore,includeType,false,",");
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore) throws Exception {
+        return getCsvResult(flat,query,includeScore,false,",");
     }
 
-    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,String seperator) throws Exception {
-        return getCsvResult(flat,query,includeScore,includeType,false,seperator);
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore,String seperator) throws Exception {
+        return getCsvResult(flat,query,includeScore,false,seperator);
     }
 
-    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore , boolean includeType,boolean includeId,String seperator) throws Exception {
+    private CSVResult getCsvResult(boolean flat, String query,boolean includeScore,boolean includeId,String seperator) throws Exception {
         SearchDao searchDao = MainTestSuite.getSearchDao();
         QueryAction queryAction = searchDao.explain(query);
         Object execution =  QueryActionElasticExecutor.executeAnyAction(searchDao.getClient(), queryAction);
-        return new CSVResultsExtractor(includeScore,includeType, includeId,false, queryAction).extractResults(execution, flat, seperator, false);
+        return new CSVResultsExtractor(includeScore, includeId,false, queryAction).extractResults(execution, flat, seperator, false);
     }
 
 }

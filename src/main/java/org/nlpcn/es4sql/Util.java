@@ -22,6 +22,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.AbstractQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -249,7 +250,7 @@ public class Util {
         }
 
         String json = Strings.toString(queryBuilder);
-        try (XContentParser parser = JsonXContent.jsonXContent.createParser(xContentRegistry, LoggingDeprecationHandler.INSTANCE, json)) {
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withRegistry(xContentRegistry).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), json)) {
             return AbstractQueryBuilder.parseInnerQueryBuilder(parser);
         } catch (IOException e) {
             throw new IllegalArgumentException("failed to parse query", e);
@@ -263,7 +264,7 @@ public class Util {
         }
 
         String json = Strings.toString(aggregationBuilder);
-        try (XContentParser parser = JsonXContent.jsonXContent.createParser(xContentRegistry, LoggingDeprecationHandler.INSTANCE, json)) {
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withRegistry(xContentRegistry).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), json)) {
             parser.nextToken();
             AggregatorFactories.Builder builder = AggregatorFactories.parseAggregators(parser);
             return builder.getAggregatorFactories().iterator().next();

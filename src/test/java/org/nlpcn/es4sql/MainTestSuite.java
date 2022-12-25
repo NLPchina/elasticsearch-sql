@@ -1,17 +1,32 @@
 package org.nlpcn.es4sql;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.TransportOptions;
+import co.elastic.clients.transport.Version;
+import co.elastic.clients.transport.rest_client.RestClientOptions;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
+import org.apache.http.HttpHost;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.entity.ContentType;
+import org.apache.http.message.BasicNameValuePair;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.action.support.DestructiveOperations;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.plugin.nlpcn.client.ElasticsearchRestClient;
 import org.elasticsearch.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
-import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -19,10 +34,13 @@ import org.junit.runners.Suite;
 
 import java.io.FileInputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.function.Consumer;
 
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT;
+import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_ACCOUNT_TEMP;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_DOG;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_GAME_OF_THRONES;
 import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_JOIN_TYPE;
@@ -55,17 +73,18 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_SYSTEM;
 })
 public class MainTestSuite {
 
-	private static TransportClient client;
+	private static Client client;
 	private static SearchDao searchDao;
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		Settings settings = Settings.builder().put("client.transport.ignore_cluster_name",true).build();
-		client = new PreBuiltXPackTransportClient(settings).addTransportAddress(getTransportAddress());
+		client = createElasticsearchClient();
 
-        NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().get();
+        NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().clear().setHttp(true).setOs(true).setProcess(true).setThreadPool(true).setIndices(true).get();
 		String clusterName = nodeInfos.getClusterName().value();
 		System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
+
+        client.admin().cluster().prepareUpdateSettings().setTransientSettings(ImmutableMap.of(DestructiveOperations.REQUIRES_NAME_SETTING.getKey(), false)).get();
 
 		// Load test data.
         loadBulk("src/test/resources/online.json", TEST_INDEX_ONLINE);
@@ -112,6 +131,10 @@ public class MainTestSuite {
         prepareJoinTypeIndex();
         loadBulk("src/test/resources/join_objects.json", TEST_INDEX_JOIN_TYPE);
 
+        createTestIndex(TEST_INDEX_ACCOUNT_TEMP);
+        loadBulk("src/test/resources/accounts_temp.json", TEST_INDEX_ACCOUNT_TEMP);
+        client.admin().indices().prepareRefresh(TEST_INDEX_ACCOUNT_TEMP).get();
+
         searchDao = new SearchDao(client);
 
         //refresh to make sure all the docs will return on queries
@@ -126,13 +149,13 @@ public class MainTestSuite {
     }
 
     private static void deleteTestIndex(String index) {
-        if(client.admin().indices().prepareExists(index).get().isExists()){
+        if(client.admin().cluster().prepareState().execute().actionGet().getState().getMetadata().hasIndex(index)){
             client.admin().indices().prepareDelete(index).get();
         }
     }
 
     private static void prepareGameOfThronesIndex() {
-        String dataMapping = "{  \"gotCharacters\": { " +
+        String dataMapping = "{ " +
                 " \"properties\": {\n" +
                 " \"nickname\": {\n" +
                 "\"type\":\"text\", "+
@@ -156,25 +179,24 @@ public class MainTestSuite {
                 "}\n" +
                 "}\n" +
                 "}"+
-                "} } }";
-        client.admin().indices().preparePutMapping(TEST_INDEX_GAME_OF_THRONES).setType("gotCharacters").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+                "} }";
+        client.admin().indices().preparePutMapping(TEST_INDEX_GAME_OF_THRONES).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareDogsIndex() {
-        String dataMapping = "{  \"dog\": {" +
+        String dataMapping = "{" +
                 " \"properties\": {\n" +
                 "          \"dog_name\": {\n" +
                 "            \"type\": \"text\",\n" +
                 "            \"fielddata\": true\n" +
                 "          }"+
                 "       }"+
-                "   }" +
-                "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX_DOG).setType("dog").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+                "   }";
+        client.admin().indices().preparePutMapping(TEST_INDEX_DOG).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareAccountsIndex() {
-        String dataMapping = "{  \"account\": {" +
+        String dataMapping = "{" +
                 " \"properties\": {\n" +
                 "          \"gender\": {\n" +
                 "            \"type\": \"text\",\n" +
@@ -195,27 +217,25 @@ public class MainTestSuite {
                 "            \"fielddata\": true\n" +
                 "          }" +
                 "       }"+
-                "   }" +
-                "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX_ACCOUNT).setType("account").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+                "   }";
+        client.admin().indices().preparePutMapping(TEST_INDEX_ACCOUNT).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void preparePhrasesIndex() {
-        String dataMapping = "{  \"phrase\": {" +
+        String dataMapping = "{" +
                 " \"properties\": {\n" +
                 "          \"phrase\": {\n" +
                 "            \"type\": \"text\",\n" +
                 "            \"store\": true\n" +
                 "          }" +
                 "       }"+
-                "   }" +
-                "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX_PHRASE).setType("phrase").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+                "   }";
+        client.admin().indices().preparePutMapping(TEST_INDEX_PHRASE).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareNestedTypeIndex() {
 
-            String dataMapping = "{ \"nestedType\": {\n" +
+            String dataMapping = "{\n" +
                     "        \"properties\": {\n" +
                     "          \"message\": {\n" +
                     "            \"type\": \"nested\",\n" +
@@ -254,14 +274,13 @@ public class MainTestSuite {
                     "          }\n" +
                     "        }\n" +
                     "      }\n" +
-                    "    }}";
+                    "    }";
 
-            client.admin().indices().preparePutMapping(TEST_INDEX_NESTED_TYPE).setType("nestedType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+            client.admin().indices().preparePutMapping(TEST_INDEX_NESTED_TYPE).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     private static void prepareJoinTypeIndex() {
         String dataMapping = "{\n" +
-                "  \"joinType\": {\n" +
                 "    \"properties\": {\n" +
                 "      \"join_field\": {\n" +
                 "        \"type\": \"join\",\n" +
@@ -285,16 +304,15 @@ public class MainTestSuite {
                 "        \"type\": \"keyword\"\n" +
                 "      }\n" +
                 "    }\n" +
-                "  }\n" +
-                "}";
-        client.admin().indices().preparePutMapping(TEST_INDEX_JOIN_TYPE).setType("joinType").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+                "  }\n";
+        client.admin().indices().preparePutMapping(TEST_INDEX_JOIN_TYPE).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     @AfterClass
 	public static void tearDown() {
 		System.out.println("teardown process...");
 
-        deleteTestIndex(TEST_INDEX + "*");
+        client.admin().indices().prepareDelete(TEST_INDEX + "*").get();
 
 		client.close();
 	}
@@ -317,9 +335,6 @@ public class MainTestSuite {
 
         DeleteByQueryRequestBuilder deleteQueryBuilder = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
         deleteQueryBuilder.request().indices(indexName);
-        if (typeName!=null) {
-            deleteQueryBuilder.request().getSearchRequest().types(typeName);
-        }
         deleteQueryBuilder.filter(QueryBuilders.matchAllQuery());
         deleteQueryBuilder.get();
         System.out.println(String.format("Deleted index %s and type %s", indexName, typeName));
@@ -349,7 +364,6 @@ public class MainTestSuite {
 
     public static void prepareSpatialIndex(String index, String type){
         String dataMapping = "{\n" +
-                "\t\""+type+"\" :{\n" +
                 "\t\t\"properties\":{\n" +
                 "\t\t\t\"place\":{\n" +
                 "\t\t\t\t\"type\":\"geo_shape\",\n" +
@@ -363,15 +377,13 @@ public class MainTestSuite {
                 "\t\t\t\t\"type\":\"text\"\n" +
                 "\t\t\t}\n" +
                 "\t\t}\n" +
-                "\t}\n" +
-                "}";
+                "\t}\n";
 
-        client.admin().indices().preparePutMapping(index).setType(type).setSource(dataMapping, XContentType.JSON).execute().actionGet();
+        client.admin().indices().preparePutMapping(index).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
     public static void prepareOdbcIndex(){
         String dataMapping = "{\n" +
-                "\t\"odbc\" :{\n" +
                 "\t\t\"properties\":{\n" +
                 "\t\t\t\"odbc_time\":{\n" +
                 "\t\t\t\t\"type\":\"date\",\n" +
@@ -381,35 +393,77 @@ public class MainTestSuite {
                 "\t\t\t\t\"type\":\"text\"\n" +
                 "\t\t\t}\n" +
                 "\t\t}\n" +
-                "\t}\n" +
-                "}";
+                "\t}\n";
 
-        client.admin().indices().preparePutMapping(TEST_INDEX_ODBC).setType("odbc").setSource(dataMapping, XContentType.JSON).execute().actionGet();
+        client.admin().indices().preparePutMapping(TEST_INDEX_ODBC).setSource(dataMapping, XContentType.JSON).execute().actionGet();
     }
 
 	public static SearchDao getSearchDao() {
 		return searchDao;
 	}
 
-	public static TransportClient getClient() {
-		return client;
-	}
+    public static Client getClient() {
+        return client;
+    }
 
-	protected static TransportAddress getTransportAddress() throws UnknownHostException {
-		String host = System.getenv("ES_TEST_HOST");
-		String port = System.getenv("ES_TEST_PORT");
+    public static Client createElasticsearchClient() throws UnknownHostException {
+        return new ElasticsearchRestClient(new ElasticsearchClient(getElasticsearchTransport(getRestClient())));
+    }
 
-		if(host == null) {
-			host = "localhost";
-			System.out.println("ES_TEST_HOST enviroment variable does not exist. choose default 'localhost'");
-		}
+    private static RestClient getRestClient() throws UnknownHostException {
+        InetSocketAddress address = getTransportAddress().address();
+        String hostPort = String.format("http://%s:%s", address.getHostString(), address.getPort());
 
-		if(port == null) {
-			port = "9300";
-			System.out.println("ES_TEST_PORT enviroment variable does not exist. choose default '9300'");
-		}
+        RestClientBuilder builder = RestClient.builder(HttpHost.create(hostPort));
+        builder.setHttpClientConfigCallback(clientBuilder -> {
+            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+            requestConfigBuilder.setConnectTimeout(10 * 1000);
 
-		System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
-		return new TransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
-	}
+            int socketTimeout = 90 * 1000;
+            requestConfigBuilder.setSocketTimeout(socketTimeout);
+            requestConfigBuilder.setConnectionRequestTimeout(socketTimeout);
+            clientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+
+            return clientBuilder;
+        });
+        return builder.build();
+    }
+
+    private static TransportAddress getTransportAddress() throws UnknownHostException {
+        String host = System.getenv("ES_TEST_HOST");
+        String port = System.getenv("ES_TEST_PORT");
+
+        if (host == null) {
+            host = "localhost";
+            System.out.println("ES_TEST_HOST enviroment variable does not exist. choose default 'localhost'");
+        }
+
+        if (port == null) {
+            port = "9200";
+            System.out.println("ES_TEST_PORT enviroment variable does not exist. choose default '9200'");
+        }
+
+        System.out.println(String.format("Connection details: host: %s. port:%s.", host, port));
+        return new TransportAddress(InetAddress.getByName(host), Integer.parseInt(port));
+    }
+
+    private static ElasticsearchTransport getElasticsearchTransport(RestClient restClient) {
+        TransportOptions.Builder transportOptionsBuilder = new RestClientOptions(RequestOptions.DEFAULT).toBuilder();
+
+        ContentType jsonContentType = Version.VERSION == null ? ContentType.APPLICATION_JSON
+                : ContentType.create("application/vnd.elasticsearch+json",
+                new BasicNameValuePair("compatible-with", String.valueOf(Version.VERSION.major())));
+
+        Consumer<String> setHeaderIfNotPresent = header -> {
+            if (transportOptionsBuilder.build().headers().stream().noneMatch((h) -> h.getKey().equalsIgnoreCase(header))) {
+                transportOptionsBuilder.addHeader(header, jsonContentType.toString());
+            }
+        };
+
+        setHeaderIfNotPresent.accept("Content-Type");
+        setHeaderIfNotPresent.accept("Accept");
+
+        TransportOptions transportOptionsWithHeader = transportOptionsBuilder.build();
+        return new RestClientTransport(restClient, new JacksonJsonpMapper(), transportOptionsWithHeader);
+    }
 }

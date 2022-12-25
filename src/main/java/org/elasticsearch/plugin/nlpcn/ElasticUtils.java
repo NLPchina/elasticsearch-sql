@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentFactory;
 import org.elasticsearch.xcontent.XContentType;
@@ -48,7 +48,6 @@ public class ElasticUtils {
         for(SearchHit hit : results) {
             HashMap<String,Object> value = new HashMap<>();
             value.put("_id",hit.getId());
-            value.put("_type", hit.getType());
             value.put("_score", hit.getScore());
             value.put("_source", hit.getSourceAsMap());
             searchHits[i] = value;

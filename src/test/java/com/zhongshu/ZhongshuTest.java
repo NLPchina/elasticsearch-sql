@@ -6,7 +6,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.ESActionFactory;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.nlpcn.es4sql.query.QueryAction;
 
 import java.sql.SQLFeatureNotSupportedException;

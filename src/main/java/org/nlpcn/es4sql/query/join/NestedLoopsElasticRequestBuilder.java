@@ -1,17 +1,9 @@
 package org.nlpcn.es4sql.query.join;
 
-
 import org.elasticsearch.index.query.QueryBuilder;
-import org.nlpcn.es4sql.domain.Condition;
-import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
-import org.nlpcn.es4sql.query.maker.Maker;
 import org.nlpcn.es4sql.query.maker.QueryMaker;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Eliran on 15/9/2015.

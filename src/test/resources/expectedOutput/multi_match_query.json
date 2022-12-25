@@ -14,26 +14,16 @@
                     "message^1.0",
                     "subject^3.0"
                   ],
-                  "type": "best_fields",
                   "operator": "AND",
                   "analyzer": "standard",
-                  "slop": 0,
-                  "prefix_length": 0,
-                  "max_expansions": 50,
-                  "tie_breaker": 0.3,
-                  "zero_terms_query": "NONE",
-                  "auto_generate_synonyms_phrase_query": true,
-                  "fuzzy_transpositions": true,
-                  "boost": 1.0
+                  "tie_breaker": 0.3
                 }
               }
             ],
-            "adjust_pure_negative": true,
             "boost": 1.0
           }
         }
       ],
-      "adjust_pure_negative": true,
       "boost": 1.0
     }
   }

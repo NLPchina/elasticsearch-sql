@@ -3,10 +3,10 @@ package org.nlpcn.es4sql.query;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.support.IndicesOptions;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
-import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentParser;
+import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -49,7 +49,7 @@ public abstract class QueryAction {
     protected void updateRequestWithCollapse(Select select, SearchRequestBuilder request) throws SqlParseException {
         for (Hint hint : select.getHints()) {
             if (hint.getType() == HintType.COLLAPSE && hint.getParams() != null && 0 < hint.getParams().length) {
-                try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, hint.getParams()[0].toString())) {
+                try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), hint.getParams()[0].toString())) {
                     request.setCollapse(CollapseBuilder.fromXContent(parser));
                 } catch (IOException e) {
                     throw new SqlParseException("could not parse collapse hint: " + e.getMessage());
@@ -117,7 +117,7 @@ public abstract class QueryAction {
         for (Hint hint : select.getHints()) {
             if (hint.getType() == HintType.INDICES_OPTIONS && hint.getParams() != null && 0 < hint.getParams().length) {
                 String param = hint.getParams()[0].toString();
-                try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, param)) {
+                try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), param)) {
                     request.setIndicesOptions(IndicesOptions.fromMap(parser.map(), SearchRequest.DEFAULT_INDICES_OPTIONS));
                 } catch (IOException e) {
                     throw new SqlParseException("could not parse indices_options hint: " + e.getMessage());
@@ -146,7 +146,7 @@ public abstract class QueryAction {
     protected void updateRequestWithRuntimeMappings(Select select, SearchRequestBuilder request) throws SqlParseException {
         for (Hint hint : select.getHints()) {
             if (hint.getType() == HintType.RUNTIME_MAPPINGS && hint.getParams() != null && 0 < hint.getParams().length) {
-                try (XContentParser parser = JsonXContent.jsonXContent.createParser(NamedXContentRegistry.EMPTY, LoggingDeprecationHandler.INSTANCE, hint.getParams()[0].toString())) {
+                try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), hint.getParams()[0].toString())) {
                     request.setRuntimeMappings(parser.map());
                 } catch (IOException e) {
                     throw new SqlParseException("could not parse runtime_mappings hint: " + e.getMessage());

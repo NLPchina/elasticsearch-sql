@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.nlpcn.es4sql.domain.Field;
@@ -69,7 +68,7 @@ public class IntersectExecutor implements ElasticHitsExecutor {
         Set<Map.Entry<String, String>> firstTableFieldToAlias = this.builder.getFirstTableFieldToAlias().entrySet();
         for (ComperableHitResult result : comparableHitResults) {
             SearchHit originalHit = result.getOriginalHit();
-            SearchHit searchHit = new SearchHit(currentId, originalHit.getId(), new Text(originalHit.getType()), originalHit.getFields(), null);
+            SearchHit searchHit = new SearchHit(currentId, originalHit.getId(), originalHit.getFields(), null);
             searchHit.sourceRef(originalHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = result.getFlattenMap();

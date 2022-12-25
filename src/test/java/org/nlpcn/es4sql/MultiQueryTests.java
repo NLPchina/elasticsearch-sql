@@ -28,7 +28,7 @@ public class MultiQueryTests {
     private static String MINUS_TERMS_OPTIMIZATION_HINT = " /*! MINUS_USE_TERMS_OPTIMIZATION(true)*/ ";
     @Test
     public void unionAllSameRequestOnlyOneRecordTwice() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("SELECT firstname FROM %s/account WHERE firstname = 'Amber' limit 1 union all SELECT firstname FROM %s/account WHERE firstname = 'Amber'",TEST_INDEX_ACCOUNT,TEST_INDEX_ACCOUNT);
+        String query = String.format("SELECT firstname FROM %s WHERE firstname = 'Amber' limit 1 union all SELECT firstname FROM %s WHERE firstname = 'Amber'",TEST_INDEX_ACCOUNT,TEST_INDEX_ACCOUNT);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals(2,searchHits.length);
         for(SearchHit hit : searchHits) {
@@ -39,9 +39,9 @@ public class MultiQueryTests {
 
     @Test
     public void unionAllOnlyOneRecordEachWithAlias() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("SELECT firstname FROM %s/account WHERE firstname = 'Amber' " +
+        String query = String.format("SELECT firstname FROM %s WHERE firstname = 'Amber' " +
                 "union all " +
-                "SELECT dog_name as firstname FROM %s/dog WHERE dog_name = 'rex'",TEST_INDEX_ACCOUNT,TEST_INDEX_DOG);
+                "SELECT dog_name as firstname FROM %s WHERE dog_name = 'rex'",TEST_INDEX_ACCOUNT,TEST_INDEX_DOG);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals(2,searchHits.length);
         Set<String> names = new HashSet<>();
@@ -55,9 +55,9 @@ public class MultiQueryTests {
 
     @Test
     public void unionAllOnlyOneRecordEachWithComplexAlias() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("SELECT firstname FROM %s/account WHERE firstname = 'Amber' " +
+        String query = String.format("SELECT firstname FROM %s WHERE firstname = 'Amber' " +
                 "union all " +
-                "SELECT name.firstname as firstname FROM %s/gotCharacters WHERE name.firstname = 'Daenerys'",TEST_INDEX_ACCOUNT,TEST_INDEX_GAME_OF_THRONES);
+                "SELECT name.firstname as firstname FROM %s WHERE name.firstname = 'Daenerys'",TEST_INDEX_ACCOUNT,TEST_INDEX_GAME_OF_THRONES);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals(2,searchHits.length);
         Set<String> names = new HashSet<>();
@@ -87,9 +87,9 @@ public class MultiQueryTests {
 
 
     private void innerMinusAMinusANoAlias(String hint) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("SELECT "+hint+" pk FROM %s/systems WHERE system_name = 'A' " +
+        String query = String.format("SELECT "+hint+" pk FROM %s WHERE system_name = 'A' " +
                 "minus " +
-                "SELECT pk FROM %s/systems WHERE system_name = 'A' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT pk FROM %s WHERE system_name = 'A' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("no hits should be return", 0, searchHits.length);
     }
@@ -111,9 +111,9 @@ public class MultiQueryTests {
 
 
     private void innerMinus_AMinusBNoAlias(String hint) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("SELECT "+hint+" pk FROM %s/systems WHERE system_name = 'A' " +
+        String query = String.format("SELECT "+hint+" pk FROM %s WHERE system_name = 'A' " +
                 "minus " +
-                "SELECT pk FROM %s/systems WHERE system_name = 'B' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT pk FROM %s WHERE system_name = 'B' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned", 1, searchHits.length);
         Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
@@ -136,9 +136,9 @@ public class MultiQueryTests {
 
 
     private void innerMinus_CMinusDTwoFieldsNoAlias(String hint) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("SELECT " + hint + " pk , letter  FROM %s/systems WHERE system_name = 'C' " +
+        String query = String.format("SELECT " + hint + " pk , letter  FROM %s WHERE system_name = 'C' " +
                 "minus " +
-                "SELECT pk , letter FROM %s/systems WHERE system_name = 'D' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT pk , letter FROM %s WHERE system_name = 'D' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned", 1, searchHits.length);
         Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
@@ -151,9 +151,9 @@ public class MultiQueryTests {
 
     @Test
     public void minusCMinusDTwoFieldsAliasOnBothSecondTableFields() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("SELECT pk , letter  FROM %s/systems WHERE system_name = 'C' " +
+        String query = String.format("SELECT pk , letter  FROM %s WHERE system_name = 'C' " +
                 "minus " +
-                "SELECT myId as pk , myLetter as letter FROM %s/systems WHERE system_name = 'E' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT myId as pk , myLetter as letter FROM %s WHERE system_name = 'E' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not exactly one hit returned",1,searchHits.length);
         Map<String, Object> sourceAsMap = searchHits[0].getSourceAsMap();
@@ -192,9 +192,9 @@ public class MultiQueryTests {
 
     @Test
     public void minusCMinusCTwoFields_OneAlias() throws SQLFeatureNotSupportedException, IOException, SqlParseException {
-        String query = String.format("SELECT pk as myId , letter  FROM %s/systems WHERE system_name = 'C' " +
+        String query = String.format("SELECT pk as myId , letter  FROM %s WHERE system_name = 'C' " +
                 "minus " +
-                "SELECT pk as myId , letter FROM %s/systems WHERE system_name = 'C' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT pk as myId , letter FROM %s WHERE system_name = 'C' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("no hits should be returned", 0, searchHits.length);
     }
@@ -225,9 +225,9 @@ public class MultiQueryTests {
 
 
     private void innerMinus_CMinusTNoExistsOneField(String hint) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("SELECT "+hint+" letter FROM %s/systems WHERE system_name = 'C' " +
+        String query = String.format("SELECT "+hint+" letter FROM %s WHERE system_name = 'C' " +
                 "minus " +
-                "SELECT letter  FROM %s/systems WHERE system_name = 'T' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT letter  FROM %s WHERE system_name = 'T' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("all hits should be returned", 3, searchHits.length);
     }
@@ -249,9 +249,9 @@ public class MultiQueryTests {
 
 
     private void innerMinus_TMinusCNoExistsFirstQuery(String hint) throws SqlParseException, SQLFeatureNotSupportedException, IOException {
-        String query = String.format("SELECT "+hint+" letter FROM %s/systems WHERE system_name = 'T' " +
+        String query = String.format("SELECT "+hint+" letter FROM %s WHERE system_name = 'T' " +
                 "minus " +
-                "SELECT letter  FROM %s/systems WHERE system_name = 'C' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
+                "SELECT letter  FROM %s WHERE system_name = 'C' ",TEST_INDEX_SYSTEM,TEST_INDEX_SYSTEM);
         SearchHit[] searchHits = executeAndGetHits(query);
         Assert.assertEquals("not hits should be returned", 0, searchHits.length);
     }

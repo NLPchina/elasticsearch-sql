@@ -1,14 +1,14 @@
-{"index":{"_type": "gotCharacters", "_id":"1"}}
+{"index":{"_id":"1"}}
 {"name":{"firstname":"Daenerys","lastname":"Targaryen","ofHerName":1},"nickname":"Daenerys \"Stormborn\"","house":"Targaryen","gender":"F","parents":{"father":"Aerys" , "mother":"Rhaella"},"titles":["motherOfDragons","queenOfTheAndals","breakerOfChains","Khaleesi"]}
-{"index":{"_type": "gotCharacters", "_id":"2"}}
+{"index":{"_id":"2"}}
 {"name":{"firstname":"Eddard","lastname":"Stark","ofHisName":1},"house":"Stark", "parents":{"father":"Rickard" , "mother":"Lyarra"} ,"gender":"M","titles":["lordOfWinterfell","wardenOfTheNorth","handOfTheKing"]}
-{"index":{"_type": "gotCharacters", "_id":"3"}}
+{"index":{"_id":"3"}}
 {"name":{"firstname":"Brandon","lastname":"Stark","ofHisName":4},"house":"Stark","parents":{"father":"Eddard","mother":"Catelyn"},"gender":"M","titles":["princeOfWinterfell"],"@wolf":"Summer"}
-{"index":{"_type": "gotCharacters", "_id":"4"}}
+{"index":{"_id":"4"}}
 {"name":{"firstname":"Jaime","lastname":"Lannister","ofHisName":1},"gender":"M","house":"Lannister","parents":{"father":"Tywin","mother":"Joanna"},"titles":["kingSlayer","lordCommanderOfTheKingsguard","Ser"]}
-{"index":{"_type": "gotCharacters", "_id":"5"}}
+{"index":{"_id":"5"}}
 {"words":"fireAndBlood","hname":"Targaryen","sigil":"Dragon","seat":"Dragonstone"}
-{"index":{"_type": "gotCharacters", "_id":"6"}}
+{"index":{"_id":"6"}}
 {"words":"winterIsComing" , "hname":"Stark","sigil":"direwolf","seat":"Winterfell"}
-{"index":{"_type": "gotCharacters", "_id":"7"}}
+{"index":{"_id":"7"}}
 {"words":"hearMeRoar" , "hname":"Lannister","sigil":"lion","seat":"CasterlyRock"}

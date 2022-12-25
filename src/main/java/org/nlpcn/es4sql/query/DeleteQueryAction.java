@@ -2,7 +2,7 @@ package org.nlpcn.es4sql.query;
 
 
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.internal.Client;
 
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
@@ -53,10 +53,6 @@ public class DeleteQueryAction extends QueryAction {
 
         DeleteByQueryRequest innerRequest = request.request();
         innerRequest.indices(query.getIndexArr());
-        String[] typeArr = query.getTypeArr();
-        if (typeArr!=null){
-            innerRequest.getSearchRequest().types(typeArr);
-        }
 //		String[] typeArr = query.getTypeArr();
 //		if (typeArr != null) {
 //            request.set(typeArr);
