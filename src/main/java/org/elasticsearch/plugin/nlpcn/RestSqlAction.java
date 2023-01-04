@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.internal.node.NodeClient;
 import org.elasticsearch.rest.RestResponse;
+import org.elasticsearch.xcontent.XContentParseException;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentType;
 import org.elasticsearch.plugin.nlpcn.executors.ActionRequestRestExecuterFactory;
@@ -51,7 +52,7 @@ public class RestSqlAction extends BaseRestHandler {
     protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
         try (XContentParser parser = request.contentOrSourceParamParser()) {
             parser.mapStrings().forEach((k, v) -> request.params().putIfAbsent(k, v));
-        } catch (IOException e) {
+        } catch (XContentParseException e) {
             // LOGGER.warn("Please use json format params, like: {\"sql\":\"SELECT * FROM test\"}");
         }
 
