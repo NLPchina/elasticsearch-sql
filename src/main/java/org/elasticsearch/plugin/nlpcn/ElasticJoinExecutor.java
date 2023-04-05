@@ -23,6 +23,7 @@ import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -169,8 +170,8 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
     protected SearchHit createUnmachedResult( List<Field> secondTableReturnedFields, int docId, String t1Alias, String t2Alias, SearchHit hit) {
         String unmatchedId = hit.getId() + "|0";
 
-        SearchHit searchHit = new SearchHit(docId, unmatchedId, hit.getFields(), null);
-
+        SearchHit searchHit = new SearchHit(docId, unmatchedId);
+        searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
         searchHit.sourceRef(hit.getSourceRef());
         searchHit.getSourceAsMap().clear();
         searchHit.getSourceAsMap().putAll(hit.getSourceAsMap());

@@ -12,6 +12,7 @@ import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,8 @@ public class UnionExecutor implements ElasticHitsExecutor {
 
     private void fillInternalSearchHits(List<SearchHit> unionHits, SearchHit[] hits, Map<String, String> fieldNameToAlias) {
         for(SearchHit hit : hits){
-            SearchHit searchHit = new SearchHit(currentId, hit.getId(), hit.getFields(), null);
+            SearchHit searchHit = new SearchHit(currentId, hit.getId());
+            searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(hit.getSourceRef());
             searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();

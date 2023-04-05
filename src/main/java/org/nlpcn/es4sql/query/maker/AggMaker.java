@@ -32,8 +32,8 @@ import org.elasticsearch.search.aggregations.metrics.GeoBoundsAggregationBuilder
 import org.elasticsearch.search.aggregations.metrics.PercentilesAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ScriptedMetricAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
-import org.elasticsearch.search.aggregations.pipeline.BucketSelectorPipelineAggregationBuilder;
-import org.elasticsearch.search.aggregations.pipeline.MovFnPipelineAggregationBuilder;
+import org.elasticsearch.aggregations.pipeline.BucketSelectorPipelineAggregationBuilder;
+import org.elasticsearch.aggregations.pipeline.MovFnPipelineAggregationBuilder;
 import org.elasticsearch.search.aggregations.support.ValuesSourceAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nlpcn.es4sql.Util;
@@ -142,7 +142,7 @@ public class AggMaker {
             Script script = new Script(having);
 
             //构建bucket选择器
-            BucketSelectorPipelineAggregationBuilder bs = PipelineAggregatorBuilders.bucketSelector("having", bucketsPathsMap, script);
+            BucketSelectorPipelineAggregationBuilder bs = new BucketSelectorPipelineAggregationBuilder("having", bucketsPathsMap, script);
             aggsBuilder.subAggregation(bs);
         }
 
@@ -162,14 +162,14 @@ public class AggMaker {
             case "MOVINGAVG":
                 MovFnPipelineAggregationBuilder mvAvg =
                         //PipelineAggregatorBuilders.movingFunction("movingAvgIncome", new Script("MovingFunctions.unweightedAvg(values)"), "incomeSum", 2);
-                        PipelineAggregatorBuilders.movingFunction(field.getAlias(),  new Script("MovingFunctions.unweightedAvg(values)"), bucketPath, window);
+                        new MovFnPipelineAggregationBuilder(field.getAlias(), bucketPath, new Script("MovingFunctions.unweightedAvg(values)"), window);
 
                 return mvAvg;
 
             case "ROLLINGSTD":
                 MovFnPipelineAggregationBuilder stdDev =
                         //PipelineAggregatorBuilders.movingFunction("stdDevIncome", new Script("MovingFunctions.stdDev(values, MovingFunctions.unweightedAvg(values))"), "incomeSum", 2);
-                        PipelineAggregatorBuilders.movingFunction(field.getAlias() , new Script("MovingFunctions.stdDev(values, MovingFunctions.unweightedAvg(values))"), bucketPath, window);
+                        new MovFnPipelineAggregationBuilder(field.getAlias(), bucketPath, new Script("MovingFunctions.stdDev(values, MovingFunctions.unweightedAvg(values))"), window);
 
                 return stdDev;
         }

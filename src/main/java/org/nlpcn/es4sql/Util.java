@@ -251,7 +251,7 @@ public class Util {
 
         String json = Strings.toString(queryBuilder);
         try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withRegistry(xContentRegistry).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), json)) {
-            return AbstractQueryBuilder.parseInnerQueryBuilder(parser);
+            return AbstractQueryBuilder.parseTopLevelQuery(parser);
         } catch (IOException e) {
             throw new IllegalArgumentException("failed to parse query", e);
         }

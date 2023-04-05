@@ -68,7 +68,8 @@ public class IntersectExecutor implements ElasticHitsExecutor {
         Set<Map.Entry<String, String>> firstTableFieldToAlias = this.builder.getFirstTableFieldToAlias().entrySet();
         for (ComperableHitResult result : comparableHitResults) {
             SearchHit originalHit = result.getOriginalHit();
-            SearchHit searchHit = new SearchHit(currentId, originalHit.getId(), originalHit.getFields(), null);
+            SearchHit searchHit = new SearchHit(currentId, originalHit.getId());
+            searchHit.addDocumentFields(originalHit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(originalHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
             Map<String, Object> sourceAsMap = result.getFlattenMap();

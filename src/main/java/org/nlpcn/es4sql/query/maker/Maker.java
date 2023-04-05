@@ -154,7 +154,7 @@ public abstract class Maker {
             List<SpanQueryBuilder> clauses = new ArrayList<>();
             try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withRegistry(new NamedXContentRegistry(new SearchModule(Settings.EMPTY, Collections.emptyList()).getNamedXContents())).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), paramer.clauses)) {
                 while (parser.nextToken() != XContentParser.Token.END_ARRAY) {
-                    QueryBuilder query = SpanNearQueryBuilder.parseInnerQueryBuilder(parser);
+                    QueryBuilder query = SpanNearQueryBuilder.parseTopLevelQuery(parser);
                     if (!(query instanceof SpanQueryBuilder)) {
                         throw new ParsingException(parser.getTokenLocation(), "spanNear [clauses] must be of type span query");
                     }

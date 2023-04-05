@@ -18,6 +18,7 @@ import org.nlpcn.es4sql.query.join.NestedLoopsElasticRequestBuilder;
 import org.nlpcn.es4sql.query.join.TableInJoinRequestBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +117,8 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
     private SearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
         onlyReturnedFields(matchedHit.getSourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
-        SearchHit searchHit = new SearchHit(currentCombinedResults, hitFromFirstTable.getId() + "|" + matchedHit.getId(), hitFromFirstTable.getFields(), null);
+        SearchHit searchHit = new SearchHit(currentCombinedResults, hitFromFirstTable.getId() + "|" + matchedHit.getId());
+        searchHit.addDocumentFields(hitFromFirstTable.getDocumentFields(), Collections.emptyMap());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
         searchHit.getSourceAsMap().clear();
         searchHit.getSourceAsMap().putAll(hitFromFirstTable.getSourceAsMap());
