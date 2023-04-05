@@ -1,3 +1,5 @@
+os: linux
+
 language: java
 
 jdk:
