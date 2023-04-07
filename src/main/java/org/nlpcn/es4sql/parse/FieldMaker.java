@@ -68,7 +68,8 @@ public class FieldMaker {
                 return makeFieldSortMethodField(mExpr, alias);
             }
 
-            return makeMethodField(methodName, mExpr.getParameters(), null, alias, tableAlias, true);
+            SQLAggregateOption option = mExpr instanceof SQLAggregateExpr ? ((SQLAggregateExpr) mExpr).getOption() : null;
+            return makeMethodField(methodName, mExpr.getArguments(), option, alias, tableAlias, true);
         } else if (expr instanceof SQLAggregateExpr) {
             SQLAggregateExpr sExpr = (SQLAggregateExpr) expr;
             return makeMethodField(sExpr.getMethodName(), sExpr.getArguments(), sExpr.getOption(), alias, tableAlias, true);

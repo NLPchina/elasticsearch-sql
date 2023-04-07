@@ -102,8 +102,10 @@ public class ExplainTest {
     }
 
     @Test
-    public void testCountDistinctExplain() throws SqlParseException, SQLFeatureNotSupportedException {
-        System.out.println(explain("SELECT COUNT(DISTINCT sourceIP.keyword) AS size FROM dataflow WHERE startTime > 525757149439 AND startTime < 1525757449439 GROUP BY appName.keyword ORDER BY size DESC"));
+    public void testCountDistinctExplain() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
+        String expectedOutput = Files.toString(new File("src/test/resources/expectedOutput/aggregation_cardinality_explain.json"), StandardCharsets.UTF_8).replaceAll("\r", "");
+        String result = explain("SELECT COUNT(DISTINCT sourceIP.keyword) AS size FROM dataflow WHERE startTime > 525757149439 AND startTime < 1525757449439 GROUP BY appName.keyword ORDER BY size DESC");
+        assertThat(result.replaceAll("\\s+", ""), equalTo(expectedOutput.replaceAll("\\s+", "")));
     }
 
     @Test

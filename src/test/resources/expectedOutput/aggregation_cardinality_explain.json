@@ -1,0 +1,74 @@
+{
+  "from": 0,
+  "size": 0,
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "bool": {
+            "must": [
+              {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "startTime": {
+                          "gt": 525757149439,
+                          "boost": 1.0
+                        }
+                      }
+                    },
+                    {
+                      "range": {
+                        "startTime": {
+                          "lt": 1525757449439,
+                          "boost": 1.0
+                        }
+                      }
+                    }
+                  ],
+                  "boost": 1.0
+                }
+              }
+            ],
+            "boost": 1.0
+          }
+        }
+      ],
+      "boost": 1.0
+    }
+  },
+  "_source": {
+    "includes": [
+      "COUNT"
+    ],
+    "excludes": []
+  },
+  "aggregations": {
+    "appName.keyword": {
+      "terms": {
+        "field": "appName.keyword",
+        "size": 1000,
+        "shard_size": 20000,
+        "min_doc_count": 1,
+        "shard_min_doc_count": 0,
+        "show_term_doc_count_error": false,
+        "order": [
+          {
+            "size": "desc"
+          },
+          {
+            "_key": "asc"
+          }
+        ]
+      },
+      "aggregations": {
+        "size": {
+          "cardinality": {
+            "field": "sourceIP.keyword"
+          }
+        }
+      }
+    }
+  }
+}
