@@ -61,8 +61,6 @@ import org.elasticsearch.monitor.jvm.JvmInfo;
 import org.elasticsearch.monitor.os.OsInfo;
 import org.elasticsearch.monitor.process.ProcessInfo;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.aggregations.bucket.adjacency.AdjacencyMatrixAggregationBuilder;
-import org.elasticsearch.aggregations.bucket.adjacency.ParsedAdjacencyMatrix;
 import org.elasticsearch.search.aggregations.bucket.composite.CompositeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.composite.ParsedComposite;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
@@ -75,10 +73,8 @@ import org.elasticsearch.search.aggregations.bucket.geogrid.ParsedGeoHashGrid;
 import org.elasticsearch.search.aggregations.bucket.geogrid.ParsedGeoTileGrid;
 import org.elasticsearch.search.aggregations.bucket.global.GlobalAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.global.ParsedGlobal;
-import org.elasticsearch.aggregations.bucket.histogram.AutoDateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.HistogramAggregationBuilder;
-import org.elasticsearch.aggregations.bucket.histogram.ParsedAutoDateHistogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.ParsedDateHistogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.ParsedHistogram;
 import org.elasticsearch.search.aggregations.bucket.histogram.ParsedVariableWidthHistogram;
@@ -149,12 +145,10 @@ import org.elasticsearch.search.aggregations.metrics.SumAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ValueCountAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.WeightedAvgAggregationBuilder;
-import org.elasticsearch.aggregations.pipeline.DerivativePipelineAggregationBuilder;
 import org.elasticsearch.search.aggregations.pipeline.ExtendedStatsBucketPipelineAggregationBuilder;
 import org.elasticsearch.search.aggregations.pipeline.InternalBucketMetricValue;
 import org.elasticsearch.search.aggregations.pipeline.InternalSimpleValue;
 import org.elasticsearch.search.aggregations.pipeline.ParsedBucketMetricValue;
-import org.elasticsearch.search.aggregations.pipeline.ParsedDerivative;
 import org.elasticsearch.search.aggregations.pipeline.ParsedExtendedStatsBucket;
 import org.elasticsearch.search.aggregations.pipeline.ParsedPercentilesBucket;
 import org.elasticsearch.search.aggregations.pipeline.ParsedSimpleValue;
@@ -162,8 +156,6 @@ import org.elasticsearch.search.aggregations.pipeline.ParsedStatsBucket;
 import org.elasticsearch.search.aggregations.pipeline.PercentilesBucketPipelineAggregationBuilder;
 import org.elasticsearch.search.aggregations.pipeline.StatsBucketPipelineAggregationBuilder;
 import org.elasticsearch.search.aggregations.support.AggregationInfo;
-import org.elasticsearch.aggregations.bucket.timeseries.ParsedTimeSeries;
-import org.elasticsearch.aggregations.bucket.timeseries.TimeSeriesAggregationBuilder;
 import org.elasticsearch.threadpool.ThreadPool;
 import org.elasticsearch.threadpool.ThreadPoolInfo;
 import org.elasticsearch.transport.TransportInfo;
@@ -251,14 +243,14 @@ public class ResponseConverter {
     public ResponseConverter(JsonpMapper jsonpMapper) {
         this.jsonpMapper = jsonpMapper;
         this.xContentRegistry = new NamedXContentRegistry(Arrays.asList(
-                new Entry(Aggregation.class, new ParseField(AdjacencyMatrixAggregationBuilder.NAME), (p, c) -> ParsedAdjacencyMatrix.fromXContent(p, (String) c)),
+                //new Entry(Aggregation.class, new ParseField(AdjacencyMatrixAggregationBuilder.NAME), (p, c) -> ParsedAdjacencyMatrix.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(CompositeAggregationBuilder.NAME), (p, c) -> ParsedComposite.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(FilterAggregationBuilder.NAME), (p, c) -> ParsedFilter.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(FiltersAggregationBuilder.NAME), (p, c) -> ParsedFilters.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(GeoHashGridAggregationBuilder.NAME), (p, c) -> ParsedGeoHashGrid.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(GeoTileGridAggregationBuilder.NAME), (p, c) -> ParsedGeoTileGrid.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(GlobalAggregationBuilder.NAME), (p, c) -> ParsedGlobal.fromXContent(p, (String) c)),
-                new Entry(Aggregation.class, new ParseField(AutoDateHistogramAggregationBuilder.NAME), (p, c) -> ParsedAutoDateHistogram.fromXContent(p, (String) c)),
+                //new Entry(Aggregation.class, new ParseField(AutoDateHistogramAggregationBuilder.NAME), (p, c) -> ParsedAutoDateHistogram.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(DateHistogramAggregationBuilder.NAME), (p, c) -> ParsedDateHistogram.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(HistogramAggregationBuilder.NAME), (p, c) -> ParsedHistogram.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(VariableWidthHistogramAggregationBuilder.NAME), (p, c) -> ParsedVariableWidthHistogram.fromXContent(p, (String) c)),
@@ -296,12 +288,12 @@ public class ResponseConverter {
                 new Entry(Aggregation.class, new ParseField(ValueCountAggregationBuilder.NAME), (p, c) -> ParsedValueCount.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(WeightedAvgAggregationBuilder.NAME), (p, c) -> ParsedWeightedAvg.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(InternalBucketMetricValue.NAME), (p, c) -> ParsedBucketMetricValue.fromXContent(p, (String) c)),
-                new Entry(Aggregation.class, new ParseField(DerivativePipelineAggregationBuilder.NAME), (p, c) -> ParsedDerivative.fromXContent(p, (String) c)),
+                //new Entry(Aggregation.class, new ParseField(DerivativePipelineAggregationBuilder.NAME), (p, c) -> ParsedDerivative.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(ExtendedStatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedExtendedStatsBucket.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(PercentilesBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedPercentilesBucket.fromXContent(p, (String) c)),
                 new Entry(Aggregation.class, new ParseField(InternalSimpleValue.NAME), (p, c) -> ParsedSimpleValue.fromXContent(p, (String) c)),
-                new Entry(Aggregation.class, new ParseField(StatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedStatsBucket.fromXContent(p, (String) c)),
-                new Entry(Aggregation.class, new ParseField(TimeSeriesAggregationBuilder.NAME), (p, c) -> ParsedTimeSeries.fromXContent(p, (String) c))
+                new Entry(Aggregation.class, new ParseField(StatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedStatsBucket.fromXContent(p, (String) c))
+                //new Entry(Aggregation.class, new ParseField(TimeSeriesAggregationBuilder.NAME), (p, c) -> ParsedTimeSeries.fromXContent(p, (String) c))
         ));
     }
 

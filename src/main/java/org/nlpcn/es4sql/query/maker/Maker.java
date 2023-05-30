@@ -14,6 +14,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.geometry.utils.StandardValidator;
+import org.elasticsearch.join.query.HasChildQueryBuilder;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.XContentParser;
@@ -33,7 +34,6 @@ import org.elasticsearch.index.query.RegexpQueryBuilder;
 import org.elasticsearch.index.query.SpanNearQueryBuilder;
 import org.elasticsearch.index.query.SpanQueryBuilder;
 import org.elasticsearch.index.query.WildcardQueryBuilder;
-import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchModule;
 import org.nlpcn.es4sql.Util;
@@ -368,7 +368,7 @@ public abstract class Maker {
             Where whereChildren = (Where) value;
             BoolQueryBuilder childrenFilter = QueryMaker.explan(whereChildren);
             //todo: pass score mode
-            x = Util.parseQueryBuilder(JoinQueryBuilders.hasChildQuery(name, childrenFilter, ScoreMode.None));
+            x = Util.parseQueryBuilder(new HasChildQueryBuilder(name, childrenFilter, ScoreMode.None));
 
         break;
         case SCRIPT:

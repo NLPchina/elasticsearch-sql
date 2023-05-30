@@ -6,7 +6,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
+import org.elasticsearch.join.aggregations.ChildrenAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
@@ -379,7 +379,7 @@ public class AggregationQueryAction extends QueryAction {
 
         String childType = field.getChildType();
 
-        childrenBuilder = Util.parseAggregationBuilder(JoinAggregationBuilders.children(getChildrenAggName(field), childType));
+        childrenBuilder = Util.parseAggregationBuilder(new ChildrenAggregationBuilder(getChildrenAggName(field), childType));
 
         return childrenBuilder;
     }

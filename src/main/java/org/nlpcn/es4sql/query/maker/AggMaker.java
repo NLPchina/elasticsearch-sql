@@ -3,10 +3,11 @@ package org.nlpcn.es4sql.query.maker;
 import com.alibaba.druid.util.StringUtils;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.join.aggregations.ChildrenAggregationBuilder;
+import org.elasticsearch.search.aggregations.PipelineAggregationBuilder;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
-import org.elasticsearch.join.aggregations.JoinAggregationBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
@@ -14,7 +15,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.InternalOrder;
-import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregator;
 import org.elasticsearch.search.aggregations.bucket.geogrid.GeoGridAggregationBuilder;
@@ -142,13 +142,13 @@ public class AggMaker {
             Script script = new Script(having);
 
             //构建bucket选择器
-            BucketSelectorPipelineAggregationBuilder bs = new BucketSelectorPipelineAggregationBuilder("having", bucketsPathsMap, script);
+            PipelineAggregationBuilder bs = Util.parsePipelineAggregationBuilder(new BucketSelectorPipelineAggregationBuilder("having", bucketsPathsMap, script));
             aggsBuilder.subAggregation(bs);
         }
 
         return aggsBuilder;
     }
-    public MovFnPipelineAggregationBuilder makeMovingFieldAgg(MethodField field, AggregationBuilder parent) throws SqlParseException {
+    public PipelineAggregationBuilder makeMovingFieldAgg(MethodField field, AggregationBuilder parent) throws SqlParseException {
         //question 加到groupMap里是为了什么
         groupMap.put(field.getAlias(), new KVValue("FIELD", parent));
 
@@ -160,16 +160,16 @@ public class AggMaker {
         switch (field.getName().toUpperCase()) {
             //added by xzb 增加 movingavg和rollingstd
             case "MOVINGAVG":
-                MovFnPipelineAggregationBuilder mvAvg =
+                PipelineAggregationBuilder mvAvg =
                         //PipelineAggregatorBuilders.movingFunction("movingAvgIncome", new Script("MovingFunctions.unweightedAvg(values)"), "incomeSum", 2);
-                        new MovFnPipelineAggregationBuilder(field.getAlias(), bucketPath, new Script("MovingFunctions.unweightedAvg(values)"), window);
+                        Util.parsePipelineAggregationBuilder(new MovFnPipelineAggregationBuilder(field.getAlias(), bucketPath, new Script("MovingFunctions.unweightedAvg(values)"), window));
 
                 return mvAvg;
 
             case "ROLLINGSTD":
-                MovFnPipelineAggregationBuilder stdDev =
+                PipelineAggregationBuilder stdDev =
                         //PipelineAggregatorBuilders.movingFunction("stdDevIncome", new Script("MovingFunctions.stdDev(values, MovingFunctions.unweightedAvg(values))"), "incomeSum", 2);
-                        new MovFnPipelineAggregationBuilder(field.getAlias(), bucketPath, new Script("MovingFunctions.stdDev(values, MovingFunctions.unweightedAvg(values))"), window);
+                        Util.parsePipelineAggregationBuilder(new MovFnPipelineAggregationBuilder(field.getAlias(), bucketPath, new Script("MovingFunctions.stdDev(values, MovingFunctions.unweightedAvg(values))"), window));
 
                 return stdDev;
         }
@@ -323,7 +323,7 @@ public class AggMaker {
 
             String childrenAggName = childrenType.field + "@CHILDREN";
 
-            childrenBuilder = Util.parseAggregationBuilder(JoinAggregationBuilders.children(childrenAggName, childrenType.childType));
+            childrenBuilder = Util.parseAggregationBuilder(new ChildrenAggregationBuilder(childrenAggName, childrenType.childType));
 
             return childrenBuilder;
         }

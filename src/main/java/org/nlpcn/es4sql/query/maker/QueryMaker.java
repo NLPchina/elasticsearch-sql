@@ -2,6 +2,7 @@ package org.nlpcn.es4sql.query.maker;
 
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.join.query.HasChildQueryBuilder;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentParserConfiguration;
 import org.elasticsearch.xcontent.json.JsonXContent;
@@ -10,7 +11,6 @@ import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.join.query.JoinQueryBuilders;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Where;
@@ -133,7 +133,7 @@ public class QueryMaker extends Maker {
                     ((NestedQueryBuilder) subQuery).innerHit(ihb);
                 }
             } else if(condition.isChildren()) {
-            	subQuery = Util.parseQueryBuilder(JoinQueryBuilders.hasChildQuery(condition.getChildType(), subQuery, ScoreMode.None));
+            	subQuery = Util.parseQueryBuilder(new HasChildQueryBuilder(condition.getChildType(), subQuery, ScoreMode.None));
             }
         }
 

@@ -23,12 +23,5 @@
             <include>plugin-descriptor.properties</include>
         </includes>
     </fileSet>
-    <fileSet>
-        <directory>${project.basedir}/lib</directory>
-        <outputDirectory>/</outputDirectory>
-        <includes>
-            <include>*.jar</include>
-        </includes>
-    </fileSet>
 </fileSets>
 </assembly>

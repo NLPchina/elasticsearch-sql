@@ -20,6 +20,7 @@ import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLUnionQuery;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.search.aggregations.PipelineAggregationBuilder;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentParserConfiguration;
@@ -270,6 +271,22 @@ public class Util {
             return builder.getAggregatorFactories().iterator().next();
         } catch (IOException e) {
             throw new IllegalArgumentException("failed to parse aggregation", e);
+        }
+    }
+
+    public static PipelineAggregationBuilder parsePipelineAggregationBuilder(PipelineAggregationBuilder pipelineAggregationBuilder) {
+        NamedXContentRegistry xContentRegistry = NamedXContentRegistryHolder.get();
+        if (Objects.isNull(xContentRegistry)) {
+            return pipelineAggregationBuilder;
+        }
+
+        String json = Strings.toString(pipelineAggregationBuilder);
+        try (XContentParser parser = JsonXContent.jsonXContent.createParser(XContentParserConfiguration.EMPTY.withRegistry(xContentRegistry).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE), json)) {
+            parser.nextToken();
+            AggregatorFactories.Builder builder = AggregatorFactories.parseAggregators(parser);
+            return builder.getPipelineAggregatorFactories().iterator().next();
+        } catch (IOException e) {
+            throw new IllegalArgumentException("failed to parse pipeline aggregation", e);
         }
     }
 }
