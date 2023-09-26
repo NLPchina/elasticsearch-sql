@@ -18,6 +18,7 @@ import jakarta.json.stream.JsonGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.Build;
+import org.elasticsearch.TransportVersion;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.node.info.NodeInfo;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
@@ -419,7 +420,7 @@ public class ResponseConverter {
                 if (Objects.nonNull(nodeInfo.totalIndexingBuffer())) {
                     totalIndexingBuffer = ByteSizeValue.ofBytes(nodeInfo.totalIndexingBuffer());
                 }
-                nodes.add(new NodeInfo(version, version.transportVersion, build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
+                nodes.add(new NodeInfo(version, TransportVersion.current(), build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
             }
         }
         return new NodesInfoResponse(new ClusterName(nodesInfoResponse.clusterName()), nodes, Collections.emptyList());

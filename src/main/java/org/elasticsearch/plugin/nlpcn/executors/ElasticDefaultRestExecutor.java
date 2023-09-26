@@ -10,6 +10,7 @@ import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.rest.RestResponse;
+import org.elasticsearch.rest.action.RestChunkedToXContentListener;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.reindex.BulkIndexByScrollResponseContentListener;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -21,7 +22,6 @@ import org.elasticsearch.plugin.nlpcn.MetaSearchResult;
 import org.elasticsearch.plugin.nlpcn.MultiRequestExecutorFactory;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.rest.action.RestStatusToXContentListener;
 import org.elasticsearch.search.SearchHits;
 import org.nlpcn.es4sql.query.QueryAction;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
@@ -63,7 +63,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         } else if (request instanceof SearchRequest) {
             //zhongshu-comment 对应的QueryAction实现子类：DefaultQueryAction、AggregationQueryAction
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticSearchRequestBuilder
-            client.search((SearchRequest) request, new RestStatusToXContentListener<>(channel));
+            client.search((SearchRequest) request, new RestChunkedToXContentListener<>(channel));
         } else if (request instanceof DeleteByQueryRequest) {
             //zhongshu-comment 对应的QueryAction实现子类：DeleteQueryAction
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticDeleteByQueryRequestBuilder
@@ -73,7 +73,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：是一个匿名内部类，跳进去queryAction.explain()看
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
         } else if (request instanceof SearchScrollRequest) {
-            client.searchScroll((SearchScrollRequest) request, new RestStatusToXContentListener<>(channel));
+            client.searchScroll((SearchScrollRequest) request, new RestChunkedToXContentListener<>(channel));
         } else {
             throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }

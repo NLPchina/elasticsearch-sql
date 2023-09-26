@@ -3,7 +3,6 @@ package org.nlpcn.es4sql;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.TransportOptions;
 import co.elastic.clients.transport.Version;
 import co.elastic.clients.transport.rest_client.RestClientOptions;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -448,7 +447,7 @@ public class MainTestSuite {
     }
 
     private static ElasticsearchTransport getElasticsearchTransport(RestClient restClient) {
-        TransportOptions.Builder transportOptionsBuilder = new RestClientOptions(RequestOptions.DEFAULT).toBuilder();
+        RestClientOptions.Builder transportOptionsBuilder = new RestClientOptions(RequestOptions.DEFAULT).toBuilder();
 
         ContentType jsonContentType = Version.VERSION == null ? ContentType.APPLICATION_JSON
                 : ContentType.create("application/vnd.elasticsearch+json",
@@ -463,7 +462,7 @@ public class MainTestSuite {
         setHeaderIfNotPresent.accept("Content-Type");
         setHeaderIfNotPresent.accept("Accept");
 
-        TransportOptions transportOptionsWithHeader = transportOptionsBuilder.build();
+        RestClientOptions transportOptionsWithHeader = transportOptionsBuilder.build();
         return new RestClientTransport(restClient, new JacksonJsonpMapper(), transportOptionsWithHeader);
     }
 }
