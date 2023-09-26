@@ -235,6 +235,9 @@ public class ResponseConverter {
     private static final String KEY_FLOOD_STAGE_MAX_HEADROOM = "flood_stage_max_headroom";
     private static final String KEY_FROZEN_FLOOD_STAGE_WATERMARK = "frozen_flood_stage_watermark";
     private static final String KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM = "frozen_flood_stage_max_headroom";
+    private static final String KEY_SHARD_LIMITS_TYPE = "shard_limits";
+    private static final String KEY_MAX_SHARDS_PER_NODE = "max_shards_per_node";
+    private static final String KEY_MAX_SHARDS_PER_NODE_FROZEN = "max_shards_per_node_frozen";
     private static final String KEY_KEEP_ALIVE = "keep_alive";
 
     private final JsonpMapper jsonpMapper;
@@ -330,19 +333,21 @@ public class ResponseConverter {
         JsonObject health = jsonObject.getJsonObject(HealthMetadata.TYPE);
         if (Objects.nonNull(health)) {
             JsonObject disk = health.getJsonObject(HealthMetadata.Disk.TYPE);
+            JsonObject shardLimits = health.getJsonObject(KEY_SHARD_LIMITS_TYPE);
             customs.put(HealthMetadata.TYPE, new HealthMetadata(new HealthMetadata.Disk(
                     RelativeByteSizeValue.parseRelativeByteSizeValue(disk.getString(KEY_HIGH_WATERMARK), KEY_HIGH_WATERMARK),
                     ByteSizeValue.parseBytesSizeValue(disk.getString(KEY_HIGH_MAX_HEADROOM), KEY_HIGH_MAX_HEADROOM),
                     RelativeByteSizeValue.parseRelativeByteSizeValue(disk.getString(KEY_FLOOD_STAGE_WATERMARK), KEY_FLOOD_STAGE_WATERMARK),
                     ByteSizeValue.parseBytesSizeValue(disk.getString(KEY_FLOOD_STAGE_MAX_HEADROOM), KEY_FLOOD_STAGE_MAX_HEADROOM),
                     RelativeByteSizeValue.parseRelativeByteSizeValue(disk.getString(KEY_FROZEN_FLOOD_STAGE_WATERMARK), KEY_FROZEN_FLOOD_STAGE_WATERMARK),
-                    ByteSizeValue.parseBytesSizeValue(disk.getString(KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM), KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM))));
+                    ByteSizeValue.parseBytesSizeValue(disk.getString(KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM), KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM)),
+                    new HealthMetadata.ShardLimits(shardLimits.getInt(KEY_MAX_SHARDS_PER_NODE), shardLimits.getInt(KEY_MAX_SHARDS_PER_NODE_FROZEN))));
         }
         RoutingTable routingTable = RoutingTable.EMPTY_ROUTING_TABLE;
         ClusterBlocks blocks = ClusterBlocks.EMPTY_CLUSTER_BLOCK;
         RoutingNodes routingNodes = RoutingNodes.immutable(RoutingTable.EMPTY_ROUTING_TABLE, DiscoveryNodes.EMPTY_NODES);
         return new ClusterStateResponse(clusterName,
-                new ClusterState(clusterName, version, stateUUID, metadata, routingTable, nodesBuilder.build(), blocks, customs, false, routingNodes),
+                new ClusterState(clusterName, version, stateUUID, metadata, routingTable, nodesBuilder.build(), Collections.emptyMap(), blocks, customs, false, routingNodes),
                 false);
     }
 
@@ -414,7 +419,7 @@ public class ResponseConverter {
                 if (Objects.nonNull(nodeInfo.totalIndexingBuffer())) {
                     totalIndexingBuffer = ByteSizeValue.ofBytes(nodeInfo.totalIndexingBuffer());
                 }
-                nodes.add(new NodeInfo(version, build, node, settings, os, process, jvm, threadPool, transport, http, plugins, ingest, aggsInfo, totalIndexingBuffer));
+                nodes.add(new NodeInfo(version, version.transportVersion, build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
             }
         }
         return new NodesInfoResponse(new ClusterName(nodesInfoResponse.clusterName()), nodes, Collections.emptyList());

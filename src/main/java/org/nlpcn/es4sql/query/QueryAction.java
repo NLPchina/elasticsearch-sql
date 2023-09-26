@@ -195,7 +195,7 @@ public abstract class QueryAction {
                     field.boundaryMaxScan((Integer) param.getValue());
                     break;
                 case "force_source":
-                    field.forceSource((Boolean) param.getValue());
+                    //field.forceSource((Boolean) param.getValue());
                     break;
                 case "fragmenter":
                     field.fragmenter((String) param.getValue());
