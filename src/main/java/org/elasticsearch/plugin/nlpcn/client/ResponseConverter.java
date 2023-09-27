@@ -39,6 +39,7 @@ import org.elasticsearch.cluster.metadata.ReservedStateMetadata;
 import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.cluster.node.DiscoveryNodeRole;
 import org.elasticsearch.cluster.node.DiscoveryNodes;
+import org.elasticsearch.cluster.node.VersionInformation;
 import org.elasticsearch.cluster.routing.RoutingNodes;
 import org.elasticsearch.cluster.routing.RoutingTable;
 import org.elasticsearch.common.compress.CompressedXContent;
@@ -326,7 +327,7 @@ public class ResponseConverter {
                         address,
                         (Map) node.getJsonObject(KEY_ATTRIBUTES),
                         roles,
-                        Version.fromId(version),
+                        VersionInformation.inferVersions(Version.fromId(version)),
                         node.getString(KEY_EXTERNAL_ID)));
             }
         }
@@ -359,12 +360,17 @@ public class ResponseConverter {
             for (Map.Entry<String, co.elastic.clients.elasticsearch.nodes.info.NodeInfo> entry : nodeInfoMap.entrySet()) {
                 co.elastic.clients.elasticsearch.nodes.info.NodeInfo nodeInfo = entry.getValue();
                 Version version = Version.fromString(nodeInfo.version());
-                Build build = new Build(Build.Type.fromDisplayName(nodeInfo.buildType(), false),
-                        nodeInfo.buildHash(), null, false, nodeInfo.version());
+                Build.Type type = Build.Type.fromDisplayName(nodeInfo.buildType(), false);
+                String hash = nodeInfo.buildHash();
+                String date = "unknown";
+                String minWireCompat = Version.CURRENT.minimumCompatibilityVersion().toString();
+                String minIndexCompat = Version.CURRENT.minimumIndexCompatibilityVersion().toString();
+                String displayString = Build.defaultDisplayString(type, hash, date, nodeInfo.version());
+                Build build = new Build("default", type, hash, date, false, nodeInfo.version(), minWireCompat, minIndexCompat, displayString);
                 Set<DiscoveryNodeRole> roles = Optional.ofNullable(nodeInfo.roles()).orElse(Collections.emptyList()).stream().map(e -> DiscoveryNodeRole.maybeGetRoleFromRoleName(e.jsonValue()).orElse(null)).filter(Objects::nonNull).collect(Collectors.toSet());
                 DiscoveryNode node = new DiscoveryNode(nodeInfo.name(), entry.getKey(),
                         parseAddress(nodeInfo.transportAddress()),
-                        nodeInfo.attributes(), roles, version);
+                        nodeInfo.attributes(), roles, VersionInformation.inferVersions(version));
                 Settings settings = parseJson(nodeInfo.settings(), Settings::fromXContent);
                 OsInfo os = null;
                 NodeOperatingSystemInfo systemInfo = nodeInfo.os();
