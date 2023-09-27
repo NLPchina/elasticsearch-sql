@@ -37,7 +37,7 @@ import co.elastic.clients.elasticsearch.indices.RefreshRequest;
 import co.elastic.clients.elasticsearch.indices.get.Feature;
 import co.elastic.clients.elasticsearch.nodes.NodesInfoRequest;
 import co.elastic.clients.json.DelegatingDeserializer;
-import co.elastic.clients.json.JsonEnum;
+import co.elastic.clients.json.JsonEnums;
 import co.elastic.clients.json.JsonpDeserializer;
 import co.elastic.clients.json.JsonpMapper;
 import co.elastic.clients.json.ObjectDeserializer;
@@ -88,7 +88,7 @@ public class RequestConverter {
 
     static {
         try {
-            Field field = JsonEnum.Deserializer.class.getDeclaredField("lookupTable");
+            Field field = JsonEnums.Deserializer.class.getDeclaredField("lookupTable");
             field.setAccessible(true);
 
             @SuppressWarnings("unchecked")
