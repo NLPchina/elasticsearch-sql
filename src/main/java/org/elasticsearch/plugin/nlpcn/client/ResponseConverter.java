@@ -56,6 +56,7 @@ import org.elasticsearch.core.CheckedFunction;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.health.metadata.HealthMetadata;
 import org.elasticsearch.http.HttpInfo;
+import org.elasticsearch.index.IndexVersion;
 import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.index.shard.IndexLongFieldRange;
 import org.elasticsearch.ingest.IngestInfo;
@@ -364,7 +365,7 @@ public class ResponseConverter {
                 String hash = nodeInfo.buildHash();
                 String date = "unknown";
                 String minWireCompat = Version.CURRENT.minimumCompatibilityVersion().toString();
-                String minIndexCompat = Version.CURRENT.minimumIndexCompatibilityVersion().toString();
+                String minIndexCompat = IndexVersion.getMinimumCompatibleIndexVersion(version.id()).toString();
                 String displayString = Build.defaultDisplayString(type, hash, date, nodeInfo.version());
                 Build build = new Build("default", type, hash, date, false, nodeInfo.version(), minWireCompat, minIndexCompat, displayString);
                 Set<DiscoveryNodeRole> roles = Optional.ofNullable(nodeInfo.roles()).orElse(Collections.emptyList()).stream().map(e -> DiscoveryNodeRole.maybeGetRoleFromRoleName(e.jsonValue()).orElse(null)).filter(Objects::nonNull).collect(Collectors.toSet());
@@ -426,7 +427,7 @@ public class ResponseConverter {
                 if (Objects.nonNull(nodeInfo.totalIndexingBuffer())) {
                     totalIndexingBuffer = ByteSizeValue.ofBytes(nodeInfo.totalIndexingBuffer());
                 }
-                nodes.add(new NodeInfo(version, TransportVersion.current(), build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
+                nodes.add(new NodeInfo(version, TransportVersion.current(), IndexVersion.current(), Collections.emptyMap(), build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
             }
         }
         return new NodesInfoResponse(new ClusterName(nodesInfoResponse.clusterName()), nodes, Collections.emptyList());
