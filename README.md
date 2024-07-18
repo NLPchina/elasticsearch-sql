@@ -16,7 +16,7 @@ Elasticsearch-SQL
 ### build status
 
 **6.8.23** [![6.8.23 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.23)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
-**7.17.16** [![7.17.16 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.17.16)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
+**7.17.22** [![7.17.22 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.17.22)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **8.11.3** [![8.11.3 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic8.11.3)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **master** [![master Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 
@@ -217,6 +217,12 @@ Versions
 | 7.17.14               | 7.17.14.0      |                                |elastic7.17.14|
 | 7.17.15               | 7.17.15.0      |                                |elastic7.17.15|
 | 7.17.16               | 7.17.16.0      |                                |elastic7.17.16|
+| 7.17.17               | 7.17.17.0      |                                |elastic7.17.17|
+| 7.17.18               | 7.17.18.0      |                                |elastic7.17.18|
+| 7.17.19               | 7.17.19.0      |                                |elastic7.17.19|
+| 7.17.20               | 7.17.20.0      |                                |elastic7.17.20|
+| 7.17.21               | 7.17.21.0      |                                |elastic7.17.21|
+| 7.17.22               | 7.17.22.0      |                                |elastic7.17.22|
 | 8.5.3                 | 8.5.3.0        |                                | elastic8.5.3 |
 | 8.6.0                 | 8.6.0.0        |                                | elastic8.6.0 |
 | 8.6.1                 | 8.6.1.0        |                                | elastic8.6.1 |
@@ -1095,6 +1101,36 @@ Versions
 ### Elasticsearch 7.17.16
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.16/elasticsearch-sql-7.17.16.0.zip
+````
+
+### Elasticsearch 7.17.17
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.17/elasticsearch-sql-7.17.17.0.zip
+````
+
+### Elasticsearch 7.17.18
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.18/elasticsearch-sql-7.17.18.0.zip
+````
+
+### Elasticsearch 7.17.19
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.19/elasticsearch-sql-7.17.19.0.zip
+````
+
+### Elasticsearch 7.17.20
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.20/elasticsearch-sql-7.17.20.0.zip
+````
+
+### Elasticsearch 7.17.21
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.21/elasticsearch-sql-7.17.21.0.zip
+````
+
+### Elasticsearch 7.17.22
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.22/elasticsearch-sql-7.17.22.0.zip
 ````
 
 ### Elasticsearch 8.5.3

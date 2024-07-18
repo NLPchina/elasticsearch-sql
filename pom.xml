@@ -176,6 +176,7 @@
 							<goal>jar</goal>
 						</goals>
 						<phase>package</phase>
+						<id>default-jar</id>
 					</execution>
 				</executions>
 			</plugin>
