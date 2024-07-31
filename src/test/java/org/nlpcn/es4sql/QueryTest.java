@@ -3,7 +3,6 @@ package org.nlpcn.es4sql;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
@@ -932,7 +931,7 @@ public class QueryTest {
         SearchHits hits = query(query);
         for (SearchHit hit : hits){
             HighlightField phrase = hit.getHighlightFields().get("phrase");
-            String highlightPhrase = phrase.getFragments()[0].string();
+            String highlightPhrase = phrase.fragments()[0].string();
             Assert.assertTrue(highlightPhrase.contains("<b>fox</b>"));
         }
 

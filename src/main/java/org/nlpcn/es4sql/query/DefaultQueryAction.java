@@ -1,8 +1,6 @@
 package org.nlpcn.es4sql.query;
 
-import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchScrollAction;
 import org.elasticsearch.action.search.SearchScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.internal.Client;
@@ -67,7 +65,7 @@ public class DefaultQueryAction extends QueryAction {
             }
         }
         if (scrollHint != null && scrollHint.getParams()[0] instanceof String) {
-            return new SqlElasticSearchRequestBuilder(new SearchScrollRequestBuilder(client, SearchScrollAction.INSTANCE, (String) scrollHint.getParams()[0]).setScroll(new TimeValue((Integer) scrollHint.getParams()[1])));
+            return new SqlElasticSearchRequestBuilder(new SearchScrollRequestBuilder(client, (String) scrollHint.getParams()[0]).setScroll(new TimeValue((Integer) scrollHint.getParams()[1])));
         }
 
 		/*
@@ -82,7 +80,7 @@ public class DefaultQueryAction extends QueryAction {
 							为了在本地调试、执行下文的那些代码获得es的dsl，所以就使用这行代码，暂时将上面哪一行注释掉，上线的时候记得替换掉
 		变量request是es搜索请求对象，调用的是es的api，SearchRequestBuilder是es的原生api
 		 */
-        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE);
+        this.request = new SearchRequestBuilder(client);
 		setIndicesAndTypes();
 
 		//zhongshu-comment 将Select对象中封装的sql token信息转换并传到成员变量es搜索请求对象request中

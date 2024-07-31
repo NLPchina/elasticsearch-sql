@@ -31,7 +31,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.druid.util.Utils;
 import com.alibaba.druid.wall.WallFilter;
 import com.alibaba.druid.wall.WallProviderStatValue;
-import org.elasticsearch.client.internal.Client;
+import org.elasticsearch.plugin.nlpcn.client.ElasticsearchRestClient;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -137,13 +137,13 @@ public class ElasticSearchDruidDataSource extends DruidDataSource {
     private boolean loadSpifilterSkip = false;
 
     // elasticsearch client
-    private final Client client;
+    private final ElasticsearchRestClient client;
 
-    public ElasticSearchDruidDataSource(Client client) {
+    public ElasticSearchDruidDataSource(ElasticsearchRestClient client) {
         this(false, client);
     }
 
-    public ElasticSearchDruidDataSource(boolean fairLock, Client client) {
+    public ElasticSearchDruidDataSource(boolean fairLock, ElasticsearchRestClient client) {
         super(fairLock);
 
         this.client = client;

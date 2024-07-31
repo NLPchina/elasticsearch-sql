@@ -1,7 +1,6 @@
 package org.nlpcn.es4sql.query;
 
 import com.google.common.collect.Lists;
-import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.internal.Client;
@@ -52,7 +51,7 @@ public class AggregationQueryAction extends QueryAction {
     @Override
     public SqlElasticSearchRequestBuilder explain() throws SqlParseException {
 //        this.request = client.prepareSearch();//zhongshu-comment elastic6.1.1的写法
-        this.request = new SearchRequestBuilder(client, SearchAction.INSTANCE); //zhongshu-comment master的写法
+        this.request = new SearchRequestBuilder(client); //zhongshu-comment master的写法
 
         //在生成 AggregationBuilder之前进行拦截，处理PipelineAggregation中的 "max_bucket", "min_bucket"
         List<Field> bucketFields = Lists.newArrayList();

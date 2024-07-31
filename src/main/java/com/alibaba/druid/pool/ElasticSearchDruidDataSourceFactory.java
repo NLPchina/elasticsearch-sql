@@ -1,6 +1,7 @@
 package com.alibaba.druid.pool;
 
 import org.elasticsearch.client.internal.Client;
+import org.elasticsearch.plugin.nlpcn.client.ElasticsearchRestClient;
 
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -15,7 +16,7 @@ public class ElasticSearchDruidDataSourceFactory extends DruidDataSourceFactory 
         throw new UnsupportedOperationException();
     }
 
-    public static DataSource createDataSource(Client client) {
+    public static DataSource createDataSource(ElasticsearchRestClient client) {
         return new ElasticSearchDruidDataSource(client);
     }
 }

@@ -1,11 +1,9 @@
 package org.nlpcn.es4sql.query;
 
 
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.client.internal.Client;
-
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.nlpcn.es4sql.domain.Delete;
@@ -13,7 +11,6 @@ import org.nlpcn.es4sql.domain.Where;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
-
 import org.nlpcn.es4sql.query.maker.QueryMaker;
 
 public class DeleteQueryAction extends QueryAction {
@@ -28,7 +25,7 @@ public class DeleteQueryAction extends QueryAction {
 
 	@Override
 	public SqlElasticDeleteByQueryRequestBuilder explain() throws SqlParseException {
-		this.request = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
+		this.request = new DeleteByQueryRequestBuilder(client);
 
 		setIndicesAndTypes();
 		setWhere(delete.getWhere());

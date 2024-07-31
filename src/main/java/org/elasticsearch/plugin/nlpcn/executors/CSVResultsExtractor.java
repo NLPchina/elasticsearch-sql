@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
-import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -289,16 +287,16 @@ public class CSVResultsExtractor {
                 List<String> percentileHeaders = new ArrayList<>(7);
                 Percentiles percentiles = (Percentiles) aggregation;
                 for (Percentile p : percentiles) {
-                    percentileHeaders.add(String.valueOf(p.getPercent()));
-                    line.add(percentiles.percentileAsString(p.getPercent()));
+                    percentileHeaders.add(String.valueOf(p.percent()));
+                    line.add(percentiles.percentileAsString(p.percent()));
                 }
                 mergeHeadersWithPrefix(header, name, percentileHeaders.toArray(new String[0]));
             } else if (aggregation instanceof InternalTDigestPercentileRanks) {//added by xzb 增加PercentileRanks函数支持
                 InternalTDigestPercentileRanks percentileRanks = (InternalTDigestPercentileRanks) aggregation;
                 List<String> percentileHeaders = new ArrayList<>(7);
                 for (Percentile rank : percentileRanks) {
-                    percentileHeaders.add(String.valueOf(rank.getValue()));
-                    line.add(String.valueOf(rank.getPercent()));
+                    percentileHeaders.add(String.valueOf(rank.value()));
+                    line.add(String.valueOf(rank.percent()));
                 }
                 mergeHeadersWithPrefix(header, name, percentileHeaders.toArray(new String[0]));
             } else {
@@ -362,7 +360,7 @@ public class CSVResultsExtractor {
         for (SearchHit hit : hits) {
             //获取高亮内容
             hit.getHighlightFields().forEach((key, value) -> {
-                String frag = value.getFragments()[0].toString();
+                String frag = value.fragments()[0].toString();
                 highlightMap.put(key, frag);
             });
 

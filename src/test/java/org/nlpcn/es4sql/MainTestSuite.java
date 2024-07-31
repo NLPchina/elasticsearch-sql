@@ -21,11 +21,10 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.elasticsearch.plugin.nlpcn.client.ElasticsearchRestClient;
 import org.elasticsearch.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
-import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -72,7 +71,7 @@ import static org.nlpcn.es4sql.TestsConstants.TEST_INDEX_SYSTEM;
 })
 public class MainTestSuite {
 
-	private static Client client;
+	private static ElasticsearchRestClient client;
 	private static SearchDao searchDao;
 
 	@BeforeClass
@@ -332,7 +331,7 @@ public class MainTestSuite {
 	 */
 	public static void deleteQuery(String indexName, String typeName) {
 
-        DeleteByQueryRequestBuilder deleteQueryBuilder = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE);
+        DeleteByQueryRequestBuilder deleteQueryBuilder = new DeleteByQueryRequestBuilder(client);
         deleteQueryBuilder.request().indices(indexName);
         deleteQueryBuilder.filter(QueryBuilders.matchAllQuery());
         deleteQueryBuilder.get();
@@ -405,7 +404,7 @@ public class MainTestSuite {
         return client;
     }
 
-    public static Client createElasticsearchClient() throws UnknownHostException {
+    public static ElasticsearchRestClient createElasticsearchClient() throws UnknownHostException {
         return new ElasticsearchRestClient(new ElasticsearchClient(getElasticsearchTransport(getRestClient())));
     }
 
