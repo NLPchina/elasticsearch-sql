@@ -17,7 +17,7 @@ Elasticsearch-SQL
 
 **6.8.23** [![6.8.23 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.23)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **7.17.22** [![7.17.22 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.17.22)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
-**8.11.3** [![8.11.3 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic8.11.3)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
+**8.12.2** [![8.12.2 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic8.12.2)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **master** [![master Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
@@ -244,6 +244,10 @@ Versions
 | 8.11.1                | 8.11.1.0       |                                | elastic8.11.1|
 | 8.11.2                | 8.11.2.0       |                                | elastic8.11.2|
 | 8.11.3                | 8.11.3.0       |                                | elastic8.11.3|
+| 8.11.4                | 8.11.4.0       |                                | elastic8.11.4|
+| 8.12.0                | 8.12.0.0       |                                | elastic8.12.0|
+| 8.12.1                | 8.12.1.0       |                                | elastic8.12.1|
+| 8.12.2                | 8.12.2.0       |                                | elastic8.12.2|
 
 ### Elasticsearch 1.x
 ````
@@ -1236,6 +1240,26 @@ Versions
 ### Elasticsearch 8.11.3
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.11.3/elasticsearch-sql-8.11.3.0.zip
+````
+
+### Elasticsearch 8.11.4
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.11.4/elasticsearch-sql-8.11.4.0.zip
+````
+
+### Elasticsearch 8.12.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.12.0/elasticsearch-sql-8.12.0.0.zip
+````
+
+### Elasticsearch 8.12.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.12.1/elasticsearch-sql-8.12.1.0.zip
+````
+
+### Elasticsearch 8.12.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.12.2/elasticsearch-sql-8.12.2.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
