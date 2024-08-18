@@ -68,7 +68,7 @@ public class IntersectExecutor implements ElasticHitsExecutor {
         Set<Map.Entry<String, String>> firstTableFieldToAlias = this.builder.getFirstTableFieldToAlias().entrySet();
         for (ComperableHitResult result : comparableHitResults) {
             SearchHit originalHit = result.getOriginalHit();
-            SearchHit searchHit = new SearchHit(currentId, originalHit.getId());
+            SearchHit searchHit = SearchHit.unpooled(currentId, originalHit.getId());
             searchHit.addDocumentFields(originalHit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(originalHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
@@ -87,7 +87,7 @@ public class IntersectExecutor implements ElasticHitsExecutor {
         }
         int totalSize = currentId - 1;
         SearchHit[] unionHitsArr = intersectHitsList.toArray(new SearchHit[totalSize]);
-        this.intersectHits = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
+        this.intersectHits = SearchHits.unpooled(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private void fillComparableSetFromHits(String[] fieldsOrder, SearchHit[] hits, Set<ComperableHitResult> setToFill) {

@@ -16,6 +16,7 @@ import jakarta.json.stream.JsonParser;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.bulk.BulkAction;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.bulk.ParsedBulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.ActiveShardCount;
@@ -143,7 +144,7 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
 
     @Override
     protected BulkResponse convertResponse(co.elastic.clients.elasticsearch.core.BulkResponse bulkResponse) throws IOException {
-        return parseJson(bulkResponse, BulkResponse::fromXContent);
+        return parseJson(bulkResponse, ParsedBulkResponse::fromXContent);
     }
 
     private VersionType getVersionType(org.elasticsearch.index.VersionType versionType) {

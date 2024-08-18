@@ -10,7 +10,8 @@ import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregation;
+import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.SingleBucketAggregation;
 import org.elasticsearch.search.aggregations.metrics.ExtendedStats;
@@ -75,11 +76,11 @@ public class CSVResultsExtractor {
             List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers, hitFieldNames);
             return new CSVResult(headers,csvLines);
         }
-        if(queryResult instanceof Aggregations){
+        if(queryResult instanceof InternalAggregations){
             List<String> headers = new ArrayList<>();
             List<List<String>> lines = new ArrayList<>();
             lines.add(new ArrayList<String>());
-            handleAggregations((Aggregations) queryResult, headers, lines);
+            handleAggregations((InternalAggregations) queryResult, headers, lines);
 
             List<String> csvLines  = new ArrayList<>();
             for(List<String> simpleLine : lines){
@@ -163,20 +164,20 @@ public class CSVResultsExtractor {
         return path.replaceAll("\\s+", "").replace("[", "").replace("]", "").replace(",", ".");
     }
 
-    private  void handleAggregations(Aggregations aggregations, List<String> headers, List<List<String>> lines) throws CsvExtractorException {
+    private  void handleAggregations(InternalAggregations aggregations, List<String> headers, List<List<String>> lines) throws CsvExtractorException {
         if(allNumericAggregations(aggregations)){
             lines.get(this.currentLineIndex).addAll(fillHeaderAndCreateLineForNumericAggregations(aggregations, headers));
             return;
         }
         //aggregations with size one only supported when not metrics.
-        List<Aggregation> aggregationList = aggregations.asList();
+        List<InternalAggregation> aggregationList = aggregations.asList();
         if(aggregationList.size() > 1){
             throw new CsvExtractorException("currently support only one aggregation at same level (Except for numeric metrics)");
         }
         Aggregation aggregation = aggregationList.get(0);
         //we want to skip singleBucketAggregations (nested,reverse_nested,filters)
         if(aggregation instanceof SingleBucketAggregation){
-            Aggregations singleBucketAggs = ((SingleBucketAggregation) aggregation).getAggregations();
+            InternalAggregations singleBucketAggs = ((SingleBucketAggregation) aggregation).getAggregations();
             handleAggregations(singleBucketAggs, headers, lines);
             return;
         }
@@ -241,9 +242,9 @@ public class CSVResultsExtractor {
         lines.add(line);
     }
 
-    private  List<String> fillHeaderAndCreateLineForNumericAggregations(Aggregations aggregations, List<String> header) throws CsvExtractorException {
+    private  List<String> fillHeaderAndCreateLineForNumericAggregations(InternalAggregations aggregations, List<String> header) throws CsvExtractorException {
         List<String> line = new ArrayList<>();
-        List<Aggregation> aggregationList = aggregations.asList();
+        List<InternalAggregation> aggregationList = aggregations.asList();
         for(Aggregation aggregation : aggregationList){
             handleNumericMetricAggregation(header, line, aggregation);
         }
@@ -321,8 +322,8 @@ public class CSVResultsExtractor {
         }
     }
 
-    private  boolean allNumericAggregations(Aggregations aggregations) {
-        List<Aggregation> aggregationList = aggregations.asList();
+    private  boolean allNumericAggregations(InternalAggregations aggregations) {
+        List<InternalAggregation> aggregationList = aggregations.asList();
         for(Aggregation aggregation : aggregationList){
             if(!(aggregation instanceof NumericMetricsAggregation)){
                 return false;
@@ -338,7 +339,7 @@ public class CSVResultsExtractor {
         return firstAggregation;
     }
 
-    private Aggregation getFirstAggregation(Aggregations aggregations){
+    private Aggregation getFirstAggregation(InternalAggregations aggregations){
         return aggregations.asList().get(0);
     }
 

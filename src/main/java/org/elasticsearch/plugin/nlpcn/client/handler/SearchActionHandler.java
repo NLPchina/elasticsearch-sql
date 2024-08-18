@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import jakarta.json.stream.JsonParser;
+import org.elasticsearch.action.search.ParsedSearchResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.TransportSearchAction;
 import org.elasticsearch.common.Strings;
@@ -58,13 +59,13 @@ public class SearchActionHandler extends ActionHandler<org.elasticsearch.action.
         Optional.ofNullable(searchRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         return builder.build();
     }
 
     @Override
     protected SearchResponse convertResponse(co.elastic.clients.elasticsearch.core.SearchResponse<Object> searchResponse) throws IOException {
-        return parseJson(searchResponse, SearchResponse::fromXContent);
+        return parseJson(searchResponse, ParsedSearchResponse::fromXContent);
     }
 }

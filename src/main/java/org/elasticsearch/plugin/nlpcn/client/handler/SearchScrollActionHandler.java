@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.core.ScrollRequest;
 import co.elastic.clients.elasticsearch.core.ScrollResponse;
+import org.elasticsearch.action.search.ParsedSearchResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.search.TransportSearchScrollAction;
@@ -44,6 +45,6 @@ public class SearchScrollActionHandler extends ActionHandler<SearchScrollRequest
 
     @Override
     protected SearchResponse convertResponse(ScrollResponse<Object> scrollResponse) throws IOException {
-        return parseJson(scrollResponse, SearchResponse::fromXContent);
+        return parseJson(scrollResponse, ParsedSearchResponse::fromXContent);
     }
 }

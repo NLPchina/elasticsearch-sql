@@ -146,7 +146,7 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
         Optional.ofNullable(clusterStateRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         return builder.build();
     }

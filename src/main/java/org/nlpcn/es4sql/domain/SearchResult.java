@@ -12,7 +12,8 @@ import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregation;
+import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.terms.InternalTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.LongTerms;
@@ -48,7 +49,7 @@ public class SearchResult {
 	}
 
 	public SearchResult(SearchResponse resp, Select select) throws SqlParseException {
-		Aggregations aggs = resp.getAggregations();
+		InternalAggregations aggs = resp.getAggregations();
 		if (aggs.get("filter") != null) {
 			InternalFilter inf = aggs.get("filter");
 			aggs = inf.getAggregations();
@@ -101,9 +102,9 @@ public class SearchResult {
 	 * @return
 	 * @throws SqlParseException
 	 */
-	private Map<String, Object> toAggsMap(Map<String, Aggregation> fields) throws SqlParseException {
+	private Map<String, Object> toAggsMap(Map<String, InternalAggregation> fields) throws SqlParseException {
 		Map<String, Object> result = new HashMap<>();
-		for (Entry<String, Aggregation> entry : fields.entrySet()) {
+		for (Entry<String, InternalAggregation> entry : fields.entrySet()) {
 			result.put(entry.getKey(), covenValue(entry.getValue()));
 		}
 		return result;

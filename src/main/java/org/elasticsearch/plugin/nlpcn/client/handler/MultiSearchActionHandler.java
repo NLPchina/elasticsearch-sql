@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch.core.msearch.RequestItem;
 import jakarta.json.stream.JsonParser;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
+import org.elasticsearch.action.search.ParsedMultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.TransportMultiSearchAction;
 import org.elasticsearch.common.Strings;
@@ -60,7 +61,7 @@ public class MultiSearchActionHandler extends ActionHandler<MultiSearchRequest, 
             Optional.ofNullable(request.indicesOptions()).ifPresent(options -> {
                 msearchHeaderBuilder.allowNoIndices(options.allowNoIndices());
                 msearchHeaderBuilder.ignoreUnavailable(options.ignoreUnavailable());
-                msearchHeaderBuilder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+                msearchHeaderBuilder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
                 msearchHeaderBuilder.ignoreThrottled(options.ignoreThrottled());
             });
 
@@ -77,13 +78,13 @@ public class MultiSearchActionHandler extends ActionHandler<MultiSearchRequest, 
         Optional.ofNullable(multiSearchRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         return builder.build();
     }
 
     @Override
     protected MultiSearchResponse convertResponse(MsearchResponse<Object> msearchResponse) throws IOException {
-        return parseJson(msearchResponse, MultiSearchResponse::fromXContext);
+        return parseJson(msearchResponse, ParsedMultiSearchResponse::fromXContext);
     }
 }

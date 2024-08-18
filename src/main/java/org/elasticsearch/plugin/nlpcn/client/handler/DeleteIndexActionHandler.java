@@ -4,7 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexAction;
+import org.elasticsearch.action.admin.indices.delete.TransportDeleteIndexAction;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class DeleteIndexActionHandler extends ActionHandler<org.elasticsearch.ac
 
     @Override
     public String getName() {
-        return DeleteIndexAction.NAME;
+        return TransportDeleteIndexAction.TYPE.name();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class DeleteIndexActionHandler extends ActionHandler<org.elasticsearch.ac
         Optional.ofNullable(deleteIndexRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         return builder.build();
     }

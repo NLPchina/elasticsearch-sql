@@ -1,6 +1,5 @@
 package com.alibaba.druid.pool;
 
-import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.plugin.nlpcn.client.ElasticsearchRestClient;
 
 import javax.sql.DataSource;

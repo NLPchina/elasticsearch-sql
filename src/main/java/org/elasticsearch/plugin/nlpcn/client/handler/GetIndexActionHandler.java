@@ -60,7 +60,7 @@ public class GetIndexActionHandler extends ActionHandler<org.elasticsearch.actio
         Optional.ofNullable(getIndexRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         Optional.ofNullable(getIndexRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
         return builder.build();

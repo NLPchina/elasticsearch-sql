@@ -5,7 +5,7 @@ import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.indices.PutMappingRequest;
 import co.elastic.clients.elasticsearch.indices.PutMappingResponse;
 import jakarta.json.stream.JsonParser;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingAction;
+import org.elasticsearch.action.admin.indices.mapping.put.TransportPutMappingAction;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.common.Strings;
 
@@ -30,7 +30,7 @@ public class PutMappingActionHandler extends ActionHandler<org.elasticsearch.act
 
     @Override
     public String getName() {
-        return PutMappingAction.NAME;
+        return TransportPutMappingAction.TYPE.name();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class PutMappingActionHandler extends ActionHandler<org.elasticsearch.act
         Optional.ofNullable(putMappingRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         Optional.ofNullable(putMappingRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         Optional.ofNullable(putMappingRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));

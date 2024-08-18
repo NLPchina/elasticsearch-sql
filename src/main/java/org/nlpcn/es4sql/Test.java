@@ -3,6 +3,7 @@ package org.nlpcn.es4sql;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.client.internal.node.NodeClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.telemetry.metric.MeterRegistry;
 import org.elasticsearch.threadpool.ThreadPool;
 
 import java.util.HashMap;
@@ -21,7 +22,7 @@ public class Test {
 //                .put(ThreadContext.PREFIX + ".key2", "val 2")
 //                .build();
 
-        ThreadPool threadPool = new ThreadPool(settings);
+        ThreadPool threadPool = new ThreadPool(settings, MeterRegistry.NOOP);
         Client client = new NodeClient(settings, threadPool);
         SearchDao searchDao = new org.nlpcn.es4sql.SearchDao(client);
         try {

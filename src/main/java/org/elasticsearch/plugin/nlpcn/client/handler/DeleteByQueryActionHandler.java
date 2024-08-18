@@ -13,6 +13,7 @@ import org.elasticsearch.action.support.ActiveShardCount;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
+import org.elasticsearch.index.reindex.ParsedBulkByScrollResponse;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -75,13 +76,13 @@ public class DeleteByQueryActionHandler extends ActionHandler<org.elasticsearch.
         Optional.ofNullable(deleteByQueryRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         return builder.build();
     }
 
     @Override
     protected BulkByScrollResponse convertResponse(DeleteByQueryResponse deleteByQueryResponse) throws IOException {
-        return parseJson(deleteByQueryResponse, BulkByScrollResponse::fromXContent);
+        return parseJson(deleteByQueryResponse, ParsedBulkByScrollResponse::fromXContent);
     }
 }

@@ -2,8 +2,9 @@ package org.elasticsearch.plugin.nlpcn.client.handler;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.indices.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.ParsedRefreshResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshAction;
-import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.support.broadcast.BroadcastResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -16,7 +17,7 @@ import java.util.Optional;
  * @version V1.0
  * @since 2024-08-04 22:02
  */
-public class RefreshActionHandler extends ActionHandler<org.elasticsearch.action.admin.indices.refresh.RefreshRequest, RefreshRequest, co.elastic.clients.elasticsearch.indices.RefreshResponse, RefreshResponse> {
+public class RefreshActionHandler extends ActionHandler<org.elasticsearch.action.admin.indices.refresh.RefreshRequest, RefreshRequest, co.elastic.clients.elasticsearch.indices.RefreshResponse, BroadcastResponse> {
 
     public RefreshActionHandler(ElasticsearchClient client) {
         super(client);
@@ -39,13 +40,13 @@ public class RefreshActionHandler extends ActionHandler<org.elasticsearch.action
         Optional.ofNullable(refreshRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());
-            builder.expandWildcards(getExpandWildcard(options.expandWildcards()));
+            builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
         return builder.build();
     }
 
     @Override
-    protected RefreshResponse convertResponse(co.elastic.clients.elasticsearch.indices.RefreshResponse refreshResponse) throws IOException {
-        return parseJson(refreshResponse, RefreshResponse::fromXContent);
+    protected BroadcastResponse convertResponse(co.elastic.clients.elasticsearch.indices.RefreshResponse refreshResponse) throws IOException {
+        return parseJson(refreshResponse, ParsedRefreshResponse::fromXContent);
     }
 }

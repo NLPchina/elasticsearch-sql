@@ -164,7 +164,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
 
 
 
-                            SearchHit searchHit = new SearchHit(matchingHit.docId(), combinedId);
+                            SearchHit searchHit = SearchHit.unpooled(matchingHit.docId(), combinedId);
                             searchHit.addDocumentFields(matchingHit.getDocumentFields(), Collections.emptyMap());
                             searchHit.sourceRef(matchingHit.getSourceRef());
                             searchHit.getSourceAsMap().clear();
@@ -212,7 +212,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                 String key = getComparisonKey(t1ToT2FieldsComparison, hit, true, optimizationTermsFilterStructure.get(comparisonID));
 
                 //int docid , id
-                SearchHit searchHit = new SearchHit(resultIds, hit.getId());
+                SearchHit searchHit = SearchHit.unpooled(resultIds, hit.getId());
                 searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
                 searchHit.sourceRef(hit.getSourceRef());
 

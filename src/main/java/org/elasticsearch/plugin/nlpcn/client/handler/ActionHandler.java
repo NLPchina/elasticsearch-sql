@@ -22,7 +22,7 @@ import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.core.CheckedFunction;
-import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.bucket.composite.CompositeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.composite.ParsedComposite;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
@@ -134,7 +134,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -178,55 +177,55 @@ public abstract class ActionHandler<FromRequest extends ActionRequest, ToRequest
         this.jsonpMapper = client._jsonpMapper();
         this.xContentParserConfiguration = XContentParserConfiguration.EMPTY.withRegistry(new NamedXContentRegistry(Arrays.asList(
                 //new Entry(Aggregation.class, new ParseField(AdjacencyMatrixAggregationBuilder.NAME), (p, c) -> ParsedAdjacencyMatrix.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(CompositeAggregationBuilder.NAME), (p, c) -> ParsedComposite.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(FilterAggregationBuilder.NAME), (p, c) -> ParsedFilter.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(FiltersAggregationBuilder.NAME), (p, c) -> ParsedFilters.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(GeoHashGridAggregationBuilder.NAME), (p, c) -> ParsedGeoHashGrid.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(GeoTileGridAggregationBuilder.NAME), (p, c) -> ParsedGeoTileGrid.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(GlobalAggregationBuilder.NAME), (p, c) -> ParsedGlobal.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(CompositeAggregationBuilder.NAME), (p, c) -> ParsedComposite.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(FilterAggregationBuilder.NAME), (p, c) -> ParsedFilter.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(FiltersAggregationBuilder.NAME), (p, c) -> ParsedFilters.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(GeoHashGridAggregationBuilder.NAME), (p, c) -> ParsedGeoHashGrid.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(GeoTileGridAggregationBuilder.NAME), (p, c) -> ParsedGeoTileGrid.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(GlobalAggregationBuilder.NAME), (p, c) -> ParsedGlobal.fromXContent(p, (String) c)),
                 //new Entry(Aggregation.class, new ParseField(AutoDateHistogramAggregationBuilder.NAME), (p, c) -> ParsedAutoDateHistogram.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(DateHistogramAggregationBuilder.NAME), (p, c) -> ParsedDateHistogram.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(HistogramAggregationBuilder.NAME), (p, c) -> ParsedHistogram.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(VariableWidthHistogramAggregationBuilder.NAME), (p, c) -> ParsedVariableWidthHistogram.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(MissingAggregationBuilder.NAME), (p, c) -> ParsedMissing.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(NestedAggregationBuilder.NAME), (p, c) -> ParsedNested.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(ReverseNestedAggregationBuilder.NAME), (p, c) -> ParsedReverseNested.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(IpRangeAggregationBuilder.NAME), (p, c) -> ParsedBinaryRange.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(DateRangeAggregationBuilder.NAME), (p, c) -> ParsedDateRange.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(GeoDistanceAggregationBuilder.NAME), (p, c) -> ParsedGeoDistance.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(RangeAggregationBuilder.NAME), (p, c) -> ParsedRange.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalSampler.PARSER_NAME), (p, c) -> ParsedSampler.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(DoubleTerms.NAME), (p, c) -> ParsedDoubleTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(LongRareTerms.NAME), (p, c) -> ParsedLongRareTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(LongTerms.NAME), (p, c) -> ParsedLongTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(SignificantLongTerms.NAME), (p, c) -> ParsedSignificantLongTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(SignificantStringTerms.NAME), (p, c) -> ParsedSignificantStringTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(StringRareTerms.NAME), (p, c) -> ParsedStringRareTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(StringTerms.NAME), (p, c) -> ParsedStringTerms.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(AvgAggregationBuilder.NAME), (p, c) -> ParsedAvg.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(CardinalityAggregationBuilder.NAME), (p, c) -> ParsedCardinality.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(ExtendedStatsAggregationBuilder.NAME), (p, c) -> ParsedExtendedStats.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(GeoBoundsAggregationBuilder.NAME), (p, c) -> ParsedGeoBounds.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(GeoCentroidAggregationBuilder.NAME), (p, c) -> ParsedGeoCentroid.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalHDRPercentileRanks.NAME), (p, c) -> ParsedHDRPercentileRanks.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalHDRPercentiles.NAME), (p, c) -> ParsedHDRPercentiles.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(MaxAggregationBuilder.NAME), (p, c) -> ParsedMax.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(MedianAbsoluteDeviationAggregationBuilder.NAME), (p, c) -> ParsedMedianAbsoluteDeviation.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(MinAggregationBuilder.NAME), (p, c) -> ParsedMin.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(ScriptedMetricAggregationBuilder.NAME), (p, c) -> ParsedScriptedMetric.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(StatsAggregationBuilder.NAME), (p, c) -> ParsedStats.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(SumAggregationBuilder.NAME), (p, c) -> ParsedSum.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalTDigestPercentileRanks.NAME), (p, c) -> ParsedTDigestPercentileRanks.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalTDigestPercentiles.NAME), (p, c) -> ParsedTDigestPercentiles.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(TopHitsAggregationBuilder.NAME), (p, c) -> ParsedTopHits.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(ValueCountAggregationBuilder.NAME), (p, c) -> ParsedValueCount.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(WeightedAvgAggregationBuilder.NAME), (p, c) -> ParsedWeightedAvg.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalBucketMetricValue.NAME), (p, c) -> ParsedBucketMetricValue.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(DateHistogramAggregationBuilder.NAME), (p, c) -> ParsedDateHistogram.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(HistogramAggregationBuilder.NAME), (p, c) -> ParsedHistogram.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(VariableWidthHistogramAggregationBuilder.NAME), (p, c) -> ParsedVariableWidthHistogram.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(MissingAggregationBuilder.NAME), (p, c) -> ParsedMissing.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(NestedAggregationBuilder.NAME), (p, c) -> ParsedNested.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(ReverseNestedAggregationBuilder.NAME), (p, c) -> ParsedReverseNested.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(IpRangeAggregationBuilder.NAME), (p, c) -> ParsedBinaryRange.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(DateRangeAggregationBuilder.NAME), (p, c) -> ParsedDateRange.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(GeoDistanceAggregationBuilder.NAME), (p, c) -> ParsedGeoDistance.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(RangeAggregationBuilder.NAME), (p, c) -> ParsedRange.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalSampler.PARSER_NAME), (p, c) -> ParsedSampler.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(DoubleTerms.NAME), (p, c) -> ParsedDoubleTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(LongRareTerms.NAME), (p, c) -> ParsedLongRareTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(LongTerms.NAME), (p, c) -> ParsedLongTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(SignificantLongTerms.NAME), (p, c) -> ParsedSignificantLongTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(SignificantStringTerms.NAME), (p, c) -> ParsedSignificantStringTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(StringRareTerms.NAME), (p, c) -> ParsedStringRareTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(StringTerms.NAME), (p, c) -> ParsedStringTerms.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(AvgAggregationBuilder.NAME), (p, c) -> ParsedAvg.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(CardinalityAggregationBuilder.NAME), (p, c) -> ParsedCardinality.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(ExtendedStatsAggregationBuilder.NAME), (p, c) -> ParsedExtendedStats.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(GeoBoundsAggregationBuilder.NAME), (p, c) -> ParsedGeoBounds.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(GeoCentroidAggregationBuilder.NAME), (p, c) -> ParsedGeoCentroid.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalHDRPercentileRanks.NAME), (p, c) -> ParsedHDRPercentileRanks.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalHDRPercentiles.NAME), (p, c) -> ParsedHDRPercentiles.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(MaxAggregationBuilder.NAME), (p, c) -> ParsedMax.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(MedianAbsoluteDeviationAggregationBuilder.NAME), (p, c) -> ParsedMedianAbsoluteDeviation.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(MinAggregationBuilder.NAME), (p, c) -> ParsedMin.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(ScriptedMetricAggregationBuilder.NAME), (p, c) -> ParsedScriptedMetric.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(StatsAggregationBuilder.NAME), (p, c) -> ParsedStats.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(SumAggregationBuilder.NAME), (p, c) -> ParsedSum.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalTDigestPercentileRanks.NAME), (p, c) -> ParsedTDigestPercentileRanks.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalTDigestPercentiles.NAME), (p, c) -> ParsedTDigestPercentiles.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(TopHitsAggregationBuilder.NAME), (p, c) -> ParsedTopHits.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(ValueCountAggregationBuilder.NAME), (p, c) -> ParsedValueCount.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(WeightedAvgAggregationBuilder.NAME), (p, c) -> ParsedWeightedAvg.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalBucketMetricValue.NAME), (p, c) -> ParsedBucketMetricValue.fromXContent(p, (String) c)),
                 //new Entry(Aggregation.class, new ParseField(DerivativePipelineAggregationBuilder.NAME), (p, c) -> ParsedDerivative.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(ExtendedStatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedExtendedStatsBucket.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(PercentilesBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedPercentilesBucket.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(InternalSimpleValue.NAME), (p, c) -> ParsedSimpleValue.fromXContent(p, (String) c)),
-                new NamedXContentRegistry.Entry(Aggregation.class, new ParseField(StatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedStatsBucket.fromXContent(p, (String) c))
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(ExtendedStatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedExtendedStatsBucket.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(PercentilesBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedPercentilesBucket.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(InternalSimpleValue.NAME), (p, c) -> ParsedSimpleValue.fromXContent(p, (String) c)),
+                new NamedXContentRegistry.Entry(InternalAggregation.class, new ParseField(StatsBucketPipelineAggregationBuilder.NAME), (p, c) -> ParsedStatsBucket.fromXContent(p, (String) c))
                 //new Entry(Aggregation.class, new ParseField(TimeSeriesAggregationBuilder.NAME), (p, c) -> ParsedTimeSeries.fromXContent(p, (String) c))
         ))).withDeprecationHandler(LoggingDeprecationHandler.INSTANCE);
     }
@@ -257,28 +256,23 @@ public abstract class ActionHandler<FromRequest extends ActionRequest, ToRequest
         }
     }
 
-    protected List<ExpandWildcard> getExpandWildcard(EnumSet<IndicesOptions.WildcardStates> states) {
-        List<ExpandWildcard> expandWildcards = new ArrayList<>();
-        if (states.isEmpty()) {
+    protected List<ExpandWildcard> getExpandWildcard(IndicesOptions.WildcardOptions wildcardOptions) {
+        List<ExpandWildcard> expandWildcards = new ArrayList<>(3);
+        if (wildcardOptions.matchOpen()) {
+            expandWildcards.add(ExpandWildcard.Open);
+        }
+        if (wildcardOptions.matchClosed()) {
+            expandWildcards.add(ExpandWildcard.Closed);
+        }
+        if (wildcardOptions.includeHidden()) {
+            expandWildcards.add(ExpandWildcard.Hidden);
+        }
+
+        if (expandWildcards.isEmpty()) {
             expandWildcards.add(ExpandWildcard.None);
-        } else if (states.containsAll(EnumSet.allOf(IndicesOptions.WildcardStates.class))) {
+        } else if (expandWildcards.size() == 3) {
+            expandWildcards.clear();
             expandWildcards.add(ExpandWildcard.All);
-        } else {
-            for (IndicesOptions.WildcardStates state : states) {
-                switch (state) {
-                    case OPEN:
-                        expandWildcards.add(ExpandWildcard.Open);
-                        break;
-                    case CLOSED:
-                        expandWildcards.add(ExpandWildcard.Closed);
-                        break;
-                    case HIDDEN:
-                        expandWildcards.add(ExpandWildcard.Hidden);
-                        break;
-                    default:
-                        break;
-                }
-            }
         }
         return expandWildcards;
     }

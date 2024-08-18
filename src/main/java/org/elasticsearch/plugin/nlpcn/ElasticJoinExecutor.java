@@ -65,7 +65,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
         List<SearchHit> combinedSearchHits =  innerRun();
         int resultsSize = combinedSearchHits.size();
         SearchHit[] hits = combinedSearchHits.toArray(new SearchHit[resultsSize]);
-        this.results = new SearchHits(hits, new TotalHits(resultsSize, TotalHits.Relation.EQUAL_TO), 1.0f);
+        this.results = SearchHits.unpooled(hits, new TotalHits(resultsSize, TotalHits.Relation.EQUAL_TO), 1.0f);
         long joinTimeInMilli = System.currentTimeMillis() - timeBefore;
         this.metaResults.setTookImMilli(joinTimeInMilli);
     }
@@ -170,7 +170,7 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
     protected SearchHit createUnmachedResult( List<Field> secondTableReturnedFields, int docId, String t1Alias, String t2Alias, SearchHit hit) {
         String unmatchedId = hit.getId() + "|0";
 
-        SearchHit searchHit = new SearchHit(docId, unmatchedId);
+        SearchHit searchHit = SearchHit.unpooled(docId, unmatchedId);
         searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
         searchHit.sourceRef(hit.getSourceRef());
         searchHit.getSourceAsMap().clear();

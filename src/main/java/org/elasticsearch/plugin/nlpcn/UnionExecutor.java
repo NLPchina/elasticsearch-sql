@@ -42,12 +42,12 @@ public class UnionExecutor implements ElasticHitsExecutor {
         fillInternalSearchHits(unionHits,secondResponse.getHits().getHits(),this.multiQueryBuilder.getSecondTableFieldToAlias());
         int totalSize = unionHits.size();
         SearchHit[] unionHitsArr = unionHits.toArray(new SearchHit[totalSize]);
-        this.results = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
+        this.results = SearchHits.unpooled(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private void fillInternalSearchHits(List<SearchHit> unionHits, SearchHit[] hits, Map<String, String> fieldNameToAlias) {
         for(SearchHit hit : hits){
-            SearchHit searchHit = new SearchHit(currentId, hit.getId());
+            SearchHit searchHit = SearchHit.unpooled(currentId, hit.getId());
             searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(hit.getSourceRef());
             searchHit.getSourceAsMap().clear();

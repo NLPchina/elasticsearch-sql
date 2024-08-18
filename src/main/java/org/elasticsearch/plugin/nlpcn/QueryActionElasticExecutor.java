@@ -6,7 +6,7 @@ import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.AggregationQueryAction;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
@@ -52,7 +52,7 @@ public class QueryActionElasticExecutor {
         return executor.getHits();
     }
 
-    public static Aggregations executeAggregationAction(AggregationQueryAction aggregationQueryAction) throws SqlParseException {
+    public static InternalAggregations executeAggregationAction(AggregationQueryAction aggregationQueryAction) throws SqlParseException {
         SqlElasticSearchRequestBuilder select =  aggregationQueryAction.explain();
         SearchResponse resp = (SearchResponse) select.get();
 

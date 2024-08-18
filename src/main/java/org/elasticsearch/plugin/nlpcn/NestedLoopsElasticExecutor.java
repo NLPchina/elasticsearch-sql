@@ -117,7 +117,7 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
     private SearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
         onlyReturnedFields(matchedHit.getSourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
-        SearchHit searchHit = new SearchHit(currentCombinedResults, hitFromFirstTable.getId() + "|" + matchedHit.getId());
+        SearchHit searchHit = SearchHit.unpooled(currentCombinedResults, hitFromFirstTable.getId() + "|" + matchedHit.getId());
         searchHit.addDocumentFields(hitFromFirstTable.getDocumentFields(), Collections.emptyMap());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
         searchHit.getSourceAsMap().clear();

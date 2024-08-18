@@ -6,7 +6,7 @@ import com.google.common.collect.Range;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.Filters;
 import org.elasticsearch.search.aggregations.bucket.filter.ParsedFilter;
 import org.elasticsearch.search.aggregations.bucket.filter.ParsedFilters;
@@ -56,14 +56,14 @@ public class AggregationTest {
 
 	@Test
 	public void countTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s", TEST_INDEX_ACCOUNT));
 		ValueCount count = result.get("COUNT(*)");
 		Assert.assertEquals(1000, count.getValue());
 	}
 
 	@Test
 	public void sumTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT SUM(balance) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT SUM(balance) FROM %s", TEST_INDEX_ACCOUNT));
 		ParsedSum sum = result.get("SUM(balance)");
 		assertThat(sum.value(), equalTo(25714837.0));
 	}
@@ -134,28 +134,28 @@ public class AggregationTest {
 
     @Test
 	public void minTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT MIN(age) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT MIN(age) FROM %s", TEST_INDEX_ACCOUNT));
         ParsedMin min = result.get("MIN(age)");
 		assertThat(min.value(), equalTo(20.0));
 	}
 
 	@Test
 	public void maxTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT MAX(age) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT MAX(age) FROM %s", TEST_INDEX_ACCOUNT));
         ParsedMax max = result.get("MAX(age)");
 		assertThat(max.value(), equalTo(40.0));
 	}
 
 	@Test
 	public void avgTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT AVG(age) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT AVG(age) FROM %s", TEST_INDEX_ACCOUNT));
 		Avg avg = result.get("AVG(age)");
 		assertThat(avg.getValue(), equalTo(30.171));
 	}
 
 	@Test
 	public void statsTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT STATS(age) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT STATS(age) FROM %s", TEST_INDEX_ACCOUNT));
 		Stats stats = result.get("STATS(age)");
 		Assert.assertEquals(1000, stats.getCount());
 		assertThat(stats.getSum(), equalTo(30171.0));
@@ -166,7 +166,7 @@ public class AggregationTest {
 
     @Test
     public void extendedStatsTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("SELECT EXTENDED_STATS(age) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT EXTENDED_STATS(age) FROM %s", TEST_INDEX_ACCOUNT));
         ExtendedStats stats = result.get("EXTENDED_STATS(age)");
         Assert.assertEquals(1000, stats.getCount());
         assertThat(stats.getMin(),equalTo(20.0));
@@ -180,7 +180,7 @@ public class AggregationTest {
 
     @Test
     public void percentileTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("SELECT PERCENTILES(age) FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT PERCENTILES(age) FROM %s", TEST_INDEX_ACCOUNT));
         Percentiles percentiles = result.get("PERCENTILES(age)");
         Assert.assertTrue(Math.abs(percentiles.percentile(1.0) - 20.0) < 0.001 );
         Assert.assertTrue(Math.abs(percentiles.percentile(5.0) - 21.0) < 0.001 );
@@ -192,7 +192,7 @@ public class AggregationTest {
 
     @Test
     public void percentileTestSpecific() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("SELECT PERCENTILES(age,25.0,75.0) x FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT PERCENTILES(age,25.0,75.0) x FROM %s", TEST_INDEX_ACCOUNT));
         Percentiles percentiles = result.get("x");
         Assert.assertTrue(Math.abs(percentiles.percentile(25.0) - 25.0) < 0.001 );
         Assert.assertTrue(Math.abs(percentiles.percentile(75.0) - 35.0) < 0.001 );
@@ -200,13 +200,13 @@ public class AggregationTest {
 
     @Test
 	public void aliasTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s", TEST_INDEX_ACCOUNT));
 		assertThat(result.asMap(), hasKey("mycount"));
 	}
 
 	@Test
 	public void groupByTest() throws Exception {
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY gender", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY gender", TEST_INDEX_ACCOUNT));
 		Terms gender = result.get("gender");
 		for(Terms.Bucket bucket : gender.getBuckets()) {
 			String key = bucket.getKey().toString();
@@ -229,7 +229,7 @@ public class AggregationTest {
         SearchResponse res = (SearchResponse) select.get();
         Assert.assertEquals(507, res.getHits().getTotalHits().value);
 
-        Aggregations result = res.getAggregations();
+        InternalAggregations result = res.getAggregations();
         Terms gender = result.get("gender");
         for (Terms.Bucket bucket : gender.getBuckets()) {
             String key = bucket.getKey().toString();
@@ -250,7 +250,7 @@ public class AggregationTest {
 
 		Map<String, Set<Integer>> buckets = new HashMap<>();
 
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender,  terms('field'='age','size'=200,'alias'='age')", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY gender,  terms('field'='age','size'=200,'alias'='age')", TEST_INDEX_ACCOUNT));
 		Terms gender = result.get("gender");
 		for(Terms.Bucket genderBucket : gender.getBuckets()) {
 			String genderKey = genderBucket.getKey().toString();
@@ -272,7 +272,7 @@ public class AggregationTest {
 
         Map<String, Set<Integer>> buckets = new HashMap<>();
 
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY gender, terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY gender, terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX_ACCOUNT));
         Terms gender = result.get("gender");
         Assert.assertEquals(2,gender.getBuckets().size());
         for(Terms.Bucket genderBucket : gender.getBuckets()) {
@@ -292,7 +292,7 @@ public class AggregationTest {
 
         Map<String, Set<Integer>> buckets = new HashMap<>();
 
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY terms('alias'='ageAgg','field'='age','size'=3)", TEST_INDEX_ACCOUNT));
         Terms gender = result.get("ageAgg");
         Assert.assertEquals(3,gender.getBuckets().size());
 
@@ -300,7 +300,7 @@ public class AggregationTest {
 
     @Test
     public void termsWithMissing() throws Exception {
-        Aggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='nick','field'='nickname','missing'='no_nickname')", TEST_INDEX_GAME_OF_THRONES));
+        InternalAggregations result = query(String.format("SELECT count(*) FROM %s/gotCharacters GROUP BY terms('alias'='nick','field'='nickname','missing'='no_nickname')", TEST_INDEX_GAME_OF_THRONES));
         Terms name = result.get("nick");
         Assert.assertNotNull(name.getBucketByKey("no_nickname"));
         Assert.assertEquals(6, name.getBucketByKey("no_nickname").getDocCount());
@@ -308,7 +308,7 @@ public class AggregationTest {
     
     @Test
     public void termsWithOrder() throws Exception {
-        Aggregations result = query(String.format("SELECT count(*) FROM %s GROUP BY terms('field'='dog_name', 'alias'='dog_name', order='desc')", TEST_INDEX_DOG));
+        InternalAggregations result = query(String.format("SELECT count(*) FROM %s GROUP BY terms('field'='dog_name', 'alias'='dog_name', order='desc')", TEST_INDEX_DOG));
         Terms name = result.get("dog_name");
         Assert.assertEquals("snoopy",name.getBuckets().get(0).getKeyAsString());
         Assert.assertEquals("rex",name.getBuckets().get(1).getKeyAsString());
@@ -323,7 +323,7 @@ public class AggregationTest {
 	public void orderByAscTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		ArrayList<Long> agesCount = new ArrayList<>();
 
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*)", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*)", TEST_INDEX_ACCOUNT));
 		Terms age = result.get("age");
 
 		for(Terms.Bucket bucket : age.getBuckets()) {
@@ -340,7 +340,7 @@ public class AggregationTest {
 	public void orderByDescTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
 		ArrayList<Long> agesCount = new ArrayList<>();
 
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) DESC", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) DESC", TEST_INDEX_ACCOUNT));
 		Terms age = result.get("age");
 
 		for(Terms.Bucket bucket : age.getBuckets()) {
@@ -354,7 +354,7 @@ public class AggregationTest {
 
 	@Test
 	public void limitTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) LIMIT 5", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) LIMIT 5", TEST_INDEX_ACCOUNT));
 		Terms age = result.get("age");
 
 		assertThat(age.getBuckets().size(), equalTo(5));
@@ -362,7 +362,7 @@ public class AggregationTest {
 
 	@Test
 	public void countGroupByRange() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-		Aggregations result = query(String.format("SELECT COUNT(age) FROM %s/account GROUP BY range(age, 20,25,30,35,40) ", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(age) FROM %s/account GROUP BY range(age, 20,25,30,35,40) ", TEST_INDEX_ACCOUNT));
 		org.elasticsearch.search.aggregations.bucket.range.Range  ageRanges = result.get("range(age,20,25,30,35,40)");
 		assertThat(ageRanges.getBuckets().size(), equalTo(4));
 
@@ -420,14 +420,14 @@ public class AggregationTest {
 	 */
 	@Test
 	public void topHitTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("select topHits('size'=3,age='desc') from %s group by gender ", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("select topHits('size'=3,age='desc') from %s group by gender ", TEST_INDEX_ACCOUNT));
 		System.out.println(result);
 	}
 
 
     @Test
     public void topHitTest_WithInclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("select topHits('size'=3,age='desc',include=age) from %s group by gender ", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("select topHits('size'=3,age='desc',include=age) from %s group by gender ", TEST_INDEX_ACCOUNT));
         List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((ParsedTopHits) bucket.getAggregations().asList().get(0)).getHits();
@@ -441,7 +441,7 @@ public class AggregationTest {
 
     @Test
     public void topHitTest_WithIncludeTwoFields() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("select topHits('size'=3,'include'='age,firstname',age='desc') from %s group by gender ", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("select topHits('size'=3,'include'='age,firstname',age='desc') from %s group by gender ", TEST_INDEX_ACCOUNT));
         List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((ParsedTopHits) bucket.getAggregations().asList().get(0)).getHits();
@@ -456,7 +456,7 @@ public class AggregationTest {
 
     @Test
     public void topHitTest_WithExclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname',age='desc') from %s group by gender ", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname',age='desc') from %s group by gender ", TEST_INDEX_ACCOUNT));
         List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets){
             SearchHits hits = ((ParsedTopHits) bucket.getAggregations().asList().get(0)).getHits();
@@ -469,7 +469,7 @@ public class AggregationTest {
 
     @Test
     public void topHitTest_WithIncludeAndExclude() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
-        Aggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname','include'='firstname,lastname',age='desc') from %s/account group by gender ", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("select topHits('size'=3,'exclude'='lastname','include'='firstname,lastname',age='desc') from %s/account group by gender ", TEST_INDEX_ACCOUNT));
         List<? extends Terms.Bucket> buckets = ((Terms) (result.asList().get(0))).getBuckets();
         for (Terms.Bucket bucket : buckets) {
             SearchHits hits = ((ParsedTopHits) bucket.getAggregations().asList().get(0)).getHits();
@@ -481,7 +481,7 @@ public class AggregationTest {
         }
     }
 
-	private Aggregations query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
+	private InternalAggregations query(String query) throws SqlParseException, SQLFeatureNotSupportedException {
         SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		return ((SearchResponse)select.get()).getAggregations();
 	}
@@ -525,7 +525,7 @@ public class AggregationTest {
 
         SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		SearchResponse response = (SearchResponse) select.get();
-		Aggregations result = response.getAggregations();
+        InternalAggregations result = response.getAggregations();
 
 		Terms gender = result.get("gender");
 		for(Terms.Bucket genderBucket : gender.getBuckets()) {
@@ -558,7 +558,7 @@ public class AggregationTest {
 
         SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(query);
 		SearchResponse response = (SearchResponse) select.get();
-		Aggregations result = response.getAggregations();
+        InternalAggregations result = response.getAggregations();
 
 		Terms gender = result.get("gender");
 		for(Terms.Bucket genderBucket : gender.getBuckets()) {
@@ -581,7 +581,7 @@ public class AggregationTest {
 
     @Test
     public void geoHashGrid() throws SQLFeatureNotSupportedException, SqlParseException {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY geohash_grid(field='center',precision=5) ", TEST_INDEX_LOCATION));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY geohash_grid(field='center',precision=5) ", TEST_INDEX_LOCATION));
         ParsedGeoHashGrid grid = result.get("geohash_grid(field=center,precision=5)");
         List<? extends GeoGrid.Bucket> buckets = grid.getBuckets();
         for (GeoGrid.Bucket bucket : buckets) {
@@ -592,7 +592,7 @@ public class AggregationTest {
 
     @Test
     public void geoBounds() throws SQLFeatureNotSupportedException, SqlParseException {
-        Aggregations result = query(String.format("SELECT * FROM %s/location GROUP BY geo_bounds(field='center',alias='bounds') ", TEST_INDEX_LOCATION));
+        InternalAggregations result = query(String.format("SELECT * FROM %s/location GROUP BY geo_bounds(field='center',alias='bounds') ", TEST_INDEX_LOCATION));
         ParsedGeoBounds bounds = result.get("bounds");
         Assert.assertEquals(0.5,bounds.bottomRight().getLat(),0.001);
         Assert.assertEquals(105.0,bounds.bottomRight().getLon(),0.001);
@@ -602,7 +602,7 @@ public class AggregationTest {
 
     @Test
     public void groupByOnNestedFieldTest() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY nested(message.info)", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY nested(message.info)", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         Terms infos = nested.getAggregations().get("message.info");
         Assert.assertEquals(3,infos.getBuckets().size());
@@ -626,7 +626,7 @@ public class AggregationTest {
 
     @Test
     public void groupByTestWithFilter() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY filter(gender='m'),gender", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY filter(gender='m'),gender", TEST_INDEX_ACCOUNT));
         ParsedFilter filter = result.get("filter(gender = 'm')@FILTER");
         Terms gender = filter.getAggregations().get("gender");
 
@@ -645,7 +645,7 @@ public class AggregationTest {
 
     @Test
     public void groupByOnNestedFieldWithFilterTest() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -665,7 +665,7 @@ public class AggregationTest {
 
     @Test
     public void minOnNestedField() throws Exception {
-        Aggregations result = query(String.format("SELECT min(nested(message.dayOfWeek)) as minDays FROM %s", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT min(nested(message.dayOfWeek)) as minDays FROM %s", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.dayOfWeek@NESTED");
         ParsedMin mins = nested.getAggregations().get("minDays");
         Assert.assertEquals(1.0,mins.value(),0.0001);
@@ -674,7 +674,7 @@ public class AggregationTest {
 
     @Test
     public void sumOnNestedField() throws Exception {
-        Aggregations result = query(String.format("SELECT sum(nested(message.dayOfWeek)) as sumDays FROM %s/nestedType", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT sum(nested(message.dayOfWeek)) as sumDays FROM %s/nestedType", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.dayOfWeek@NESTED");
         ParsedSum sum = nested.getAggregations().get("sumDays");
         Assert.assertEquals(13.0,sum.value(),0.0001);
@@ -683,7 +683,7 @@ public class AggregationTest {
 
     @Test
     public void histogramOnNestedField() throws Exception {
-        Aggregations result = query(String.format("select count(*) from %s/nestedType group by histogram('field'='message.dayOfWeek','nested'='message','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("select count(*) from %s/nestedType group by histogram('field'='message.dayOfWeek','nested'='message','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested  = result.get("message@NESTED");
         ParsedHistogram histogram = nested.getAggregations().get("someAlias");
         for(Histogram.Bucket bucket : histogram.getBuckets()){
@@ -705,7 +705,7 @@ public class AggregationTest {
 
     @Test
     public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedAndEmptyPath() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField,'')", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField,'')", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -727,7 +727,7 @@ public class AggregationTest {
     }
     @Test
     public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedNoPath() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField)", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(someField)", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -750,7 +750,7 @@ public class AggregationTest {
 
     @Test
     public void reverseToRootGroupByOnNestedFieldWithFilterTestWithReverseNestedOnHistogram() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='myNum','reverse_nested'='','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='myNum','reverse_nested'='','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -765,7 +765,7 @@ public class AggregationTest {
 
     @Test
     public void reverseToRootGroupByOnNestedFieldWithFilterAndSumOnReverseNestedField() throws Exception {
-        Aggregations result = query(String.format("SELECT sum(reverse_nested(myNum)) bla FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT sum(reverse_nested(myNum)) bla FROM %s/nestedType GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -781,7 +781,7 @@ public class AggregationTest {
 
     @Test
     public void reverseAnotherNestedGroupByOnNestedFieldWithFilterTestWithReverseNestedNoPath() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(comment.data,'~comment')", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),reverse_nested(comment.data,'~comment')", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -805,7 +805,7 @@ public class AggregationTest {
 
     @Test
     public void reverseAnotherNestedGroupByOnNestedFieldWithFilterTestWithReverseNestedOnHistogram() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='comment.likes','reverse_nested'='~comment','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a'),histogram('field'='comment.likes','reverse_nested'='~comment','interval'='2' , 'alias' = 'someAlias' )", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -821,7 +821,7 @@ public class AggregationTest {
 
     @Test
     public void reverseAnotherNestedGroupByOnNestedFieldWithFilterAndSumOnReverseNestedField() throws Exception {
-        Aggregations result = query(String.format("SELECT sum(reverse_nested(comment.likes,'~comment')) bla FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX_NESTED_TYPE));
+        InternalAggregations result = query(String.format("SELECT sum(reverse_nested(comment.likes,'~comment')) bla FROM %s GROUP BY  nested(message.info),filter('myFilter',message.info = 'a')", TEST_INDEX_NESTED_TYPE));
         ParsedNested nested = result.get("message.info@NESTED");
         ParsedFilter filter = nested.getAggregations().get("myFilter@FILTER");
         Terms infos = filter.getAggregations().get("message.info");
@@ -880,7 +880,7 @@ public class AggregationTest {
 
     @Test
     public void groupByTestWithFilters() throws Exception {
-        Aggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY filters(gender,other,filter(male,gender='m'),filter(female,gender='f'))", TEST_INDEX_ACCOUNT));
+        InternalAggregations result = query(String.format("SELECT COUNT(*) FROM %s/account GROUP BY filters(gender,other,filter(male,gender='m'),filter(female,gender='f'))", TEST_INDEX_ACCOUNT));
         ParsedFilters filters = result.get("gender@FILTERS");
         for (Filters.Bucket bucket : filters.getBuckets()) {
             String key = bucket.getKeyAsString();

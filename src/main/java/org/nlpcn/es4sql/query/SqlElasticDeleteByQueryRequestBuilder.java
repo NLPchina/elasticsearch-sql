@@ -1,8 +1,8 @@
 package org.nlpcn.es4sql.query;
 
 import org.elasticsearch.action.ActionRequest;
-import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.RequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 
@@ -39,7 +39,7 @@ public class SqlElasticDeleteByQueryRequestBuilder implements SqlElasticRequestB
     }
 
     @Override
-    public ActionRequestBuilder getBuilder() {
+    public RequestBuilder getBuilder() {
         return deleteByQueryRequestBuilder;
     }
 

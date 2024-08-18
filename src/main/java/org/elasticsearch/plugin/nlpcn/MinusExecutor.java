@@ -115,7 +115,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
             ArrayList<Object> values = new ArrayList<Object>();
             values.add(result);
             fields.put(fieldName,new DocumentField(fieldName, values));
-            SearchHit searchHit = new SearchHit(currentId, currentId + "");
+            SearchHit searchHit = SearchHit.unpooled(currentId, currentId + "");
             searchHit.addDocumentFields(fields, Collections.emptyMap());
             searchHit.sourceRef(someHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
@@ -127,7 +127,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
         }
         int totalSize = currentId - 1;
         SearchHit[] unionHitsArr = minusHitsList.toArray(new SearchHit[totalSize]);
-        this.minusHits = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
+        this.minusHits = SearchHits.unpooled(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private void fillMinusHitsFromResults(Set<ComperableHitResult> comperableHitResults) {
@@ -137,7 +137,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
             ArrayList<Object> values = new ArrayList<Object>();
             values.add(result);
             SearchHit originalHit = result.getOriginalHit();
-            SearchHit searchHit = new SearchHit(currentId, originalHit.getId());
+            SearchHit searchHit = SearchHit.unpooled(currentId, originalHit.getId());
             searchHit.addDocumentFields(originalHit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(originalHit.getSourceRef());
             searchHit.getSourceAsMap().clear();
@@ -156,7 +156,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
         }
         int totalSize = currentId - 1;
         SearchHit[] unionHitsArr = minusHitsList.toArray(new SearchHit[totalSize]);
-        this.minusHits = new SearchHits(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
+        this.minusHits = SearchHits.unpooled(unionHitsArr, new TotalHits(totalSize, TotalHits.Relation.EQUAL_TO), 1.0f);
     }
 
     private Set<ComperableHitResult> runWithScrollings() {
