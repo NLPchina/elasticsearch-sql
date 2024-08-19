@@ -9,6 +9,7 @@
 package org.elasticsearch.search.aggregations.metrics;
 
 import org.elasticsearch.common.xcontent.ChunkedToXContent;
+import org.elasticsearch.search.ParsedSearchHits;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.ParsedAggregation;
 import org.elasticsearch.xcontent.ObjectParser;
@@ -46,7 +47,7 @@ public class ParsedTopHits extends ParsedAggregation implements TopHits {
         declareAggregationFields(PARSER);
         PARSER.declareObject(
                 (topHit, searchHits) -> topHit.searchHits = searchHits,
-                (parser, context) -> SearchHits.fromXContent(parser),
+                (parser, context) -> ParsedSearchHits.fromXContent(parser),
                 new ParseField(SearchHits.Fields.HITS)
         );
     }

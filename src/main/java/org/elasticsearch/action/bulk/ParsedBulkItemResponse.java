@@ -12,7 +12,10 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.delete.ParsedDeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.index.ParsedIndexResponse;
+import org.elasticsearch.action.update.ParsedUpdateResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.core.CheckedConsumer;
 import org.elasticsearch.rest.RestStatus;
@@ -54,17 +57,17 @@ public class ParsedBulkItemResponse {
         if (opType == OpType.INDEX || opType == OpType.CREATE) {
             final IndexResponse.Builder indexResponseBuilder = new IndexResponse.Builder();
             builder = indexResponseBuilder;
-            itemParser = (indexParser) -> IndexResponse.parseXContentFields(indexParser, indexResponseBuilder);
+            itemParser = (indexParser) -> ParsedIndexResponse.parseXContentFields(indexParser, indexResponseBuilder);
 
         } else if (opType == OpType.UPDATE) {
             final UpdateResponse.Builder updateResponseBuilder = new UpdateResponse.Builder();
             builder = updateResponseBuilder;
-            itemParser = (updateParser) -> UpdateResponse.parseXContentFields(updateParser, updateResponseBuilder);
+            itemParser = (updateParser) -> ParsedUpdateResponse.parseXContentFields(updateParser, updateResponseBuilder);
 
         } else if (opType == OpType.DELETE) {
             final DeleteResponse.Builder deleteResponseBuilder = new DeleteResponse.Builder();
             builder = deleteResponseBuilder;
-            itemParser = (deleteParser) -> DeleteResponse.parseXContentFields(deleteParser, deleteResponseBuilder);
+            itemParser = (deleteParser) -> ParsedDeleteResponse.parseXContentFields(deleteParser, deleteResponseBuilder);
         } else {
             throwUnknownField(currentFieldName, parser);
         }

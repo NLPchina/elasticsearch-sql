@@ -14,9 +14,9 @@ import co.elastic.clients.elasticsearch.core.bulk.UpdateAction;
 import co.elastic.clients.elasticsearch.core.bulk.UpdateOperation;
 import jakarta.json.stream.JsonParser;
 import org.elasticsearch.action.DocWriteRequest;
-import org.elasticsearch.action.bulk.BulkAction;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.bulk.ParsedBulkResponse;
+import org.elasticsearch.action.bulk.TransportBulkAction;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.ActiveShardCount;
@@ -47,7 +47,7 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
 
     @Override
     public String getName() {
-        return BulkAction.NAME;
+        return TransportBulkAction.NAME;
     }
 
     @Override

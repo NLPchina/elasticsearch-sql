@@ -11,7 +11,6 @@ package org.elasticsearch.index.reindex;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchParseException;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
-import org.elasticsearch.index.reindex.BulkByScrollTask.Status;
 import org.elasticsearch.index.reindex.ScrollableHitSource.SearchFailure;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.xcontent.ObjectParser;
@@ -39,7 +38,7 @@ public class ParsedBulkByScrollResponse {
         PARSER.declareBoolean(BulkByScrollResponseBuilder::setTimedOut, new ParseField(BulkByScrollResponse.TIMED_OUT_FIELD));
         PARSER.declareObjectArray(BulkByScrollResponseBuilder::setFailures, (p, c) -> parseFailure(p), new ParseField(BulkByScrollResponse.FAILURES_FIELD));
         // since the result of BulkByScrollResponse.Status are mixed we also parse that in this
-        Status.declareFields(PARSER);
+        ParsedBulkByScrollTask.ParsedStatus.declareFields(PARSER);
     }
 
     public static BulkByScrollResponse fromXContent(XContentParser parser) {

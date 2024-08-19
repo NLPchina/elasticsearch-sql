@@ -8,6 +8,7 @@ import jakarta.json.stream.JsonParser;
 import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsAction;
 import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
 import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsResponse;
+import org.elasticsearch.action.admin.cluster.settings.ParsedClusterUpdateSettingsResponse;
 import org.elasticsearch.common.Strings;
 
 import java.io.IOException;
@@ -52,6 +53,6 @@ public class ClusterUpdateSettingsActionHandler extends ActionHandler<ClusterUpd
 
     @Override
     protected ClusterUpdateSettingsResponse convertResponse(PutClusterSettingsResponse putClusterSettingsResponse) throws IOException {
-        return parseJson(putClusterSettingsResponse, ClusterUpdateSettingsResponse::fromXContent);
+        return parseJson(putClusterSettingsResponse, ParsedClusterUpdateSettingsResponse::fromXContent);
     }
 }

@@ -12,9 +12,12 @@ import org.elasticsearch.common.util.concurrent.ConcurrentCollections;
 import org.elasticsearch.core.RefCounted;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.rest.action.RestActions;
+import org.elasticsearch.search.ParsedSearchHits;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.InternalAggregations;
+import org.elasticsearch.search.profile.ParsedSearchProfileResults;
 import org.elasticsearch.search.profile.SearchProfileResults;
+import org.elasticsearch.search.suggest.ParsedSuggest;
 import org.elasticsearch.search.suggest.Suggest;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentParser.Token;
@@ -91,13 +94,13 @@ public class ParsedSearchResponse {
                 }
             } else if (token == Token.START_OBJECT) {
                 if (SearchHits.Fields.HITS.equals(currentFieldName)) {
-                    hits = SearchHits.fromXContent(parser);
+                    hits = ParsedSearchHits.fromXContent(parser);
                 } else if (InternalAggregations.AGGREGATIONS_FIELD.equals(currentFieldName)) {
                     aggs = InternalAggregations.fromXContent(parser);
                 } else if (Suggest.NAME.equals(currentFieldName)) {
-                    suggest = Suggest.fromXContent(parser);
+                    suggest = ParsedSuggest.fromXContent(parser);
                 } else if (SearchProfileResults.PROFILE_FIELD.equals(currentFieldName)) {
-                    profile = SearchProfileResults.fromXContent(parser);
+                    profile = ParsedSearchProfileResults.fromXContent(parser);
                 } else if (RestActions._SHARDS_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
                     while ((token = parser.nextToken()) != Token.END_OBJECT) {
                         if (token == Token.FIELD_NAME) {

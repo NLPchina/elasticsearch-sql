@@ -7,8 +7,8 @@ import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.indices.Alias;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.IndexSettings;
-import org.elasticsearch.action.admin.indices.create.CreateIndexAction;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.create.TransportCreateIndexAction;
 import org.elasticsearch.action.support.ActiveShardCount;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.xcontent.XContentHelper;
@@ -38,7 +38,7 @@ public class CreateIndexActionHandler extends ActionHandler<org.elasticsearch.ac
 
     @Override
     public String getName() {
-        return CreateIndexAction.NAME;
+        return TransportCreateIndexAction.TYPE.name();
     }
 
     @Override
