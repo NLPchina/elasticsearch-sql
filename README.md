@@ -16,8 +16,8 @@ Elasticsearch-SQL
 ### build status
 
 **6.8.23** [![6.8.23 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.23)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
-**7.17.22** [![7.17.22 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.17.22)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
-**8.13.0** [![8.13.0 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic8.13.0)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
+**7.17.23** [![7.17.23 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.17.23)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
+**8.14.3** [![8.14.3 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic8.14.3)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **master** [![master Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=master)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 
 Query elasticsearch using familiar SQL syntax.
@@ -223,6 +223,7 @@ Versions
 | 7.17.20               | 7.17.20.0      |                                |elastic7.17.20|
 | 7.17.21               | 7.17.21.0      |                                |elastic7.17.21|
 | 7.17.22               | 7.17.22.0      |                                |elastic7.17.22|
+| 7.17.23               | 7.17.23.0      |                                |elastic7.17.23|
 | 8.5.3                 | 8.5.3.0        |                                | elastic8.5.3 |
 | 8.6.0                 | 8.6.0.0        |                                | elastic8.6.0 |
 | 8.6.1                 | 8.6.1.0        |                                | elastic8.6.1 |
@@ -249,6 +250,14 @@ Versions
 | 8.12.1                | 8.12.1.0       |                                | elastic8.12.1|
 | 8.12.2                | 8.12.2.0       |                                | elastic8.12.2|
 | 8.13.0                | 8.13.0.0       |                                | elastic8.13.0|
+| 8.13.1                | 8.13.1.0       |                                | elastic8.13.1|
+| 8.13.2                | 8.13.2.0       |                                | elastic8.13.2|
+| 8.13.3                | 8.13.3.0       |                                | elastic8.13.3|
+| 8.13.4                | 8.13.4.0       |                                | elastic8.13.4|
+| 8.14.0                | 8.14.0.0       |                                | elastic8.14.0|
+| 8.14.1                | 8.14.1.0       |                                | elastic8.14.1|
+| 8.14.2                | 8.14.2.0       |                                | elastic8.14.2|
+| 8.14.3                | 8.14.3.0       |                                | elastic8.14.3|
 
 ### Elasticsearch 1.x
 ````
@@ -1138,6 +1147,11 @@ Versions
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.22/elasticsearch-sql-7.17.22.0.zip
 ````
 
+### Elasticsearch 7.17.23
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v7.17.23/elasticsearch-sql-7.17.23.0.zip
+````
+
 ### Elasticsearch 8.5.3
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/8.5.3.0/elasticsearch-sql-8.5.3.0.zip
@@ -1266,6 +1280,46 @@ Versions
 ### Elasticsearch 8.13.0
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.13.0/elasticsearch-sql-8.13.0.0.zip
+````
+
+### Elasticsearch 8.13.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.13.1/elasticsearch-sql-8.13.1.0.zip
+````
+
+### Elasticsearch 8.13.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.13.2/elasticsearch-sql-8.13.2.0.zip
+````
+
+### Elasticsearch 8.13.3
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.13.3/elasticsearch-sql-8.13.3.0.zip
+````
+
+### Elasticsearch 8.13.4
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.13.4/elasticsearch-sql-8.13.4.0.zip
+````
+
+### Elasticsearch 8.14.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.14.0/elasticsearch-sql-8.14.0.0.zip
+````
+
+### Elasticsearch 8.14.1
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.14.1/elasticsearch-sql-8.14.1.0.zip
+````
+
+### Elasticsearch 8.14.2
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.14.2/elasticsearch-sql-8.14.2.0.zip
+````
+
+### Elasticsearch 8.14.3
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v8.14.3/elasticsearch-sql-8.14.3.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
