@@ -47,7 +47,7 @@ public class ClusterUpdateSettingsActionHandler extends ActionHandler<ClusterUpd
             builder.withJson(parser, jsonpMapper);
         }
         Optional.ofNullable(clusterUpdateSettingsRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
-        Optional.ofNullable(clusterUpdateSettingsRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
+        Optional.ofNullable(clusterUpdateSettingsRequest.ackTimeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         return builder.build();
     }
 

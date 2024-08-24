@@ -8,6 +8,7 @@
 
 package org.elasticsearch.action.search;
 
+import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.util.concurrent.ConcurrentCollections;
 import org.elasticsearch.core.RefCounted;
 import org.elasticsearch.core.TimeValue;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.elasticsearch.common.xcontent.XContentParserUtils.ensureExpectedToken;
 
@@ -151,7 +153,7 @@ public class ParsedSearchResponse {
                 tookInMillis,
                 failures.toArray(ShardSearchFailure.EMPTY_ARRAY),
                 clusters,
-                searchContextId
+                Objects.nonNull(searchContextId) ? new BytesArray(searchContextId) : null
         ));
     }
 

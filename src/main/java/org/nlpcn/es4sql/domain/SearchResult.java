@@ -1,14 +1,8 @@
 package org.nlpcn.es4sql.domain;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.document.DocumentField;
+import org.elasticsearch.common.util.Maps;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -22,6 +16,13 @@ import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggre
 import org.elasticsearch.search.aggregations.metrics.InternalTopHits;
 import org.elasticsearch.search.aggregations.metrics.InternalValueCount;
 import org.nlpcn.es4sql.exception.SqlParseException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class SearchResult {
 	/**
@@ -60,7 +61,7 @@ public class SearchResult {
 			this.total = buckets.size();
 			results = new ArrayList<>(buckets.size());
 			for (Bucket bucket : buckets) {
-				Map<String, Object> aggsMap = toAggsMap(bucket.getAggregations().getAsMap());
+				Map<String, Object> aggsMap = toAggsMap(bucket.getAggregations().asList());
 				aggsMap.put("docCount", bucket.getDocCount());
 				results.add(aggsMap);
 			}
@@ -97,15 +98,15 @@ public class SearchResult {
 
 	/**
 	 * 讲es的field域转换为你Object
-	 * 
-	 * @param fields
+	 *
+	 * @param aggregations
 	 * @return
 	 * @throws SqlParseException
 	 */
-	private Map<String, Object> toAggsMap(Map<String, InternalAggregation> fields) throws SqlParseException {
-		Map<String, Object> result = new HashMap<>();
-		for (Entry<String, InternalAggregation> entry : fields.entrySet()) {
-			result.put(entry.getKey(), covenValue(entry.getValue()));
+	private Map<String, Object> toAggsMap(List<InternalAggregation> aggregations) throws SqlParseException {
+		Map<String, Object> result = Maps.newMapWithExpectedSize(aggregations.size());
+		for (InternalAggregation aggregation : aggregations) {
+			result.put(aggregation.getName(), covenValue(aggregation));
 		}
 		return result;
 	}

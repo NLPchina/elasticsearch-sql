@@ -39,7 +39,7 @@ public class DeleteIndexActionHandler extends ActionHandler<org.elasticsearch.ac
         DeleteIndexRequest.Builder builder = new DeleteIndexRequest.Builder();
         builder.index(Arrays.asList(deleteIndexRequest.indices()));
         Optional.ofNullable(deleteIndexRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
-        Optional.ofNullable(deleteIndexRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
+        Optional.ofNullable(deleteIndexRequest.ackTimeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         Optional.ofNullable(deleteIndexRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());

@@ -53,7 +53,7 @@ public class CreateIndexActionHandler extends ActionHandler<org.elasticsearch.ac
         builder.index(createIndexRequest.index());
         builder.mappings(fromJson(createIndexRequest.mappings(), TypeMapping._DESERIALIZER));
         builder.settings(fromJson(createIndexRequest.settings().toString(), IndexSettings._DESERIALIZER));
-        Optional.ofNullable(createIndexRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
+        Optional.ofNullable(createIndexRequest.ackTimeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         Optional.ofNullable(createIndexRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
         ActiveShardCount activeShardCount = createIndexRequest.waitForActiveShards();
         if (Objects.nonNull(activeShardCount) && activeShardCount.value() > -1) {

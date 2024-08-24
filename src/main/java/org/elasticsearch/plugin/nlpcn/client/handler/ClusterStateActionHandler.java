@@ -37,6 +37,7 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.RelativeByteSizeValue;
 import org.elasticsearch.common.xcontent.XContentParserUtils;
 import org.elasticsearch.health.metadata.HealthMetadata;
+import org.elasticsearch.index.IndexVersion;
 import org.elasticsearch.index.shard.IndexLongFieldRange;
 import org.elasticsearch.xcontent.XContentParser;
 
@@ -83,6 +84,7 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
     private static final String KEY_STATE = "state";
     private static final String KEY_MAPPINGS = "mappings";
     private static final String KEY_MAPPINGS_HASH = "mappings_hash";
+    private static final String KEY_MAPPINGS_UPDATED_VERSION = "mappings_updated_version";
     private static final String KEY_ALIASES = "aliases";
     private static final String KEY_ROLLOVER_INFOS = "rollover_info";
     private static final String KEY_WARMERS = "warmers";
@@ -380,6 +382,9 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
                         break;
                     case KEY_SYSTEM:
                         builder.system(parser.booleanValue());
+                        break;
+                    case KEY_MAPPINGS_UPDATED_VERSION:
+                        builder.mappingsUpdatedVersion(IndexVersion.fromId(parser.intValue()));
                         break;
                     case KEY_MAPPINGS_HASH:
                         logger.warn("Skipping mappings hash");

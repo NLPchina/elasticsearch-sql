@@ -54,7 +54,7 @@ public class PutMappingActionHandler extends ActionHandler<org.elasticsearch.act
             builder.ignoreUnavailable(options.ignoreUnavailable());
             builder.expandWildcards(getExpandWildcard(options.wildcardOptions()));
         });
-        Optional.ofNullable(putMappingRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
+        Optional.ofNullable(putMappingRequest.ackTimeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         Optional.ofNullable(putMappingRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
         return builder.build();
     }

@@ -4,8 +4,10 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.util.Maps;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.InternalAggregation;
 import org.elasticsearch.search.aggregations.InternalAggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.Filters;
 import org.elasticsearch.search.aggregations.bucket.filter.ParsedFilter;
@@ -201,8 +203,13 @@ public class AggregationTest {
     @Test
 	public void aliasTest() throws IOException, SqlParseException, SQLFeatureNotSupportedException {
         InternalAggregations result = query(String.format("SELECT COUNT(*) AS mycount FROM %s", TEST_INDEX_ACCOUNT));
-		assertThat(result.asMap(), hasKey("mycount"));
-	}
+        List<InternalAggregation> aggregations = result.asList();
+        Map<String, InternalAggregation> aggregationsAsMap = Maps.newMapWithExpectedSize(aggregations.size());
+        for (InternalAggregation aggregation : aggregations) {
+            aggregationsAsMap.put(aggregation.getName(), aggregation);
+        }
+        assertThat(aggregationsAsMap, hasKey("mycount"));
+    }
 
 	@Test
 	public void groupByTest() throws Exception {
