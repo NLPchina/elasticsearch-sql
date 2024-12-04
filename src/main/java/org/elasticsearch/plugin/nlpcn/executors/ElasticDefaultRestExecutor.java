@@ -107,13 +107,9 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
 
     }
 
-    private void sendDefaultResponse(SearchHits hits, RestChannel channel) {
-        try {
-            XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(hits, new MetaSearchResult());
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
-            channel.sendResponse(bytesRestResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void sendDefaultResponse(SearchHits hits, RestChannel channel) throws IOException {
+        XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(hits, new MetaSearchResult());
+        BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
+        channel.sendResponse(bytesRestResponse);
     }
 }

@@ -49,14 +49,10 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
                             && (secondTableReturnedField == null || secondTableReturnedField.size() == 0);
     }
 
-    public void  sendResponse(RestChannel channel){
-        try {
-            XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(results,metaResults);
-            BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
-            channel.sendResponse(bytesRestResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void sendResponse(RestChannel channel) throws IOException {
+        XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(results, metaResults);
+        BytesRestResponse bytesRestResponse = new BytesRestResponse(RestStatus.OK, builder);
+        channel.sendResponse(bytesRestResponse);
     }
 
     public void run() throws IOException, SqlParseException {
