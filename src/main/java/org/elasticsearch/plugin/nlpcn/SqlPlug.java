@@ -12,6 +12,8 @@ import org.elasticsearch.plugins.ActionPlugin;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestHandler;
+import org.elasticsearch.threadpool.ExecutorBuilder;
+import org.elasticsearch.threadpool.FixedExecutorBuilder;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,5 +48,10 @@ public class SqlPlug extends Plugin implements ActionPlugin {
                 bind(NamedXContentRegistryHolder.class).asEagerSingleton();
             }
         });
+    }
+
+    @Override
+    public List<ExecutorBuilder<?>> getExecutorBuilders(Settings settings) {
+        return Collections.singletonList(new FixedExecutorBuilder(settings, "nlpcn_sql", 10, 100, "thread_pool.nlpcn_sql"));
     }
 }
