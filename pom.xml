@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nlpcn</groupId>
 	<artifactId>elasticsearch-sql</artifactId>
-	<version>8.15.0.0</version>
+	<version>8.15.1.0</version>
 	<packaging>jar</packaging>
 	<description>Query elasticsearch using SQL</description>
 	<name>elasticsearch-sql</name>
@@ -44,7 +44,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<runSuite>**/MainTestSuite.class</runSuite>
 		<elasticsearch.plugin.name>sql</elasticsearch.plugin.name>
-		<elasticsearch.version>8.15.0</elasticsearch.version>
+		<elasticsearch.version>8.15.1</elasticsearch.version>
 		<elasticsearch.plugin.classname>org.elasticsearch.plugin.nlpcn.SqlPlug</elasticsearch.plugin.classname>
         <druid.version>1.2.15</druid.version>
         <guava.version>32.0.0-jre</guava.version>

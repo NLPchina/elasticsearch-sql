@@ -5,7 +5,7 @@ import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.action.RestChunkedToXContentListener;
+import org.elasticsearch.rest.action.RestRefCountedChunkedToXContentListener;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.SqlElasticDeleteByQueryRequestBuilder;
 import org.nlpcn.es4sql.query.SqlElasticRequestBuilder;
@@ -39,7 +39,7 @@ public class ActionRequestRestExecuter {
             executeJoinRequestAndSendResponse();
         }
 		else if (request instanceof SearchRequest) {
-			client.search((SearchRequest) request, new RestChunkedToXContentListener<>(channel));
+			client.search((SearchRequest) request, new RestRefCountedChunkedToXContentListener<>(channel));
 		} else if (requestBuilder instanceof SqlElasticDeleteByQueryRequestBuilder) {
             throw new UnsupportedOperationException("currently not support delete on elastic 2.0.0");
         }

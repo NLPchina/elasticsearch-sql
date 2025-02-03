@@ -10,7 +10,7 @@ import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.rest.RestResponse;
-import org.elasticsearch.rest.action.RestChunkedToXContentListener;
+import org.elasticsearch.rest.action.RestRefCountedChunkedToXContentListener;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.reindex.BulkIndexByScrollResponseContentListener;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -63,7 +63,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
         } else if (request instanceof SearchRequest) {
             //zhongshu-comment 对应的QueryAction实现子类：DefaultQueryAction、AggregationQueryAction
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticSearchRequestBuilder
-            client.search((SearchRequest) request, new RestChunkedToXContentListener<>(channel));
+            client.search((SearchRequest) request, new RestRefCountedChunkedToXContentListener<>(channel));
         } else if (request instanceof DeleteByQueryRequest) {
             //zhongshu-comment 对应的QueryAction实现子类：DeleteQueryAction
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：SqlElasticDeleteByQueryRequestBuilder
@@ -73,7 +73,7 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
             //zhongshu-comment 对应的SqlElasticRequestBuilder实现子类：是一个匿名内部类，跳进去queryAction.explain()看
             requestBuilder.getBuilder().execute(new GetIndexRequestRestListener(channel, (GetIndexRequest) request));
         } else if (request instanceof SearchScrollRequest) {
-            client.searchScroll((SearchScrollRequest) request, new RestChunkedToXContentListener<>(channel));
+            client.searchScroll((SearchScrollRequest) request, new RestRefCountedChunkedToXContentListener<>(channel));
         } else {
             throw new Exception(String.format("Unsupported ActionRequest provided: %s", request.getClass().getName()));
         }
@@ -107,13 +107,9 @@ public class ElasticDefaultRestExecutor implements RestExecutor {
 
     }
 
-    private void sendDefaultResponse(SearchHits hits, RestChannel channel) {
-        try {
-            XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(hits, new MetaSearchResult());
-            RestResponse bytesRestResponse = new RestResponse(RestStatus.OK, builder);
-            channel.sendResponse(bytesRestResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void sendDefaultResponse(SearchHits hits, RestChannel channel) throws IOException {
+        XContentBuilder builder = ElasticUtils.hitsAsXContentBuilder(hits, new MetaSearchResult());
+        RestResponse bytesRestResponse = new RestResponse(RestStatus.OK, builder);
+        channel.sendResponse(bytesRestResponse);
     }
 }
