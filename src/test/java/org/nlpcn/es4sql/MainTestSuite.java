@@ -21,6 +21,7 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.elasticsearch.plugin.nlpcn.client.ElasticsearchRestClient;
@@ -82,7 +83,7 @@ public class MainTestSuite {
 		String clusterName = nodeInfos.getClusterName().value();
 		System.out.println(String.format("Found cluster... cluster name: %s", clusterName));
 
-        client.admin().cluster().prepareUpdateSettings().setTransientSettings(ImmutableMap.of(DestructiveOperations.REQUIRES_NAME_SETTING.getKey(), false)).get();
+        client.admin().cluster().prepareUpdateSettings(TimeValue.ONE_MINUTE, TimeValue.ONE_MINUTE).setTransientSettings(ImmutableMap.of(DestructiveOperations.REQUIRES_NAME_SETTING.getKey(), false)).get();
 
 		// Load test data.
         loadBulk("src/test/resources/online.json", TEST_INDEX_ONLINE);
@@ -147,7 +148,7 @@ public class MainTestSuite {
     }
 
     private static void deleteTestIndex(String index) {
-        if(client.admin().cluster().prepareState().execute().actionGet().getState().getMetadata().hasIndex(index)){
+        if(client.admin().cluster().prepareState(TimeValue.ONE_MINUTE).execute().actionGet().getState().getMetadata().hasIndex(index)){
             client.admin().indices().prepareDelete(index).get();
         }
     }
@@ -446,7 +447,7 @@ public class MainTestSuite {
     }
 
     private static ElasticsearchTransport getElasticsearchTransport(RestClient restClient) {
-        RestClientOptions.Builder transportOptionsBuilder = new RestClientOptions(RequestOptions.DEFAULT).toBuilder();
+        RestClientOptions.Builder transportOptionsBuilder = new RestClientOptions(RequestOptions.DEFAULT, true).toBuilder();
 
         ContentType jsonContentType = Version.VERSION == null ? ContentType.APPLICATION_JSON
                 : ContentType.create("application/vnd.elasticsearch+json",
