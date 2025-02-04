@@ -9,7 +9,6 @@ import co.elastic.clients.elasticsearch.nodes.info.NodeOperatingSystemInfo;
 import co.elastic.clients.elasticsearch.nodes.info.NodeProcessInfo;
 import co.elastic.clients.elasticsearch.nodes.info.NodeThreadPoolInfo;
 import org.elasticsearch.Build;
-import org.elasticsearch.TransportVersion;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.cluster.node.info.PluginsAndModules;
@@ -18,6 +17,7 @@ import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.cluster.node.DiscoveryNodeRole;
 import org.elasticsearch.cluster.node.VersionInformation;
+import org.elasticsearch.cluster.version.CompatibilityVersions;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.BoundTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -155,7 +155,7 @@ public class NodesInfoActionHandler extends ActionHandler<org.elasticsearch.acti
                 if (Objects.nonNull(nodeInfo.totalIndexingBuffer())) {
                     totalIndexingBuffer = ByteSizeValue.ofBytes(nodeInfo.totalIndexingBuffer());
                 }
-                nodes.add(new org.elasticsearch.action.admin.cluster.node.info.NodeInfo(nodeInfo.version(), TransportVersion.current(), IndexVersion.current(), Collections.emptyMap(), build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
+                nodes.add(new org.elasticsearch.action.admin.cluster.node.info.NodeInfo(nodeInfo.version(), CompatibilityVersions.EMPTY, IndexVersion.current(), Collections.emptyMap(), build, node, settings, os, process, jvm, threadPool, transport, http, null, plugins, ingest, aggsInfo, totalIndexingBuffer));
             }
         }
         return new NodesInfoResponse(new ClusterName(nodesInfoResponse.clusterName()), nodes, Collections.emptyList());
