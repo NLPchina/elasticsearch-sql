@@ -10,8 +10,8 @@ package org.elasticsearch.search.aggregations.metrics;
 
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.search.aggregations.ParsedAggregation;
-import org.elasticsearch.search.aggregations.metrics.InternalGeoCentroid.Fields;
 import org.elasticsearch.xcontent.ObjectParser;
+import org.elasticsearch.xcontent.ParseField;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentParser;
 
@@ -72,6 +72,11 @@ public class ParsedGeoCentroid extends ParsedAggregation implements GeoCentroid 
 
         GEO_POINT_PARSER.declareDouble(GeoPoint::resetLat, Fields.CENTROID_LAT);
         GEO_POINT_PARSER.declareDouble(GeoPoint::resetLon, Fields.CENTROID_LON);
+    }
+
+    static class Fields {
+        static final ParseField CENTROID_LAT = new ParseField("lat");
+        static final ParseField CENTROID_LON = new ParseField("lon");
     }
 
     public static ParsedGeoCentroid fromXContent(XContentParser parser, final String name) {
