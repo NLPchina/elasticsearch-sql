@@ -13,6 +13,7 @@ import org.elasticsearch.common.xcontent.XContentParserUtils;
 import org.elasticsearch.core.CheckedFunction;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.xcontent.ObjectParser;
+import org.elasticsearch.xcontent.ToXContent;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentParser;
 
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
 
 import static org.elasticsearch.common.xcontent.XContentParserUtils.ensureExpectedToken;
 
-public abstract class ParsedMultiBucketAggregation<B extends ParsedMultiBucketAggregation.Bucket> extends ParsedAggregation
+public abstract class ParsedMultiBucketAggregation<B extends ParsedMultiBucketAggregation.ParsedBucket> extends ParsedAggregation
         implements
         MultiBucketsAggregation {
 
@@ -70,7 +71,7 @@ public abstract class ParsedMultiBucketAggregation<B extends ParsedMultiBucketAg
         }, CommonFields.BUCKETS, ObjectParser.ValueType.OBJECT_ARRAY);
     }
 
-    public abstract static class ParsedBucket implements MultiBucketsAggregation.Bucket {
+    public abstract static class ParsedBucket implements MultiBucketsAggregation.Bucket, ToXContent {
 
         private InternalAggregations aggregations;
         private String keyAsString;

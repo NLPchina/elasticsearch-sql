@@ -206,7 +206,6 @@ public final class ParsedSearchHit {
                 shardTarget,
                 index,
                 clusterAlias,
-                null,
                 get(SearchHit.Fields.INNER_HITS, values, null),
                 get(SearchHit.DOCUMENT_FIELDS, values, Collections.emptyMap()),
                 get(SearchHit.METADATA_FIELDS, values, Collections.emptyMap()),

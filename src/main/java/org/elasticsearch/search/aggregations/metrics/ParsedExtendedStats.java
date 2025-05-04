@@ -132,7 +132,6 @@ public class ParsedExtendedStats extends ParsedStats implements ExtendedStats {
         return valueAsString.getOrDefault(Fields.STD_DEVIATION_SAMPLING_AS_STRING, Double.toString(stdDeviationSampling));
     }
 
-    @Override
     public String getStdDeviationBoundAsString(Bounds bound) {
         return switch (bound) {
             case UPPER -> valueAsString.getOrDefault(

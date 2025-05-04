@@ -26,14 +26,14 @@ import java.util.function.Supplier;
 
 public abstract class ParsedRareTerms extends ParsedMultiBucketAggregation<ParsedRareTerms.ParsedBucket> implements RareTerms {
     @Override
-    public List<? extends RareTerms.Bucket> getBuckets() {
+    public List<ParsedRareTerms.ParsedBucket> getBuckets() {
         return buckets;
     }
 
     @Override
     public XContentBuilder doXContentBody(XContentBuilder builder, Params params) throws IOException {
         builder.startArray(CommonFields.BUCKETS.getPreferredName());
-        for (RareTerms.Bucket bucket : getBuckets()) {
+        for (ParsedRareTerms.ParsedBucket bucket : getBuckets()) {
             bucket.toXContent(builder, params);
         }
         builder.endArray();

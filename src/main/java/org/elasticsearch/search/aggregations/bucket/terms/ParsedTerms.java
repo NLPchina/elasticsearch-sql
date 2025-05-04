@@ -43,7 +43,7 @@ public abstract class ParsedTerms extends ParsedMultiBucketAggregation<ParsedTer
     }
 
     @Override
-    public List<? extends Terms.Bucket> getBuckets() {
+    public List<ParsedTerms.ParsedBucket> getBuckets() {
         return buckets;
     }
 
@@ -62,7 +62,7 @@ public abstract class ParsedTerms extends ParsedMultiBucketAggregation<ParsedTer
         builder.field(DOC_COUNT_ERROR_UPPER_BOUND_FIELD_NAME.getPreferredName(), getDocCountError());
         builder.field(SUM_OF_OTHER_DOC_COUNTS.getPreferredName(), getSumOfOtherDocCounts());
         builder.startArray(CommonFields.BUCKETS.getPreferredName());
-        for (Terms.Bucket bucket : getBuckets()) {
+        for (ParsedTerms.ParsedBucket bucket : getBuckets()) {
             bucket.toXContent(builder, params);
         }
         builder.endArray();

@@ -37,11 +37,11 @@ public abstract class ParsedSignificantTerms extends ParsedMultiBucketAggregatio
     protected long subsetSize;
     protected long supersetSize;
 
-    protected long getSubsetSize() {
+    public long getSubsetSize() {
         return subsetSize;
     }
 
-    protected long getSupersetSize() {
+    public long getSupersetSize() {
         return supersetSize;
     }
 
@@ -68,7 +68,7 @@ public abstract class ParsedSignificantTerms extends ParsedMultiBucketAggregatio
         builder.field(CommonFields.DOC_COUNT.getPreferredName(), subsetSize);
         builder.field(InternalMappedSignificantTerms.BG_COUNT, supersetSize);
         builder.startArray(CommonFields.BUCKETS.getPreferredName());
-        for (SignificantTerms.Bucket bucket : buckets) {
+        for (ParsedSignificantTerms.ParsedBucket bucket : buckets) {
             bucket.toXContent(builder, params);
         }
         builder.endArray();
@@ -128,12 +128,10 @@ public abstract class ParsedSignificantTerms extends ParsedMultiBucketAggregatio
             return score;
         }
 
-        @Override
         public long getSupersetSize() {
             return supersetSize;
         }
 
-        @Override
         public long getSubsetSize() {
             return subsetSize;
         }
