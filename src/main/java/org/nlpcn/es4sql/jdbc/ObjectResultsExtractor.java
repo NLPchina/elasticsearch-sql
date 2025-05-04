@@ -3,6 +3,7 @@ package org.nlpcn.es4sql.jdbc;
 import com.google.common.collect.Maps;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.document.DocumentField;
+import org.elasticsearch.core.Tuple;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -23,12 +24,14 @@ import org.nlpcn.es4sql.query.QueryAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by allwefantasy on 8/30/16.
@@ -103,7 +106,11 @@ public class ObjectResultsExtractor {
             return;
         }
         if (aggregation instanceof NumericMetricsAggregation) {
-            handleNumericMetricAggregation(headers, lines.get(currentLineIndex), aggregation);
+            List<Object> currentLine = lines.get(currentLineIndex);
+            List<Tuple<String, Object>> line = handleNumericMetricAggregation(headers, aggregation);
+            for (Tuple<String, Object> item : line) {
+                currentLine.add(item.v2());
+            }
             return;
         }
         if (aggregation instanceof GeoBounds) {
@@ -163,22 +170,23 @@ public class ObjectResultsExtractor {
     }
 
     private List<Object> fillHeaderAndCreateLineForNumericAggregations(InternalAggregations aggregations, List<String> header) throws ObjectResultsExtractException {
-        List<Object> line = new ArrayList<>();
+        List<Tuple<String, Object>> line = new ArrayList<>();
         List<InternalAggregation> aggregationList = aggregations.asList();
         for (Aggregation aggregation : aggregationList) {
-            handleNumericMetricAggregation(header, line, aggregation);
+            line.addAll(handleNumericMetricAggregation(header, aggregation));
         }
-        return line;
+        return line.stream().sorted(Comparator.comparingInt(e -> header.indexOf(e.v1()))).map(Tuple::v2).collect(Collectors.toList());
     }
 
-    private void handleNumericMetricAggregation(List<String> header, List<Object> line, Aggregation aggregation) throws ObjectResultsExtractException {
+    private List<Tuple<String, Object>> handleNumericMetricAggregation(List<String> header, Aggregation aggregation) throws ObjectResultsExtractException {
         String name = aggregation.getName();
+        List<Tuple<String, Object>> line = new ArrayList<>();
 
         if (aggregation instanceof NumericMetricsAggregation.SingleValue) {
             if (!header.contains(name)) {
                 header.add(name);
             }
-            line.add(((NumericMetricsAggregation.SingleValue) aggregation).value());
+            line.add(Tuple.tuple(name, ((NumericMetricsAggregation.SingleValue) aggregation).value()));
         }
         //todo:Numeric MultiValue - Stats,ExtendedStats,Percentile...
         else if (aggregation instanceof NumericMetricsAggregation.MultiValue) {
@@ -191,28 +199,28 @@ public class ObjectResultsExtractor {
                 }
                 mergeHeadersWithPrefix(header, name, statsHeaders);
                 Stats stats = (Stats) aggregation;
-                line.add(stats.getCount());
-                line.add(stats.getSum());
-                line.add(stats.getAvg());
-                line.add(stats.getMin());
-                line.add(stats.getMax());
+                line.add(Tuple.tuple(statsHeaders[0], stats.getCount()));
+                line.add(Tuple.tuple(statsHeaders[1], stats.getSum()));
+                line.add(Tuple.tuple(statsHeaders[2], stats.getAvg()));
+                line.add(Tuple.tuple(statsHeaders[3], stats.getMin()));
+                line.add(Tuple.tuple(statsHeaders[4], stats.getMax()));
                 if (isExtendedStats) {
                     ExtendedStats extendedStats = (ExtendedStats) aggregation;
-                    line.add(extendedStats.getSumOfSquares());
-                    line.add(extendedStats.getVariance());
-                    line.add(extendedStats.getStdDeviation());
+                    line.add(Tuple.tuple(statsHeaders[5], extendedStats.getSumOfSquares()));
+                    line.add(Tuple.tuple(statsHeaders[6], extendedStats.getVariance()));
+                    line.add(Tuple.tuple(statsHeaders[7], extendedStats.getStdDeviation()));
                 }
             } else if (aggregation instanceof Percentiles) {
                 String[] percentileHeaders = new String[]{"1.0", "5.0", "25.0", "50.0", "75.0", "95.0", "99.0"};
                 mergeHeadersWithPrefix(header, name, percentileHeaders);
                 Percentiles percentiles = (Percentiles) aggregation;
-                line.add(percentiles.percentile(1.0));
-                line.add(percentiles.percentile(5.0));
-                line.add(percentiles.percentile(25.0));
-                line.add(percentiles.percentile(50.0));
-                line.add(percentiles.percentile(75));
-                line.add(percentiles.percentile(95.0));
-                line.add(percentiles.percentile(99.0));
+                line.add(Tuple.tuple(percentileHeaders[0], percentiles.percentile(1.0)));
+                line.add(Tuple.tuple(percentileHeaders[1], percentiles.percentile(5.0)));
+                line.add(Tuple.tuple(percentileHeaders[2], percentiles.percentile(25.0)));
+                line.add(Tuple.tuple(percentileHeaders[3], percentiles.percentile(50.0)));
+                line.add(Tuple.tuple(percentileHeaders[4], percentiles.percentile(75)));
+                line.add(Tuple.tuple(percentileHeaders[5], percentiles.percentile(95.0)));
+                line.add(Tuple.tuple(percentileHeaders[6], percentiles.percentile(99.0)));
             } else {
                 throw new ObjectResultsExtractException("unknown NumericMetricsAggregation.MultiValue:" + aggregation.getClass());
             }
@@ -220,6 +228,8 @@ public class ObjectResultsExtractor {
         } else {
             throw new ObjectResultsExtractException("unknown NumericMetricsAggregation" + aggregation.getClass());
         }
+
+        return line;
     }
 
     private void mergeHeadersWithPrefix(List<String> header, String prefix, String[] newHeaders) {
@@ -231,6 +241,7 @@ public class ObjectResultsExtractor {
             if (!header.contains(newHeader)) {
                 header.add(newHeader);
             }
+            newHeaders[i] = newHeader;
         }
     }
 
