@@ -2,6 +2,7 @@ package org.elasticsearch.plugin.nlpcn;
 
 import com.google.common.base.Joiner;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.Util;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class ComperableHitResult {
     private Map<String,Object> flattenMap;
     public ComperableHitResult(SearchHit hit , String[] fieldsOrder ,String seperator) {
         this.hit = hit;
-        Map<String, Object> hitAsMap = hit.getSourceAsMap();
+        Map<String, Object> hitAsMap = Source.fromBytes(hit.getSourceRef()).source();
         this.flattenMap = new HashMap<>();
         List<String> results = new ArrayList<>();
         this.isAllNull = true;

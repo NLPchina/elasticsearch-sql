@@ -210,8 +210,9 @@ public class QueryTest {
 		SearchHits response = query(String.format("SELECT * FROM %s WHERE age=32 AND gender='M' LIMIT 1000", TEST_INDEX_PEOPLE));
 		SearchHit[] hits = response.getHits();
 		for(SearchHit hit : hits) {
-			Assert.assertEquals(32, hit.getSourceAsMap().get("age"));
-			Assert.assertEquals("M", hit.getSourceAsMap().get("gender"));
+			Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+			Assert.assertEquals(32, sourceAsMap.get("age"));
+			Assert.assertEquals("M", sourceAsMap.get("gender"));
 		}
 	}
 
@@ -309,7 +310,7 @@ public class QueryTest {
 
 			// ignore document which not contains the age field.
 			if(source.containsKey("age")) {
-				int age = (int) hit.getSourceAsMap().get("age");
+				int age = (int) source.get("age");
 				assertThat(age, not(allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max))));
 			}
 		}

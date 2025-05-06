@@ -22,6 +22,7 @@ import org.elasticsearch.search.aggregations.metrics.Percentile;
 import org.elasticsearch.search.aggregations.metrics.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.Stats;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.QueryAction;
@@ -365,7 +366,7 @@ public class CSVResultsExtractor {
                 highlightMap.put(key, frag);
             });
 
-            Map<String, Object> doc = Optional.ofNullable(hit.getSourceAsMap()).orElse(Maps.newHashMap());
+            Map<String, Object> doc = Optional.ofNullable(Source.fromBytes(hit.getSourceRef()).source()).orElse(Maps.newHashMap());
             //替换掉将原始结果中字段的值替换为高亮后的内容
             for (Map.Entry<String, Object> entry : doc.entrySet()) {
                 if(highlightMap.containsKey(entry.getKey())) {

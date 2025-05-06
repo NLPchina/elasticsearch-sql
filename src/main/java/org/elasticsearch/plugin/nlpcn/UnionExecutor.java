@@ -5,6 +5,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.exception.SqlParseException;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
@@ -50,12 +51,15 @@ public class UnionExecutor implements ElasticHitsExecutor {
             SearchHit searchHit = SearchHit.unpooled(currentId, hit.getId());
             searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(hit.getSourceRef());
-            searchHit.getSourceAsMap().clear();
-            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            Source source = Source.fromBytes(searchHit.getSourceRef());
+            Map<String, Object> hitSource = source.source();
+            hitSource.clear();
+            Map<String, Object> sourceAsMap = Source.fromBytes(hit.getSourceRef()).source();
             if(!fieldNameToAlias.isEmpty()){
                 updateFieldNamesToAlias(sourceAsMap, fieldNameToAlias);
             }
-            searchHit.getSourceAsMap().putAll(sourceAsMap);
+            hitSource.putAll(sourceAsMap);
+            searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
             currentId++;
             unionHits.add(searchHit);
         }

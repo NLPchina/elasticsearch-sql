@@ -1,6 +1,8 @@
 package org.elasticsearch.plugin.nlpcn;
 
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.lookup.Source;
+
 import java.util.Map;
 
 /**
@@ -8,7 +10,7 @@ import java.util.Map;
  */
 public class ElasticResultHandler {
     public static Object getFieldValue(SearchHit hit,String field){
-        return deepSearchInMap(hit.getSourceAsMap(),field);
+        return deepSearchInMap(Source.fromBytes(hit.getSourceRef()).source(),field);
     }
 
     private static Object deepSearchInMap(Map<String, Object> fieldsMap, String name) {

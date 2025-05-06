@@ -5,6 +5,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.rest.RestResponse;
+import org.elasticsearch.search.lookup.Source;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.rest.RestChannel;
@@ -88,11 +89,11 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
         }
     }
 
-    protected void mergeSourceAndAddAliases(Map<String,Object> secondTableHitSource, SearchHit searchHit,String t1Alias,String t2Alias) {
-        Map<String,Object> results = mapWithAliases(searchHit.getSourceAsMap(), t1Alias);
+    protected void mergeSourceAndAddAliases(Map<String,Object> secondTableHitSource, Map<String, Object> hitSource, String t1Alias, String t2Alias) {
+        Map<String,Object> results = mapWithAliases(hitSource, t1Alias);
         results.putAll(mapWithAliases(secondTableHitSource, t2Alias));
-        searchHit.getSourceAsMap().clear();
-        searchHit.getSourceAsMap().putAll(results);
+        hitSource.clear();
+        hitSource.putAll(results);
     }
 
     protected Map<String,Object> mapWithAliases(Map<String, Object> source, String alias) {
@@ -169,11 +170,14 @@ public abstract class ElasticJoinExecutor implements ElasticHitsExecutor {
         SearchHit searchHit = SearchHit.unpooled(docId, unmatchedId);
         searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
         searchHit.sourceRef(hit.getSourceRef());
-        searchHit.getSourceAsMap().clear();
-        searchHit.getSourceAsMap().putAll(hit.getSourceAsMap());
+        Source source = Source.fromBytes(searchHit.getSourceRef());
+        Map<String, Object> hitSource = source.source();
+        hitSource.clear();
+        hitSource.putAll(Source.fromBytes(hit.getSourceRef()).source());
         Map<String,Object> emptySecondTableHitSource = createNullsSource(secondTableReturnedFields);
 
-        mergeSourceAndAddAliases(emptySecondTableHitSource, searchHit,t1Alias,t2Alias);
+        mergeSourceAndAddAliases(emptySecondTableHitSource, hitSource, t1Alias,t2Alias);
+        searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
 
         return searchHit;
     }

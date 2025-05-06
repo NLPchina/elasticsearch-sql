@@ -17,6 +17,7 @@ import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 import org.elasticsearch.search.aggregations.metrics.Percentiles;
 import org.elasticsearch.search.aggregations.metrics.Stats;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.query.DefaultQueryAction;
 import org.nlpcn.es4sql.query.QueryAction;
@@ -286,7 +287,7 @@ public class ObjectResultsExtractor {
         }
         boolean hasScrollId = this.includeScrollId || fieldNames.contains("_scroll_id");
         for (SearchHit hit : hits) {
-            Map<String, Object> doc = Optional.ofNullable(hit.getSourceAsMap()).orElse(Maps.newHashMap());
+            Map<String, Object> doc = Optional.ofNullable(Source.fromBytes(hit.getSourceRef()).source()).orElse(Maps.newHashMap());
             if (this.includeScore) {
                 doc.put("_score", hit.getScore());
             }

@@ -8,6 +8,7 @@ import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
@@ -137,11 +138,11 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                 if (limitReached) break;
                 //todo: need to run on comparisons. for each comparison check if exists and add.
                 HashMap<String, List<Map.Entry<Field, Field>>> comparisons = this.hashJoinComparisonStructure.getComparisons();
-
+                Map<String, Object> secondTableHitSource = Source.fromBytes(secondTableHit.getSourceRef()).source();
                 for (Map.Entry<String, List<Map.Entry<Field, Field>>> comparison : comparisons.entrySet()) {
                     String comparisonID = comparison.getKey();
                     List<Map.Entry<Field, Field>> t1ToT2FieldsComparison = comparison.getValue();
-                    String key = getComparisonKey(t1ToT2FieldsComparison, secondTableHit, false, null);
+                    String key = getComparisonKey(t1ToT2FieldsComparison, secondTableHitSource, false, null);
 
                     SearchHitsResult searchHitsResult = this.hashJoinComparisonStructure.searchForMatchingSearchHits(comparisonID, key);
 
@@ -159,7 +160,7 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                             }
 
                             Map<String,Object> copiedSource = new HashMap<String,Object>();
-                            copyMaps(copiedSource,secondTableHit.getSourceAsMap());
+                            copyMaps(copiedSource, secondTableHitSource);
                             onlyReturnedFields(copiedSource, secondTableRequest.getReturnedFields(),secondTableRequest.getOriginalSelect().isSelectAll());
 
 
@@ -167,11 +168,14 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
                             SearchHit searchHit = SearchHit.unpooled(matchingHit.docId(), combinedId);
                             searchHit.addDocumentFields(matchingHit.getDocumentFields(), Collections.emptyMap());
                             searchHit.sourceRef(matchingHit.getSourceRef());
-                            searchHit.getSourceAsMap().clear();
-                            searchHit.getSourceAsMap().putAll(matchingHit.getSourceAsMap());
+                            Source source = Source.fromBytes(searchHit.getSourceRef());
+                            Map<String, Object> hitSource = source.source();
+                            hitSource.clear();
+                            hitSource.putAll(Source.fromBytes(matchingHit.getSourceRef()).source());
                             String t1Alias = requestBuilder.getFirstTable().getAlias();
                             String t2Alias = requestBuilder.getSecondTable().getAlias();
-                            mergeSourceAndAddAliases(copiedSource, searchHit, t1Alias, t2Alias);
+                            mergeSourceAndAddAliases(copiedSource, hitSource, t1Alias, t2Alias);
+                            searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
 
                             combinedResult.add(searchHit);
                             resultIds++;
@@ -205,18 +209,22 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
         int resultIds = 1;
         for (SearchHit hit : firstTableHits) {
             HashMap<String, List<Map.Entry<Field, Field>>> comparisons = this.hashJoinComparisonStructure.getComparisons();
+            Map<String, Object> hitSource = Source.fromBytes(hit.getSourceRef()).source();
             for (Map.Entry<String, List<Map.Entry<Field, Field>>> comparison : comparisons.entrySet()) {
                 String comparisonID = comparison.getKey();
                 List<Map.Entry<Field, Field>> t1ToT2FieldsComparison = comparison.getValue();
 
-                String key = getComparisonKey(t1ToT2FieldsComparison, hit, true, optimizationTermsFilterStructure.get(comparisonID));
+                String key = getComparisonKey(t1ToT2FieldsComparison, hitSource, true, optimizationTermsFilterStructure.get(comparisonID));
 
                 //int docid , id
                 SearchHit searchHit = SearchHit.unpooled(resultIds, hit.getId());
                 searchHit.addDocumentFields(hit.getDocumentFields(), Collections.emptyMap());
                 searchHit.sourceRef(hit.getSourceRef());
 
-                onlyReturnedFields(searchHit.getSourceAsMap(), firstTableRequest.getReturnedFields(),firstTableRequest.getOriginalSelect().isSelectAll());
+                Source source = Source.fromBytes(searchHit.getSourceRef());
+                Map<String, Object> searchHitSource = source.source();
+                onlyReturnedFields(searchHitSource, firstTableRequest.getReturnedFields(),firstTableRequest.getOriginalSelect().isSelectAll());
+                searchHit.sourceRef(Source.fromMap(searchHitSource, source.sourceContentType()).internalSourceRef());
                 resultIds++;
                 this.hashJoinComparisonStructure.insertIntoComparisonHash(comparisonID, key, searchHit);
             }
@@ -296,9 +304,8 @@ public class HashJoinElasticExecutor extends ElasticJoinExecutor {
         secondTableRequest.getRequestBuilder().setQuery(boolQuery);
     }
 
-    private String getComparisonKey(List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, SearchHit hit, boolean firstTable, Map<String, List<Object>> optimizationTermsFilterStructure) {
+    private String getComparisonKey(List<Map.Entry<Field, Field>> t1ToT2FieldsComparison, Map<String, Object> sourceAsMap, boolean firstTable, Map<String, List<Object>> optimizationTermsFilterStructure) {
         String key = "";
-        Map<String, Object> sourceAsMap = hit.getSourceAsMap();
         for (Map.Entry<Field, Field> t1ToT2 : t1ToT2FieldsComparison) {
             //todo: change to our function find if key contains '.'
             String name;

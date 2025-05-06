@@ -6,6 +6,7 @@ import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.domain.Field;
 import org.nlpcn.es4sql.query.multi.MultiQueryRequestBuilder;
 
@@ -71,7 +72,9 @@ public class IntersectExecutor implements ElasticHitsExecutor {
             SearchHit searchHit = SearchHit.unpooled(currentId, originalHit.getId());
             searchHit.addDocumentFields(originalHit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(originalHit.getSourceRef());
-            searchHit.getSourceAsMap().clear();
+            Source source = Source.fromBytes(searchHit.getSourceRef());
+            Map<String, Object> hitSource = source.source();
+            hitSource.clear();
             Map<String, Object> sourceAsMap = result.getFlattenMap();
             for (Map.Entry<String, String> entry : firstTableFieldToAlias) {
                 if (sourceAsMap.containsKey(entry.getKey())) {
@@ -81,7 +84,8 @@ public class IntersectExecutor implements ElasticHitsExecutor {
                 }
             }
 
-            searchHit.getSourceAsMap().putAll(sourceAsMap);
+            hitSource.putAll(sourceAsMap);
+            searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
             currentId++;
             intersectHitsList.add(searchHit);
         }

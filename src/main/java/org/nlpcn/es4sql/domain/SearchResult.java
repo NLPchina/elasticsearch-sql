@@ -15,6 +15,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.aggregations.metrics.InternalNumericMetricsAggregation;
 import org.elasticsearch.search.aggregations.metrics.InternalTopHits;
 import org.elasticsearch.search.aggregations.metrics.InternalValueCount;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 import java.util.ArrayList;
@@ -39,8 +40,9 @@ public class SearchResult {
 		this.total = hits.getTotalHits().value;
 		results = new ArrayList<>(hits.getHits().length);
 		for (SearchHit searchHit : hits.getHits()) {
-			if (searchHit.getSourceAsMap() != null) {
-				results.add(searchHit.getSourceAsMap());
+			Map<String, Object> sourceAsMap = Source.fromBytes(searchHit.getSourceRef()).source();
+			if (sourceAsMap != null) {
+				results.add(sourceAsMap);
 			} else if (searchHit.getFields() != null) {
 				Map<String, DocumentField> fields = searchHit.getFields();
 				results.add(toFieldsMap(fields));

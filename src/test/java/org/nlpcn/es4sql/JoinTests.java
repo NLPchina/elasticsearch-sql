@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.plugin.nlpcn.ElasticJoinExecutor;
 import org.elasticsearch.plugin.nlpcn.HashJoinElasticExecutor;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.lookup.Source;
 import org.junit.Assert;
 import org.junit.Test;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -119,10 +120,11 @@ public class JoinTests {
         SearchHit[] hits = joinAndGetHits(query);
         Assert.assertEquals(16, hits.length);
         SearchHit hit = Stream.of(hits).filter(h -> "1|5".equals(h.getId())).findAny().get();
-        String house = hit.getSourceAsMap().get("c.house").toString();
+        Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+        String house = sourceAsMap.get("c.house").toString();
         boolean someHouse = house.equals("Targaryen") || house.equals("Stark") || house.equals("Lannister");
         Assert.assertTrue(someHouse);
-        String houseName = hit.getSourceAsMap().get("h.hname").toString();
+        String houseName = sourceAsMap.get("h.hname").toString();
         Assert.assertEquals(house, houseName);
     }
 
@@ -576,7 +578,7 @@ public class JoinTests {
 
     private boolean hitsContains(SearchHit[] hits, Map<String, Object> matchMap) {
         for(SearchHit hit : hits){
-            Map<String, Object> hitMap = hit.getSourceAsMap();
+            Map<String, Object> hitMap = Source.fromBytes(hit.getSourceRef()).source();
             boolean matchedHit = true;
             for(Map.Entry<String,Object> entry: hitMap.entrySet()){
                 if(!matchMap.containsKey(entry.getKey())) {

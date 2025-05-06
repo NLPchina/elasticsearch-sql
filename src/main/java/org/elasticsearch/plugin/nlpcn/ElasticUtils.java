@@ -5,6 +5,7 @@ import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.internal.Client;
+import org.elasticsearch.search.lookup.Source;
 import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.xcontent.XContentFactory;
 import org.elasticsearch.xcontent.XContentType;
@@ -49,7 +50,7 @@ public class ElasticUtils {
             HashMap<String,Object> value = new HashMap<>();
             value.put("_id",hit.getId());
             value.put("_score", hit.getScore());
-            value.put("_source", hit.getSourceAsMap());
+            value.put("_source", Source.fromBytes(hit.getSourceRef()).source());
             searchHits[i] = value;
             i++;
         }

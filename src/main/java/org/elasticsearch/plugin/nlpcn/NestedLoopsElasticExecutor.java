@@ -9,6 +9,7 @@ import org.elasticsearch.client.internal.Client;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
@@ -88,7 +89,10 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
 
         for(int j =0 ; j < responses.length && currentCombinedResults < totalLimit ; j++){
             SearchHit hitFromFirstTable = hits[currentIndex+j];
-            onlyReturnedFields(hitFromFirstTable.getSourceAsMap(), nestedLoopsRequest.getFirstTable().getReturnedFields(),nestedLoopsRequest.getFirstTable().getOriginalSelect().isSelectAll());
+            Source source = Source.fromBytes(hitFromFirstTable.getSourceRef());
+            Map<String, Object> hitSource = source.source();
+            onlyReturnedFields(hitSource, nestedLoopsRequest.getFirstTable().getReturnedFields(),nestedLoopsRequest.getFirstTable().getOriginalSelect().isSelectAll());
+            hitFromFirstTable.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
 
             SearchResponse multiItemResponse = responses[j].getResponse();
             updateMetaSearchResults(multiItemResponse);
@@ -116,21 +120,27 @@ public class NestedLoopsElasticExecutor extends ElasticJoinExecutor {
     }
 
     private SearchHit getMergedHit(int currentCombinedResults, String t1Alias, String t2Alias, SearchHit hitFromFirstTable, SearchHit matchedHit) {
-        onlyReturnedFields(matchedHit.getSourceAsMap(), nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
+        Source source = Source.fromBytes(matchedHit.getSourceRef());
+        Map<String, Object> matchedHitSource = source.source();
+        onlyReturnedFields(matchedHitSource, nestedLoopsRequest.getSecondTable().getReturnedFields(),nestedLoopsRequest.getSecondTable().getOriginalSelect().isSelectAll());
+        matchedHit.sourceRef(Source.fromMap(matchedHitSource, source.sourceContentType()).internalSourceRef());
         SearchHit searchHit = SearchHit.unpooled(currentCombinedResults, hitFromFirstTable.getId() + "|" + matchedHit.getId());
         searchHit.addDocumentFields(hitFromFirstTable.getDocumentFields(), Collections.emptyMap());
         searchHit.sourceRef(hitFromFirstTable.getSourceRef());
-        searchHit.getSourceAsMap().clear();
-        searchHit.getSourceAsMap().putAll(hitFromFirstTable.getSourceAsMap());
+        source = Source.fromBytes(searchHit.getSourceRef());
+        Map<String, Object> hitSource = source.source();
+        hitSource.clear();
+        hitSource.putAll(Source.fromBytes(hitFromFirstTable.getSourceRef()).source());
 
-        mergeSourceAndAddAliases(matchedHit.getSourceAsMap(), searchHit, t1Alias, t2Alias);
+        mergeSourceAndAddAliases(Source.fromBytes(matchedHit.getSourceRef()).source(), hitSource, t1Alias, t2Alias);
+        searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
         return searchHit;
     }
 
     private MultiSearchRequest createMultiSearchRequest(int multiSearchMaxSize, Where connectedWhere, SearchHit[] hits, Select secondTableSelect, Where originalWhere, int currentIndex) throws SqlParseException {
         MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
         for(int i = currentIndex  ; i < currentIndex  + multiSearchMaxSize && i< hits.length ; i++ ){
-            Map<String, Object> hitFromFirstTableAsMap = hits[i].getSourceAsMap();
+            Map<String, Object> hitFromFirstTableAsMap = Source.fromBytes(hits[i].getSourceRef()).source();
             Where newWhere = Where.newInstance();
             if(originalWhere!=null) newWhere.addWhere(originalWhere);
             if(connectedWhere!=null){

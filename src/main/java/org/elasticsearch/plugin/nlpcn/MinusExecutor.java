@@ -7,6 +7,7 @@ import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.lookup.Source;
 import org.nlpcn.es4sql.Util;
 import org.nlpcn.es4sql.domain.Condition;
 import org.nlpcn.es4sql.domain.Field;
@@ -118,10 +119,13 @@ public class MinusExecutor implements ElasticHitsExecutor {
             SearchHit searchHit = SearchHit.unpooled(currentId, currentId + "");
             searchHit.addDocumentFields(fields, Collections.emptyMap());
             searchHit.sourceRef(someHit.getSourceRef());
-            searchHit.getSourceAsMap().clear();
+            Source source = Source.fromBytes(searchHit.getSourceRef());
+            Map<String, Object> hitSource = source.source();
+            hitSource.clear();
             Map<String, Object> sourceAsMap = new HashMap<>();
             sourceAsMap.put(fieldName,result);
-            searchHit.getSourceAsMap().putAll(sourceAsMap);
+            hitSource.putAll(sourceAsMap);
+            searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
             currentId++;
             minusHitsList.add(searchHit);
         }
@@ -140,7 +144,9 @@ public class MinusExecutor implements ElasticHitsExecutor {
             SearchHit searchHit = SearchHit.unpooled(currentId, originalHit.getId());
             searchHit.addDocumentFields(originalHit.getDocumentFields(), Collections.emptyMap());
             searchHit.sourceRef(originalHit.getSourceRef());
-            searchHit.getSourceAsMap().clear();
+            Source source = Source.fromBytes(searchHit.getSourceRef());
+            Map<String, Object> hitSource = source.source();
+            hitSource.clear();
             Map<String, Object> sourceAsMap = result.getFlattenMap();
             for(Map.Entry<String,String> entry : this.builder.getFirstTableFieldToAlias().entrySet()){
                 if(sourceAsMap.containsKey(entry.getKey())){
@@ -150,7 +156,8 @@ public class MinusExecutor implements ElasticHitsExecutor {
                 }
             }
 
-            searchHit.getSourceAsMap().putAll(sourceAsMap);
+            hitSource.putAll(sourceAsMap);
+            searchHit.sourceRef(Source.fromMap(hitSource, source.sourceContentType()).internalSourceRef());
             currentId++;
             minusHitsList.add(searchHit);
         }
@@ -342,7 +349,7 @@ public class MinusExecutor implements ElasticHitsExecutor {
     }
 
     private Object getFieldValue(SearchHit hit, String fieldName) {
-        Map<String,Object> sourceAsMap = hit.getSourceAsMap();
+        Map<String,Object> sourceAsMap = Source.fromBytes(hit.getSourceRef()).source();
         if(fieldName.contains(".")){
             String[] split = fieldName.split("\\.");
             return Util.searchPathInMap(sourceAsMap, split);
