@@ -30,7 +30,7 @@ public class DeleteTest {
 		// Assert no results exist for this type.
 		SearchRequestBuilder request = MainTestSuite.getClient().prepareSearch(TEST_INDEX_ACCOUNT_TEMP);
 		SearchResponse response = request.setQuery(QueryBuilders.matchAllQuery()).get();
-		assertThat(response.getHits().getTotalHits().value, equalTo(0L));
+		assertThat(response.getHits().getTotalHits().value(), equalTo(0L));
 	}
 
 
@@ -40,7 +40,7 @@ public class DeleteTest {
 		// Assert no results exist for this type.
 		SearchRequestBuilder request = MainTestSuite.getClient().prepareSearch(TEST_INDEX_PHRASE);
 		SearchResponse response = request.setQuery(QueryBuilders.matchAllQuery()).get();
-		assertThat(response.getHits().getTotalHits().value, equalTo(5L));
+		assertThat(response.getHits().getTotalHits().value(), equalTo(5L));
 	}
 
 

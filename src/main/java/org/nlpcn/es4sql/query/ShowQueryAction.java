@@ -6,6 +6,7 @@ import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequestBuilder;
 import org.elasticsearch.client.internal.Client;
+import org.elasticsearch.core.TimeValue;
 import org.nlpcn.es4sql.exception.SqlParseException;
 
 /**
@@ -35,7 +36,7 @@ public class ShowQueryAction extends QueryAction {
             String[] indexAndType = indexName.split("\\/");
             indexName = indexAndType[0];
         }
-        indexRequestBuilder = client.admin().indices().prepareGetIndex();
+        indexRequestBuilder = client.admin().indices().prepareGetIndex(TimeValue.ONE_MINUTE);
         indexRequestBuilder.addIndices(indexName);
         indexRequestBuilder.addFeatures(GetIndexRequest.Feature.MAPPINGS);
 

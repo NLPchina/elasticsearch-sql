@@ -28,7 +28,6 @@ import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.cluster.node.DiscoveryNodeRole;
 import org.elasticsearch.cluster.node.DiscoveryNodes;
 import org.elasticsearch.cluster.node.VersionInformation;
-import org.elasticsearch.cluster.routing.RoutingNodes;
 import org.elasticsearch.cluster.routing.RoutingTable;
 import org.elasticsearch.common.compress.CompressedXContent;
 import org.elasticsearch.common.settings.Settings;
@@ -156,7 +155,7 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     protected ClusterStateResponse convertResponse(StateResponse stateResponse) throws IOException {
-        JsonObject jsonObject = stateResponse.valueBody().toJson().asJsonObject();
+        JsonObject jsonObject = stateResponse.state().toJson().asJsonObject();
         String cn = jsonObject.getString(KEY_CLUSTER_NAME, EMPTY);
         ClusterName clusterName = new ClusterName(cn);
         int version = jsonObject.getInt(KEY_VERSION, 0);
@@ -199,9 +198,8 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
         }
         RoutingTable routingTable = RoutingTable.EMPTY_ROUTING_TABLE;
         ClusterBlocks blocks = ClusterBlocks.EMPTY_CLUSTER_BLOCK;
-        RoutingNodes routingNodes = RoutingNodes.immutable(RoutingTable.EMPTY_ROUTING_TABLE, DiscoveryNodes.EMPTY_NODES);
         return new ClusterStateResponse(clusterName,
-                new ClusterState(clusterName, version, stateUUID, metadata, routingTable, nodesBuilder.build(), Collections.emptyMap(), new ClusterFeatures(Collections.emptyMap()), blocks, customs, false, routingNodes),
+                new ClusterState(clusterName, version, stateUUID, metadata, routingTable, nodesBuilder.build(), Collections.emptyMap(), new ClusterFeatures(Collections.emptyMap()), blocks, customs, false, null),
                 false);
     }
 

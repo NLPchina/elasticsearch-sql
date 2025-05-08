@@ -18,6 +18,7 @@ import org.elasticsearch.index.mapper.SourceFieldMapper;
 import org.elasticsearch.index.seqno.SequenceNumbers;
 import org.elasticsearch.index.shard.ShardId;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.fetch.subphase.highlight.ParsedHighlightField;
 import org.elasticsearch.transport.RemoteClusterAware;
 import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.ObjectParser;
@@ -161,7 +162,7 @@ public final class ParsedSearchHit {
 
         parser.declareField(
                 (map, list) -> map.put(SearchHit.Fields.SORT, list),
-                SearchSortValues::fromXContent,
+                ParsedSearchSortValues::fromXContent,
                 new ParseField(SearchHit.Fields.SORT),
                 ValueType.OBJECT_ARRAY
         );
@@ -261,7 +262,7 @@ public final class ParsedSearchHit {
     private static Map<String, HighlightField> parseHighlightFields(XContentParser parser) throws IOException {
         Map<String, HighlightField> highlightFields = new HashMap<>();
         while ((parser.nextToken()) != XContentParser.Token.END_OBJECT) {
-            HighlightField highlightField = HighlightField.fromXContent(parser);
+            HighlightField highlightField = ParsedHighlightField.fromXContent(parser);
             highlightFields.put(highlightField.name(), highlightField);
         }
         return highlightFields;

@@ -68,7 +68,7 @@ public class GetIndexActionHandler extends ActionHandler<org.elasticsearch.actio
 
     @Override
     protected GetIndexResponse convertResponse(co.elastic.clients.elasticsearch.indices.GetIndexResponse getIndexResponse) throws IOException {
-        Map<String, IndexState> indexStateMap = getIndexResponse.result();
+        Map<String, IndexState> indexStateMap = getIndexResponse.indices();
         int size = indexStateMap.size();
         String[] indices = new String[size];
         Map<String, MappingMetadata> mappings = new HashMap<>(size);

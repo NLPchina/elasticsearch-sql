@@ -8,6 +8,7 @@
 
 package org.elasticsearch.search.profile.query;
 
+import org.elasticsearch.search.profile.ParsedProfileResult;
 import org.elasticsearch.search.profile.ProfileResult;
 import org.elasticsearch.xcontent.XContentParser;
 
@@ -45,11 +46,11 @@ public final class ParsedQueryProfileShardResult {
             } else if (token == XContentParser.Token.START_ARRAY) {
                 if (QueryProfileShardResult.QUERY_ARRAY.equals(currentFieldName)) {
                     while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
-                        queryProfileResults.add(ProfileResult.fromXContent(parser));
+                        queryProfileResults.add(ParsedProfileResult.fromXContent(parser));
                     }
                 } else if (QueryProfileShardResult.COLLECTOR.equals(currentFieldName)) {
                     while ((token = parser.nextToken()) != XContentParser.Token.END_ARRAY) {
-                        collector = CollectorResult.fromXContent(parser);
+                        collector = ParsedCollectorResult.fromXContent(parser);
                     }
                 } else {
                     parser.skipChildren();

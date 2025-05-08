@@ -26,7 +26,7 @@ public class ParsedSearchProfileDfsPhaseResult {
                 true,
                 SearchProfileDfsPhaseResult.class
         );
-        parser.declareObject(optionalConstructorArg(), (p, c) -> ProfileResult.fromXContent(p), SearchProfileDfsPhaseResult.STATISTICS);
+        parser.declareObject(optionalConstructorArg(), (p, c) -> ParsedProfileResult.fromXContent(p), SearchProfileDfsPhaseResult.STATISTICS);
         parser.declareObjectArray(optionalConstructorArg(), (p, c) -> ParsedQueryProfileShardResult.fromXContent(p), SearchProfileDfsPhaseResult.KNN);
         PARSER = parser.build();
     }

@@ -8,7 +8,7 @@
 
 package org.elasticsearch.action.admin.cluster.settings;
 
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.support.master.ParsedAcknowledgedResponse;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.xcontent.ConstructingObjectParser;
 import org.elasticsearch.xcontent.XContentParser;
@@ -29,7 +29,7 @@ public class ParsedClusterUpdateSettingsResponse {
     );
 
     static {
-        AcknowledgedResponse.declareAcknowledgedField(PARSER);
+        ParsedAcknowledgedResponse.declareAcknowledgedField(PARSER);
         PARSER.declareObject(constructorArg(), (p, c) -> Settings.fromXContent(p), ClusterUpdateSettingsResponse.TRANSIENT);
         PARSER.declareObject(constructorArg(), (p, c) -> Settings.fromXContent(p), ClusterUpdateSettingsResponse.PERSISTENT);
     }

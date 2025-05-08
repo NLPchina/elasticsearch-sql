@@ -9,6 +9,7 @@
 package org.elasticsearch.search.profile;
 
 import org.elasticsearch.search.profile.aggregation.AggregationProfileShardResult;
+import org.elasticsearch.search.profile.aggregation.ParsedAggregationProfileShardResult;
 import org.elasticsearch.search.profile.query.ParsedQueryProfileShardResult;
 import org.elasticsearch.search.profile.query.QueryProfileShardResult;
 import org.elasticsearch.xcontent.XContentParser;
@@ -71,7 +72,7 @@ public final class ParsedSearchProfileResults {
                         queryProfileResults.add(ParsedQueryProfileShardResult.fromXContent(parser));
                     }
                 } else if (AggregationProfileShardResult.AGGREGATIONS.equals(currentFieldName)) {
-                    aggProfileShardResult = AggregationProfileShardResult.fromXContent(parser);
+                    aggProfileShardResult = ParsedAggregationProfileShardResult.fromXContent(parser);
                 } else {
                     parser.skipChildren();
                 }
@@ -79,7 +80,7 @@ public final class ParsedSearchProfileResults {
                 if ("dfs".equals(currentFieldName)) {
                     searchProfileDfsPhaseResult = ParsedSearchProfileDfsPhaseResult.fromXContent(parser);
                 } else if ("fetch".equals(currentFieldName)) {
-                    fetchResult = ProfileResult.fromXContent(parser);
+                    fetchResult = ParsedProfileResult.fromXContent(parser);
                 } else {
                     parser.skipChildren();
                 }

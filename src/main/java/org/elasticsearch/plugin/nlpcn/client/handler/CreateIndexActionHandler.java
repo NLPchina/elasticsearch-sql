@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch.indices.Alias;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.IndexSettings;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.create.ParsedCreateIndexResponse;
 import org.elasticsearch.action.admin.indices.create.TransportCreateIndexAction;
 import org.elasticsearch.action.support.ActiveShardCount;
 import org.elasticsearch.common.bytes.BytesReference;
@@ -82,6 +83,6 @@ public class CreateIndexActionHandler extends ActionHandler<org.elasticsearch.ac
 
     @Override
     protected CreateIndexResponse convertResponse(co.elastic.clients.elasticsearch.indices.CreateIndexResponse createIndexResponse) throws IOException {
-        return parseJson(createIndexResponse, CreateIndexResponse::fromXContent);
+        return parseJson(createIndexResponse, ParsedCreateIndexResponse::fromXContent);
     }
 }

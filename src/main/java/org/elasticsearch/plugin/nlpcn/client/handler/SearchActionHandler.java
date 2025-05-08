@@ -53,9 +53,8 @@ public class SearchActionHandler extends ActionHandler<org.elasticsearch.action.
         builder.routing(searchRequest.routing());
         builder.searchType(getSearchType(searchRequest.searchType()));
         builder.batchedReduceSize((long) searchRequest.getBatchedReduceSize());
-        builder.maxConcurrentShardRequests((long) searchRequest.getMaxConcurrentShardRequests());
-        Optional.ofNullable(searchRequest.minCompatibleShardNode()).ifPresent(e -> builder.minCompatibleShardNode(e.toString()));
-        Optional.ofNullable(searchRequest.scroll()).ifPresent(e -> builder.scroll(Time.of(t -> t.time(e.keepAlive().toString()))));
+        builder.maxConcurrentShardRequests(searchRequest.getMaxConcurrentShardRequests());
+        Optional.ofNullable(searchRequest.scroll()).ifPresent(e -> builder.scroll(Time.of(t -> t.time(e.toHumanReadableString(1)))));
         Optional.ofNullable(searchRequest.indicesOptions()).ifPresent(options -> {
             builder.allowNoIndices(options.allowNoIndices());
             builder.ignoreUnavailable(options.ignoreUnavailable());

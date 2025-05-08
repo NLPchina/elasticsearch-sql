@@ -3,9 +3,9 @@ package org.elasticsearch.plugin.nlpcn.client.handler;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.MsearchRequest;
 import co.elastic.clients.elasticsearch.core.MsearchResponse;
-import co.elastic.clients.elasticsearch.core.msearch.MultisearchBody;
 import co.elastic.clients.elasticsearch.core.msearch.MultisearchHeader;
 import co.elastic.clients.elasticsearch.core.msearch.RequestItem;
+import co.elastic.clients.elasticsearch.core.search.SearchRequestBody;
 import jakarta.json.stream.JsonParser;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
@@ -47,7 +47,7 @@ public class MultiSearchActionHandler extends ActionHandler<MultiSearchRequest, 
     protected MsearchRequest convertRequest(MultiSearchRequest multiSearchRequest) throws IOException {
         MsearchRequest.Builder builder = new MsearchRequest.Builder();
         if (multiSearchRequest.maxConcurrentSearchRequests() > 0) {
-            builder.maxConcurrentSearches((long) multiSearchRequest.maxConcurrentSearchRequests());
+            builder.maxConcurrentSearches(multiSearchRequest.maxConcurrentSearchRequests());
         }
         for (SearchRequest request : multiSearchRequest.requests()) {
             MultisearchHeader.Builder msearchHeaderBuilder = new MultisearchHeader.Builder();
@@ -65,7 +65,7 @@ public class MultiSearchActionHandler extends ActionHandler<MultiSearchRequest, 
                 msearchHeaderBuilder.ignoreThrottled(options.ignoreThrottled());
             });
 
-            MultisearchBody.Builder msearchBodyBuilder = new MultisearchBody.Builder();
+            SearchRequestBody.Builder msearchBodyBuilder = new SearchRequestBody.Builder();
             try (Reader reader = new StringReader(Strings.toString(request.source()));
                  JsonParser parser = this.jsonpMapper.jsonProvider().createParser(reader)) {
                 msearchBodyBuilder.withJson(parser, this.jsonpMapper);

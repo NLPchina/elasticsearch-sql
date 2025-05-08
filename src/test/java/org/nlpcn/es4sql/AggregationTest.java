@@ -234,7 +234,7 @@ public class AggregationTest {
     public void postFilterTest() throws Exception {
         SqlElasticSearchRequestBuilder select = getSearchRequestBuilder(String.format("SELECT /*! POST_FILTER({\"term\":{\"gender\":\"m\"}}) */ COUNT(*) FROM %s GROUP BY gender", TEST_INDEX_ACCOUNT));
         SearchResponse res = (SearchResponse) select.get();
-        Assert.assertEquals(507, res.getHits().getTotalHits().value);
+        Assert.assertEquals(507, res.getHits().getTotalHits().value());
 
         InternalAggregations result = res.getAggregations();
         Terms gender = result.get("gender");
@@ -555,7 +555,7 @@ public class AggregationTest {
 			}
 		}
 
-		Assert.assertEquals(response.getHits().getTotalHits().value, 1000);
+		Assert.assertEquals(response.getHits().getTotalHits().value(), 1000);
 		Assert.assertEquals(response.getHits().getHits().length, 10);
 	}
 
@@ -582,7 +582,7 @@ public class AggregationTest {
 			}
 		}
 
-		Assert.assertEquals(response.getHits().getTotalHits().value, 1000);
+		Assert.assertEquals(response.getHits().getTotalHits().value(), 1000);
 		Assert.assertEquals(response.getHits().getHits().length, 10);
 	}
 

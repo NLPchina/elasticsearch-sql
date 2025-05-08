@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch.indices.PutMappingResponse;
 import jakarta.json.stream.JsonParser;
 import org.elasticsearch.action.admin.indices.mapping.put.TransportPutMappingAction;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.support.master.ParsedAcknowledgedResponse;
 import org.elasticsearch.common.Strings;
 
 import java.io.IOException;
@@ -61,6 +62,6 @@ public class PutMappingActionHandler extends ActionHandler<org.elasticsearch.act
 
     @Override
     protected AcknowledgedResponse convertResponse(PutMappingResponse putMappingResponse) throws IOException {
-        return parseJson(putMappingResponse, AcknowledgedResponse::fromXContent);
+        return parseJson(putMappingResponse, ParsedAcknowledgedResponse::fromXContent);
     }
 }

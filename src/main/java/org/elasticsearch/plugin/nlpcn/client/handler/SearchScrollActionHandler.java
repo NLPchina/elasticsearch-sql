@@ -39,7 +39,7 @@ public class SearchScrollActionHandler extends ActionHandler<SearchScrollRequest
     protected ScrollRequest convertRequest(SearchScrollRequest searchScrollRequest) throws IOException {
         ScrollRequest.Builder builder = new ScrollRequest.Builder();
         builder.scrollId(searchScrollRequest.scrollId());
-        Optional.ofNullable(searchScrollRequest.scroll()).ifPresent(e -> builder.scroll(Time.of(t -> t.time(e.keepAlive().toString()))));
+        Optional.ofNullable(searchScrollRequest.scroll()).ifPresent(e -> builder.scroll(Time.of(t -> t.time(e.toHumanReadableString(1)))));
         return builder.build();
     }
 

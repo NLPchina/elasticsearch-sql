@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.TransportDeleteIndexAction;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.support.master.ParsedAcknowledgedResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -50,6 +51,6 @@ public class DeleteIndexActionHandler extends ActionHandler<org.elasticsearch.ac
 
     @Override
     protected AcknowledgedResponse convertResponse(DeleteIndexResponse deleteIndexResponse) throws IOException {
-        return parseJson(deleteIndexResponse, AcknowledgedResponse::fromXContent);
+        return parseJson(deleteIndexResponse, ParsedAcknowledgedResponse::fromXContent);
     }
 }

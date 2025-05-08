@@ -37,7 +37,7 @@ public class SearchResult {
 
 	public SearchResult(SearchResponse resp) {
 		SearchHits hits = resp.getHits();
-		this.total = hits.getTotalHits().value;
+		this.total = hits.getTotalHits().value();
 		results = new ArrayList<>(hits.getHits().length);
 		for (SearchHit searchHit : hits.getHits()) {
 			Map<String, Object> sourceAsMap = Source.fromBytes(searchHit.getSourceRef()).source();

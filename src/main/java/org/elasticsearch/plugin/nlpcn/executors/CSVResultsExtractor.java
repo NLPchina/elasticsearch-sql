@@ -102,7 +102,7 @@ public class CSVResultsExtractor {
             List<String> headers = createHeadersAndFillDocsMap(flat, hits, ((SearchResponse) queryResult).getScrollId(), docsAsMap, hitFieldNames);
             List<String> csvLines = createCSVLinesFromDocs(flat, separator, quote, docsAsMap, headers, hitFieldNames);
             //return new CSVResult(headers, csvLines);
-            return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value);
+            return new CSVResult(headers, csvLines, ((SearchResponse) queryResult).getHits().getTotalHits().value());
         }
         if (queryResult instanceof GetIndexResponse){
             Map<String, MappingMetadata> mappings = ((GetIndexResponse) queryResult).getMappings();

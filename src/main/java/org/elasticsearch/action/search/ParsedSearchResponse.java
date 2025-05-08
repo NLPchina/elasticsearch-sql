@@ -16,6 +16,7 @@ import org.elasticsearch.rest.action.RestActions;
 import org.elasticsearch.search.ParsedSearchHits;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.InternalAggregations;
+import org.elasticsearch.search.aggregations.ParsedInternalAggregations;
 import org.elasticsearch.search.profile.ParsedSearchProfileResults;
 import org.elasticsearch.search.profile.SearchProfileResults;
 import org.elasticsearch.search.suggest.ParsedSuggest;
@@ -98,7 +99,7 @@ public class ParsedSearchResponse {
                 if (SearchHits.Fields.HITS.equals(currentFieldName)) {
                     hits = ParsedSearchHits.fromXContent(parser);
                 } else if (InternalAggregations.AGGREGATIONS_FIELD.equals(currentFieldName)) {
-                    aggs = InternalAggregations.fromXContent(parser);
+                    aggs = ParsedInternalAggregations.fromXContent(parser);
                 } else if (Suggest.NAME.equals(currentFieldName)) {
                     suggest = ParsedSuggest.fromXContent(parser);
                 } else if (SearchProfileResults.PROFILE_FIELD.equals(currentFieldName)) {
@@ -122,7 +123,7 @@ public class ParsedSearchResponse {
                         } else if (token == Token.START_ARRAY) {
                             if (RestActions.FAILURES_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
                                 while (parser.nextToken() != Token.END_ARRAY) {
-                                    failures.add(ShardSearchFailure.fromXContent(parser));
+                                    failures.add(ParsedShardSearchFailure.fromXContent(parser));
                                 }
                             } else {
                                 parser.skipChildren();
@@ -303,7 +304,7 @@ public class ParsedSearchResponse {
                 } else if (token == Token.START_ARRAY) {
                     if (RestActions.FAILURES_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
                         while (parser.nextToken() != Token.END_ARRAY) {
-                            failures.add(ShardSearchFailure.fromXContent(parser));
+                            failures.add(ParsedShardSearchFailure.fromXContent(parser));
                         }
                     } else {
                         parser.skipChildren();
