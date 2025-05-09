@@ -6,6 +6,7 @@ jdk:
 before_install:
   - sudo rm -rf /var/lib/elasticsearch
   - curl https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.0.0-amd64.deb -o elasticsearch.deb && sudo dpkg -i --force-confnew elasticsearch.deb
+  - pwd
   - sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
   - sudo cat /etc/elasticsearch/elasticsearch.yml
   - sudo java -version
