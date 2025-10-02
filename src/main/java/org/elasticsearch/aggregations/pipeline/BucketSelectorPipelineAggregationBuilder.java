@@ -9,7 +9,6 @@
 package org.elasticsearch.aggregations.pipeline;
 
 import org.elasticsearch.TransportVersion;
-import org.elasticsearch.TransportVersions;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
@@ -216,6 +215,6 @@ public class BucketSelectorPipelineAggregationBuilder extends AbstractPipelineAg
 
     @Override
     public TransportVersion getMinimalSupportedVersion() {
-        return TransportVersions.ZERO;
+        return TransportVersion.zero();
     }
 }
