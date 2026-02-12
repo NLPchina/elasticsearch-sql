@@ -1,0 +1,42 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: 'maven'
+      
+      - name: Install Elasticsearch
+        env:
+          ES_VERSION: 9.1.4
+        run: |
+          sudo rm -rf /var/lib/elasticsearch
+          curl -fsSL --retry 3 --retry-delay 5 "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}-amd64.deb" -o elasticsearch.deb
+          ls -lh elasticsearch.deb
+          sudo dpkg -i --force-confnew elasticsearch.deb
+          sudo cp ./src/test/resources/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
+          sudo cat /etc/elasticsearch/elasticsearch.yml
+          sudo java -version
+          sudo chown -R elasticsearch:elasticsearch /etc/default/elasticsearch
+          sudo systemctl start elasticsearch
+          sudo systemctl status elasticsearch
+          sleep 30
+      
+      - name: Install dependencies
+        run: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+      
+      - name: Run tests
+        run: |
+          ulimit -a
+          mvn test
