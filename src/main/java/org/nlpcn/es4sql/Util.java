@@ -128,9 +128,12 @@ public class Util {
             return ((SQLNullExpr) expr).toString().toLowerCase();
         } else if (expr instanceof  SQLBinaryOpExpr) {
             //zhongshu-comment 该分支由忠树添加
-            String left = "doc['" + ((SQLBinaryOpExpr) expr).getLeft().toString() + "'].value";
-            String operator = ((SQLBinaryOpExpr) expr).getOperator().getName();
-            String right = "doc['" + ((SQLBinaryOpExpr) expr).getRight().toString() + "'].value";
+            SQLBinaryOpExpr sqlExpr = (SQLBinaryOpExpr) expr;
+            Object leftValue = getScriptValueWithQuote(sqlExpr.getLeft(), quote);
+            String left = sqlExpr.getLeft() instanceof SQLBinaryOpExpr ? "(" + leftValue + ")" : leftValue.toString();
+            String operator = sqlExpr.getOperator().getName();
+            Object rightValue = getScriptValueWithQuote(sqlExpr.getRight(), quote);
+            String right = sqlExpr.getRight() instanceof SQLBinaryOpExpr ? "(" + rightValue + ")" : rightValue.toString();
             return left + operator + right;
         }
         throw new SqlParseException("could not parse sqlBinaryOpExpr need to be identifier/valuable got " + expr.getClass().toString() + " with value:" + expr.toString());

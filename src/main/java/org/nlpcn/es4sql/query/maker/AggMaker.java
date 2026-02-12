@@ -391,7 +391,7 @@ public class AggMaker {
         IncludeExclude include = null, exclude = null;
         for (KVValue kv : field.getParams()) {
             if(kv.value.toString().contains("doc[")) {
-                String script = kv.value +  "; return " + kv.key;
+                String script = kv.value.toString();
                 terms.script(new Script(script));
             } else {
                 value = kv.value.toString();
@@ -665,7 +665,7 @@ public class AggMaker {
         String value = null;
         for (KVValue kv : field.getParams()) {
             if(kv.value.toString().contains("doc[")) {
-                String script = kv.value +  "; return " + kv.key;
+                String script = kv.value.toString();
                 dateHistogram.script(new Script(script));
             } else {
                 value = kv.value.toString();
@@ -750,7 +750,7 @@ public class AggMaker {
         String value = null;
         for (KVValue kv : field.getParams()) {
             if(kv.value.toString().contains("doc[")) {
-                String script = kv.value +  "; return " + kv.key;
+                String script = kv.value.toString();
                 histogram.script(new Script(script));
             } else {
                 value = kv.value.toString();
