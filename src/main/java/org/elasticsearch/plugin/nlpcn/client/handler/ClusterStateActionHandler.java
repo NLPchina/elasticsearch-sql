@@ -8,6 +8,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.TransportVersion;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateAction;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequest;
@@ -85,6 +86,7 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
     private static final String KEY_MAPPINGS = "mappings";
     private static final String KEY_MAPPINGS_HASH = "mappings_hash";
     private static final String KEY_MAPPINGS_UPDATED_VERSION = "mappings_updated_version";
+    private static final String KEY_TRANSPORT_VERSION = "transport_version";
     private static final String KEY_ALIASES = "aliases";
     private static final String KEY_ROLLOVER_INFOS = "rollover_info";
     private static final String KEY_WARMERS = "warmers";
@@ -385,6 +387,9 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
                         break;
                     case KEY_MAPPINGS_UPDATED_VERSION:
                         builder.mappingsUpdatedVersion(IndexVersion.fromId(parser.intValue()));
+                        break;
+                    case KEY_TRANSPORT_VERSION:
+                        builder.transportVersion(TransportVersion.fromId(parser.intValue()));
                         break;
                     case KEY_MAPPINGS_HASH:
                         logger.warn("Skipping mappings hash");

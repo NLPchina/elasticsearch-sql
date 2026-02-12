@@ -20,6 +20,8 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.internal.Client;
+import org.elasticsearch.common.logging.LogConfigurator;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -77,6 +79,8 @@ public class MainTestSuite {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
+        LogConfigurator.configureWithoutConfig(Settings.EMPTY);
+
 		client = createElasticsearchClient();
 
         NodesInfoResponse nodeInfos = client.admin().cluster().prepareNodesInfo().clear().setHttp(true).setOs(true).setProcess(true).setThreadPool(true).setIndices(true).get();
