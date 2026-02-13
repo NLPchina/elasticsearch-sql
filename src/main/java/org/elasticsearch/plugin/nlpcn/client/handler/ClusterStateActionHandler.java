@@ -146,8 +146,7 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
         if (clusterStateRequest.customs()) {
             builder.metric(ClusterState.Metric.CUSTOMS.toString());
         }
-        builder.local(clusterStateRequest.local());
-        Optional.ofNullable(clusterStateRequest.masterNodeTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
+        Optional.ofNullable(clusterStateRequest.masterTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
         Optional.ofNullable(clusterStateRequest.waitForTimeout()).ifPresent(e -> builder.waitForTimeout(Time.of(t -> t.time(e.toString()))));
         builder.waitForMetadataVersion(clusterStateRequest.waitForMetadataVersion());
         Optional.ofNullable(clusterStateRequest.indicesOptions()).ifPresent(options -> {

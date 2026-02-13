@@ -23,7 +23,6 @@ import org.elasticsearch.common.transport.BoundTransportAddress;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.Processors;
-import org.elasticsearch.common.unit.SizeValue;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.http.HttpInfo;
 import org.elasticsearch.index.IndexVersion;
@@ -131,7 +130,7 @@ public class NodesInfoActionHandler extends ActionHandler<org.elasticsearch.acti
                                 Optional.ofNullable(threadPoolInfo.core()).orElse(-1),
                                 Optional.ofNullable(threadPoolInfo.max()).orElse(-1),
                                 Objects.nonNull(keepAlive) ? TimeValue.parseTimeValue(keepAlive.time(), KEY_KEEP_ALIVE) : null,
-                                threadPoolInfo.queueSize() >= 0 ? SizeValue.parseSizeValue(String.valueOf(threadPoolInfo.queueSize())) : null));
+                                (long) threadPoolInfo.queueSize()));
                     }
                     threadPool = new ThreadPoolInfo(infos);
                 }
