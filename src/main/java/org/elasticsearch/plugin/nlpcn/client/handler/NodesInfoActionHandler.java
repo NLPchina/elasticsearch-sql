@@ -8,6 +8,7 @@ import co.elastic.clients.elasticsearch.nodes.info.NodeInfoHttp;
 import co.elastic.clients.elasticsearch.nodes.info.NodeOperatingSystemInfo;
 import co.elastic.clients.elasticsearch.nodes.info.NodeProcessInfo;
 import co.elastic.clients.elasticsearch.nodes.info.NodeThreadPoolInfo;
+import co.elastic.clients.elasticsearch.nodes.info.NodesInfoMetric;
 import org.elasticsearch.Build;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
@@ -74,7 +75,9 @@ public class NodesInfoActionHandler extends ActionHandler<org.elasticsearch.acti
     @Override
     protected NodesInfoRequest convertRequest(org.elasticsearch.action.admin.cluster.node.info.NodesInfoRequest nodesInfoRequest) throws IOException {
         NodesInfoRequest.Builder builder = new NodesInfoRequest.Builder();
-        builder.metric(new ArrayList<>(nodesInfoRequest.requestedMetrics()));
+        for (String metric : nodesInfoRequest.requestedMetrics()) {
+            builder.metric(NodesInfoMetric._DESERIALIZER.parse(metric));
+        }
         builder.nodeId(Arrays.asList(nodesInfoRequest.nodesIds()));
         Optional.ofNullable(nodesInfoRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         return builder.build();

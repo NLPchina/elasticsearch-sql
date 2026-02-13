@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -56,7 +57,9 @@ public class MultiSearchActionHandler extends ActionHandler<MultiSearchRequest, 
             msearchHeaderBuilder.allowPartialSearchResults(request.allowPartialSearchResults());
             msearchHeaderBuilder.ccsMinimizeRoundtrips(request.isCcsMinimizeRoundtrips());
             msearchHeaderBuilder.preference(request.preference());
-            msearchHeaderBuilder.routing(request.routing());
+            if (Objects.nonNull(request.routing())) {
+                msearchHeaderBuilder.routing(request.routing());
+            }
             msearchHeaderBuilder.searchType(getSearchType(request.searchType()));
             Optional.ofNullable(request.indicesOptions()).ifPresent(options -> {
                 msearchHeaderBuilder.allowNoIndices(options.allowNoIndices());

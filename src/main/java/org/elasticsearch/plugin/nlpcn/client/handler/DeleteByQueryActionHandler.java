@@ -60,7 +60,9 @@ public class DeleteByQueryActionHandler extends ActionHandler<org.elasticsearch.
         }
         builder.conflicts(deleteByQueryRequest.isAbortOnVersionConflict() ? Conflicts.Abort : Conflicts.Proceed);
         builder.index(Arrays.asList(deleteByQueryRequest.indices()));
-        builder.routing(deleteByQueryRequest.getRouting());
+        if (Objects.nonNull(deleteByQueryRequest.getRouting())) {
+            builder.routing(deleteByQueryRequest.getRouting());
+        }
         if (deleteByQueryRequest.getMaxDocs() > -1) {
             builder.maxDocs((long) deleteByQueryRequest.getMaxDocs());
         }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -50,7 +51,9 @@ public class SearchActionHandler extends ActionHandler<org.elasticsearch.action.
         builder.allowPartialSearchResults(searchRequest.allowPartialSearchResults());
         builder.ccsMinimizeRoundtrips(searchRequest.isCcsMinimizeRoundtrips());
         builder.preference(searchRequest.preference());
-        builder.routing(searchRequest.routing());
+        if (Objects.nonNull(searchRequest.routing())) {
+            builder.routing(searchRequest.routing());
+        }
         builder.searchType(getSearchType(searchRequest.searchType()));
         builder.batchedReduceSize((long) searchRequest.getBatchedReduceSize());
         builder.maxConcurrentShardRequests(searchRequest.getMaxConcurrentShardRequests());

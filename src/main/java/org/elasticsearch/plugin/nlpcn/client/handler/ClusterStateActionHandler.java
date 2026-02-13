@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.cluster.StateRequest;
 import co.elastic.clients.elasticsearch.cluster.StateResponse;
+import co.elastic.clients.elasticsearch.cluster.state.ClusterStateMetric;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.logging.log4j.LogManager;
@@ -112,6 +113,8 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
     private static final String KEY_SHARD_LIMITS_TYPE = "shard_limits";
     private static final String KEY_MAX_SHARDS_PER_NODE = "max_shards_per_node";
     private static final String KEY_MAX_SHARDS_PER_NODE_FROZEN = "max_shards_per_node_frozen";
+    private static final String KEY_SHARD_CAPACITY_UNHEALTHY_THRESHOLD_YELLOW = "shard_capacity_unhealthy_threshold_yellow";
+    private static final String KEY_SHARD_CAPACITY_UNHEALTHY_THRESHOLD_RED = "shard_capacity_unhealthy_threshold_red";
 
     public ClusterStateActionHandler(ElasticsearchClient client) {
         super(client);
@@ -132,19 +135,19 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
         StateRequest.Builder builder = new StateRequest.Builder();
         builder.index(Arrays.asList(clusterStateRequest.indices()));
         if (clusterStateRequest.routingTable()) {
-            builder.metric(ClusterState.Metric.ROUTING_TABLE.toString());
+            builder.metric(ClusterStateMetric.RoutingTable);
         }
         if (clusterStateRequest.nodes()) {
-            builder.metric(ClusterState.Metric.NODES.toString());
+            builder.metric(ClusterStateMetric.Nodes);
         }
         if (clusterStateRequest.metadata()) {
-            builder.metric(ClusterState.Metric.METADATA.toString());
+            builder.metric(ClusterStateMetric.Metadata);
         }
         if (clusterStateRequest.blocks()) {
-            builder.metric(ClusterState.Metric.BLOCKS.toString());
+            builder.metric(ClusterStateMetric.Blocks);
         }
         if (clusterStateRequest.customs()) {
-            builder.metric(ClusterState.Metric.CUSTOMS.toString());
+            builder.metric(ClusterStateMetric.Customs);
         }
         Optional.ofNullable(clusterStateRequest.masterTimeout()).ifPresent(e -> builder.masterTimeout(Time.of(t -> t.time(e.toString()))));
         Optional.ofNullable(clusterStateRequest.waitForTimeout()).ifPresent(e -> builder.waitForTimeout(Time.of(t -> t.time(e.toString()))));
@@ -199,7 +202,8 @@ public class ClusterStateActionHandler extends ActionHandler<ClusterStateRequest
                     ByteSizeValue.parseBytesSizeValue(disk.getString(KEY_FLOOD_STAGE_MAX_HEADROOM), KEY_FLOOD_STAGE_MAX_HEADROOM),
                     RelativeByteSizeValue.parseRelativeByteSizeValue(disk.getString(KEY_FROZEN_FLOOD_STAGE_WATERMARK), KEY_FROZEN_FLOOD_STAGE_WATERMARK),
                     ByteSizeValue.parseBytesSizeValue(disk.getString(KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM), KEY_FROZEN_FLOOD_STAGE_MAX_HEADROOM)),
-                    new HealthMetadata.ShardLimits(shardLimits.getInt(KEY_MAX_SHARDS_PER_NODE), shardLimits.getInt(KEY_MAX_SHARDS_PER_NODE_FROZEN))));
+                    new HealthMetadata.ShardLimits(shardLimits.getInt(KEY_MAX_SHARDS_PER_NODE), shardLimits.getInt(KEY_MAX_SHARDS_PER_NODE_FROZEN),
+                            shardLimits.getInt(KEY_SHARD_CAPACITY_UNHEALTHY_THRESHOLD_YELLOW), shardLimits.getInt(KEY_SHARD_CAPACITY_UNHEALTHY_THRESHOLD_RED))));
         }
         Map<ProjectId, RoutingTable> map = new HashMap<>(metadata.projects().size());
         for (Map.Entry<ProjectId, ProjectMetadata> entry : metadata.projects().entrySet()) {

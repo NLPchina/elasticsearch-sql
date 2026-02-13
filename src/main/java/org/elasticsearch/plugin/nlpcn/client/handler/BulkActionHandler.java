@@ -65,7 +65,9 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
                     IndexOperation.Builder<Map<String, Object>> indexOperationBuilder = new IndexOperation.Builder<>();
                     indexOperationBuilder.id(indexRequest.id());
                     indexOperationBuilder.index(indexRequest.index());
-                    indexOperationBuilder.routing(indexRequest.routing());
+                    if (Objects.nonNull(indexRequest.routing())) {
+                        indexOperationBuilder.routing(indexRequest.routing());
+                    }
                     indexOperationBuilder.ifPrimaryTerm(indexRequest.ifPrimaryTerm());
                     indexOperationBuilder.ifSeqNo(indexRequest.ifSeqNo());
                     indexOperationBuilder.pipeline(indexRequest.getPipeline());
@@ -81,7 +83,9 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
                     CreateOperation.Builder<Map<String, Object>> createOperationBuilder = new CreateOperation.Builder<>();
                     createOperationBuilder.id(createRequest.id());
                     createOperationBuilder.index(createRequest.index());
-                    createOperationBuilder.routing(createRequest.routing());
+                    if (Objects.nonNull(createRequest.routing())) {
+                        createOperationBuilder.routing(createRequest.routing());
+                    }
                     createOperationBuilder.ifPrimaryTerm(createRequest.ifPrimaryTerm());
                     createOperationBuilder.ifSeqNo(createRequest.ifSeqNo());
                     createOperationBuilder.pipeline(createRequest.getPipeline());
@@ -97,7 +101,9 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
                     DeleteOperation.Builder deleteOperationBuilder = new DeleteOperation.Builder();
                     deleteOperationBuilder.id(deleteRequest.id());
                     deleteOperationBuilder.index(deleteRequest.index());
-                    deleteOperationBuilder.routing(deleteRequest.routing());
+                    if (Objects.nonNull(deleteRequest.routing())) {
+                        deleteOperationBuilder.routing(deleteRequest.routing());
+                    }
                     deleteOperationBuilder.ifPrimaryTerm(deleteRequest.ifPrimaryTerm());
                     deleteOperationBuilder.ifSeqNo(deleteRequest.ifSeqNo());
                     deleteOperationBuilder.version(deleteRequest.version());
@@ -109,7 +115,9 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
                     UpdateOperation.Builder<Map<String, Object>, Map<String, Object>> updateOperationBuilder = new UpdateOperation.Builder<>();
                     updateOperationBuilder.id(updateRequest.id());
                     updateOperationBuilder.index(updateRequest.index());
-                    updateOperationBuilder.routing(updateRequest.routing());
+                    if (Objects.nonNull(updateRequest.routing())) {
+                        updateOperationBuilder.routing(updateRequest.routing());
+                    }
                     updateOperationBuilder.ifPrimaryTerm(updateRequest.ifPrimaryTerm());
                     updateOperationBuilder.ifSeqNo(updateRequest.ifSeqNo());
                     updateOperationBuilder.requireAlias(updateRequest.isRequireAlias());
@@ -133,7 +141,9 @@ public class BulkActionHandler extends ActionHandler<org.elasticsearch.action.bu
         builder.refresh(getRefreshPolicy(bulkRequest.getRefreshPolicy()));
         builder.requireAlias(bulkRequest.requireAlias());
         builder.pipeline(bulkRequest.pipeline());
-        builder.routing(bulkRequest.routing());
+        if (Objects.nonNull(bulkRequest.routing())) {
+            builder.routing(bulkRequest.routing());
+        }
         Optional.ofNullable(bulkRequest.timeout()).ifPresent(e -> builder.timeout(Time.of(t -> t.time(e.toString()))));
         ActiveShardCount activeShardCount = bulkRequest.waitForActiveShards();
         if (Objects.nonNull(activeShardCount) && activeShardCount.value() > -1) {
