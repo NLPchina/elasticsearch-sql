@@ -18,7 +18,7 @@ Elasticsearch-SQL
 **6.8.23** [![6.8.23 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic6.8.23)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **7.17.28** [![7.17.28 Build Status](https://travis-ci.com/NLPchina/elasticsearch-sql.svg?branch=elastic7.17.28)](https://travis-ci.com/github/NLPchina/elasticsearch-sql)
 **8.19.11** [![8.19.11 Build Status](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml/badge.svg?branch=elastic8.19.11)](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml)
-**9.2.5** [![9.2.5 Build Status](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml/badge.svg?branch=elastic9.2.5)](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml)
+**9.3.0** [![9.3.0 Build Status](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml/badge.svg?branch=elastic9.3.0)](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml)
 **master** [![master Build Status](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml/badge.svg?branch=master)](https://github.com/NLPchina/elasticsearch-sql/actions/workflows/actions.yml)
 
 Query elasticsearch using familiar SQL syntax.
@@ -315,6 +315,7 @@ Versions
 | 9.2.3                 | 9.2.3.0        |                                | elastic9.2.3 |
 | 9.2.4                 | 9.2.4.0        |                                | elastic9.2.4 |
 | 9.2.5                 | 9.2.5.0        |                                | elastic9.2.5 |
+| 9.3.0                 | 9.3.0.0        |                                | elastic9.3.0 |
 
 ### Elasticsearch 1.x
 ````
@@ -1657,6 +1658,11 @@ Versions
 ### Elasticsearch 9.2.5
 ````
 ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v9.2.5/elasticsearch-sql-9.2.5.0.zip
+````
+
+### Elasticsearch 9.3.0
+````
+./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/v9.3.0/elasticsearch-sql-9.3.0.0.zip
 ````
 
 After doing this, you need to restart the Elasticsearch server. Otherwise you may get errors like `Invalid index name [sql], must not start with '']; ","status":400}`.
