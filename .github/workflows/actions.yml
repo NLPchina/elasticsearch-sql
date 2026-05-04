@@ -19,7 +19,7 @@ jobs:
       
       - name: Install Elasticsearch
         env:
-          ES_VERSION: 9.3.0
+          ES_VERSION: 9.3.1
         run: |
           sudo rm -rf /var/lib/elasticsearch
           curl -fsSL --retry 3 --retry-delay 5 "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}-amd64.deb" -o elasticsearch.deb
